@@ -19,6 +19,8 @@
 		</style>
 	</head>
 	<body>
+		<button text="save" onclick=""></button>
+		<button text="load" onclick=""></button>
 		<div id="blocklyDiv" style="height: 680px; width: 800px;"></div>
 		<xml id="toolbox" style="display: none">
 			<category name="Control">
@@ -32,10 +34,22 @@
 			<category name="Logic">
 				<block type="logic_compare"></block>
 			</category>
-			<category name="Misc">
-				<block type="text"></block>
-				<block type="text_print"></block>
+			<category name="Fluids">
+				<block type="input"></block>
+				<block type="getInput"></block>
+				<block type="fluid"></block>
+				<block type="getFluid"></block>
+			</category>
+			<category name="Fluid operator">
 				<block type="mix"></block>
+				<block type="split"></block>
+				<block type="heat"></block>
+			</category>
+			<category name="Misc">
+				<block type="start"></block>
+				<block type="waste"></block>
+				<block type="output"></block>
+				<block type="sensor"></block>
 			</category>
 		</xml>
 		<script>
