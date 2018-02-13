@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.FluidOperators
+namespace BiolyCompiler.BlocklyParts.BLocks.FFUs
 {
-    public abstract class FluidOperator
+    public abstract class FFU : IBlockly
     {
         public abstract bool TryDeserialize();
 

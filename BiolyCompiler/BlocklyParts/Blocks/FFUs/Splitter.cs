@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.FluidOperators
+namespace BiolyCompiler.BlocklyParts.BLocks.FFUs
 {
-    class Mixer
+    class Splitter
     {
     }
 }

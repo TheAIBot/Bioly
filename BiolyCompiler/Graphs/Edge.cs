@@ -4,15 +4,21 @@ using System.Text;
 
 namespace BiolyCompiler.Graphs
 {
-    class Edge<T>
+    class Edge<N, E>
     {
-        public Node<T> start;
-        public Node<T> end;
+        public Node<N, E> start;
+        public Node<N, E> end;
+        public E value;
 
-        public Edge(Node<T> sstart, Node<T> eend)
+        public Edge(Node<N, E> sstart, Node<N, E> eend) : this(sstart, eend, default(E))
+        {
+        }
+
+        public Edge(Node<N, E> sstart, Node<N, E> eend, E vvalue)
         {
             this.start = sstart;
             this.end = eend;
+            this.value = vvalue;
         }
     }
 }
