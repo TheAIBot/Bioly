@@ -6,18 +6,18 @@ namespace BiolyCompiler.Graphs
 {
     class Edge<N, E>
     {
-        public Node<N, E> start;
-        public Node<N, E> end;
+        public Node<N, E> source;
+        public Node<N, E> destination;
         public E value;
 
-        public Edge(Node<N, E> sstart, Node<N, E> eend) : this(sstart, eend, default(E))
+        public Edge(Node<N, E> src, Node<N, E> dst) : this(src, dst, default(E))
         {
         }
 
-        public Edge(Node<N, E> sstart, Node<N, E> eend, E vvalue)
+        public Edge(Node<N, E> src, Node<N, E> dst, E vvalue)
         {
-            this.start = sstart;
-            this.end = eend;
+            this.source = src;
+            this.destination = dst;
             this.value = vvalue;
         }
     }

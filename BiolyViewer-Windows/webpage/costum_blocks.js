@@ -269,6 +269,92 @@ Blockly.Blocks["sensor"] = {
 	}
 };
 
+Blockly.Blocks["fluidArray"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new fluid array",
+			"args0": [
+			],
+			"message1": "name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "fluid_array_name"
+				}
+			],
+			"message2": "length %1",
+			"args2": [
+				{
+					"type": "input_value",
+					"name": "arrayLength",
+					"check": "Number"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["setFLuidArrayIndex"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "in array %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "fluid_array_name"
+				}
+			],
+			"message1": "set index %1 to %2",
+			"args1": [
+				{
+					"type": "field_number",
+					"name": "arrayName"
+				},
+				{
+					"type": "input_value",
+					"name": "value",
+					"check": ["InputType", "FluidType", "FluidOperator"]
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["getFLuidArrayIndex"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "in array %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "fluid_array_name"
+				}
+			],
+			"message1": "get index %1",
+			"args1": [
+				{
+					"type": "field_number",
+					"name": "arrayName"
+				}
+			],
+			"output": "FluidType",
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+
 
 
 

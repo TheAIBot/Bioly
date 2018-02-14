@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Blockly Demo: Fixed Blockly</title>
+		<title>Bioly</title>
 		<script src="blockly_compressed.js"></script>
 		<script src="blocks_compressed.js"></script>
 		<script src="en.js"></script>
@@ -19,8 +19,8 @@
 		</style>
 	</head>
 	<body>
-		<button text="save" onclick=""></button>
-		<button text="load" onclick=""></button>
+		<button onclick="save();">save</button>
+		<button onclick="load();alert('asda');">load</button>
 		<div id="blocklyDiv" style="height: 680px; width: 800px;"></div>
 		<xml id="toolbox" style="display: none">
 			<category name="Control">
@@ -51,11 +51,27 @@
 				<block type="output"></block>
 				<block type="sensor"></block>
 			</category>
+			<category name="Arrays">
+				<block type="fluidArray"></block>
+				<block type="setFLuidArrayIndex"></block>
+				<block type="getFLuidArrayIndex"></block>
+			</category>
 		</xml>
 		<script>
-			var demoWorkspace = Blockly.inject('blocklyDiv',
-			{media: '../../media/',
-			toolbox: document.getElementById('toolbox')});
+			function save() {
+				const xml = Blockly.Xml.workspaceToDom(workspace);
+				const xml_text = Blockly.Xml.domToText(xml);
+				document.cookie = "dd=0" + xml_text;
+			}
+			function load() {
+				const xml_text = document.cookie;
+				const xml = Blockly.Xml.textToDom(xml_text);
+				Blockly.Xml.domToWorkspace(xml, workspace);
+			}
+			
+			var workspace = Blockly.inject('blocklyDiv',
+				{media: 'media/',
+				toolbox: document.getElementById('toolbox')});
 		</script>
 	</body>
 </html>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.BlocklyParts.BLocks.FFUs
+namespace BiolyCompiler.BlocklyParts.Blocks.FFUs
 {
     class Heater
     {
