@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.Misc
+namespace BiolyCompiler.BlocklyParts.Blocks.ControlFlow
 {
-    public class Sensor : IBlockly
+    class Conditional : Block
     {
     }
 }

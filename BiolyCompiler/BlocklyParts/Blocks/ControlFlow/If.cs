@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.Graphs
+namespace BiolyCompiler.BlocklyParts.Blocks.ControlFlow
 {
-    class DFG<N> : Graph<N>
+    class If
     {
     }
 }

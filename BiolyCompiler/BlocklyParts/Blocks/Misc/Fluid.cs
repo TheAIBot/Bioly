@@ -5,11 +5,11 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Blocks.Misc
 {
-    internal class Input : Block
+    internal class Fluid : Block
     {
-        public const string XmlTypeName = "input";
+        public const string XmlTypeName = "fluid";
 
-        public Input() : base(true)
+        public Fluid() : base(true)
         {
 
         }

@@ -25,7 +25,6 @@ namespace BiolyViewer_Windows
     {
         public MainWindow()
         {
-
             var settings = new CefSettings();
             settings.RegisterScheme(new CefCustomScheme
             {
@@ -38,7 +37,6 @@ namespace BiolyViewer_Windows
 
             InitializeComponent();
             BiolyCompiler.Compiler fisk = new BiolyCompiler.Compiler();
-            fisk.DoStuff();
             fisk.DoStuff();
         }
 
