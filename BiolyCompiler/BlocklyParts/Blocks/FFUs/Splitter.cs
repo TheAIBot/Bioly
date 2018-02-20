@@ -1,10 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.BLocks.FFUs
+namespace BiolyCompiler.BlocklyParts.Blocks.FFUs
 {
-    class Splitter
+    internal class Splitter : Block
     {
+        public const string XmlTypeName = "splitter";
+
+        public Splitter() : base(true)
+        {
+
+        }
+
+        public override Block TryParseBlock(XmlNode node)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

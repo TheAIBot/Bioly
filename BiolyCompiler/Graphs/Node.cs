@@ -4,13 +4,13 @@ using System.Text;
 
 namespace BiolyCompiler.Graphs
 {
-    public class Node<N, E>
+    public class Node<N>
     {
-        private List<Edge<N, E>> edges = new List<Edge<N, E>>();
+        private List<Node<N>> edges = new List<Node<N>>();
 
-        public void AddEdge(Node<N, E> target)
+        public void AddEdge(Node<N> target)
         {
-            edges.Add(new Edge<N, E>(this, target));
+            edges.Add(target);
         }
     }
 }
