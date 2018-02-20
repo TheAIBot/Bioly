@@ -6,6 +6,6 @@ namespace BiolyCompiler.Graphs
 {
     public class CDFG
     {
-        //CFG<DFG<>> graph = new CFG<DFG>();
+        private readonly CFG<DFG<Block>> graph = new CFG<DFG<Block>>();
     }
 }
