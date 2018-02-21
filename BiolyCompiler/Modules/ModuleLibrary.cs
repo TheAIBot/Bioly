@@ -1,4 +1,7 @@
 using System;
+using BiolyCompiler.Modules;
+using System.Collections.Generic;
+
 
 namespace BiolyCompiler.Modules
 {
