@@ -4,7 +4,8 @@ using System.Text;
 
 namespace BiolyCompiler.Graphs
 {
-    class CFG
+    internal class CFG<N>
     {
+        private readonly List<Node<N>> nodes = new List<Node<N>>();
     }
 }

@@ -28,7 +28,7 @@ namespace BiolyCompiler.Graphs
 
         public void AddOutput(Node<N> node)
         {
-            output.Add(node);
+            //output.Add(node);
         }
     }
 }
