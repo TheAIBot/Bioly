@@ -9,14 +9,9 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Misc
     {
         public const string XmlTypeName = "output";
 
-        public Output() : base(false)
+        public Output(List<string> input, string output, XmlNode node) : base(false, input, output)
         {
 
-        }
-
-        public override Block TryParseBlock(XmlNode node)
-        {
-            throw new NotImplementedException();
         }
     }
 }

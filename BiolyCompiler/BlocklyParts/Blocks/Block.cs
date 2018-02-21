@@ -5,15 +5,23 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Blocks
 {
-    public abstract class Block
+    public abstract class Block : IBlocklyPart
     {
         public readonly bool CanBeOutput;
+        public readonly IReadOnlyList<string> InputVariables;
+        public readonly string OutputVariable;
 
-        public Block(bool canBeOutput)
+        private static readonly List<string> EmptyList = new List<string>();
+
+        public Block(bool canBeOutput, string output) : this(canBeOutput, EmptyList, output)
         {
-            this.CanBeOutput = canBeOutput;
         }
 
-        public abstract Block TryParseBlock(XmlNode node);
+        public Block(bool canBeOutput, List<string> input, string output)
+        {
+            this.CanBeOutput = canBeOutput;
+            this.InputVariables = input;
+            this.OutputVariable = output;
+        }
     }
 }

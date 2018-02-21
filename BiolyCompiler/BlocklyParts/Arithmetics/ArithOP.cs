@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.ControlFlow
+namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
-    class Repeat
+    class ArithOP
     {
     }
 }

@@ -7,6 +7,7 @@ namespace BiolyCompiler.Graphs
     public class Node<N>
     {
         private List<Node<N>> edges = new List<Node<N>>();
+        public N value;
 
         public void AddEdge(Node<N> target)
         {

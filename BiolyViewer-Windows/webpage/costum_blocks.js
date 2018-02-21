@@ -39,8 +39,8 @@ Blockly.Blocks["input"] = {
 					"type": "field_dropdown",
 					"name": "inputUnit",
 					"options": [
-						["drops", "drops"],
-						["ml", "ml"]
+						["drops", "0"],
+						["ml", "1"]
 					]
 				}
 			],
