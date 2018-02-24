@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.BlocklyParts.Blocks.Sensors
 {
@@ -17,6 +18,10 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Sensors
         public override Block TryParseBlock(XmlNode node)
         {
             throw new NotImplementedException();
+        }
+
+        public override OperationType getOperationType(){
+            return OperationType.Sensor;
         }
     }
 }

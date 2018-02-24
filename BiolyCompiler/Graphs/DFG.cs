@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BiolyCompiler.BlocklyParts.Blocks;
 
 namespace BiolyCompiler.Graphs
 {
-    class DFG<N> : Graph<N>
+    public class DFG<N> : Graph<N>
     {
+
+        public List<Block> getReadyOperations(){
+            return null;
+        }
     }
+
 }

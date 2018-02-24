@@ -6,7 +6,7 @@ namespace BiolyCompiler.Graphs
 {
     public class Graph<N>
     {
-        private readonly List<Node<N>> nodes = new List<Node<N>>();
+        public readonly List<Node<N>> nodes = new List<Node<N>>();
         private readonly List<Node<N>> input = new List<Node<N>>();
         //private readonly List<Node<N>> output = new List<Node<N>>();
         private readonly Dictionary<string, Node<N>> output;
