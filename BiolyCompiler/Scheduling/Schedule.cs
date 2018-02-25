@@ -11,6 +11,7 @@ namespace BiolyCompiler.Scheduling
 
     public class Schedule
     {
+        Dictionary<int, Module[][]> boardAtDifferentTimes = new Dictionary<int, Module[][]>();
 
         public Schedule(){
 
@@ -26,6 +27,9 @@ namespace BiolyCompiler.Scheduling
             //so that the dynamic algorithm doesn't have to handle this.
             //PlaceFixedModules(); //TODO implement.
 
+            Board board = new Board(architecture.getBoardHeigth, architecture.getBoardWidth); //The board is initially empty
+
+            //Many optimization can be made to this method (later)
             Schedule schedule = new Schedule(); //Initially empty
             assay.calculateCriticalPath();
             library.allocateModules(assay); 
@@ -33,11 +37,19 @@ namespace BiolyCompiler.Scheduling
             List<Block> readyOperations = assay.getReadyOperations();
             while(readyOperations.Count > 0){
                 Block operation = removeOperation(readyOperations);
-                Module module       = library.getAndPlaceFirstPlaceableModule(operation, architecture); //Also called place
-                //TODO What if there is no module that can be placed?(*)
-                operation.Bind(module); //TODO make modules unique
-                Route route   = determineRouteToModule(operation, module, architecture);
-                int timeStart = updateSchedule(operation, schedule, route); 
+                Module module   = library.getAndPlaceFirstPlaceableModule(operation, board); //Also called place
+                //If the module can't be placed, one must wait until there is enough place for it.
+                int timeStart;
+                if (module == null) {}
+                    timeStart = waitForAFinishedOperation();
+                } else{
+                    //TODO What if there is no module that can be placed?(*)
+                    operation.Bind(module); //TODO make modules unique
+                    //Route route   = determineRouteToModule(operation, module, architecture); //Will be included as part of a later step.
+                    timeStart = updateSchedule(operation, schedule, route, currentPlacedModules); 
+                }
+
+                board = getCurrentBoard();
                 updateReadyOperations(assay, timeStart, readyOperations);
                 readyOperations = assay.getReadyOperations();
             }

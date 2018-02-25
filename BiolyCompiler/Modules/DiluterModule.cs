@@ -3,10 +3,10 @@ using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
 {
-    public class Diluter : Module
+    public class DiluterModule : Module
     {
 
-        public Diluter(int height, int width, int operationTime) : base(height, width, operationTime){
+        public DiluterModule(int height, int width, int operationTime) : base(height, width, operationTime){
             
         }
 

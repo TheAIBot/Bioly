@@ -10,11 +10,10 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Sensors
     {
         public const string XmlTypeName = "sensor";
 
-        public Sensor() : base(true)
+        public Sensor(List<string> input, string output, XmlNode node) : base(true, input, output)
         {
 
         }
-
         public override Block TryParseBlock(XmlNode node)
         {
             throw new NotImplementedException();

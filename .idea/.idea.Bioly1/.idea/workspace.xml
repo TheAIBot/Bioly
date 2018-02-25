@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="6fa0efff-0bce-4940-b438-34564b681c66" name="Default" comment="">
+      <change beforePath="" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Arithmetics/Constant.cs" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/BoolLogic/Bool.cs" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/BoolLogic/BoolOP.cs" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/BoolLogic/BoolOPTypes.cs" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/IBlocklyPart.cs" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/BiolyCompiler/FluidUnit.cs" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/BiolyCompiler/Parser/XmlTools.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Block.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Block.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/ControlFlow/Conditional.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/ControlFlow/Conditional.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/ControlFlow/If.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Arithmetics/ArithOP.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/ControlFlow/Repeat.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Arithmetics/ArithOPTypes.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/FFUs/Heater.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/FFUs/Heater.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/FFUs/Mixer.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/FFUs/Mixer.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/FFUs/Splitter.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/FFUs/Splitter.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Misc/Fluid.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Misc/Fluid.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Misc/Input.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Misc/Input.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Misc/Output.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Misc/Output.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Misc/Waste.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Misc/Waste.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Blocks/Sensors/Sensor.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/BlocklyParts/Sensors/Sensor.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Graphs/DFG.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Graphs/DFG.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Graphs/Node.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Graphs/Node.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Modules/Diluter.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Modules/DiluterModule.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Modules/Mixer.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Modules/MixerModule.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Modules/ModuleLibrary.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Modules/ModuleLibrary.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Modules/Sensor.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Modules/SensorModule.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Modules/Storage.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Modules/StorageModule.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Parser/XMLParser.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Parser/XMLParser.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyCompiler/Scheduling/Assay.cs" afterPath="$PROJECT_DIR$/BiolyCompiler/Scheduling/Assay.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyTests/TestModules/TestModuleLibrary.cs" afterPath="$PROJECT_DIR$/BiolyTests/TestModules/TestModuleLibrary.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyTests/UnitTest1.cs" afterPath="$PROJECT_DIR$/BiolyTests/UnitTest1.cs" />
+      <change beforePath="$PROJECT_DIR$/BiolyViewer-Windows/webpage/costum_blocks.js" afterPath="$PROJECT_DIR$/BiolyViewer-Windows/webpage/costum_blocks.js" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="TestModuleLibrary.cs" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/BiolyTests/TestModules/TestModuleLibrary.cs">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="255">
+              <caret line="21" column="45" lean-forward="false" selection-start-line="21" selection-start-column="45" selection-end-line="21" selection-end-column="45" />
+              <folding>
+                <marker date="1519470424712" expanded="false" signature="6:233" ph="..." />
+                <marker date="1519470424712" expanded="true" signature="310:1829" ph="{...}" />
+                <marker date="1519470424712" expanded="true" signature="647:927" ph="{...}" />
+                <marker date="1519470424712" expanded="true" signature="1025:1331" ph="{...}" />
+                <marker date="1519470424712" expanded="true" signature="1425:1822" ph="{...}" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/BiolyTests/TestModules/TestModuleLibrary.cs" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/BiolyTests/TestModules/TestModuleLibrary.cs" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-4" />
+    <option name="width" value="1928" />
+    <option name="height" value="1048" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="SolutionExplorer" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="SolutionExplorer">
+        <subPane>
+          <expand>
+            <path>
+              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
+              <item name="Bioly" type="6f407253:SolutionExplorerNodeFileSystem" />
+            </path>
+            <path>
+              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
+              <item name="Bioly" type="6f407253:SolutionExplorerNodeFileSystem" />
+              <item name="BiolyTests" type="6f407253:SolutionExplorerNodeFileSystem" />
+            </path>
+            <path>
+              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
+              <item name="Bioly" type="6f407253:SolutionExplorerNodeFileSystem" />
+              <item name="BiolyTests" type="6f407253:SolutionExplorerNodeFileSystem" />
+              <item name="TestModules" type="6f407253:SolutionExplorerNodeFileSystem" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+        <option name="show-file-system" value="false" />
+        <option name="show-all-items" value="false" />
+      </pane>
+      <pane id="Scratches" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="HbShouldOpenHtmlAsHb" value="" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="Default" type="DotNetProject" factoryName=".NET Project">
+      <option name="EXE_PATH" value="" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <envs />
+      <option name="USE_MONO" value="0" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="PROJECT_PATH" value="" />
+      <option name="PROJECT_EXE_PATH_TRACKING" value="1" />
+      <option name="PROJECT_ARGUMENTS_TRACKING" value="1" />
+      <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="1" />
+      <option name="PROJECT_KIND" value="None" />
+      <option name="PROJECT_TFM" value="" />
+    </configuration>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6fa0efff-0bce-4940-b438-34564b681c66" name="Default" comment="" />
+      <created>1519469021806</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1519469021806</updated>
+      <workItem from="1519469026620" duration="55000" />
+      <workItem from="1519470434867" duration="55000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="110000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="0" width="1920" height="1044" extended-state="6" />
+    <layout>
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Errors In Solution" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Unit Tests" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="NuGet" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18125" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/BiolyTests/TestModules/TestModuleLibrary.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <marker date="1519470424712" expanded="false" signature="6:233" ph="..." />
+            <marker date="1519470424712" expanded="true" signature="310:1829" ph="{...}" />
+            <marker date="1519470424712" expanded="true" signature="647:927" ph="{...}" />
+            <marker date="1519470424712" expanded="true" signature="1025:1331" ph="{...}" />
+            <marker date="1519470424712" expanded="true" signature="1425:1822" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/BiolyTests/TestModules/TestModuleLibrary.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="21" column="45" lean-forward="false" selection-start-line="21" selection-start-column="45" selection-end-line="21" selection-end-column="45" />
+          <folding>
+            <marker date="1519470424712" expanded="false" signature="6:233" ph="..." />
+            <marker date="1519470424712" expanded="true" signature="310:1829" ph="{...}" />
+            <marker date="1519470424712" expanded="true" signature="647:927" ph="{...}" />
+            <marker date="1519470424712" expanded="true" signature="1025:1331" ph="{...}" />
+            <marker date="1519470424712" expanded="true" signature="1425:1822" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

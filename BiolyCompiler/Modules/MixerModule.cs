@@ -4,10 +4,10 @@ using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
 {
-    public class Mixer : Module
+    public class MixerModule : Module
     {
 
-        public Mixer(int height, int width, int operationTime) : base(height, width, operationTime){
+        public MixerModule(int height, int width, int operationTime) : base(height, width, operationTime){
 
         }
 

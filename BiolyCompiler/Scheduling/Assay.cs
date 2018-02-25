@@ -11,20 +11,24 @@ namespace BiolyCompiler.Scheduling
 
     public class Assay
     {
-        DFG<Block> dfg;
+        public DFG<Block> dfg;
 
         public Assay(DFG<Block> dfg){
             this.dfg = dfg;
+            //Set ready nodes:
+            dfg.nodes.Where(node => node.)
         }
-
 
         public void calculateCriticalPath(){
             
         }
-
+        
 
         public List<Block> getReadyOperations(){
-            return null;
+            List<Block> readyOperations = new List<Block>();
+            dfg.nodes.Where(node => node.value.isReady())
+                     .ForEach(operation => readyOperations.add(operation));
+            return readyOperations;
         }
 
     }

@@ -12,8 +12,12 @@ namespace BiolyCompiler.Modules
 {
     public class ModuleLibrary
     {
-        List<Module> allocatedModules; 
+        public List<Module> allocatedModules; 
         //For now it simply contains the modules that have been allocated. This will be changed later.
+
+        public ModuleLibrary(){
+
+        }
 
         //Orders the modules after their operation times.
         public void sortLibrary(){
@@ -36,10 +40,11 @@ namespace BiolyCompiler.Modules
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
             HashSet<OperationType> operationsUsed = new HashSet<OperationType>();
-            assay.nodes.foreach(x => operationsUsed.add(x.getOperationType()));
+            assay.nodes.ForEach(x => operationsUsed.add(x.getOperationType()));
             
             foreach (var operation in operationsUsed)
             {
+                //Can be implemented as part of the different classes later.
                 switch(operation){
                     case OperationTypes.Mixer:
                         allocatedModules.add(new Mixer(4,4,2000));
@@ -55,8 +60,20 @@ namespace BiolyCompiler.Modules
 
         }
 
-        public Module getAndPlaceFirstPlaceableModule(Block operation, Architechture architechture){
-            return null;
+        public Module getAndPlaceFirstPlaceableModule(Block operation, Board board){
+            //allocatedModules is sorted after operation time, and the fastest module to execute opeartion must be found:
+            Module module;
+            for (int i = 0; i < length; i++){
+                if(allocatedModules[i].getOperationType() == operation.getOperationType()){
+                    module = allocatedModules[i];
+                    break;
+                }
+            }
+            if (module == null) return null;
+
+            boolean canBePlaced = board.place(module);
+            if(!canBePlaced) throw new Exception("Module can't be placed");
+            return module;
         }
     }
 }

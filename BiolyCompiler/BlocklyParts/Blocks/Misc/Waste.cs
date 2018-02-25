@@ -9,17 +9,10 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Misc
     {
         public const string XmlTypeName = "waste";
 
-        public Waste() : base(true)
+        public Waste(List<string> input, string output, XmlNode node) : base(false, input, output)
         {
 
         }
-
-        public override Block TryParseBlock(XmlNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        
         
     }
 }

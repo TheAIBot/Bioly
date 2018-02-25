@@ -14,5 +14,11 @@ namespace BiolyCompiler.Architechtures
         public bool canBePlaced(Module module){
             return false;
         }
+
+        //Based on the algorithm seen in figure 6.3, "Fault-Tolerant Digital Microfluidic Biochips - Compilation and Synthesis"
+        public bool place(Module module){
+            List<Rectangle> = ConstructRectangleList();
+            
+        }
     }
 }

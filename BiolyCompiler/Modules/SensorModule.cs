@@ -3,10 +3,10 @@ using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
 {
-    public class Sensor : Module
+    public class SensorModule : Module
     {
 
-        public Sensor() : base(3, 3, 3000){
+        public SensorModule() : base(3, 3, 3000){
         }
 
 

@@ -16,9 +16,10 @@ namespace BiolyCompiler.Graphs
             nodes.Add(node);
         }
 
-        public void AddEdge(Node<N> source, Node<N> destination)
+        public void AddEdge(Node<N> source, Node<N> target)
         {
-            source.AddEdge(destination);
+            source.AddOutgoingEdge(target);
+            target.AddIngoingEdge(source);
         }
 
         public void AddInput(Node<N> node)

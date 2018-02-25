@@ -18,18 +18,37 @@ namespace BiolyCompiler.Parser
             xmlDocument.LoadXml(xmlText);
 
             XmlNode node = xmlDocument.FirstChild;
-            node = GetNodeWithName(node, "block");
+            node = XmlTools.GetNodeWithName(node, "block");
 
-            CDFG cdfg = new CDFG(); 
-            Queue<DFG<Block>> dfgQueue = new Queue<DFG<Block>>();
-            DFG<Block> currentDFG = new DFG<Block>();
-            do
+            var cdfg = new CDFG();
+            var cfg = new CFG<DFG<Block>>();
+            var dfgQueue = new Queue<(DFG<Block> savedDFG, XmlNode savedNode)>();
+            var currentDFG = new DFG<Block>();
+            while (true)
             {
+                if (IsConditional(node))
+                {
+                    //do something about them
+                    continue;
+                }
 
+                Block block = GetBlock(node);
+                Node<Block> dfgNode = new Node<Block>();
+                dfgNode.value = block;
 
-            } while (GetNodeWithName(node, "next") != null);
+                node = XmlTools.GetNodeWithName(node, "next");
+                if (node == null)
+                {
+                    break;
+                }
+            }
 
-            return null;
+            return cdfg;
+        }
+
+        private static bool IsConditional(XmlNode node)
+        {
+            return node.GetNodeWithName("statement") != null;
         }
 
         private static Block GetBlock(XmlNode node)
@@ -38,36 +57,18 @@ namespace BiolyCompiler.Parser
             switch (blockType)
             {
                 case Fluid.XmlTypeName:
-                    return new Fluid();
+                    return Fluid.TryParseBlock(node);
                 case Input.XmlTypeName:
-                    return new Input();
+                    return Input.TryParseBlock(node);
                 case Output.XmlTypeName:
-                    return new Output();
+                    return Output.TryParseBlock(node);
                 case Waste.XmlTypeName:
-                    return new Waste();
-                case Heater.XmlTypeName:
-                    return new Heater();
-                case Mixer.XmlTypeName:
-                    return new Mixer();
-                case Splitter.XmlTypeName:
-                    return new Splitter();
-                case Sensor.XmlTypeName:
-                    return new Sensor();
+                    return Waste.TryParseBlock(node);
+                //case Sensor.XmlTypeName:
+                //    return new Sensor();
                 default:
                     throw new Exception("Invalid type: " + blockType);
             }
-        }
-
-        private static XmlNode GetNodeWithName(XmlNode xmlNode, string name)
-        {
-            foreach (XmlNode item in xmlNode.ChildNodes)
-            {
-                if (item.Name == name)
-                {
-                    return item;
-                }
-            }
-            return null;
         }
     }
 }
