@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BiolyCompiler
 {
-    internal enum FluidUnit
+    public enum FluidUnit
     {
         drops,
         ml

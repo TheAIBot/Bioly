@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.FFUs
+namespace BiolyCompiler.BlocklyParts.FFUs
 {
-    internal class Heater : Block
+    public class Heater : Block
     {
         private const string TemperatureName = "temperature";
         private const string TimeName = "time";

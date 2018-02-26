@@ -4,15 +4,15 @@ using System.Text;
 
 namespace BiolyCompiler.Graphs
 {
-    class DFG<N>
+    public class DFG<N>
     {
-        private readonly List<Node<N>> nodes = new List<Node<N>>();
-        private readonly List<Node<N>> input = new List<Node<N>>();
-        private readonly List<Node<N>> output = new List<Node<N>>();
+        public readonly List<Node<N>> Nodes = new List<Node<N>>();
+        public readonly List<Node<N>> Input = new List<Node<N>>();
+        public readonly List<Node<N>> Output = new List<Node<N>>();
 
         public void AddNode(Node<N> node)
         {
-            nodes.Add(node);
+            Nodes.Add(node);
         }
 
         public void AddEdge(Node<N> source, Node<N> destination)
@@ -22,12 +22,12 @@ namespace BiolyCompiler.Graphs
 
         public void AddInput(Node<N> node)
         {
-            input.Add(node);
+            Input.Add(node);
         }
 
         public void AddOutput(Node<N> node)
         {
-            output.Add(node);
+            Output.Add(node);
         }
     }
 }

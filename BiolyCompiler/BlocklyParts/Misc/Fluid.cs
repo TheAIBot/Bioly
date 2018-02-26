@@ -3,11 +3,11 @@ using BiolyCompiler.Parser;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
-using BiolyCompiler.BlocklyParts.Blocks.FFUs;
+using BiolyCompiler.BlocklyParts.FFUs;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.Misc
+namespace BiolyCompiler.BlocklyParts.Misc
 {
-    internal class Fluid : Block
+    public class Fluid : Block
     {
         private const string InputFluidName = "inputFluid";
         private const string OutputFluidName = "fluidName";
@@ -17,19 +17,19 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Misc
         {
         }
 
-        public static Block CreateFluid(string output, XmlNode node)
+        private static Block CreateFluid(string output, XmlNode node)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.GetNodeWithName(InputFluidName).InnerText);
+            inputs.Add(node.InnerText);
 
             return new Fluid(inputs, output, node);
         }
 
-        public static Block TryParseBlock(XmlNode node)
+        public static Block Parse(XmlNode node)
         {
-            string output = node.GetNodeWithName(OutputFluidName).Value;
-            XmlNode innerNode = node.GetNodeWithName(InputFluidName).FirstChild;
-            switch (innerNode.Name)
+            string output = node.GetNodeWithAttributeValue(OutputFluidName).InnerText;
+            XmlNode innerNode = node.GetNodeWithAttributeValue(InputFluidName).FirstChild;
+            switch (innerNode.Attributes["type"].Value)
             {
                 case Heater.XmlTypeName:
                     return Heater.CreateHeater(output, innerNode);

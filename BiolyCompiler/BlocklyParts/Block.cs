@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.Blocks
+namespace BiolyCompiler.BlocklyParts
 {
-    public abstract class Block : IBlocklyPart
+    public abstract class Block
     {
         public readonly bool CanBeOutput;
         public readonly IReadOnlyList<string> InputVariables;

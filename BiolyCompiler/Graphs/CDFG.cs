@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.BlocklyParts.Blocks;
+﻿using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.Blocks;
 using System;
 using System.Collections.Generic;
 using System.Text;

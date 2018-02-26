@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.Misc
+namespace BiolyCompiler.BlocklyParts.Misc
 {
-    internal class Waste : Block
+    public class Waste : Block
     {
         public const string XmlTypeName = "waste";
 

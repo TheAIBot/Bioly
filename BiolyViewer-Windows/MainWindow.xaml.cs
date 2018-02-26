@@ -29,7 +29,7 @@ namespace BiolyViewer_Windows
             settings.RegisterScheme(new CefCustomScheme
             {
                 SchemeName = "costum",
-                SchemeHandlerFactory = new FolderSchemeHandlerFactory(rootFolder: @"../../../webpage"),
+                SchemeHandlerFactory = new FolderSchemeHandlerFactory(rootFolder: @"../../../../webpage"),
                 IsSecure = true
             });
 

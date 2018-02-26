@@ -1,11 +1,12 @@
 ﻿using System;
+using BiolyCompiler.Parser;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.Misc
+namespace BiolyCompiler.BlocklyParts.Misc
 {
-    internal class Input : Block
+    public class Input : Block
     {
         private const string InputFluidName = "inputName";
         private const string InputAmount = "inputAmount";
@@ -16,12 +17,14 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Misc
 
         public Input(string output, XmlNode node) : base(true, output)
         {
-
+            this.Amount = node.GetNodeWithAttributeValue(InputAmount).TextToInt();
+            this.Unit = (FluidUnit)node.GetNodeWithAttributeValue(FluidUnitName).TextToInt();
         }
 
-        public static Block TryParseBlock(XmlNode node)
+        public static Block Parse(XmlNode node)
         {
-
+            string output = node.GetNodeWithAttributeValue(InputFluidName).InnerText;
+            return new Input(output, node);
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.Sensors
+namespace BiolyCompiler.BlocklyParts.Sensors
 {
     public class Sensor : Block
     {

@@ -1,20 +1,15 @@
-﻿using System;
+﻿using BiolyCompiler.BlocklyParts.BoolLogic;
+using BiolyCompiler.Graphs;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Blocks.ControlFlow
 {
-    internal class Conditional : Block
+    public class Conditional
     {
-        public Conditional() : base(false)
-        {
-
-        }
-
-        public override Block TryParseBlock(XmlNode node)
-        {
-            throw new NotImplementedException();
-        }
+        public readonly Bool decidingNode;
+        public readonly DFG<Block> dfg;
     }
 }

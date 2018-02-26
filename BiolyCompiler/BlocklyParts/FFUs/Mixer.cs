@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.FFUs
+namespace BiolyCompiler.BlocklyParts.FFUs
 {
-    internal class Mixer : Block
+    public class Mixer : Block
     {
         private const string FirstInputName = "inputFluidA";
         private const string SecondInputName = "inputFluidB";

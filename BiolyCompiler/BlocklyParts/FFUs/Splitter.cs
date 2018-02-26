@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.FFUs
+namespace BiolyCompiler.BlocklyParts.FFUs
 {
-    internal class Splitter : Block
+    public class Splitter : Block
     {
         private const string FluidAmountName = "fluidAmount";
         private const string InputFluidName = "inputFluid";
