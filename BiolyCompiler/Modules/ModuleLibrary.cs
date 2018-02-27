@@ -60,18 +60,27 @@ namespace BiolyCompiler.Modules
 
         }
 
-        public Module getAndPlaceFirstPlaceableModule(Block operation, Board board){
-            //allocatedModules is sorted after operation time, and the fastest module to execute opeartion must be found:
-            Module module;
-            for (int i = 0; i < length; i++){
-                if(allocatedModules[i].getOperationType() == operation.getOperationType()){
+        public Module getOptimalModule(Block operation)
+        {
+            Module module = null;
+            for (int i = 0; i < allocatedModules.Count; i++)
+            {
+                //The modules are sorted after speed,
+                //so it will chose the fastest module that can execute the operation.
+                if (allocatedModules[i].getOperationType() == operation.getOperationType())
+                {
                     module = allocatedModules[i];
                     break;
                 }
             }
+            return module;
+        }
+
+        public Module getAndPlaceFirstPlaceableModule(Block operation, Board board){
+            Module module = getOptimalModule(operation);
             if (module == null) return null;
 
-            boolean canBePlaced = board.place(module);
+            bool canBePlaced = board.place(module);
             if(!canBePlaced) throw new Exception("Module can't be placed");
             return module;
         }

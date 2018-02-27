@@ -17,6 +17,54 @@ namespace BiolyCompiler.Scheduling
 
         }
 
+
+        public static Tuple<int, Schedule> SequentialScheduling(Assay assay, Architechture architecture, ModuleLibrary library)
+        {
+            Board board = new Board(architecture.width, architecture.heigth);
+            assay.calculateCriticalPath();
+            library.allocateModules(assay);
+            library.sortLibrary();
+            List<Block> readyOperations = assay.getReadyOperations();
+            while(readyOperations.Count > 0)
+            {
+                Block operation = removeOperation(readyOperations);
+                Module module = library.getOptimalModule(operation);
+                bool canBePlaced = board.sequantiallyPlace(module);
+                if (!canBePlaced)
+                {
+                    throw new Exception("Not enough space for module: " + module.ToString() + 
+                                        ", on board: " + board.ToString());
+                }
+                operation.Bind(module);
+                updateSchedule(operation);
+                waitForAFinishedOperation();
+
+                board = getCurrentBoard();
+                assay.updateReadyOperations(operation);
+                readyOperations = assay.getReadyOperations();
+                
+                //It routes after placement of component.
+
+            }
+
+            return null;
+        }
+
+        private static Board getCurrentBoard()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void updateSchedule(Block operation)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void waitForAFinishedOperation()
+        {
+            throw new NotImplementedException();
+        }
+
         /**
             Implements/based on the list scheduling based algorithm found in 
             "Fault-tolerant digital microfluidic biochips - compilation and synthesis" page 72.
@@ -40,7 +88,8 @@ namespace BiolyCompiler.Scheduling
                 Module module   = library.getAndPlaceFirstPlaceableModule(operation, board); //Also called place
                 //If the module can't be placed, one must wait until there is enough place for it.
                 int timeStart;
-                if (module == null) {}
+                if (module == null) {
+                    //Routing should be done here. (*)
                     timeStart = waitForAFinishedOperation();
                 } else{
                     //TODO What if there is no module that can be placed?(*)

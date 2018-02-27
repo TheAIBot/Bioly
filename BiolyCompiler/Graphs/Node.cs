@@ -17,7 +17,19 @@ namespace BiolyCompiler.Graphs
 
         public void AddIngoingEdge(Node<N> source)
         {
-            ingoingEdges.Add(target);
+            ingoingEdges.Add(source);
         }
+
+        public List<Node<N>> getIngoingEdges()
+        {
+            return ingoingEdges;
+        }
+
+
+        public List<Node<N>> getOutgoingEdges()
+        {
+            return ingoingEdges;
+        }
+
     }
 }

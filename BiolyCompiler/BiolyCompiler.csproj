@@ -15,4 +15,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib">
+      <HintPath>..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7\mscorlib.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core">
+      <HintPath>..\..\..\..\Windows\winsxs\x86_netfx35linq-system.core_31bf3856ad364e35_6.1.7601.17514_none_6161fc35ed136622\System.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

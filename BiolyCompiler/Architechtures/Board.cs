@@ -33,6 +33,11 @@ namespace BiolyCompiler.Architechtures
             }
         }
 
+        internal bool sequantiallyPlace(Module module)
+        {
+            throw new NotImplementedException();
+        }
+
         private Rectangle SelectRectangle(Module module){
             List<Rectangle> fittingRectangles = emptyRectangles.Where(emptyRectangle => emptyRectangle.fits(module.rectangle));
             int bestFitValue = -1;

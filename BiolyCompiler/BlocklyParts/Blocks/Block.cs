@@ -33,5 +33,10 @@ namespace BiolyCompiler.BlocklyParts.Blocks
         public virtual OperationType getOperationType(){
             return getOperationType.Unknown;
         }
+
+        internal void Bind(Module module)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

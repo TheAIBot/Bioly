@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BiolyCompiler.Modules;
 
 namespace BiolyCompiler.Architechtures
@@ -6,6 +7,8 @@ namespace BiolyCompiler.Architechtures
     public class Architechture
     {
         //Dummy class for now.
+
+        public int heigth, width;
 
         public Architechture(){
 
@@ -17,8 +20,8 @@ namespace BiolyCompiler.Architechtures
 
         //Based on the algorithm seen in figure 6.3, "Fault-Tolerant Digital Microfluidic Biochips - Compilation and Synthesis"
         public bool place(Module module){
-            List<Rectangle> = ConstructRectangleList();
-            
+            return false;
         }
+        
     }
 }
