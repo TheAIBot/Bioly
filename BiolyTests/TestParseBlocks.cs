@@ -1,9 +1,7 @@
 ﻿using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Misc;
-using CefSharp;
-using CefSharp.OffScreen;
-using CefSharp.SchemeHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,31 +16,38 @@ namespace BiolyTests
     [TestClass]
     public class TestParseBlocks
     {
+        [TestInitialize()]
+        public void ClearWorkspace() => TestTools.ClearWorkspace();
+
         [TestMethod]
         public void ParseInputBlock()
         {
-            string js = "workspace.newBlock(\"input\");" +
-                        "const xml = Blockly.Xml.workspaceToDom(workspace);" +
-                        "return Blockly.Xml.domToText(xml);";
-            string xml = ExecuteJS(js);
-            XmlNode node = StringToXmlNode(xml);
+            string js = "workspace.newBlock(\"input\");";
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
             Block input = Input.Parse(node);
         }
 
-        private string ExecuteJS(string js)
+        [TestMethod]
+        public void ParseHeaterBlock()
         {
-            ChromiumWebBrowser browser = TestTools.CreateBrowser();
-            return (string)browser.EvaluateScriptAsync(js).Result.Result;
-        }
+            string js = @"
+                        const newFluid   = workspace.newBlock(""fluid"");
+                        const heater     = workspace.newBlock(""heat"");
+                        const fluidInput = workspace.newBlock(""getInput"");
 
-        private XmlNode StringToXmlNode(string xmlText)
-        {
-            XmlDocument xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(xmlText);
+                        const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
+                        const heaterIn      = heater.getInput(""inputFluid"").connection;
+                        const heaterOut     = heater.outputConnection;
+                        const fluidInputOut = fluidInput.outputConnection;
 
-            //first child is the root xml node,
-            //second is the first block which is what we want
-            return xmlDocument.FirstChild.FirstChild;
+                        newFluidIn.connect(heaterOut);
+                        heaterIn.connect(fluidInputOut);";
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
+            Block input = Fluid.Parse(node);
         }
     }
 }

@@ -5,9 +5,9 @@ using System.Xml;
 
 namespace BiolyCompiler.Parser
 {
-    internal static class XmlTools
+    public static class XmlTools
     {
-        internal static XmlNode GetNodeWithName(this XmlNode xmlNode, string name)
+        public static XmlNode GetNodeWithName(this XmlNode xmlNode, string name)
         {
             foreach (XmlNode item in xmlNode.ChildNodes)
             {

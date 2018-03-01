@@ -31,7 +31,7 @@ Blockly.Blocks["input"] = {
 			"message2": "amount %1 %2",
 			"args2": [
 				{
-					"type": "field_input",
+					"type": "field_number",
 					"name": "inputAmount",
 					"check": "Number"
 				},
