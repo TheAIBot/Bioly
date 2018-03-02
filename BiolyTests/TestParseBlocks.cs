@@ -79,5 +79,28 @@ namespace BiolyTests
 
             Assert.IsTrue(input is Mixer);
         }
+
+        [TestMethod]
+        public void ParseSplitterBlock()
+        {
+            string js = @"
+                        const newFluid   = workspace.newBlock(""fluid"");
+                        const splitter   = workspace.newBlock(""splitter"");
+                        const fluidInput = workspace.newBlock(""getInput"");
+
+                        const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
+                        const heaterIn      = splitter.getInput(""inputFluid"").connection;
+                        const heaterOut     = splitter.outputConnection;
+                        const fluidInputOut = fluidInput.outputConnection;
+
+                        newFluidIn.connect(heaterOut);
+                        heaterIn.connect(fluidInputOut);";
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
+            Block input = Fluid.Parse(node);
+
+            Assert.IsTrue(input is Splitter);
+        }
     }
 }

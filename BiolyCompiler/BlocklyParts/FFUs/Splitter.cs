@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public Splitter(List<string> input, string output, XmlNode node) : base(true, input, output)
         {
-            this.FluidAmount = node.GetNodeWithName(FluidAmountName).ToInt();
+            this.FluidAmount = node.GetNodeWithAttributeValue(FluidAmountName).TextToInt();
         }
 
         public static Block CreateSplitter(string output, XmlNode node)
