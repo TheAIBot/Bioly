@@ -21,7 +21,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public static Block CreateSplitter(string output, XmlNode node)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.GetNodeWithName(InputFluidName).InnerText);
+            inputs.Add(node.GetNodeWithAttributeValue(InputFluidName).InnerText);
 
             return new Splitter(inputs, output, node);
         }

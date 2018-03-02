@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -34,7 +35,7 @@ namespace BiolyTests
         {
             string js = @"
                         const newFluid   = workspace.newBlock(""fluid"");
-                        const heater     = workspace.newBlock(""heat"");
+                        const heater     = workspace.newBlock(""heater"");
                         const fluidInput = workspace.newBlock(""getInput"");
 
                         const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
@@ -48,6 +49,35 @@ namespace BiolyTests
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = Fluid.Parse(node);
+
+            Assert.IsTrue(input is Heater);
+        }
+
+        [TestMethod]
+        public void ParseMixerBlock()
+        {
+            string js = @"
+                        const newFluid    = workspace.newBlock(""fluid"");
+                        const mixer       = workspace.newBlock(""mixer"");
+                        const fluidInputA = workspace.newBlock(""getInput"");
+                        const fluidInputB = workspace.newBlock(""getInput"");
+
+                        const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
+                        const mixerInA      = mixer.getInput(""inputFluidA"").connection;
+                        const mixerInB      = mixer.getInput(""inputFluidB"").connection;
+                        const heaterOut     = mixer.outputConnection;
+                        const fluidInputAOut = fluidInputA.outputConnection;
+                        const fluidInputBOut = fluidInputB.outputConnection;
+
+                        newFluidIn.connect(heaterOut);
+                        mixerInA.connect(fluidInputAOut);
+                        mixerInB.connect(fluidInputBOut);";
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
+            Block input = Fluid.Parse(node);
+
+            Assert.IsTrue(input is Mixer);
         }
     }
 }

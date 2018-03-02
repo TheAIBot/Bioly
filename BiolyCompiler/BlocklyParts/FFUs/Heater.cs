@@ -17,14 +17,14 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public Heater(List<string> input, string output, XmlNode node) : base(true, input, output)
         {
-            this.Temperature = node.GetNodeWithName(TemperatureName).ToInt();
-            this.Time = node.GetNodeWithName(TimeName).ToInt();
+            this.Temperature = node.GetNodeWithAttributeValue(TemperatureName).TextToInt();
+            this.Time = node.GetNodeWithAttributeValue(TimeName).TextToInt();
         }
 
         public static Block CreateHeater(string output, XmlNode node)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.GetNodeWithName(InputFluidName).InnerText);
+            inputs.Add(node.GetNodeWithAttributeValue(InputFluidName).InnerText);
 
             return new Heater(inputs, output, node);
         }

@@ -23,7 +23,7 @@ namespace BiolyTests
         public static void AssemblyInit(TestContext context)
         {
             ChromeOptions options = new ChromeOptions();
-            //options.AddArgument("--headless");
+            options.AddArgument("--headless");
 
             IWebDriver browser = new ChromeDriver(options);
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;

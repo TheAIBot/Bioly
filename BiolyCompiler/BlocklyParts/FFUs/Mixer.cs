@@ -20,8 +20,8 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public static Block CreateMixer(string output, XmlNode node)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.GetNodeWithName(FirstInputName).InnerText);
-            inputs.Add(node.GetNodeWithName(SecondInputName).InnerText);
+            inputs.Add(node.GetNodeWithAttributeValue(FirstInputName).InnerText);
+            inputs.Add(node.GetNodeWithAttributeValue(SecondInputName).InnerText);
 
             return new Mixer(inputs, output, node);
         }
