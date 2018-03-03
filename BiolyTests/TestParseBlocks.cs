@@ -1,6 +1,9 @@
 ﻿using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.Arithmetics;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Graphs;
+using BiolyCompiler.Parser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using System;
@@ -23,11 +26,11 @@ namespace BiolyTests
         [TestMethod]
         public void ParseInputBlock()
         {
-            string js = "workspace.newBlock(\"input\");";
+            string js = @"workspace.newBlock(""input"");";
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = Input.Parse(node);
+            Block input = XMLParser.ParseBlock(node, null);
         }
 
         [TestMethod]
@@ -48,7 +51,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = Fluid.Parse(node);
+            Block input = XMLParser.ParseBlock(node, null);
 
             Assert.IsTrue(input is Heater);
         }
@@ -75,7 +78,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = Fluid.Parse(node);
+            Block input = XMLParser.ParseBlock(node, null);
 
             Assert.IsTrue(input is Mixer);
         }
@@ -98,9 +101,45 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = Fluid.Parse(node);
+            Block input = XMLParser.ParseBlock(node, null);
 
             Assert.IsTrue(input is Splitter);
+        }
+
+        [TestMethod]
+        public void ParseConstantBlock()
+        {
+            string js = @"workspace.newBlock(""math_number"");";
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
+            Block input = XMLParser.ParseBlock(node, null);
+
+            Assert.IsTrue(input is Constant);
+        }
+
+        [TestMethod]
+        public void ParseArithOPBlock()
+        {
+            string js = @"
+                        const const1 = workspace.newBlock(""math_number"");
+                        const const2 = workspace.newBlock(""math_number"");
+                        const arithOP = workspace.newBlock(""math_arithmetic"");
+
+                        const const1In = arithOP.getInput(""A"").connection;
+                        const const2In = arithOP.getInput(""B"").connection;
+                        const const1Out = const1.outputConnection;
+                        const const2Out = const2.outputConnection;
+
+                        const1In.connect(const1Out);
+                        const2In.connect(const2Out);";
+                        
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
+            Block input = XMLParser.ParseBlock(node, new DFG<Block>());
+
+            Assert.IsTrue(input is ArithOP);
         }
     }
 }

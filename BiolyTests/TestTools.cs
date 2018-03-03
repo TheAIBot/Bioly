@@ -64,8 +64,8 @@ namespace BiolyTests
 
         public static XmlNode GetWorkspace()
         {
-            string js = "const xml = Blockly.Xml.workspaceToDom(workspace);" +
-                        "return Blockly.Xml.domToText(xml);";
+            string js = @"const xml = Blockly.Xml.workspaceToDom(workspace);
+                          return Blockly.Xml.domToText(xml);";
             string xml = ExecuteJS(js);
             return StringToXmlBlock(xml);
         }
