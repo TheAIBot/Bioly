@@ -10,6 +10,16 @@ namespace BiolyCompiler.Graphs
         private List<Node<N>> ingoingEdges = new List<Node<N>>();
         public N value;
 
+
+        public Node()
+        {
+        }
+
+        public Node(N value)
+        {
+            this.value = value;
+        }
+
         public void AddOutgoingEdge(Node<N> target)
         {
             outgoingEdges.Add(target);
@@ -28,7 +38,7 @@ namespace BiolyCompiler.Graphs
 
         public List<Node<N>> getOutgoingEdges()
         {
-            return ingoingEdges;
+            return outgoingEdges;
         }
 
     }

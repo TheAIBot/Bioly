@@ -7,7 +7,7 @@ using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.BlocklyParts.Blocks.FFUs
 {
-    internal class Mixer : Block
+    public class Mixer : Block
     {
         private const string FirstInputName = "inputFluidA";
         private const string SecondInputName = "inputFluidB";

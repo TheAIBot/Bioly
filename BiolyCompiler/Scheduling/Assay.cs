@@ -27,12 +27,11 @@ namespace BiolyCompiler.Scheduling
             
         }
         
-
         public List<Block> getReadyOperations(){
             return readyOperations;
         }
         
-        internal void updateReadyOperations(Block operation)
+        public void updateReadyOperations(Block operation)
         {
             operation.hasBeenScheduled = true;
             readyOperations.Remove(operation); //TODO(*) make equals method for blocks.
@@ -40,6 +39,7 @@ namespace BiolyCompiler.Scheduling
 
             Node<Block> operationNode;
             operationToNode.TryGetValue(operation, out operationNode);
+            List<Node<Block>> outgoingEdges = operationNode.getOutgoingEdges();
 
             foreach (var successorOperationNode in operationNode.getOutgoingEdges())
             {

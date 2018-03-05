@@ -5,8 +5,10 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Blocks.ControlFlow
 {
+    /*
     internal class Conditional : Block
     {
+        
         public Conditional() : base(false)
         {
 
@@ -17,4 +19,7 @@ namespace BiolyCompiler.BlocklyParts.Blocks.ControlFlow
             throw new NotImplementedException();
         }
     }
+    
+    */
+
 }

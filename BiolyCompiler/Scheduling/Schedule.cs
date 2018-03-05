@@ -1,5 +1,6 @@
 using System;
 using BiolyCompiler.Graphs;
+using MoreLinq;
 using BiolyCompiler.Modules;
 using System.Collections.Generic;
 using BiolyCompiler.Architechtures;
@@ -29,10 +30,17 @@ namespace BiolyCompiler.Scheduling
             {
                 Block operation = removeOperation(readyOperations);
                 Module module = library.getOptimalModule(operation);
-                bool canBePlaced = board.sequantiallyPlace(module);
+                board.removeAllDroplets();
+                bool canBePlaced = board.sequentiallyPlace(module);
                 if (!canBePlaced)
                 {
                     throw new Exception("Not enough space for module: " + module.ToString() + 
+                                        ", on board: " + board.ToString());
+                }
+                bool canDropletsBeStored = board.placeAllDroplets();
+                if (!canDropletsBeStored)
+                {
+                    throw new Exception("Not enough space for the droplets, and for the module: " + module.ToString() +
                                         ", on board: " + board.ToString());
                 }
                 operation.Bind(module);
@@ -75,7 +83,7 @@ namespace BiolyCompiler.Scheduling
             //so that the dynamic algorithm doesn't have to handle this.
             //PlaceFixedModules(); //TODO implement.
 
-            Board board = new Board(architecture.getBoardHeigth, architecture.getBoardWidth); //The board is initially empty
+            Board board = new Board(architecture.heigth, architecture.width); //The board is initially empty
 
             //Many optimization can be made to this method (later)
             Schedule schedule = new Schedule(); //Initially empty
@@ -83,19 +91,19 @@ namespace BiolyCompiler.Scheduling
             library.allocateModules(assay); 
             library.sortLibrary();
             List<Block> readyOperations = assay.getReadyOperations();
+            int timeStart = 0;
             while(readyOperations.Count > 0){
                 Block operation = removeOperation(readyOperations);
                 Module module   = library.getAndPlaceFirstPlaceableModule(operation, board); //Also called place
                 //If the module can't be placed, one must wait until there is enough place for it.
-                int timeStart;
                 if (module == null) {
                     //Routing should be done here. (*)
-                    timeStart = waitForAFinishedOperation();
+                        waitForAFinishedOperation();
                 } else{
                     //TODO What if there is no module that can be placed?(*)
                     operation.Bind(module); //TODO make modules unique
                     //Route route   = determineRouteToModule(operation, module, architecture); //Will be included as part of a later step.
-                    timeStart = updateSchedule(operation, schedule, route, currentPlacedModules); 
+                    timeStart = updateSchedule(operation, schedule); 
                 }
 
                 board = getCurrentBoard();
@@ -105,6 +113,10 @@ namespace BiolyCompiler.Scheduling
             return Tuple.Create(schedule.getCompletionTime(), schedule);
         }
 
+        private static int updateSchedule(Block operation, Schedule schedule)
+        {
+            throw new NotImplementedException();
+        }
 
         public int getCompletionTime(){
             return 0;
@@ -123,13 +135,11 @@ namespace BiolyCompiler.Scheduling
         }
 
         public static Block removeOperation(List<Block> readyOperations){
-            Block operation = readyOperations[0];
-            readyOperations.RemoveAt(0);
-            return operation;
+            Block topPrioriyOperation = readyOperations.MaxBy(operation => operation.priority);
+            readyOperations.Remove(topPrioriyOperation);
+            return topPrioriyOperation;
         }
-
-
-
+                
     }
 
 

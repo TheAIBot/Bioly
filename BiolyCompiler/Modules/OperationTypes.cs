@@ -9,7 +9,7 @@ namespace BiolyCompiler.Modules.OperationTypes
         Diluter,
         Mixer,
         Sensor,
-        Storage,
+        DropletStorage,
         Unknown,
     }
 }

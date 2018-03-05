@@ -13,5 +13,10 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Misc
         {
 
         }
+
+        internal static Block TryParseBlock(XmlNode node)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

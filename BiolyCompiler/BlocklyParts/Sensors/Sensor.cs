@@ -14,7 +14,7 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Sensors
         {
 
         }
-        public override Block TryParseBlock(XmlNode node)
+        public Block TryParseBlock(XmlNode node)
         {
             throw new NotImplementedException();
         }

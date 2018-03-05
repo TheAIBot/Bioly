@@ -4,6 +4,7 @@ using System.Linq;
 using BiolyCompiler.Architechtures;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.BlocklyParts.Blocks;
 using BiolyCompiler.Scheduling;
 
@@ -12,7 +13,7 @@ namespace BiolyCompiler.Modules
 {
     public class ModuleLibrary
     {
-        public List<Module> allocatedModules; 
+        public List<Module> allocatedModules = new List<Module>(); 
         //For now it simply contains the modules that have been allocated. This will be changed later.
 
         public ModuleLibrary(){
@@ -40,20 +41,20 @@ namespace BiolyCompiler.Modules
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
             HashSet<OperationType> operationsUsed = new HashSet<OperationType>();
-            assay.nodes.ForEach(x => operationsUsed.add(x.getOperationType()));
+            operationsUsed.UnionWith(assay.dfg.nodes.Select(node => node.value.getOperationType()));
             
             foreach (var operation in operationsUsed)
             {
                 //Can be implemented as part of the different classes later.
                 switch(operation){
-                    case OperationTypes.Mixer:
-                        allocatedModules.add(new Mixer(4,4,2000));
+                    case OperationType.Mixer:
+                        allocatedModules.Add(new MixerModule(4,4,2000));
                         break;
-                    case OperationTypes.Sensor:
-                        allocatedModules.add(new Sensor());
+                    case OperationType.Sensor:
+                        allocatedModules.Add(new SensorModule());
                         break;
                     default:
-                        throw new Exception("Operations of type " + operation.toString() + " not handled in the allocation phase");
+                        throw new Exception("Operations of type " + operation.ToString() + " not handled in the allocation phase");
                         break;
                 }
             }
@@ -73,6 +74,12 @@ namespace BiolyCompiler.Modules
                     break;
                 }
             }
+
+            if (module == null)
+            {
+                throw new Exception("No allocated modules implements operations of type \" " + operation.getOperationType().ToString() + "\"");
+            }
+
             return module;
         }
 

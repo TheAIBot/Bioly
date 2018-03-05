@@ -21,6 +21,7 @@ namespace BiolyCompiler.BlocklyParts.Blocks.Misc
 
         public static Block TryParseBlock(XmlNode node)
         {
+            throw new NotImplementedException();
 
         }
         

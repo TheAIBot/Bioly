@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.Blocks
         //For the scheduling:
         public Module boundedModule;
         public bool hasBeenScheduled = false;
-        public int estimatedLongestPath = Int32.MaxValue;
+        public int priority = Int32.MaxValue;
         private static readonly List<string> EmptyList = new List<string>();
 
         public Block(bool canBeOutput, string output) : this(canBeOutput, EmptyList, output)
@@ -31,7 +31,7 @@ namespace BiolyCompiler.BlocklyParts.Blocks
 
 
         public virtual OperationType getOperationType(){
-            return getOperationType.Unknown;
+            return OperationType.Unknown;
         }
 
         internal void Bind(Module module)
