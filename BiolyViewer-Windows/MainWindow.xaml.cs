@@ -1,4 +1,5 @@
-﻿using CefSharp;
+﻿using BiolyCompiler.Graphs;
+using CefSharp;
 using CefSharp.SchemeHandler;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,47 @@ namespace BiolyViewer_Windows
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Browser.Load("costum://index.html");
+
+            System.Timers.Timer timer = new System.Timers.Timer();
+            timer.Interval = 500;
+            timer.Elapsed += UpdateGraph;
+            timer.Start();
+        }
+
+        private void UpdateGraph(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            string xml = (string)Browser.GetMainFrame().EvaluateScriptAsync("return getWorkspaceAsXml();", null).Result.Result;
+            try
+            {
+                CDFG cdfg = BiolyCompiler.Parser.XmlParser.Parse(xml);
+                (string nodes, string edges) = DFGToSimpleNE(cdfg.StartDFG);
+                Browser.ExecuteScriptAsync("setGraph(" + nodes + ", " + edges + ")");
+            }
+            catch (Exception)
+            {
+                return;
+            }
+        }
+
+        private (string nodes, string edges) DFGToSimpleNE(DFG<BiolyCompiler.BlocklyParts.Block> dfg)
+        {
+            string nodes = "";
+            string edges = "";
+
+            foreach (Node<BiolyCompiler.BlocklyParts.Block> node in dfg.Nodes)
+            {
+                nodes += "{ data: { id: '" + node.value.OutputVariable + "' } },";
+
+                foreach (Node<BiolyCompiler.BlocklyParts.Block> edgeNode in node.Edges)
+                {
+                    edges += "{ data: { source: '" + node.value.OutputVariable + "', target: '" + edgeNode.value.OutputVariable + "' } },";
+                }
+            }
+
+            nodes = "[" + nodes + "]";
+            edges = "[" + edges + "]";
+
+            return (nodes, edges);
         }
     }
 }

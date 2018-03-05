@@ -7,21 +7,30 @@
 		<script src="blocks_compressed.js"></script>
 		<script src="en.js"></script>
 		<script src="costum_blocks.js"></script>
+		<script src="cytoscape.js"></script>
+		<script src="cytoscape-dagre.js"></script>
+		<script src="helperFunctions.js"></script>
 		<style>
 			body {
-			background-color: #fff;
-			font-family: sans-serif;
+				background-color: #fff;
+				font-family: sans-serif;
 			}
 			h1 {
-			font-weight: normal;
-			font-size: 140%;
+				font-weight: normal;
+				font-size: 140%;
+			}
+			#graphDiv {
+				width: 300px;
+				height: 300px;
+				display: block;
 			}
 		</style>
 	</head>
 	<body>
 		<button onclick="save();">save</button>
-		<button onclick="load();alert('asda');">load</button>
-		<div id="blocklyDiv" style="height: 680px; width: 800px;"></div>
+		<button onclick="load();">load</button>
+		<div id="blocklyDiv" style="height: 500px; width: 800px;"></div>
+		<div id="graphDiv" style="height: 500px; width: 800px;"></div>
 		<xml id="toolbox" style="display: none">
 			<category name="Control">
 				<block type="controls_if"></block>
