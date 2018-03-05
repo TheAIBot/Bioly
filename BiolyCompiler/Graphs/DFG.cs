@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BiolyCompiler.BlocklyParts;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -20,14 +21,19 @@ namespace BiolyCompiler.Graphs
             source.AddEdge(destination);
         }
 
-        public void AddInput(Node<N> node)
+        public void FinishDFG()
         {
-            Input.Add(node);
-        }
-
-        public void AddOutput(Node<N> node)
-        {
-            Output.Add(node);
+            foreach (Node<N> node in Nodes)
+            {
+                if (node.EdgesToThis.Count == 0)
+                {
+                    Input.Add(node);
+                }
+                if (node.Edges.Count == 0 && node.value is Block && (node.value as Block).CanBeOutput)
+                {
+                    Output.Add(node);
+                }
+            }
         }
     }
 }

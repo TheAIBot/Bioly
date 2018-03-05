@@ -22,17 +22,20 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             {
                 XmlNode decidingNode = ifNode.FirstChild;
                 Block decidingBlock = XmlParser.ParseAndAddNodeToDFG(decidingNode, dfg, mostRecentRef);
-                XmlNode guardedDFGNode = ifNode.GetNodeWithAttributeValue($"DO{ifCounter}").FirstChild;
+                XmlNode guardedDFGNode = node.GetNodeWithAttributeValue($"DO{ifCounter}").FirstChild;
                 DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg);
                 DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg);
 
                 conditionals.Add(new Conditional(decidingBlock, guardedDFG, nextDFG));
+
+                ifCounter++;
+                ifNode = node.GetNodeWithAttributeValue($"IF{ifCounter}");
             }
 
             XmlNode edgeNode = node.GetNodeWithAttributeValue("ELSE");
             if (edgeNode != null)
             {
-                XmlNode guardedDFGNode = ifNode.GetNodeWithAttributeValue($"DO{ifCounter}").FirstChild;
+                XmlNode guardedDFGNode = node.GetNodeWithAttributeValue($"DO{ifCounter}").FirstChild;
                 DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg);
                 DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg);
 

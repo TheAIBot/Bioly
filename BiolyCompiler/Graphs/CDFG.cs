@@ -9,15 +9,10 @@ namespace BiolyCompiler.Graphs
     public class CDFG
     {
         public readonly List<(IControlBlock control, DFG<Block> dfg)> Nodes = new List<(IControlBlock control, DFG<Block> dfg)>();
-        public (IControlBlock control, DFG<Block> dfg) Start;
+        public DFG<Block> StartDFG;
 
         public void AddNode(IControlBlock control, DFG<Block> dfg)
         {
-            if (Nodes.Count == 0)
-            {
-                Start = (control, dfg);
-            }
-
             Nodes.Add((control, dfg));
         }
     }

@@ -166,5 +166,45 @@ namespace BiolyTests
 
             Assert.IsTrue(input is BoolOP);
         }
+
+        [TestMethod]
+        public void ParseWasteBlock()
+        {
+            string js = @"
+                        const waste = workspace.newBlock(""waste"");
+                        const input = workspace.newBlock(""getInput"");
+
+                        const wasteIn = waste.getInput(""inputFluid"").connection;
+                        const inputOut = input.outputConnection;
+
+                        wasteIn.connect(inputOut);";
+
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>());
+
+            Assert.IsTrue(input is Waste);
+        }
+
+        [TestMethod]
+        public void ParseOutputBlock()
+        {
+            string js = @"
+                        const waste = workspace.newBlock(""output"");
+                        const input = workspace.newBlock(""getInput"");
+
+                        const wasteIn = waste.getInput(""inputFluid"").connection;
+                        const inputOut = input.outputConnection;
+
+                        wasteIn.connect(inputOut);";
+
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>());
+
+            Assert.IsTrue(input is Output);
+        }
     }
 }

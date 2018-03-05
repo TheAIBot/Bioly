@@ -28,7 +28,8 @@ namespace BiolyCompiler.Parser
             CDFG cdfg = new CDFG();
             XmlNode node = xmlDocument.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
 
-            ParseDFG(node, cdfg);
+            DFG<Block> startDFG = ParseDFG(node, cdfg);
+            cdfg.StartDFG = startDFG;
 
             return cdfg;
         }
@@ -57,9 +58,8 @@ namespace BiolyCompiler.Parser
                 node = node.FirstChild;
             }
 
+            dfg.FinishDFG();
             cdfg.AddNode(controlBlock, dfg);
-
-            ParseNextDFG(node, cdfg);
 
             return dfg;
         }
@@ -80,14 +80,23 @@ namespace BiolyCompiler.Parser
                 else if (dfg.Nodes.Any(x => x.value.OutputVariable == inputNodeName))
                 {
                     Node<Block> inputNodee = dfg.Nodes.Single(x => x.value.OutputVariable == inputNodeName);
-                    dfg.AddEdge(inputNode, dfgNode);
+                    dfg.AddEdge(inputNodee, dfgNode);
                 }
             }
+
+            dfg.AddNode(dfgNode);
 
             //update map of most recent nodes that outputs the variable
             //so other nodes that get their value from the node that
             //just updated the value
-            mostRecentRef.Add(block.OutputVariable, dfgNode);
+            if (mostRecentRef.ContainsKey(block.OutputVariable))
+            {
+                mostRecentRef[block.OutputVariable] = dfgNode;
+            }
+            else
+            {
+                mostRecentRef.Add(block.OutputVariable, dfgNode);
+            }
 
             return block;
         }
@@ -143,10 +152,10 @@ namespace BiolyCompiler.Parser
                     return Fluid.Parse(node);
                 case Input.XmlTypeName:
                     return Input.Parse(node);
-                //case Output.XmlTypeName:
-                //    return Output.Parse(node);
-                //case Waste.XmlTypeName:
-                //    return Waste.Parse(node);
+                case Output.XmlTypeName:
+                    return Output.Parse(node);
+                case Waste.XmlTypeName:
+                    return Waste.Parse(node);
                 case BoolOP.XmlTypeName:
                     return BoolOP.Parse(node, dfg);
                 //case Sensor.XmlTypeName:
