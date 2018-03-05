@@ -10,10 +10,12 @@ using System.Xml;
 using System.Linq;
 using System.Threading;
 using BiolyCompiler.BlocklyParts.Arithmetics;
+using BiolyCompiler.BlocklyParts.BoolLogic;
+using BiolyCompiler.BlocklyParts.ControlFlow;
 
 namespace BiolyCompiler.Parser
 {
-    public static class XMLParser
+    public static class XmlParser
     {
         private static int nameID = 0;
         private static Object nameIDLock = new object();
@@ -23,42 +25,28 @@ namespace BiolyCompiler.Parser
             XmlDocument xmlDocument = new XmlDocument();
             xmlDocument.LoadXml(xmlText);
 
-            var cdfg = new CDFG();
+            CDFG cdfg = new CDFG();
+            XmlNode node = xmlDocument.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
 
-            var currentNode = xmlDocument.FirstChild.FirstChild.FirstChild.FirstChild;
-
+            ParseDFG(node, cdfg);
 
             return cdfg;
         }
 
-        private static DFG<Block> ParseDFG(XmlNode node)
+        internal static DFG<Block> ParseDFG(XmlNode node, CDFG cdfg)
         {
+            IControlBlock controlBlock = null;
             var dfg = new DFG<Block>();
             var mostRecentRef = new Dictionary<string, Node<Block>>();
             while (true)
             {
-                Block block = ParseBlock(node, dfg);
-                Node<Block> dfgNode = new Node<Block>();
-                dfgNode.value = block;
-
-                //add nessesary edges to this new node
-                foreach (string inputNodeName in block.InputVariables)
+                if (IsConditional(node))
                 {
-                    if (mostRecentRef.TryGetValue(inputNodeName, out Node<Block> inputNode))
-                    {
-                        dfg.AddEdge(inputNode, dfgNode);
-                    }
-                    else if (dfg.Nodes.Any(x => x.value.OutputVariable == inputNodeName))
-                    {
-                        Node<Block> inputNodee = dfg.Nodes.Single(x => x.value.OutputVariable == inputNodeName);
-                        dfg.AddEdge(inputNode, dfgNode);
-                    }
+                    controlBlock = ParseConditionalBlocks(node, cdfg, dfg, mostRecentRef);
+                    break;
                 }
 
-                //update map of most recent nodes that outputs the variable
-                //so other nodes that get their value from the node that
-                //just updated the value
-                mostRecentRef.Add(block.OutputVariable, dfgNode);
+                ParseAndAddNodeToDFG(node, dfg, mostRecentRef);
 
                 //move on to the next node or exit if none
                 node = XmlTools.GetNodeWithName(node, "next");
@@ -67,21 +55,71 @@ namespace BiolyCompiler.Parser
                     break;
                 }
                 node = node.FirstChild;
-
-                if (IsConditional(node))
-                {
-                    //do something about them
-                    continue;
-                }
             }
+
+            cdfg.AddNode(controlBlock, dfg);
+
+            ParseNextDFG(node, cdfg);
 
             return dfg;
         }
 
-        private static void ParseConditionalBlocks(XmlNode node, DFG<Block> dfg)
+        internal static Block ParseAndAddNodeToDFG(XmlNode node, DFG<Block> dfg, Dictionary<string, Node<Block>> mostRecentRef)
         {
+            Block block = ParseBlock(node, dfg);
+            Node<Block> dfgNode = new Node<Block>();
+            dfgNode.value = block;
 
-        }            
+            //add nessesary edges to this new node
+            foreach (string inputNodeName in block.InputVariables)
+            {
+                if (mostRecentRef.TryGetValue(inputNodeName, out Node<Block> inputNode))
+                {
+                    dfg.AddEdge(inputNode, dfgNode);
+                }
+                else if (dfg.Nodes.Any(x => x.value.OutputVariable == inputNodeName))
+                {
+                    Node<Block> inputNodee = dfg.Nodes.Single(x => x.value.OutputVariable == inputNodeName);
+                    dfg.AddEdge(inputNode, dfgNode);
+                }
+            }
+
+            //update map of most recent nodes that outputs the variable
+            //so other nodes that get their value from the node that
+            //just updated the value
+            mostRecentRef.Add(block.OutputVariable, dfgNode);
+
+            return block;
+        }
+
+        private static IControlBlock ParseConditionalBlocks(XmlNode node, CDFG cdfg, DFG<Block> dfg, Dictionary<string, Node<Block>> mostRecentRef)
+        {
+            string blockType = node.Attributes["type"].Value;
+            switch (blockType)
+            {
+                case If.XmlTypeName:
+                    return new If(node, cdfg, dfg, mostRecentRef);
+                case Repeat.XmlTypeName:
+                    return new Repeat(node, cdfg, dfg);
+                default:
+                    throw new Exception("Invalid type: " + blockType);
+            }
+
+
+
+        }
+
+        internal static DFG<Block> ParseNextDFG(XmlNode node, CDFG cdfg)
+        {
+            node = XmlTools.GetNodeWithName(node, "next");
+            if (node == null)
+            {
+                return null;
+            }
+
+            node = node.FirstChild;
+            return ParseDFG(node, cdfg);
+        }
 
         private static bool IsConditional(XmlNode node)
         {
@@ -109,10 +147,8 @@ namespace BiolyCompiler.Parser
                 //    return Output.Parse(node);
                 //case Waste.XmlTypeName:
                 //    return Waste.Parse(node);
-                //case Bool.XmlTypeName:
-                //    return Bool.Parse(node);
-                //case BoolOP.XmlTypeName:
-                //    return BoolOP.Parse(node, dfg);
+                case BoolOP.XmlTypeName:
+                    return BoolOP.Parse(node, dfg);
                 //case Sensor.XmlTypeName:
                 //    return Sensor.Parse(node);
                 default:

@@ -41,8 +41,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithName).FirstChild;
             XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithName).FirstChild;
 
-            Block leftArithBlock = XMLParser.ParseBlock(leftNode, dfg);
-            Block rightArithBlock = XMLParser.ParseBlock(rightNode, dfg);
+            Block leftArithBlock = XmlParser.ParseBlock(leftNode, dfg);
+            Block rightArithBlock = XmlParser.ParseBlock(rightNode, dfg);
 
             Node<Block> leftArithNode = new Node<Block>();
             Node<Block> rightArithNode = new Node<Block>();
@@ -56,7 +56,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             inputs.Add(leftArithBlock.OutputVariable);
             inputs.Add(rightArithBlock.OutputVariable);
 
-            string output = XMLParser.CreateName();
+            string output = XmlParser.CreateName();
             return new ArithOP(inputs, output, node);
         }
     }

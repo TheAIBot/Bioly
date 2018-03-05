@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.BlocklyParts.BoolLogic
+namespace BiolyCompiler.BlocklyParts.ControlFlow
 {
-    public class Bool
+    public interface IControlBlock
     {
     }
 }

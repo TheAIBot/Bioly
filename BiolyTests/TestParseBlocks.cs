@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Arithmetics;
+using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Graphs;
@@ -30,7 +31,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XMLParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null);
         }
 
         [TestMethod]
@@ -51,7 +52,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XMLParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null);
 
             Assert.IsTrue(input is Heater);
         }
@@ -78,7 +79,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XMLParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null);
 
             Assert.IsTrue(input is Mixer);
         }
@@ -101,7 +102,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XMLParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null);
 
             Assert.IsTrue(input is Splitter);
         }
@@ -113,7 +114,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XMLParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null);
 
             Assert.IsTrue(input is Constant);
         }
@@ -126,20 +127,44 @@ namespace BiolyTests
                         const const2 = workspace.newBlock(""math_number"");
                         const arithOP = workspace.newBlock(""math_arithmetic"");
 
-                        const const1In = arithOP.getInput(""A"").connection;
-                        const const2In = arithOP.getInput(""B"").connection;
+                        const arithOPAIn = arithOP.getInput(""A"").connection;
+                        const arithOPBIn = arithOP.getInput(""B"").connection;
                         const const1Out = const1.outputConnection;
                         const const2Out = const2.outputConnection;
 
-                        const1In.connect(const1Out);
-                        const2In.connect(const2Out);";
+                        arithOPAIn.connect(const1Out);
+                        arithOPBIn.connect(const2Out);";
                         
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XMLParser.ParseBlock(node, new DFG<Block>());
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>());
 
             Assert.IsTrue(input is ArithOP);
+        }
+
+        [TestMethod]
+        public void ParseBoolOPBlock()
+        {
+            string js = @"
+                        const const1 = workspace.newBlock(""math_number"");
+                        const const2 = workspace.newBlock(""math_number"");
+                        const boolOP = workspace.newBlock(""logic_compare"");
+
+                        const boolOPAIn = boolOP.getInput(""A"").connection;
+                        const boolOPBIn = boolOP.getInput(""B"").connection;
+                        const const1Out = const1.outputConnection;
+                        const const2Out = const2.outputConnection;
+
+                        boolOPAIn.connect(const1Out);
+                        boolOPBIn.connect(const2Out);";
+
+            TestTools.ExecuteJS(js);
+
+            XmlNode node = TestTools.GetWorkspace();
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>());
+
+            Assert.IsTrue(input is BoolOP);
         }
     }
 }
