@@ -53,7 +53,7 @@ namespace BiolyViewer_Windows
 
         private void UpdateGraph(object sender, System.Timers.ElapsedEventArgs e)
         {
-            string xml = (string)Browser.GetMainFrame().EvaluateScriptAsync("return getWorkspaceAsXml();", null).Result.Result;
+            string xml = (string)Browser.GetMainFrame().EvaluateScriptAsync("getWorkspaceAsXml();", null).Result.Result;
             try
             {
                 CDFG cdfg = BiolyCompiler.Parser.XmlParser.Parse(xml);
