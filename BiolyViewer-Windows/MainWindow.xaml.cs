@@ -62,7 +62,8 @@ namespace BiolyViewer_Windows
                 {
                     CDFG cdfg = BiolyCompiler.Parser.XmlParser.Parse(xml);
                     (string nodes, string edges) = DFGToSimpleNE(cdfg.StartDFG);
-                    Browser.ExecuteScriptAsync("setGraph(" + nodes + ", " + edges + ")");
+                    string js = "setGraph(" + nodes + ", " + edges + ");";
+                    Browser.ExecuteScriptAsync(js);
                 }
                 catch (Exception ee) { }
             }
@@ -80,7 +81,7 @@ namespace BiolyViewer_Windows
 
             foreach (Node<BiolyCompiler.BlocklyParts.Block> node in dfg.Nodes)
             {
-                nodes += "{ data: { id: '" + node.value.OutputVariable + "' } },";
+                nodes += "{ data: { id: '" + node.value.OutputVariable + "', label: '" + node.value.ToString().Replace("\r\n", @"\n") + "' } },";
 
                 foreach (Node<BiolyCompiler.BlocklyParts.Block> edgeNode in node.Edges)
                 {

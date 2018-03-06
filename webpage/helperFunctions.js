@@ -14,11 +14,12 @@ function setGraph(nodes, edges)
 		{
 		  selector: 'node',
 		  style: {
-			'content': 'data(id)',
+			'content': 'data(label)',
 			'text-opacity': 0.5,
 			'text-valign': 'center',
 			'text-halign': 'right',
-			'background-color': '#11479e'
+			'background-color': '#11479e',
+			'text-wrap': 'wrap'
 		  }
 		},
 
