@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -44,7 +45,7 @@ namespace BiolyViewer_Windows
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Browser.Load("costum://index.html");
-
+            Thread.Sleep(1000);
             System.Timers.Timer timer = new System.Timers.Timer();
             timer.Interval = 500;
             timer.Elapsed += UpdateGraph;
@@ -53,17 +54,23 @@ namespace BiolyViewer_Windows
 
         private void UpdateGraph(object sender, System.Timers.ElapsedEventArgs e)
         {
-            string xml = (string)Browser.GetMainFrame().EvaluateScriptAsync("getWorkspaceAsXml();", null).Result.Result;
-            try
+            bool didWorkspaceChange = ExecuteJs<bool>("getIfWorkspaceChanged();");
+            if (didWorkspaceChange)
             {
-                CDFG cdfg = BiolyCompiler.Parser.XmlParser.Parse(xml);
-                (string nodes, string edges) = DFGToSimpleNE(cdfg.StartDFG);
-                Browser.ExecuteScriptAsync("setGraph(" + nodes + ", " + edges + ")");
+                string xml = ExecuteJs<string>("getWorkspaceAsXml();");
+                try
+                {
+                    CDFG cdfg = BiolyCompiler.Parser.XmlParser.Parse(xml);
+                    (string nodes, string edges) = DFGToSimpleNE(cdfg.StartDFG);
+                    Browser.ExecuteScriptAsync("setGraph(" + nodes + ", " + edges + ")");
+                }
+                catch (Exception ee) { }
             }
-            catch (Exception ee)
-            {
-                return;
-            }
+        }
+
+        private T ExecuteJs<T>(string js)
+        {
+            return (T)Browser.GetMainFrame().EvaluateScriptAsync(js, null).Result.Result;
         }
 
         private (string nodes, string edges) DFGToSimpleNE(DFG<BiolyCompiler.BlocklyParts.Block> dfg)

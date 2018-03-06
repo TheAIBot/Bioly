@@ -18,7 +18,6 @@ namespace BiolyCompiler.Parser
     public static class XmlParser
     {
         private static int nameID = 0;
-        private static Object nameIDLock = new object();
 
         public static CDFG Parse(string xmlText)
         {
@@ -28,6 +27,7 @@ namespace BiolyCompiler.Parser
             CDFG cdfg = new CDFG();
             XmlNode node = xmlDocument.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
 
+            nameID = 0;
             DFG<Block> startDFG = ParseDFG(node, cdfg);
             cdfg.StartDFG = startDFG;
 
@@ -168,13 +168,10 @@ namespace BiolyCompiler.Parser
 
         internal static string CreateName()
         {
-            lock (nameIDLock)
-            {
-                int id = nameID;
-                nameID++;
+            int id = nameID;
+            nameID++;
 
-                return "N" + id;
-            }
+            return "N" + id;
         }
     }
 }

@@ -52,22 +52,6 @@
 				<block type="getFLuidArrayIndex"></block>
 			</category>
 		</xml>
-		<script>
-			function save() {
-				const xml = Blockly.Xml.workspaceToDom(workspace);
-				const xml_text = Blockly.Xml.domToText(xml);
-				document.cookie = "dd=0" + xml_text;
-			}
-			function load() {
-				const xml_text = document.cookie;
-				const xml = Blockly.Xml.textToDom(xml_text);
-				Blockly.Xml.domToWorkspace(xml, workspace);
-			}
-			
-			var workspace = Blockly.inject('blocklyDiv',
-				{media: 'media/',
-				toolbox: document.getElementById('toolbox')});
-		</script>
 		<script src="helperFunctions.js"></script>
 	</body>
 </html>
