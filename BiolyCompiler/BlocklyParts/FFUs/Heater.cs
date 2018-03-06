@@ -28,5 +28,12 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
             return new Heater(inputs, output, node);
         }
+
+        public override string ToString()
+        {
+            return "Heater" + Environment.NewLine +
+                   "Temp: " + Temperature + Environment.NewLine +
+                   "Time: " + Time;
+        }
     }
 }

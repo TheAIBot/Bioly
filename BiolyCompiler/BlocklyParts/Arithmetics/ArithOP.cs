@@ -59,5 +59,22 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             string output = XmlParser.CreateName();
             return new ArithOP(inputs, output, node);
         }
+
+        public override string ToString()
+        {
+            switch (OPType)
+            {
+                case ArithOPTypes.ADD:
+                    return "+";
+                case ArithOPTypes.SUB:
+                    return "-";
+                case ArithOPTypes.MUL:
+                    return "*";
+                case ArithOPTypes.DIV:
+                    return "/";
+                default:
+                    throw new Exception("Failed to parse the operator type.");
+            }
+        }
     }
 }

@@ -25,5 +25,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
             return new Splitter(inputs, output, node);
         }
+
+        public override string ToString()
+        {
+            return "Splitter" + Environment.NewLine + 
+                   "Amount: " + FluidAmount;
+        }
     }
 }

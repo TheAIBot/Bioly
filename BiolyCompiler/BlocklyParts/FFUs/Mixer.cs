@@ -25,5 +25,10 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
             return new Mixer(inputs, output, node);
         }
+
+        public override string ToString()
+        {
+            return "Mixer";
+        }
     }
 }

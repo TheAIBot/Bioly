@@ -22,5 +22,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             return new Waste(inputs, XmlParser.CreateName(), node);
         }
+
+        public override string ToString()
+        {
+            return "Waste" + Environment.NewLine +
+                   "Fluid: " + InputVariables[0];
+        }
     }
 }

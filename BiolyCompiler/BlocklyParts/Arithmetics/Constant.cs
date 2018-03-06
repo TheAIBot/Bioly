@@ -21,5 +21,10 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             string output = XmlParser.CreateName();
             return new Constant(output, node);
         }
+
+        public override string ToString()
+        {
+            return Value.ToString("N2");
+        }
     }
 }

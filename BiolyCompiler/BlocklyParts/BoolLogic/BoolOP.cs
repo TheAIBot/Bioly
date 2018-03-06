@@ -65,5 +65,26 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             string output = XmlParser.CreateName();
             return new BoolOP(inputs, output, node);
         }
+
+        public override string ToString()
+        {
+            switch (OPType)
+            {
+                case BoolOPTypes.EQ:
+                    return "==";
+                case BoolOPTypes.NEQ:
+                    return "!=";
+                case BoolOPTypes.LT:
+                    return "<";
+                case BoolOPTypes.LTE:
+                    return "<=";
+                case BoolOPTypes.GT:
+                    return ">";
+                case BoolOPTypes.GTE:
+                    return ">=";
+                default:
+                    throw new Exception("Failed to parse the operator type.");
+            }
+        }
     }
 }

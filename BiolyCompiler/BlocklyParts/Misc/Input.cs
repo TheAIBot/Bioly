@@ -26,5 +26,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             string output = node.GetNodeWithAttributeValue(InputFluidName).InnerText;
             return new Input(output, node);
         }
+
+        public override string ToString()
+        {
+            return OutputVariable + Environment.NewLine +
+                   "Amount: " + Amount + Unit.ToString().ToLower();
+        }
     }
 }
