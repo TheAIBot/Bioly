@@ -60,7 +60,7 @@ namespace BiolyViewer_Windows
                 (string nodes, string edges) = DFGToSimpleNE(cdfg.StartDFG);
                 Browser.ExecuteScriptAsync("setGraph(" + nodes + ", " + edges + ")");
             }
-            catch (Exception)
+            catch (Exception ee)
             {
                 return;
             }

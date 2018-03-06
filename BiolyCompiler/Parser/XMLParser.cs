@@ -84,6 +84,7 @@ namespace BiolyCompiler.Parser
                 }
             }
 
+            dfgNode.EdgesCreated = true;
             dfg.AddNode(dfgNode);
 
             //update map of most recent nodes that outputs the variable
