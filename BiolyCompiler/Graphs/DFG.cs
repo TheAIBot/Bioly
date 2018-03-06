@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace BiolyCompiler.Graphs
 {
@@ -29,9 +30,13 @@ namespace BiolyCompiler.Graphs
                 {
                     Input.Add(node);
                 }
-                if (node.Edges.Count == 0 && node.value is Block && (node.value as Block).CanBeOutput)
+                if (node.value is Block)
                 {
-                    Output.Add(node);
+                    Block block = node.value as Block;
+                    if (node.Edges.Count == 0 && block.CanBeOutput)
+                    {
+                        Output.Add(node);
+                    }
                 }
             }
         }

@@ -1,38 +1,21 @@
-<!DOCTYPE html>
+<!DOCTYPE>
+<!-- This code is for demonstration purposes only.  You should not hotlink to Github, Rawgit, or files from the Cytoscape.js documentation in your production apps. -->
 <html>
 	<head>
-		<meta charset="utf-8">
-		<title>Bioly</title>
+		<title>cytoscape-dagre.js demo</title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+		<link href="style.css" rel="stylesheet" />
+
 		<script src="blockly_compressed.js"></script>
 		<script src="blocks_compressed.js"></script>
 		<script src="en.js"></script>
 		<script src="costum_blocks.js"></script>
-		<script src="cytoscape.js"></script>
+		<script src="cytoscape.min.js"></script>
+		<script src="dagre.min.js"></script>
 		<script src="cytoscape-dagre.js"></script>
-		<script src="helperFunctions.js"></script>
-		<style>
-			body {
-				background-color: #fff;
-				font-family: sans-serif;
-			}
-			h1 {
-				font-weight: normal;
-				font-size: 140%;
-			}
-			#graphDiv {
-				width: 100%;
-				height: 100%;
-				position: absolute;
-				left: 0;
-				top: 0;
-				z-index: 999;
-			}
-		</style>
 	</head>
 	<body>
-		<button onclick="save();">save</button>
-		<button onclick="load();">load</button>
-		<div id="blocklyDiv" style="height: 500px; width: 800px;"></div>
+		<div id="blocklyDiv"></div>
 		<div id="graphDiv"></div>
 		<xml id="toolbox" style="display: none">
 			<category name="Control">
@@ -85,5 +68,6 @@
 				{media: 'media/',
 				toolbox: document.getElementById('toolbox')});
 		</script>
+		<script src="helperFunctions.js"></script>
 	</body>
 </html>
