@@ -21,10 +21,10 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             this.Time = node.GetNodeWithAttributeValue(TimeName).TextToInt();
         }
 
-        public static Block CreateHeater(string output, XmlNode node)
+        public static Block CreateHeater(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.GetNodeWithAttributeValue(InputFluidName).InnerText);
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidName), mostRecentRef));
 
             return new Heater(inputs, output, node);
         }

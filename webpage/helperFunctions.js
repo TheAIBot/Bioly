@@ -7,7 +7,8 @@ function setGraph(nodes, edges)
 	  autounselectify: true,
 
 	  layout: {
-		name: 'dagre'
+		name: 'dagre',
+		ranker: 'network-simplex'
 	  },
 
 	  style: [

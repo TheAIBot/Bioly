@@ -42,13 +42,13 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             }
         }
 
-        public static Block Parse(XmlNode node, DFG<Block> dfg)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
             XmlNode leftNode = node.GetNodeWithAttributeValue(LeftBoolName).FirstChild;
             XmlNode rightNode = node.GetNodeWithAttributeValue(RightBoolName).FirstChild;
 
-            Block leftBoolBlock = XmlParser.ParseBlock(leftNode, dfg);
-            Block rightBoolBlock = XmlParser.ParseBlock(rightNode, dfg);
+            Block leftBoolBlock = XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
+            Block rightBoolBlock = XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
 
             Node<Block> leftBoolNode = new Node<Block>();
             Node<Block> rightBoolNode = new Node<Block>();
@@ -61,9 +61,8 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             List<string> inputs = new List<string>();
             inputs.Add(leftBoolBlock.OutputVariable);
             inputs.Add(rightBoolBlock.OutputVariable);
-
-            string output = XmlParser.CreateName();
-            return new BoolOP(inputs, output, node);
+            
+            return new BoolOP(inputs, null, node);
         }
 
         public override string ToString()

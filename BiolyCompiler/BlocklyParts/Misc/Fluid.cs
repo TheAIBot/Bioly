@@ -17,28 +17,28 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
         }
 
-        private static Block CreateFluid(string output, XmlNode node)
+        private static Block CreateFluid(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.InnerText);
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node, mostRecentRef));
 
             return new Fluid(inputs, output, node);
         }
 
-        public static Block Parse(XmlNode node)
+        public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             string output = node.GetNodeWithAttributeValue(OutputFluidName).InnerText;
             XmlNode innerNode = node.GetNodeWithAttributeValue(InputFluidName).FirstChild;
             switch (innerNode.Attributes["type"].Value)
             {
                 case Heater.XmlTypeName:
-                    return Heater.CreateHeater(output, innerNode);
+                    return Heater.CreateHeater(output, innerNode, mostRecentRef);
                 case Mixer.XmlTypeName:
-                    return Mixer.CreateMixer(output, innerNode);
+                    return Mixer.CreateMixer(output, innerNode, mostRecentRef);
                 case Splitter.XmlTypeName:
-                    return Splitter.CreateSplitter(output, innerNode);
+                    return Splitter.CreateSplitter(output, innerNode, mostRecentRef);
                 default:
-                    return CreateFluid(output, innerNode);
+                    return CreateFluid(output, innerNode, mostRecentRef);
             }
         }
     }

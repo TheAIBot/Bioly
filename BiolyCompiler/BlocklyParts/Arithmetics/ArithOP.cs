@@ -36,13 +36,13 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             }
         }
 
-        public static Block Parse(XmlNode node, DFG<Block> dfg)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
             XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithName).FirstChild;
             XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithName).FirstChild;
 
-            Block leftArithBlock = XmlParser.ParseBlock(leftNode, dfg);
-            Block rightArithBlock = XmlParser.ParseBlock(rightNode, dfg);
+            Block leftArithBlock = XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
+            Block rightArithBlock = XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
 
             Node<Block> leftArithNode = new Node<Block>();
             Node<Block> rightArithNode = new Node<Block>();
@@ -56,8 +56,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             inputs.Add(leftArithBlock.OutputVariable);
             inputs.Add(rightArithBlock.OutputVariable);
 
-            string output = XmlParser.CreateName();
-            return new ArithOP(inputs, output, node);
+            return new ArithOP(inputs, null, node);
         }
 
         public override string ToString()

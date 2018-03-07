@@ -31,7 +31,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is Heater);
         }
@@ -79,7 +79,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is Mixer);
         }
@@ -102,7 +102,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is Splitter);
         }
@@ -114,7 +114,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null);
+            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is Constant);
         }
@@ -138,7 +138,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>());
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is ArithOP);
         }
@@ -162,7 +162,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>());
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is BoolOP);
         }
@@ -182,7 +182,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>());
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is Waste);
         }
@@ -202,7 +202,7 @@ namespace BiolyTests
             TestTools.ExecuteJS(js);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>());
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is Output);
         }

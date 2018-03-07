@@ -61,7 +61,7 @@ namespace BiolyViewer_Windows
                 try
                 {
                     CDFG cdfg = BiolyCompiler.Parser.XmlParser.Parse(xml);
-                    (string nodes, string edges) = DFGToSimpleNE(cdfg.StartDFG);
+                    (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
                     string js = "setGraph(" + nodes + ", " + edges + ");";
                     Browser.ExecuteScriptAsync(js);
                 }
@@ -72,27 +72,6 @@ namespace BiolyViewer_Windows
         private T ExecuteJs<T>(string js)
         {
             return (T)Browser.GetMainFrame().EvaluateScriptAsync(js, null).Result.Result;
-        }
-
-        private (string nodes, string edges) DFGToSimpleNE(DFG<BiolyCompiler.BlocklyParts.Block> dfg)
-        {
-            string nodes = "";
-            string edges = "";
-
-            foreach (Node<BiolyCompiler.BlocklyParts.Block> node in dfg.Nodes)
-            {
-                nodes += "{ data: { id: '" + node.value.OutputVariable + "', label: '" + node.value.ToString().Replace("\r\n", @"\n") + "' } },";
-
-                foreach (Node<BiolyCompiler.BlocklyParts.Block> edgeNode in node.Edges)
-                {
-                    edges += "{ data: { source: '" + node.value.OutputVariable + "', target: '" + edgeNode.value.OutputVariable + "' } },";
-                }
-            }
-
-            nodes = "[" + nodes + "]";
-            edges = "[" + edges + "]";
-
-            return (nodes, edges);
         }
     }
 }

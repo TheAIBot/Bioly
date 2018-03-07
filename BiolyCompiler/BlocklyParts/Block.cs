@@ -10,6 +10,9 @@ namespace BiolyCompiler.BlocklyParts
         public readonly bool CanBeOutput;
         public readonly IReadOnlyList<string> InputVariables;
         public readonly string OutputVariable;
+        public readonly string OriginalOutputVariable;
+        private static int nameID;
+        public const string DEFAULT_NAME = "anonymous var";
 
         private static readonly List<string> EmptyList = new List<string>();
 
@@ -21,7 +24,9 @@ namespace BiolyCompiler.BlocklyParts
         {
             this.CanBeOutput = canBeOutput;
             this.InputVariables = input;
-            this.OutputVariable = output;
+            this.OutputVariable = $"N{nameID}";
+            nameID++;
+            this.OriginalOutputVariable = output ?? DEFAULT_NAME;
         }
     }
 }

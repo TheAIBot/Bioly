@@ -15,12 +15,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         }
 
-        public static Block Parse(XmlNode node)
+        public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.InnerText);
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node, mostRecentRef));
 
-            return new Waste(inputs, XmlParser.CreateName(), node);
+            return new Waste(inputs, null, node);
         }
 
         public override string ToString()

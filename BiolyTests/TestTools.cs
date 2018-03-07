@@ -68,5 +68,14 @@ namespace BiolyTests
             string xml = ExecuteJS(js);
             return StringToXmlBlock(xml);
         }
+
+        public static Dictionary<string, string> GetDefaultRefDictionary()
+        {
+            Dictionary<string, string> mostRecentRef = new Dictionary<string, string>();
+            mostRecentRef.Add("input_fluid_name", "input_fluid_name");
+            mostRecentRef.Add("fluid_name", "fluid_name");
+
+            return mostRecentRef;
+        }
     }
 }

@@ -18,10 +18,10 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             this.FluidAmount = node.GetNodeWithAttributeValue(FluidAmountName).TextToInt();
         }
 
-        public static Block CreateSplitter(string output, XmlNode node)
+        public static Block CreateSplitter(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.GetNodeWithAttributeValue(InputFluidName).InnerText);
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidName), mostRecentRef));
 
             return new Splitter(inputs, output, node);
         }

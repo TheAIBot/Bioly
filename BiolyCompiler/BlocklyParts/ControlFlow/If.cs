@@ -12,7 +12,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         public const string XmlTypeName = "controls_if";
         public readonly IReadOnlyList<Conditional> IfStatements;
 
-        public If(XmlNode node, CDFG cdfg, DFG<Block> dfg, Dictionary<string, Node<Block>> mostRecentRef)
+        public If(XmlNode node, CDFG cdfg, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
             List<Conditional> conditionals = new List<Conditional>();
 

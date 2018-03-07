@@ -29,7 +29,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public override string ToString()
         {
-            return OutputVariable + Environment.NewLine +
+            return OriginalOutputVariable + Environment.NewLine +
                    "Amount: " + Amount + Unit.ToString().ToLower();
         }
     }

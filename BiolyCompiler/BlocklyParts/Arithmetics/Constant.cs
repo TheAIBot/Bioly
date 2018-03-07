@@ -18,8 +18,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public static Block Parse(XmlNode node)
         {
-            string output = XmlParser.CreateName();
-            return new Constant(output, node);
+            return new Constant(null, node);
         }
 
         public override string ToString()

@@ -38,18 +38,13 @@ namespace BiolyCompiler.Graphs
                         Output.Add(node);
                     }
 
-                    if (!node.EdgesCreated)
+                    foreach (string nodeName in block.InputVariables)
                     {
-                        foreach (string nodeName in block.InputVariables)
+                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
+                        if (inputNode != null)
                         {
-                            Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
-                            if (inputNode != null)
-                            {
-                                AddEdge(inputNode, node);
-                            }
+                            AddEdge(inputNode, node);
                         }
-
-                        node.EdgesCreated = true;
                     }
                 }
             }
