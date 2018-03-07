@@ -22,6 +22,12 @@ function setGraph(nodes, edges)
 			'text-wrap': 'wrap'
 		  }
 		},
+		{
+          selector: ':parent',
+          style: {
+            'background-opacity': 0.333
+          }
+        },
 
 		{
 		  selector: 'edge',
