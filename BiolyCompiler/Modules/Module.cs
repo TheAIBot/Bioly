@@ -6,12 +6,13 @@ namespace BiolyCompiler.Modules
 {
     public abstract class Module
     {
-        public Rectangle area;
+        public Rectangle shape;
         public Point placement;
-        public uint operationTime;
+        public int operationTime;
         
         public Module(int height, int width, int operationTime){
-
+            shape = new Rectangle(width, height);
+            this.operationTime = operationTime;
         }
 
     
