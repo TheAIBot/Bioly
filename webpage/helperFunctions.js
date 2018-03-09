@@ -1,51 +1,64 @@
 function setGraph(nodes, edges)
 {
-	window.graphDiv = cytoscape({
-	  container: document.getElementById('graphDiv'),
+	window.graphDiv = cytoscape(
+	{
+		container: document.getElementById('graphDiv'),
 
-	  boxSelectionEnabled: false,
-	  autounselectify: true,
+		boxSelectionEnabled: false,
+		autounselectify: true,
 
-	  layout: {
-		name: 'dagre',
-		ranker: 'network-simplex'
-	  },
-
-	  style: [
+		layout: 
 		{
-		  selector: 'node',
-		  style: {
-			'content': 'data(label)',
-			'text-opacity': 0.5,
-			'text-valign': 'center',
-			'text-halign': 'right',
-			'background-color': '#11479e',
-			'text-wrap': 'wrap'
-		  }
+			name: 'dagre'
 		},
-		{
-          selector: ':parent',
-          style: {
-            'background-opacity': 0.333
-          }
-        },
 
-		{
-		  selector: 'edge',
-		  style: {
-			'curve-style': 'bezier',
-			'width': 4,
-			'target-arrow-shape': 'triangle',
-			'line-color': '#9dbaea',
-			'target-arrow-color': '#9dbaea'
-		  }
-		}
-	  ],
+		style: 
+		[
+			{
+				selector: 'node',
+				style: 
+				{
+					'content': 'data(label)',
+					'text-opacity': 0.5,
+					'text-valign': 'center',
+					'text-halign': 'right',
+					'background-color': '#11479e',
+					'text-wrap': 'wrap'
+				}
+			},
+			{
+				selector: ':parent',
+				style: 
+				{
+					'background-opacity': 0.333	
+				}
+			},
+			{
+				selector: 'edge',
+				style: 
+				{
+					'curve-style': 'bezier',
+					'width': 4,
+					'target-arrow-shape': 'triangle',
+					'line-color': '#9dbaea',
+					'target-arrow-color': '#9dbaea'
+				}
+			},
+			{
+				selector: 'edge.haystack',
+				style: 
+				{
+					'curve-style': 'haystack',
+					'display': 'none'
+				}
+			}
+		],
 
-	  elements: {
+		elements: 
+		{
 		nodes: nodes,
 		edges: edges
-	  },
+		},
 	});
 }
 

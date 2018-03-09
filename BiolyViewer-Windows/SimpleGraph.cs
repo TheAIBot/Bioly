@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.BlocklyParts.ControlFlow;
+﻿using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.ControlFlow;
 using BiolyCompiler.Graphs;
 using System;
 using System.Collections.Generic;
@@ -14,8 +15,19 @@ namespace BiolyViewer_Windows
         {
             string nodes = "";
             string edges = "";
+            Dictionary<DFG<Block>, string> dfgNames = CreateNodesAndEdgesForEachDFGInCDFG(cdfg, ref nodes, ref edges);
 
-            var dfgNames = new Dictionary<DFG<BiolyCompiler.BlocklyParts.Block>, string>();
+            edges = CreateEdgesBetweenDFGs(cdfg, edges, dfgNames);
+
+            nodes = "[" + nodes + "]";
+            edges = "[" + edges + "]";
+
+            return (nodes, edges);
+        }
+
+        private static Dictionary<DFG<Block>, string> CreateNodesAndEdgesForEachDFGInCDFG(CDFG cdfg, ref string nodes, ref string edges)
+        {
+            var dfgNames = new Dictionary<DFG<Block>, string>();
             int dfgNameNumber = 0;
             foreach (var node in cdfg.Nodes)
             {
@@ -28,6 +40,31 @@ namespace BiolyViewer_Windows
                 dfgNameNumber++;
             }
 
+            return dfgNames;
+        }
+
+        private static (string nodes, string edges) DFGToSimpleGraph(DFG<Block> dfg, string dfgName)
+        {
+            string nodes = "";
+            string edges = "";
+
+            nodes += CreateNode(dfgName, String.Empty);
+
+            foreach (Node<Block> node in dfg.Nodes)
+            {
+                nodes += CreateNode(node.value.OutputVariable, node.value.ToString(), dfgName);
+
+                foreach (Node<Block> edgeNode in node.Edges)
+                {
+                    edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
+                }
+            }
+
+            return (nodes, edges);
+        }
+
+        private static string CreateEdgesBetweenDFGs(CDFG cdfg, string edges, Dictionary<DFG<Block>, string> dfgNames)
+        {
             foreach (var node in cdfg.Nodes)
             {
                 IControlBlock control = node.control;
@@ -35,50 +72,48 @@ namespace BiolyViewer_Windows
                 {
                     foreach (Conditional conditional in (control as If).IfStatements)
                     {
-                        edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.GuardedDFG]);
-                        if (conditional.NextDFG != null)
-                        {
-                            edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.NextDFG]);
-                            edges += CreateEdge(dfgNames[conditional.GuardedDFG], dfgNames[conditional.NextDFG]);
-                        }
+                        edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
                     }
                 }
                 else if (control is Repeat)
                 {
                     Conditional conditional = (control as Repeat).Cond;
-                    edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.GuardedDFG]);
-                    if (conditional.NextDFG != null)
-                    {
-                        edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.NextDFG]);
-                        edges += CreateEdge(dfgNames[conditional.GuardedDFG], dfgNames[conditional.NextDFG]);
-                    }
+                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                }
+                else if (control != null)
+                {
+                    throw new Exception("Unknown Conditional type.");
                 }
             }
 
-            nodes = "[" + nodes + "]";
-            edges = "[" + edges + "]";
-
-            return (nodes, edges);
+            return edges;
         }
 
-        private static (string nodes, string edges) DFGToSimpleGraph(DFG<BiolyCompiler.BlocklyParts.Block> dfg, string dfgName)
+        private static string CreateConditionalEdges(string edges, Dictionary<DFG<Block>, string> dfgNames, (IControlBlock control, DFG<Block> dfg) node, Conditional conditional)
         {
-            string nodes = "";
-            string edges = "";
-
-            nodes += CreateNode(dfgName, String.Empty);
-
-            foreach (Node<BiolyCompiler.BlocklyParts.Block> node in dfg.Nodes)
+            //edge from before if to into if
+            edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.GuardedDFG]);
+            edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.GuardedDFG);
+            if (conditional.NextDFG != null)
             {
-                nodes += CreateNode(node.value.OutputVariable, node.value.ToString(), dfgName);
-
-                foreach (Node<BiolyCompiler.BlocklyParts.Block> edgeNode in node.Edges)
-                {
-                    edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
-                }
+                //edge from before if to after if
+                edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.NextDFG]);
+                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.NextDFG);
+                //edge from inside if to after if
+                edges += CreateEdge(dfgNames[conditional.GuardedDFG], dfgNames[conditional.NextDFG]);
+                edges += CreateHiddenRankEdgesBetweenDFGs(conditional.GuardedDFG, conditional.NextDFG);
             }
 
-            return (nodes, edges);
+            return edges;
+        }
+
+        private static string CreateHiddenRankEdgesBetweenDFGs(DFG<Block> source, DFG<Block> target)
+        {
+            string edges = "";
+            source.Nodes.Where(x => source.Nodes.All(y => !y.value.InputVariables.Contains(x.value.OutputVariable)))
+                        .ToList()
+                        .ForEach(x => target.Input.ForEach(y => edges+= CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
+            return edges;
         }
 
         private static string CreateNode(string id, string label, string parent = null)
@@ -98,9 +133,22 @@ namespace BiolyViewer_Windows
             return sBuilder.ToString();
         }
 
-        private static string CreateEdge(string source, string target)
+        private static string CreateEdge(string source, string target, string classTarget = null)
         {
-            return "{ data: { source: '" + source + "', target: '" + target + "' } },";
+            StringBuilder sBuilder = new StringBuilder();
+            sBuilder.Append("{ data: { source: '");
+            sBuilder.Append(source);
+            sBuilder.Append("', target: '");
+            sBuilder.Append(target);
+            if (classTarget != null)
+            {
+                sBuilder.Append("'}, classes: '");
+                sBuilder.Append(classTarget);
+                sBuilder.Append("' },");
+                return sBuilder.ToString();
+            }
+            sBuilder.Append("' } },");
+            return sBuilder.ToString();
         }
     }
 }
