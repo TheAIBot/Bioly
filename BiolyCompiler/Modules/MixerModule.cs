@@ -7,7 +7,7 @@ namespace BiolyCompiler.Modules
     public class MixerModule : Module
     {
 
-        public MixerModule(int height, int width, int operationTime) : base(height, width, operationTime){
+        public MixerModule(int width, int height, int operationTime) : base(width, height, operationTime){
 
         }
 

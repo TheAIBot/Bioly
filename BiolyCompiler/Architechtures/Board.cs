@@ -60,11 +60,28 @@ namespace BiolyCompiler.Architechtures
         public void FastTemplateRemove(Module module)
         {
             placedModules.Remove(module);
-            Rectangle EmptyRectangle = new Rectangle(module.shape);
+            //All dependencies on the rectangle from the module, should be moved to the new empty rectangle.
+            //It is easier to just create a new rectangle for the module:
+            Rectangle NewModuleRectangle = new Rectangle(module.shape);
+            Rectangle EmptyRectangle     = module.shape;
             EmptyRectangles.Add(EmptyRectangle);
-            EmptyRectangle.MergeWithOtherRectangles(this);
+            EmptyRectangle.isEmpty = true;
+            module.shape = NewModuleRectangle;
+            NewModuleRectangle.isEmpty = false;
 
-            throw new NotImplementedException();
+            ClearBoard(EmptyRectangle);
+            EmptyRectangle.MergeWithOtherRectangles(this);            
+        }
+
+        private void ClearBoard(Rectangle emptyRectangle)
+        {
+            for (int i = 0; i < emptyRectangle.width; i++)
+            {
+                for (int j = 0; j < emptyRectangle.height; j++)
+                {
+                    grid[i + emptyRectangle.x, j + emptyRectangle.y] = null;
+                }
+            }
         }
 
         private void PlaceModule(Module module, Rectangle rectangleToPlaceAt)
@@ -74,7 +91,7 @@ namespace BiolyCompiler.Architechtures
             {
                 for (int j = 0; j < module.shape.height; j++)
                 {
-                    grid[i, j] = module;
+                    grid[i + module.shape.x, j + module.shape.y] = module;
                 }
             }
             placedModules.Add(module);

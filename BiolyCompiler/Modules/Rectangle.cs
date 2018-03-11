@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BiolyCompiler.Architechtures;
+using BiolyCompiler.Modules.RectangleSides;
 
 namespace BiolyCompiler.Modules
 {
@@ -9,7 +11,8 @@ namespace BiolyCompiler.Modules
         public int height, width;
         public int x, y; //Coordinates for lower left corner.
         //Used by the FTP aalgorithm for deleting rectangles.
-        public List<Rectangle>  AdjacentRectangles    = new List<Rectangle>();
+        public HashSet<Rectangle>  AdjacentRectangles    = new HashSet<Rectangle>();
+        public bool isEmpty = true;
         //public List<Rectangle> bottomAdjacentRectangles = new List<Rectangle>();
         //public List<Rectangle> leftAdjacentRectangles   = new List<Rectangle>();
         //public List<Rectangle> rightAdjacentRectangles  = new List<Rectangle>();
@@ -25,8 +28,7 @@ namespace BiolyCompiler.Modules
         {
             PlaceAt(x, y);
         }
-
-
+        
         public Rectangle(Rectangle rectangle) : this(rectangle.width, rectangle.height, rectangle.x, rectangle.y) { }
 
         public void PlaceAt(int x, int y)
@@ -37,7 +39,7 @@ namespace BiolyCompiler.Modules
 
         public bool DoesFit(Module module)
         {
-            return module.shape.height < this.height && module.shape.width < this.width;
+            return module.shape.height <= this.height && module.shape.width <= this.width;
         }
 
         public int GetArea()
@@ -110,24 +112,63 @@ namespace BiolyCompiler.Modules
         }
 
 
-        //Recursive
         public void MergeWithOtherRectangles(Board board)
         {
+            //Recursive
             foreach (var AdjacentRectangle in AdjacentRectangles)
             {
-                if (this.CanMerge(AdjacentRectangle)) {
-                    MergeWithRectangle(AdjacentRectangle);
-                    AdjacentRectangle.MergeWithOtherRectangles(board);
+                if (!AdjacentRectangle.isEmpty) continue;
+                (RectangleSide side, bool canMerge) = this.CanMerge(AdjacentRectangle);
+                if (canMerge) {
+                    Rectangle mergedRectangle = MergeWithRectangle(side, AdjacentRectangle);
+                    board.EmptyRectangles.Remove(AdjacentRectangle);
+                    board.EmptyRectangles.Remove(this);
+                    board.EmptyRectangles.Add(mergedRectangle);
+                    //Continue the merging with the new rectangle!
+                    mergedRectangle.MergeWithOtherRectangles(board);
                     return;
                 }
             }
             //The last merges rectangle will be placed here.
-            SplitMerge();
+            //SplitMerge();
         }
 
-        private void MergeWithRectangle(Rectangle adjacentRectangle)
+        public Rectangle MergeWithRectangle(RectangleSide side, Rectangle adjacentRectangle)
         {
-            throw new NotImplementedException();
+            Rectangle mergedRectangle;
+            switch (side)
+            {
+                case RectangleSide.Left:
+                    mergedRectangle = new Rectangle(width + adjacentRectangle.width, height, adjacentRectangle.x, y);
+                    break;
+                case RectangleSide.Right:
+                    mergedRectangle = new Rectangle(width + adjacentRectangle.width, height, x, y);
+                    break;
+                case RectangleSide.Top:
+                    mergedRectangle = new Rectangle(width, height + adjacentRectangle.height, x, y);
+                    break;
+                case RectangleSide.Bottom:
+                    mergedRectangle = new Rectangle(width, height + adjacentRectangle.height, x, adjacentRectangle.y);
+                    break;
+                default:
+                    throw new Exception("A rectangle can only be joined on the sides left, right, top or bottom, not " + side.ToString());
+                    return null;
+                    break;
+            } 
+            //Updating adjacent rectangles:
+            mergedRectangle.AdjacentRectangles.UnionWith(this.AdjacentRectangles);
+            mergedRectangle.AdjacentRectangles.UnionWith(adjacentRectangle.AdjacentRectangles);
+            mergedRectangle.AdjacentRectangles.Remove(adjacentRectangle);
+            mergedRectangle.AdjacentRectangles.Remove(this);
+            //Duplicates have been removed automaticly, as AdjacentRectangles is a set.
+            //The adjacent rectangles own adjacent rectangles also needs to be updated.
+            foreach (var rectangle in mergedRectangle.AdjacentRectangles)
+            {
+                rectangle.AdjacentRectangles.Remove(adjacentRectangle);
+                rectangle.AdjacentRectangles.Remove(this);
+                rectangle.AdjacentRectangles.Add(mergedRectangle);
+            }
+            return mergedRectangle;
         }
 
         private void SplitMerge()
@@ -135,9 +176,40 @@ namespace BiolyCompiler.Modules
             throw new NotImplementedException();
         }
 
-        private bool CanMerge(Rectangle adjacentRectangle)
+        public (RectangleSide, bool) CanMerge(Rectangle adjacentRectangle)
         {
-            throw new NotImplementedException();
+            //They can merge if the rectangles line up on a side. They can only line up on one side.
+
+            //Below:
+            if (adjacentRectangle.getTopmostYPosition() + 1 == y && 
+                adjacentRectangle.x == x && 
+                width == adjacentRectangle.width)
+            {
+                return (RectangleSide.Bottom, true);
+            }
+            //Above:
+            else if (this.getTopmostYPosition() + 1 == adjacentRectangle.y && 
+                     adjacentRectangle.x == x && 
+                     width == adjacentRectangle.width)
+            {
+                return (RectangleSide.Top, true);
+            }
+            //Left
+            else if (adjacentRectangle.getRightmostXPosition() + 1 == x && 
+                     adjacentRectangle.y == y && 
+                     height == adjacentRectangle.height)
+            {
+                return (RectangleSide.Left, true);
+
+            }
+            //Right
+            else if (this.getRightmostXPosition() + 1 == adjacentRectangle.x && 
+                     adjacentRectangle.y == y && 
+                     height == adjacentRectangle.height)
+            {
+                return (RectangleSide.Right, true);
+            }
+            else return (RectangleSide.None, false);
         }
 
         private void ComputeAdjacencyList(Rectangle rectangle)
@@ -176,6 +248,23 @@ namespace BiolyCompiler.Modules
         public int getRightmostXPosition()
         {
             return x + width - 1;
+        }
+
+        public override string ToString()
+        {
+            return "Rectangle. Width = " + width + ", Height = " + height + ", x = " + x + ", y = " + y; 
+        }
+
+        public override bool Equals(object obj)
+        {
+            Rectangle rectangleObj = obj as Rectangle;
+            if (rectangleObj == null)
+                return false;
+            else return rectangleObj.height == height &&
+                        rectangleObj.width  == width  &&
+                        rectangleObj.x      == x      &&
+                        rectangleObj.y      == y;
+            //It will not compare adjacency lists.
         }
     }
 }
