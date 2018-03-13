@@ -14,11 +14,37 @@ h1 {
 	top: 0;
 	z-index: 999;
 }
-#graphDiv {
+
+/*this is some funky css code from the internetz
+that has been modified to our needs*/
+#tabController {
 	width: 50%;
 	height: 100%;
 	position: absolute;
 	left: 50%;
 	top: 0;
 	z-index: 999;
+	border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+#tabController button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+#tabController button:hover {
+    background-color: #ddd;
+}
+#tabController button.active {
+    background-color: #ccc;
+}
+.tabContent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
 }

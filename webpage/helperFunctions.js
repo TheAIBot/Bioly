@@ -100,7 +100,24 @@ function getIfWorkspaceChanged()
 	return didChange;
 }
 
+function openTab(e, tabName) {
 
+    const tabs = document.getElementsByClassName("tabContent");
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].style.display = "none";
+    }
+
+    const tablinks = document.getElementsByClassName("tabLink");
+    for (var i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(tabName).style.display = "block";
+    e.currentTarget.className += " active";
+}
+
+document.getElementById("defaultTab").click();
 
 
 

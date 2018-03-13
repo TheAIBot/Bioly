@@ -39,7 +39,12 @@
 	</head>
 	<body>
 		<div id="blocklyDiv"></div>
-		<div id="graphDiv"></div>
+		<div id="tabController">
+			<button class="tabLink" onclick="openTab(event, 'graphDiv')" id="defaultTab">Graph</button>
+			<button class="tabLink" onclick="openTab(event, 'simulatorCanvas')">Simulator</button>
+		</div>
+		<div class="tabContent" id="graphDiv"></div>
+		<canvas class="tabContent" id="simulatorCanvas"></canvas>
 		<xml id="toolbox" style="display: none">
 			<category name="Control">
 				<block type="controls_if"></block>
