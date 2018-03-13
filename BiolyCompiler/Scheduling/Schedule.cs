@@ -5,6 +5,8 @@ using BiolyCompiler.Modules;
 using System.Collections.Generic;
 using BiolyCompiler.Architechtures;
 using BiolyCompiler.BlocklyParts.Blocks;
+using BiolyCompiler.Routing;
+using Priority_Queue;
 //using BiolyCompiler.Modules.ModuleLibrary;
 
 namespace BiolyCompiler.Scheduling
@@ -13,6 +15,7 @@ namespace BiolyCompiler.Scheduling
     public class Schedule
     {
         Dictionary<int, Module[][]> boardAtDifferentTimes = new Dictionary<int, Module[][]>();
+        public const int DROP_MOVEMENT_TIME = 1;
 
         public Schedule(){
 
@@ -96,14 +99,23 @@ namespace BiolyCompiler.Scheduling
                 Block operation = removeOperation(readyOperations);
                 Module module   = library.getAndPlaceFirstPlaceableModule(operation, board); //Also called place
                 //If the module can't be placed, one must wait until there is enough place for it.
-                if (module == null) {
-                    //Routing should be done here. (*)
-                        waitForAFinishedOperation();
-                } else{
-                    //TODO What if there is no module that can be placed?(*)
+                if (module != null){
                     operation.Bind(module); //TODO make modules unique
-                    //Route route   = determineRouteToModule(operation, module, architecture); //Will be included as part of a later step.
-                    timeStart = updateSchedule(operation, schedule); 
+                    Route route   = determineRouteToModule(operation, module, architecture); //Will be included as part of a later step.
+                    //TODO (*) If it can't be routed
+                    if (route == null)
+                    {
+                        operation.Unbind(module);
+                        waitForAFinishedOperation();
+                        module = null;
+                    }
+                    else timeStart = updateSchedule(operation, schedule); 
+                }
+                if (module == null)
+                {
+                    waitForAFinishedOperation();
+                    if (GetRunningOperationsCount() == 0) throw new Exception("The scheduling can't be made: either there aren't enough space for module: " + module.ToString() +
+                                                                              ", or the routing can't be made.");
                 }
 
                 board = getCurrentBoard();
@@ -111,6 +123,11 @@ namespace BiolyCompiler.Scheduling
                 readyOperations = assay.getReadyOperations();
             }
             return Tuple.Create(schedule.getCompletionTime(), schedule);
+        }
+
+        private static int GetRunningOperationsCount()
+        {
+            throw new NotImplementedException();
         }
 
         private static int updateSchedule(Block operation, Schedule schedule)
@@ -126,8 +143,71 @@ namespace BiolyCompiler.Scheduling
             
         }
 
-        public static Route determineRouteToModule(Block operation, Module module, Architechture architecture){
+        public static Route determineRouteToModule(Block operation, Module targetModule, Board board, int startTime){
+
+            //Dijkstras algorithm, based on the one seen on wikipedia.
+            Node<RoutingInformation>[,] dijkstraGraph = createDijkstraGraph(board);
+            Node<RoutingInformation> source = board.getOperationFluidPlacementOnBoard(operation, dijkstraGraph);
+            source.value.distanceFromSource = 0;
+            SimplePriorityQueue<Node<RoutingInformation>, int> priorityQueue = new SimplePriorityQueue<Node<RoutingInformation>, int>();
+            foreach (var node in dijkstraGraph) priorityQueue.Enqueue(node, node.value.distanceFromSource);
+            while (priorityQueue.Count > 0) {
+                Node<RoutingInformation> currentNode = priorityQueue.Dequeue();
+                if (currentNode.value.distanceFromSource == Int32.MaxValue) throw new Exception("No route to the desired component could be found");
+                if (board.grid[currentNode.value.x, currentNode.value.y] == targetModule) return GetRouteFromSourceToTarget(currentNode, startTime); //Have reached the desired module
+                foreach (var neighbor in currentNode.getOutgoingEdges())
+                {
+                    int distanceToNeighborFromCurrent = currentNode.value.distanceFromSource + 1; 
+                    //Unit lenght distances.
+                    if (distanceToNeighborFromCurrent < neighbor.value.distanceFromSource)
+                    {
+                        neighbor.value.distanceFromSource = distanceToNeighborFromCurrent;
+                        neighbor.value.previous = currentNode;
+                        priorityQueue.UpdatePriority(neighbor, distanceToNeighborFromCurrent);
+                    }
+                }
+
+            }
+            //If no route was found:
             return null;
+        }
+
+        private static Route GetRouteFromSourceToTarget(Node<RoutingInformation> currentNode, int startTime)
+        {
+            Route route = new Route();
+            List<Node<RoutingInformation>> routeNodes = new List<Node<RoutingInformation>>();
+            while(currentNode.value.previous != null)
+            {
+                routeNodes.Add(currentNode);
+                currentNode = currentNode.value.previous;
+            }
+            routeNodes.Add(currentNode);
+            routeNodes.Reverse();
+            route.route = routeNodes;
+            route.startTime = startTime;
+            return route;
+        }
+
+        private static Node<RoutingInformation>[,] createDijkstraGraph(Board board)
+        {
+            Node<RoutingInformation>[,] dijkstraGraph = new Node<RoutingInformation>[board.width, board.heigth];
+            for (int i = 0; i < dijkstraGraph.GetLength(0); i++) { 
+                for (int j = 0; j < dijkstraGraph.GetLength(1); j++) {
+                    dijkstraGraph[i, j] = new Node<RoutingInformation>();
+                    dijkstraGraph[i, j].value.x = i;
+                    dijkstraGraph[i, j].value.y = j;
+                }
+            }
+            //Adding edges:
+            for (int i = 0; i < dijkstraGraph.GetLength(0); i++) {
+                for (int j = 0; j < dijkstraGraph.GetLength(1); j++) {
+                    if (0 < i) dijkstraGraph[i, j].AddOutgoingEdge(dijkstraGraph[i - 1, j]);
+                    if (0 < j) dijkstraGraph[i, j].AddOutgoingEdge(dijkstraGraph[i, j - 1]);
+                    if (i < board.width - 1 ) dijkstraGraph[i, j].AddOutgoingEdge(dijkstraGraph[i + 1, j]);
+                    if (j < board.heigth - 1) dijkstraGraph[i, j].AddOutgoingEdge(dijkstraGraph[i, j + 1]);
+                }
+            }
+            return dijkstraGraph;
         }
 
         public static int updateSchedule(Block operation, Schedule schedule, Route route){
@@ -144,6 +224,11 @@ namespace BiolyCompiler.Scheduling
 
 
     public class Route{
+        public List<Node<RoutingInformation>> route;
+        public int startTime;
 
+        public int getEndTime(){
+            return startTime + route.Count * Schedule.DROP_MOVEMENT_TIME;
+        }
     }
 }

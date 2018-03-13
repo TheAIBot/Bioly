@@ -13,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts.Blocks
         public readonly IReadOnlyList<string> InputVariables;
         public readonly string OutputVariable;
         //For the scheduling:
-        public Module boundedModule;
+        public Module boundModule;
         public bool hasBeenScheduled = false;
         public int priority = Int32.MaxValue;
         private static readonly List<string> EmptyList = new List<string>();
@@ -35,6 +35,11 @@ namespace BiolyCompiler.BlocklyParts.Blocks
         }
 
         internal void Bind(Module module)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void Unbind(Module module)
         {
             throw new NotImplementedException();
         }

@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using BiolyCompiler.BlocklyParts.Blocks;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
+using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.Architechtures
 {
@@ -107,11 +110,9 @@ namespace BiolyCompiler.Architechtures
 
         //based on the algorithm seen in figure 6.3, "Fault-Tolerant Digital Microfluidic Biochips - Compilation and Synthesis"
         public bool place(Module module){
+            
             //List<Rectangle> rectangles = ConstructRectangleList(module.grid);
             
-            //(*)Need to take into account if the module has been scheduled at a prior time,
-            // and as such cannot be moved.
-
             Rectangle bestFit = SelectRectangle(module);
             if (bestFit != null){
                 bool couldBePlaced = UpdatePlacement(bestFit, module);
@@ -119,6 +120,8 @@ namespace BiolyCompiler.Architechtures
             }
 
             return false;
+            
+
         }
 
         private bool UpdatePlacement(Rectangle rectangle, Module module)
@@ -155,6 +158,11 @@ namespace BiolyCompiler.Architechtures
         internal bool placeAllDroplets()
         {
             throw new NotImplementedException();
+        }
+
+        public Node<RoutingInformation> getOperationFluidPlacementOnBoard(Block operation, Node<RoutingInformation>[,] dijkstraGraph)
+        {
+            return dijkstraGraph[operation.boundModule.shape.x, operation.boundModule.shape.y];
         }
     }
 }

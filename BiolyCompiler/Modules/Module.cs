@@ -24,5 +24,9 @@ namespace BiolyCompiler.Modules
         {
             return this.GetType().ToString() + ", dimensions = " + shape.ToString() + ", operation time = " + operationTime;
         }
+
+        //Returns a copy of the module (not taking adjacencies into account). 
+        //It is used for creating unique modules, for the binding process in the scheduling
+        public abstract Module GetCopyOf();
     }
 }
