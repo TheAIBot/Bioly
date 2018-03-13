@@ -4,6 +4,30 @@
 		<title>cytoscape-dagre.js demo</title>
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 		<link href="style.css" rel="stylesheet" />
+		
+		<script id="vertex-shader" type="x-shader/x-vertex">
+			attribute vec4 vPosition;
+			varying vec4 fColor;
+
+			void main() 
+			{
+				fColor = vec4(1.0 - vPosition.x, vPosition.x - vPosition.y, vPosition.y, 1.0);            
+				gl_Position = vPosition;
+			}
+		</script>
+		<script id="fragment-shader" type="x-shader/x-fragment">
+			precision mediump float;
+			varying vec4 fColor;
+
+			void main()
+			{
+				gl_FragColor = fColor;
+			}
+		</script>
+		<script src="simulator.js"></script>
+		<script src="WebGL/angelCommon/initShaders.js"></script>
+		<script src="WebGL/angelCommon/webgl-utils.js"></script>
+		<script src="WebGL/angelCommon/MV.js"></script>
 
 		<script src="blockly_compressed.js"></script>
 		<script src="blocks_compressed.js"></script>
