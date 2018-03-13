@@ -1,27 +1,24 @@
 <!DOCTYPE>
 <html>
 	<head>
-		<title>cytoscape-dagre.js demo</title>
+		<title>Bioly</title>
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 		<link href="style.css" rel="stylesheet" />
 		
 		<script id="vertex-shader" type="x-shader/x-vertex">
 			attribute vec4 vPosition;
-			varying vec4 fColor;
 
 			void main() 
-			{
-				fColor = vec4(1.0 - vPosition.x, vPosition.x - vPosition.y, vPosition.y, 1.0);            
+			{         
 				gl_Position = vPosition;
 			}
 		</script>
 		<script id="fragment-shader" type="x-shader/x-fragment">
 			precision mediump float;
-			varying vec4 fColor;
 
 			void main()
 			{
-				gl_FragColor = fColor;
+				gl_FragColor = vec4(1, 0, 0, 1);
 			}
 		</script>
 		<script src="simulator.js"></script>
@@ -40,11 +37,11 @@
 	<body>
 		<div id="blocklyDiv"></div>
 		<div id="tabController">
-			<button class="tabLink" onclick="openTab(event, 'graphDiv')" id="defaultTab">Graph</button>
-			<button class="tabLink" onclick="openTab(event, 'simulatorCanvas')">Simulator</button>
+			<button class="tabLink" id="leftTab" onclick="openTab(event, 'graphDiv')" >Graph</button>
+			<button class="tabLink" id="rightTab" onclick="openTab(event, 'simulatorCanvas')">Simulator</button>
+			<div class="tabContent" id="graphDiv"></div>
+			<canvas class="tabContent" id="simulatorCanvas"></canvas>
 		</div>
-		<div class="tabContent" id="graphDiv"></div>
-		<canvas class="tabContent" id="simulatorCanvas"></canvas>
 		<xml id="toolbox" style="display: none">
 			<category name="Control">
 				<block type="controls_if"></block>
