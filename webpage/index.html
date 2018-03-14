@@ -1,27 +1,21 @@
-<!DOCTYPE html>
+<!DOCTYPE>
 <html>
 	<head>
-		<meta charset="utf-8">
-		<title>Bioly</title>
+		<title>cytoscape-dagre.js demo</title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+		<link href="style.css" rel="stylesheet" />
+
 		<script src="blockly_compressed.js"></script>
 		<script src="blocks_compressed.js"></script>
 		<script src="en.js"></script>
 		<script src="costum_blocks.js"></script>
-		<style>
-			body {
-			background-color: #fff;
-			font-family: sans-serif;
-			}
-			h1 {
-			font-weight: normal;
-			font-size: 140%;
-			}
-		</style>
+		<script src="cytoscape.min.js"></script>
+		<script src="dagre.min.js"></script>
+		<script src="cytoscape-dagre.js"></script>
 	</head>
 	<body>
-		<button onclick="save();">save</button>
-		<button onclick="load();alert('asda');">load</button>
-		<div id="blocklyDiv" style="height: 680px; width: 800px;"></div>
+		<div id="blocklyDiv"></div>
+		<div id="graphDiv"></div>
 		<xml id="toolbox" style="display: none">
 			<category name="Control">
 				<block type="controls_if"></block>
@@ -41,9 +35,9 @@
 				<block type="getFluid"></block>
 			</category>
 			<category name="Fluid operator">
-				<block type="mix"></block>
-				<block type="split"></block>
-				<block type="heat"></block>
+				<block type="mixer"></block>
+				<block type="splitter"></block>
+				<block type="heater"></block>
 			</category>
 			<category name="Misc">
 				<block type="start"></block>
@@ -57,21 +51,6 @@
 				<block type="getFLuidArrayIndex"></block>
 			</category>
 		</xml>
-		<script>
-			function save() {
-				const xml = Blockly.Xml.workspaceToDom(workspace);
-				const xml_text = Blockly.Xml.domToText(xml);
-				document.cookie = "dd=0" + xml_text;
-			}
-			function load() {
-				const xml_text = document.cookie;
-				const xml = Blockly.Xml.textToDom(xml_text);
-				Blockly.Xml.domToWorkspace(xml, workspace);
-			}
-			
-			var workspace = Blockly.inject('blocklyDiv',
-				{media: 'media/',
-				toolbox: document.getElementById('toolbox')});
-		</script>
+		<script src="helperFunctions.js"></script>
 	</body>
 </html>

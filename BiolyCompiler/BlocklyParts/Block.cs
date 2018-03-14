@@ -5,17 +5,21 @@ using System.Xml;
 using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.Modules;
 
-namespace BiolyCompiler.BlocklyParts.Blocks
+namespace BiolyCompiler.BlocklyParts
 {
-    public abstract class Block : IBlocklyPart
+    public abstract class Block
     {
         public readonly bool CanBeOutput;
         public readonly IReadOnlyList<string> InputVariables;
         public readonly string OutputVariable;
+        public readonly string OriginalOutputVariable;
+        private static int nameID;
+        public const string DEFAULT_NAME = "anonymous var";
         //For the scheduling:
         public Module boundModule;
         public bool hasBeenScheduled = false;
         public int priority = Int32.MaxValue;
+        
         private static readonly List<string> EmptyList = new List<string>();
 
         public Block(bool canBeOutput, string output) : this(canBeOutput, EmptyList, output)
@@ -26,7 +30,9 @@ namespace BiolyCompiler.BlocklyParts.Blocks
         {
             this.CanBeOutput = canBeOutput;
             this.InputVariables = input;
-            this.OutputVariable = output;
+            this.OutputVariable = $"N{nameID}";
+            nameID++;
+            this.OriginalOutputVariable = output ?? DEFAULT_NAME;
         }
 
 

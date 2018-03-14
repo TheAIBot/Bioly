@@ -4,7 +4,7 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.Modules.OperationTypes;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.Sensors
+namespace BiolyCompiler.BlocklyParts.Sensors
 {
     public class Sensor : Block
     {

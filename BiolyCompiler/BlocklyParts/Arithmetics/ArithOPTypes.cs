@@ -4,7 +4,11 @@ using System.Text;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
-    enum ArithOPTypes
+    public enum ArithOPTypes
     {
+        ADD,
+        SUB,
+        MUL,
+        DIV
     }
 }

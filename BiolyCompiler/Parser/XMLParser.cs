@@ -1,49 +1,113 @@
-﻿using BiolyCompiler.BlocklyParts.Blocks;
-using BiolyCompiler.BlocklyParts.Blocks.FFUs;
-using BiolyCompiler.BlocklyParts.Blocks.Misc;
-using BiolyCompiler.BlocklyParts.Blocks.Sensors;
+﻿using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyCompiler.Graphs;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.Linq;
+using System.Threading;
+using BiolyCompiler.BlocklyParts.Arithmetics;
+using BiolyCompiler.BlocklyParts.BoolLogic;
+using BiolyCompiler.BlocklyParts.ControlFlow;
 
 namespace BiolyCompiler.Parser
 {
-    public static class XMLParser
+    public static class XmlParser
     {
         public static CDFG Parse(string xmlText)
         {
             XmlDocument xmlDocument = new XmlDocument();
             xmlDocument.LoadXml(xmlText);
 
-            XmlNode node = xmlDocument.FirstChild;
-            node = XmlTools.GetNodeWithName(node, "block");
+            CDFG cdfg = new CDFG();
+            XmlNode node = xmlDocument.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
 
-            var cdfg = new CDFG();
-            var cfg = new CFG<DFG<Block>>();
-            var dfgQueue = new Queue<(DFG<Block> savedDFG, XmlNode savedNode)>();
-            var currentDFG = new DFG<Block>();
+            DFG<Block> startDFG = ParseDFG(node, cdfg);
+            cdfg.StartDFG = startDFG;
+
+            return cdfg;
+        }
+
+        internal static DFG<Block> ParseDFG(XmlNode node, CDFG cdfg)
+        {
+            IControlBlock controlBlock = null;
+            var dfg = new DFG<Block>();
+            var mostRecentRef = new Dictionary<string, string>();
             while (true)
             {
                 if (IsConditional(node))
                 {
-                    //do something about them
-                    continue;
+                    controlBlock = ParseConditionalBlocks(node, cdfg, dfg, mostRecentRef);
+                    break;
                 }
 
-                Block block = GetBlock(node);
-                Node<Block> dfgNode = new Node<Block>();
-                dfgNode.value = block;
+                ParseAndAddNodeToDFG(node, dfg, mostRecentRef);
 
+                //move on to the next node or exit if none
                 node = XmlTools.GetNodeWithName(node, "next");
                 if (node == null)
                 {
                     break;
                 }
+                node = node.FirstChild;
             }
 
-            return cdfg;
+            dfg.FinishDFG();
+            cdfg.AddNode(controlBlock, dfg);
+
+            return dfg;
+        }
+
+        internal static Block ParseAndAddNodeToDFG(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            Block block = ParseBlock(node, dfg, mostRecentRef);
+            Node<Block> dfgNode = new Node<Block>();
+            dfgNode.value = block;
+            
+            dfg.AddNode(dfgNode);
+
+            //update map of most recent nodes that outputs the variable
+            //so other nodes that get their value from the node that
+            //just updated the value
+            if (mostRecentRef.ContainsKey(block.OriginalOutputVariable))
+            {
+                mostRecentRef[block.OriginalOutputVariable] = dfgNode.value.OutputVariable;
+            }
+            else
+            {
+                mostRecentRef.Add(block.OriginalOutputVariable, dfgNode.value.OutputVariable);
+            }
+
+            return block;
+        }
+
+        private static IControlBlock ParseConditionalBlocks(XmlNode node, CDFG cdfg, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            string blockType = node.Attributes["type"].Value;
+            switch (blockType)
+            {
+                case If.XmlTypeName:
+                    return new If(node, cdfg, dfg, mostRecentRef);
+                case Repeat.XmlTypeName:
+                    return new Repeat(node, cdfg, dfg);
+                default:
+                    throw new Exception("Invalid type: " + blockType);
+            }
+        }
+
+        internal static DFG<Block> ParseNextDFG(XmlNode node, CDFG cdfg)
+        {
+            node = XmlTools.GetNodeWithName(node, "next");
+            if (node == null)
+            {
+                return null;
+            }
+
+            node = node.FirstChild;
+            return ParseDFG(node, cdfg);
         }
 
         private static bool IsConditional(XmlNode node)
@@ -51,24 +115,44 @@ namespace BiolyCompiler.Parser
             return node.GetNodeWithName("statement") != null;
         }
 
-        private static Block GetBlock(XmlNode node)
+        public static Block ParseBlock(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
             string blockType = node.Attributes["type"].Value;
             switch (blockType)
             {
+                case ArithOP.XmlTypeName:
+                    return ArithOP.Parse(node, dfg, mostRecentRef);
+                case Constant.XmlTypeName:
+                    return Constant.Parse(node);
+                //case FluidArray.XmlTypeName:
+                //    return FluidArray.Parse(node);
+                //case SetFluidArray.XmlTypeName:
+                //    return SetFluidArray.Parse(node);
                 case Fluid.XmlTypeName:
-                    return Fluid.TryParseBlock(node);
+                    return Fluid.Parse(node, mostRecentRef);
                 case Input.XmlTypeName:
-                    return Input.TryParseBlock(node);
+                    return Input.Parse(node);
                 case Output.XmlTypeName:
-                    return Output.TryParseBlock(node);
+                    return Output.Parse(node, mostRecentRef);
                 case Waste.XmlTypeName:
-                    return Waste.TryParseBlock(node);
+                    return Waste.Parse(node, mostRecentRef);
+                case BoolOP.XmlTypeName:
+                    return BoolOP.Parse(node, dfg, mostRecentRef);
                 //case Sensor.XmlTypeName:
-                //    return new Sensor();
+                //    return Sensor.Parse(node);
                 default:
                     throw new Exception("Invalid type: " + blockType);
             }
+        }
+
+        internal static string GetVariablesCorrectedName(XmlNode node, Dictionary<string, string> mostRecentRef)
+        {
+            string variableName = node.InnerText;
+            if (!mostRecentRef.ContainsKey(variableName))
+            {
+                return "ERROR_FINDING_NODE";
+            }
+            return mostRecentRef[variableName];
         }
     }
 }

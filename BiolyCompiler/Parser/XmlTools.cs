@@ -5,9 +5,9 @@ using System.Xml;
 
 namespace BiolyCompiler.Parser
 {
-    internal static class XmlTools
+    public static class XmlTools
     {
-        internal static XmlNode GetNodeWithName(this XmlNode xmlNode, string name)
+        public static XmlNode GetNodeWithName(this XmlNode xmlNode, string name)
         {
             foreach (XmlNode item in xmlNode.ChildNodes)
             {
@@ -19,9 +19,29 @@ namespace BiolyCompiler.Parser
             return null;
         }
 
+        internal static XmlNode GetNodeWithAttributeValue(this XmlNode xmlNode, string attributeName)
+        {
+            foreach (XmlNode item in xmlNode.ChildNodes)
+            {
+                foreach (XmlNode attribute in item.Attributes)
+                {
+                    if (attribute.Value == attributeName)
+                    {
+                        return item;
+                    }
+                }
+            }
+            return null;
+        }
+
         internal static int ToInt(this XmlNode xmlNode)
         {
             return int.Parse(xmlNode.Value);
+        }
+
+        internal static int TextToInt(this XmlNode xmlNode)
+        {
+            return int.Parse(xmlNode.InnerText);
         }
     }
 }

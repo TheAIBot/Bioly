@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Blocks;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;

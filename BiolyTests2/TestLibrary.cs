@@ -1,11 +1,6 @@
-using System;
 using System.Collections.Generic;
 using MoreLinq;
 using BiolyTests.AssayTests;
-using BiolyCompiler.BlocklyParts.Blocks;
-using BiolyCompiler.BlocklyParts.Blocks.Sensors;
-using BiolyCompiler.Graphs;
-using BiolyCompiler.BlocklyParts.Blocks.FFUs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,7 +18,7 @@ namespace BiolyTests.ModuleLibraryTests
             ModuleLibrary library = new ModuleLibrary();
             Assay assay = new Assay(TestAssay.GetSemiParallelDFG());
             library.allocateModules(assay);
-            List<OperationType> usedOperationTypes = assay.dfg.nodes.DistinctBy(node => node.value.getOperationType())
+            List<OperationType> usedOperationTypes = assay.dfg.Nodes.DistinctBy(node => node.value.getOperationType())
                                                                     .Select(node => node.value.getOperationType())
                                                                     .ToList();
             

@@ -1,8 +1,6 @@
 using System;
 using BiolyCompiler.BlocklyParts.Blocks;
-using BiolyCompiler.BlocklyParts.Blocks.Sensors;
 using BiolyCompiler.Graphs;
-using BiolyCompiler.BlocklyParts.Blocks.FFUs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

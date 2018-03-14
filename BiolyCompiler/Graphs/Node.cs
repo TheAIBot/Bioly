@@ -6,8 +6,8 @@ namespace BiolyCompiler.Graphs
 {
     public class Node<N>
     {
-        private List<Node<N>> outgoingEdges = new List<Node<N>>();
-        private List<Node<N>> ingoingEdges = new List<Node<N>>();
+        private List<Node<N>> OutgoingEdges = new List<Node<N>>();
+        private List<Node<N>> IngoingEdges = new List<Node<N>>();
         public N value;
 
 
@@ -22,23 +22,23 @@ namespace BiolyCompiler.Graphs
 
         public void AddOutgoingEdge(Node<N> target)
         {
-            outgoingEdges.Add(target);
+            OutgoingEdges.Add(target);
         }
 
         public void AddIngoingEdge(Node<N> source)
         {
-            ingoingEdges.Add(source);
+            IngoingEdges.Add(source);
         }
 
         public List<Node<N>> getIngoingEdges()
         {
-            return ingoingEdges;
+            return IngoingEdges;
         }
 
 
         public List<Node<N>> getOutgoingEdges()
         {
-            return outgoingEdges;
+            return OutgoingEdges;
         }
 
     }

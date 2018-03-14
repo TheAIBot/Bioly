@@ -7,6 +7,7 @@ using BiolyCompiler.Architechtures;
 using BiolyCompiler.BlocklyParts.Blocks;
 using BiolyCompiler.Routing;
 using Priority_Queue;
+using BiolyCompiler.BlocklyParts;
 //using BiolyCompiler.Modules.ModuleLibrary;
 
 namespace BiolyCompiler.Scheduling
@@ -15,6 +16,7 @@ namespace BiolyCompiler.Scheduling
     public class Schedule
     {
         Dictionary<int, Module[][]> boardAtDifferentTimes = new Dictionary<int, Module[][]>();
+        Dictionary<string, Droplet> FluidVariableLocations = new Dictionary<string, Droplet>();
         public const int DROP_MOVEMENT_TIME = 1;
 
         public Schedule(){
@@ -47,7 +49,7 @@ namespace BiolyCompiler.Scheduling
                                         ", on board: " + board.ToString());
                 }
                 operation.Bind(module);
-                updateSchedule(operation);
+                //updateSchedule(operation);
                 waitForAFinishedOperation();
 
                 board = getCurrentBoard();
@@ -74,6 +76,11 @@ namespace BiolyCompiler.Scheduling
         private static void waitForAFinishedOperation()
         {
             throw new NotImplementedException();
+        }
+
+        public void GiveFluidVariableLocations(Dictionary<string, Droplet> Locations)
+        {
+            Locations.ForEach(pair => FluidVariableLocations.Add(pair.Key, pair.Value));
         }
 
         /**
@@ -231,7 +238,7 @@ namespace BiolyCompiler.Scheduling
             return startTime + (route.Count - 1) * Schedule.DROP_MOVEMENT_TIME;
         }
 
-        public String ToString()
+        public override String ToString()
         {
             String routeString = "StartTime = " + startTime + ", EndTime = " + getEndTime() + ". Route = [";
             for (int i = 0; i < route.Count; i++)

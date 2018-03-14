@@ -7,7 +7,7 @@ using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.BlocklyParts.Blocks;
 using BiolyCompiler.Scheduling;
-
+using BiolyCompiler.BlocklyParts;
 
 namespace BiolyCompiler.Modules
 {
@@ -41,7 +41,7 @@ namespace BiolyCompiler.Modules
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
             HashSet<OperationType> operationsUsed = new HashSet<OperationType>();
-            operationsUsed.UnionWith(assay.dfg.nodes.Select(node => node.value.getOperationType()));
+            operationsUsed.UnionWith(assay.dfg.Nodes.Select(node => node.value.getOperationType()));
             
             foreach (var operation in operationsUsed)
             {

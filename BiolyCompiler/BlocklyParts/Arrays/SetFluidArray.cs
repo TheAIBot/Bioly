@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.BlocklyParts
+namespace BiolyCompiler.BlocklyParts.Arrays
 {
-    interface IBlocklyPart
+    class SetFluidArray
     {
     }
 }

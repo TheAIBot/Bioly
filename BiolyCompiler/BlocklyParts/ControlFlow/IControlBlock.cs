@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler
+namespace BiolyCompiler.BlocklyParts.ControlFlow
 {
-    public enum FluidUnit
+    public interface IControlBlock
     {
-        drops,
-        ml
     }
 }

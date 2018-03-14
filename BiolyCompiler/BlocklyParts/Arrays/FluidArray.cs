@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BiolyCompiler.BlocklyParts.BoolLogic
+namespace BiolyCompiler.BlocklyParts.Arrays
 {
-    class Bool
+    class FluidArray
     {
     }
 }

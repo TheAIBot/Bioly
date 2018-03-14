@@ -1,8 +1,6 @@
 using System;
 using BiolyCompiler.BlocklyParts.Blocks;
-using BiolyCompiler.BlocklyParts.Blocks.Sensors;
 using BiolyCompiler.Graphs;
-using BiolyCompiler.BlocklyParts.Blocks.FFUs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using BiolyCompiler.Architechtures;
@@ -11,6 +9,8 @@ using System.Collections.Generic;
 using BiolyCompiler.Modules.RectangleSides;
 using System.Linq;
 using BiolyCompiler.Routing;
+using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.Sensors;
 //using MoreLinq;
 
 namespace BiolyTests.RoutingTests

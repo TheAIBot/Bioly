@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.Modules.OperationTypes;
 
-namespace BiolyCompiler.BlocklyParts.Blocks.FFUs
+namespace BiolyCompiler.BlocklyParts.FFUs
 {
     public class Mixer : Block
     {
@@ -18,17 +18,22 @@ namespace BiolyCompiler.BlocklyParts.Blocks.FFUs
 
         }
 
-        public static Block CreateMixer(string output, XmlNode node)
+        public static Block CreateMixer(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(node.GetNodeWithName(FirstInputName).InnerText);
-            inputs.Add(node.GetNodeWithName(SecondInputName).InnerText);
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(FirstInputName), mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputName), mostRecentRef));
 
             return new Mixer(inputs, output, node);
         }
-
-        public override OperationType getOperationType(){
+        
+        public override OperationType getOperationType() {
             return OperationType.Mixer;
+        }
+
+        public override string ToString()
+        {
+            return "Mixer";
         }
     }
 }

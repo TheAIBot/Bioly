@@ -3,7 +3,7 @@ using System.Linq;
 using BiolyCompiler.Graphs;
 using System.Collections.Generic;
 using BiolyCompiler.BlocklyParts.Blocks;
-//using BiolyCompiler.Modules.ModuleLibrary;
+using BiolyCompiler.BlocklyParts;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -17,8 +17,8 @@ namespace BiolyCompiler.Scheduling
         public Assay(DFG<Block> dfg){
             this.dfg = dfg;
             //Set ready nodes
-            dfg.nodes.ForEach(node => operationToNode.Add(node.value, node));
-            readyOperations = dfg.nodes.Where(node => node.getIngoingEdges().Count == 0)
+            dfg.Nodes.ForEach(node => operationToNode.Add(node.value, node));
+            readyOperations = dfg.Nodes.Where(node => node.getIngoingEdges().Count == 0)
                                        .Select(node => node.value)
                                        .ToList();
         }

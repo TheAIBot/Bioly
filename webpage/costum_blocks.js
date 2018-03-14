@@ -31,7 +31,7 @@ Blockly.Blocks["input"] = {
 			"message2": "amount %1 %2",
 			"args2": [
 				{
-					"type": "field_input",
+					"type": "field_number",
 					"name": "inputAmount",
 					"check": "Number"
 				},
@@ -113,7 +113,7 @@ Blockly.Blocks["getFluid"] = {
 	}
 };
 
-Blockly.Blocks["mix"] = {
+Blockly.Blocks["mixer"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "mix",
@@ -142,7 +142,7 @@ Blockly.Blocks["mix"] = {
 	}
 };
 
-Blockly.Blocks["split"] = {
+Blockly.Blocks["splitter"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "split",
@@ -172,7 +172,7 @@ Blockly.Blocks["split"] = {
 	}
 };
 
-Blockly.Blocks["heat"] = {
+Blockly.Blocks["heater"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "heat",

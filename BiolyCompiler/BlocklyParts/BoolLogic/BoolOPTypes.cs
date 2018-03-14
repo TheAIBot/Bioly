@@ -4,7 +4,13 @@ using System.Text;
 
 namespace BiolyCompiler.BlocklyParts.BoolLogic
 {
-    enum BoolOPTypes
+    public enum BoolOPTypes
     {
+        EQ,  // ==
+        NEQ, // !=
+        LT,  // <
+        LTE, // <=
+        GT,  // >
+        GTE  // >=
     }
 }

@@ -1,11 +1,12 @@
 using System;
 using BiolyCompiler.BlocklyParts.Blocks;
-using BiolyCompiler.BlocklyParts.Blocks.Sensors;
 using BiolyCompiler.Graphs;
-using BiolyCompiler.BlocklyParts.Blocks.FFUs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.Sensors;
+using BiolyCompiler.BlocklyParts.FFUs;
 
 namespace BiolyTests.AssayTests
 {
@@ -86,8 +87,8 @@ namespace BiolyTests.AssayTests
             DFG<Block> dfg = GetTotallyParallelDFG();
             Assay assay = new Assay(dfg);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.nodes.Count);
-            foreach (var node in dfg.nodes)
+            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count);
+            foreach (var node in dfg.Nodes)
             {
                 //Even the pointers should be the same.
                 Assert.IsTrue(assay.getReadyOperations().Contains(node.value));
@@ -99,16 +100,16 @@ namespace BiolyTests.AssayTests
         {
             DFG<Block> dfg = GetTotallyParallelDFG();
 
-            dfg.AddEdge(dfg.nodes[0], dfg.nodes[1]);
+            dfg.AddEdge(dfg.Nodes[0], dfg.Nodes[1]);
             //Now the operations associated with node 1,
             //should wait for the operation assocaited with node 0.
 
             Assay assay = new Assay(dfg);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.nodes.Count - 1);
-            for (int i = 0; i < dfg.nodes.Count; i++)
+            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count - 1);
+            for (int i = 0; i < dfg.Nodes.Count; i++)
             {
-                bool containsOperation = assay.getReadyOperations().Contains(dfg.nodes[i].value);
+                bool containsOperation = assay.getReadyOperations().Contains(dfg.Nodes[i].value);
                 if (i == 1)
                 {
                     Assert.IsFalse(containsOperation);
@@ -125,26 +126,26 @@ namespace BiolyTests.AssayTests
         {
             DFG<Block> dfg = GetTotallyParallelDFG();
 
-            dfg.AddEdge(dfg.nodes[0], dfg.nodes[1]);
-            dfg.AddEdge(dfg.nodes[2], dfg.nodes[3]);
+            dfg.AddEdge(dfg.Nodes[0], dfg.Nodes[1]);
+            dfg.AddEdge(dfg.Nodes[2], dfg.Nodes[3]);
             //Now the operations associated with node 1/3,
             //should wait for the operation assocaited with node 0/2.
 
             Assay assay = new Assay(dfg);
 
-            assay.updateReadyOperations(dfg.nodes[2].value);
+            assay.updateReadyOperations(dfg.Nodes[2].value);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.nodes.Count - 2);
+            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count - 2);
 
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.nodes[0].value));
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.nodes[3].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.nodes[1].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.nodes[2].value));
+            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[0].value));
+            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[3].value));
+            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
+            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsFalse(dfg.nodes[0].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.nodes[1].value.hasBeenScheduled);
-            Assert.IsTrue (dfg.nodes[2].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.nodes[3].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[0].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[1].value.hasBeenScheduled);
+            Assert.IsTrue (dfg.Nodes[2].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[3].value.hasBeenScheduled);
         }
 
         [TestMethod]
@@ -152,8 +153,8 @@ namespace BiolyTests.AssayTests
         {
             DFG<Block> dfg = GetTotallyParallelDFG();
 
-            dfg.AddEdge(dfg.nodes[0], dfg.nodes[1]);
-            dfg.AddEdge(dfg.nodes[2], dfg.nodes[1]);
+            dfg.AddEdge(dfg.Nodes[0], dfg.Nodes[1]);
+            dfg.AddEdge(dfg.Nodes[2], dfg.Nodes[1]);
             //Now the operations associated with node 1,
             //should wait for the operation assocaited with node 0 and 2.
 
@@ -161,34 +162,34 @@ namespace BiolyTests.AssayTests
 
             //Remove first dependecy
 
-            assay.updateReadyOperations(dfg.nodes[2].value);
+            assay.updateReadyOperations(dfg.Nodes[2].value);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.nodes.Count - 2);
+            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count - 2);
 
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.nodes[0].value));
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.nodes[3].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.nodes[1].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.nodes[2].value));
+            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[0].value));
+            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[3].value));
+            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
+            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsFalse(dfg.nodes[0].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.nodes[1].value.hasBeenScheduled);
-            Assert.IsTrue(dfg.nodes[2].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.nodes[3].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[0].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[1].value.hasBeenScheduled);
+            Assert.IsTrue(dfg.Nodes[2].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[3].value.hasBeenScheduled);
 
             //remove last dependecy
-            assay.updateReadyOperations(dfg.nodes[0].value);
+            assay.updateReadyOperations(dfg.Nodes[0].value);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.nodes.Count - 2);
+            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count - 2);
 
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.nodes[1].value));
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.nodes[3].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.nodes[0].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.nodes[2].value));
+            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
+            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[3].value));
+            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[0].value));
+            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsTrue(dfg.nodes[0].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.nodes[1].value.hasBeenScheduled);
-            Assert.IsTrue(dfg.nodes[2].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.nodes[3].value.hasBeenScheduled);
+            Assert.IsTrue(dfg.Nodes[0].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[1].value.hasBeenScheduled);
+            Assert.IsTrue(dfg.Nodes[2].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[3].value.hasBeenScheduled);
         }
         
         [TestMethod]
