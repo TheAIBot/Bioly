@@ -83,8 +83,8 @@
 			</xml>
 		</div>
 		<div class="side" id="rightSide">
-			<button class="tab tabLink" id="leftTab"  onclick="openTab(event, 'graphDiv')">Graph</button>
-			<button class="tab tabLink" id="rightTab" onclick="openTab(event, 'simulatorCanvas')">Simulator</button>
+			<button class="tab tabLink" id="leftTab"  onclick="openTab(event, 'graphDiv'); return false;">Graph</button>
+			<button class="tab tabLink" id="rightTab" onclick="openTab(event, 'simulatorCanvas'); return false;">Simulator</button>
 			<div class="tabContent">
 				<div    class="tabItemContent" id="graphDiv"></div>
 				<canvas class="tabItemContent" id="simulatorCanvas"></canvas>
