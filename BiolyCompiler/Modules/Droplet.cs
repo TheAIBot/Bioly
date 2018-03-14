@@ -16,5 +16,9 @@ namespace BiolyCompiler.Modules
             return OperationType.DropletStorage;
         }
 
+        public override Module GetCopyOf()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

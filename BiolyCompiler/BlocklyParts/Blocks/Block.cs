@@ -34,9 +34,9 @@ namespace BiolyCompiler.BlocklyParts.Blocks
             return OperationType.Unknown;
         }
 
-        internal void Bind(Module module)
+        public void Bind(Module module)
         {
-            throw new NotImplementedException();
+            boundModule = module;
         }
 
         internal void Unbind(Module module)

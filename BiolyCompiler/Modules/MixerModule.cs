@@ -16,5 +16,9 @@ namespace BiolyCompiler.Modules
             return OperationType.Mixer;
         }
 
+        public override Module GetCopyOf()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

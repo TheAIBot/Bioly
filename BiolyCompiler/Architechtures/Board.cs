@@ -51,7 +51,7 @@ namespace BiolyCompiler.Architechtures
                 //Removes bestFitRectangle, hopefully in constant time
                 EmptyRectangles[bestIndex] = EmptyRectangles[EmptyRectangles.Count - 1];
                 EmptyRectangles.RemoveAt(EmptyRectangles.Count - 1);
-                PlaceModule(module, bestFitRectangle);
+                UpdateGridWithModulePlacement(module, bestFitRectangle);
                 Tuple<Rectangle, Rectangle> splittedRectangles = bestFitRectangle.SplitIntoSmallerRectangles(module);
                 if (splittedRectangles.Item1 != null) EmptyRectangles.Add(splittedRectangles.Item1);
                 if (splittedRectangles.Item2 != null) EmptyRectangles.Add(splittedRectangles.Item2);
@@ -87,7 +87,7 @@ namespace BiolyCompiler.Architechtures
             }
         }
 
-        private void PlaceModule(Module module, Rectangle rectangleToPlaceAt)
+        public void UpdateGridWithModulePlacement(Module module, Rectangle rectangleToPlaceAt)
         {
             module.shape.PlaceAt(rectangleToPlaceAt.x, rectangleToPlaceAt.y);
             for (int i = 0; i < module.shape.width; i++)
@@ -110,9 +110,9 @@ namespace BiolyCompiler.Architechtures
 
         //based on the algorithm seen in figure 6.3, "Fault-Tolerant Digital Microfluidic Biochips - Compilation and Synthesis"
         public bool place(Module module){
-            
+
             //List<Rectangle> rectangles = ConstructRectangleList(module.grid);
-            
+            /*
             Rectangle bestFit = SelectRectangle(module);
             if (bestFit != null){
                 bool couldBePlaced = UpdatePlacement(bestFit, module);
@@ -120,7 +120,8 @@ namespace BiolyCompiler.Architechtures
             }
 
             return false;
-            
+            */
+            throw new NotImplementedException();
 
         }
 

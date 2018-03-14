@@ -13,5 +13,10 @@ namespace BiolyCompiler.Modules
         public override OperationType getOperationType(){
             return OperationType.Sensor;
         }
+
+        public override Module GetCopyOf()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
