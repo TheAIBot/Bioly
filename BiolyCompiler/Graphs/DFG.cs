@@ -17,23 +17,24 @@ namespace BiolyCompiler.Graphs
             Nodes.Add(node);
         }
 
-        public void AddEdge(Node<N> source, Node<N> destination)
+        public void AddEdge(Node<N> source, Node<N> target)
         {
-            source.AddEdge(destination);
+            source.AddOutgoingEdge(target);
+            target.AddIngoingEdge(source);
         }
 
         public void FinishDFG()
         {
             foreach (Node<N> node in Nodes)
             {
-                if (node.EdgesToThis.Count == 0)
+                if (node.getIngoingEdges().Count == 0)
                 {
                     Input.Add(node);
                 }
                 if (node.value is Block)
                 {
                     Block block = node.value as Block;
-                    if (node.Edges.Count == 0 && block.CanBeOutput)
+                    if (node.getOutgoingEdges().Count == 0 && block.CanBeOutput)
                     {
                         Output.Add(node);
                     }
@@ -49,5 +50,7 @@ namespace BiolyCompiler.Graphs
                 }
             }
         }
+
     }
+
 }

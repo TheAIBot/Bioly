@@ -1,11 +1,11 @@
-﻿using BiolyCompiler.BlocklyParts;
-using BiolyCompiler.BlocklyParts.ControlFlow;
-using BiolyCompiler.Graphs;
+﻿using BiolyCompiler.Graphs;
+using BiolyCompiler.BlocklyParts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BiolyCompiler.BlocklyParts.ControlFlow;
 
 namespace BiolyViewer_Windows
 {
@@ -54,7 +54,7 @@ namespace BiolyViewer_Windows
             {
                 nodes += CreateNode(node.value.OutputVariable, node.value.ToString(), dfgName);
 
-                foreach (Node<Block> edgeNode in node.Edges)
+                foreach (Node<Block> edgeNode in node.getOutgoingEdges())
                 {
                     edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
                 }
