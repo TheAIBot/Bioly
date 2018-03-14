@@ -1,5 +1,4 @@
 using System;
-using BiolyCompiler.BlocklyParts.Blocks;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
@@ -109,11 +108,11 @@ namespace BiolyTests.PlacementTests
             Rectangle staticEmptyRectangle = new Rectangle(width, height, x, y);
             for (int i = 0; i < x; i++)
             {
-                for (int j = 0; j < 2*(y+height); j++)
+                for (int j = 0; j < 2 * (y + height); j++)
                 {
-                    for (int recWidth = 0; recWidth < 1.5*width; recWidth++)
+                    for (int recWidth = 0; recWidth < 1.5 * width; recWidth++)
                     {
-                        for (int recHeigth = 0; recHeigth < 1.5*height; recHeigth++)
+                        for (int recHeigth = 0; recHeigth < 1.5 * height; recHeigth++)
                         {
                             Rectangle nonStaticEmptyRectangle = new Rectangle(recWidth, recHeigth, i, j);
                             (RectangleSide side, bool canMerge) = staticEmptyRectangle.CanMerge(nonStaticEmptyRectangle);

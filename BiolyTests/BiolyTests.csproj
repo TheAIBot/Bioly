@@ -68,34 +68,29 @@
     <Reference Include="MoreLinq, Version=2.10.21623.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
       <HintPath>..\packages\morelinq.2.10.0\lib\net40\MoreLinq.dll</HintPath>
     </Reference>
-    <Reference Include="Priority Queue, Version=4.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OptimizedPriorityQueue.4.1.1\lib\net45\Priority Queue.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-<<<<<<< HEAD
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AssayTests\TestAssay.cs" />
-    <Compile Include="UnitTest1.cs" />
-=======
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="WebDriver, Version=3.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Selenium.WebDriver.3.9.1\lib\net45\WebDriver.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
->>>>>>> master
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestAssay.cs" />
+    <Compile Include="TestLibrary.cs" />
+    <Compile Include="TestModules.cs" />
     <Compile Include="TestParseBlocks.cs" />
+    <Compile Include="TestPlacement.cs" />
+    <Compile Include="TestRouting.cs" />
+    <Compile Include="TestSchedule.cs" />
     <Compile Include="TestTools.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -103,7 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BiolyCompiler\BiolyCompiler.csproj">
-      <Project>{6B7CB0CC-1ADE-49CC-9D4F-818F0FBAD0F4}</Project>
+      <Project>{85227332-4836-44b3-8521-d5f268c0515c}</Project>
       <Name>BiolyCompiler</Name>
     </ProjectReference>
   </ItemGroup>
