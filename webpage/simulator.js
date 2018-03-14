@@ -1,7 +1,5 @@
 'use strict';
 
-const 
-
 var gl;
 var boardVerticies;
 

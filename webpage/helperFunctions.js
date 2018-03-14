@@ -62,14 +62,8 @@ function setGraph(nodes, edges)
 	});
 }
 
-function save() {
-	const xml = Blockly.Xml.workspaceToDom(workspace);
-	const xml_text = Blockly.Xml.domToText(xml);
-	document.cookie = "dd=0" + xml_text;
-}
-function load() {
-	const xml_text = document.cookie;
-	const xml = Blockly.Xml.textToDom(xml_text);
+function loadWorkspace(xmlText) {
+	const xml = Blockly.Xml.textToDom(xmlText);
 	Blockly.Xml.domToWorkspace(xml, workspace);
 }
 
@@ -103,7 +97,7 @@ function getIfWorkspaceChanged()
 //based on 
 function openTab(e, tabName) {
 
-    const tabs = document.getElementsByClassName("tabContent");
+    const tabs = document.getElementsByClassName("tabItemContent");
     for (var i = 0; i < tabs.length; i++) {
         tabs[i].style.display = "none";
     }
@@ -117,8 +111,6 @@ function openTab(e, tabName) {
     document.getElementById(tabName).style.display = "block";
     e.currentTarget.className += " active";
 }
-
-document.getElementById("graphDiv").click();
 
 
 
