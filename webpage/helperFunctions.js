@@ -40,8 +40,8 @@ function setGraph(nodes, edges)
 					'curve-style': 'bezier',
 					'width': 4,
 					'target-arrow-shape': 'triangle',
-					'line-color': '#ffffff',
-					'target-arrow-color': '#ffffff'
+					'line-color': '#000000',
+					'target-arrow-color': '#000000'
 				}
 			},
 			{
