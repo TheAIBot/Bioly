@@ -40,8 +40,8 @@ function setGraph(nodes, edges)
 					'curve-style': 'bezier',
 					'width': 4,
 					'target-arrow-shape': 'triangle',
-					'line-color': '#9dbaea',
-					'target-arrow-color': '#9dbaea'
+					'line-color': '#ffffff',
+					'target-arrow-color': '#ffffff'
 				}
 			},
 			{
@@ -100,6 +100,7 @@ function getIfWorkspaceChanged()
 	return didChange;
 }
 
+//based on 
 function openTab(e, tabName) {
 
     const tabs = document.getElementsByClassName("tabContent");
@@ -117,7 +118,7 @@ function openTab(e, tabName) {
     e.currentTarget.className += " active";
 }
 
-document.getElementById("defaultTab").click();
+document.getElementById("graphDiv").click();
 
 
 
