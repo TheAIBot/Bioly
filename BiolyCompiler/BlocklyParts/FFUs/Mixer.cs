@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -24,6 +25,10 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputName), mostRecentRef));
 
             return new Mixer(inputs, output, node);
+        }
+        
+        public override OperationType getOperationType() {
+            return OperationType.Mixer;
         }
 
         public override string ToString()

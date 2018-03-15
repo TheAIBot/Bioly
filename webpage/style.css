@@ -1,76 +1,101 @@
-body {
+body
+{
 	background-color: #fff;
 	font-family: sans-serif;
 }
-h1 {
-	font-weight: normal;
-	font-size: 140%;
-}
-#blocklyDiv {
-	width: 49%;
-	height: 100%;
-	position: absolute;
-}
 
-/*this is some funky css code from the internetz
-that has been modified to our needs*/
-#tabController {
-	width: 49%;
+.side
+{
+	width: 50%;
 	height: 100%;
+	top: 0%;
 	position: absolute;
-	left: 51%;
-	border: 1px solid #ccc;
     background-color: #f1f1f1;
 }
-#leftTab {
-	width: 50%;
-	height: 30px;
-	position: absolute;
-	left: 0%;
-    background-color: inherit;
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    transition: 0.3s;
-	z-index: 2;
-}
-#rightTab {
-	width: 50%;
-	height: 30px;
-	position: absolute;
-	left: 50%;
-    background-color: inherit;
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    transition: 0.3s;
-	z-index: 2;
-}
-#tabController button:hover {
-    background-color: #ddd;
-}
-#tabController button.active {
-    background-color: #ccc;
-}
-.tabContent {
-    display: none;
-    border: 1px solid #ccc;
-    border-top: none;
+
+#leftSide
+{
+	left: 0%;	
 }
 
-#graphDiv {
+#loadButton
+{
+	left: 0%;
+	width: 50%;
+}
+
+#saveButton
+{
+	left: 50%;
+	width: 25%;
+}
+
+#saveAsButton
+{
+	left: 75%;
+	width: 25%;
+}
+
+#rightSide
+{
+	left: 50%;
+}
+.tab
+{
+	width: 50%;
+	height: 30px;
+	position: absolute;
+    background-color: f1f1f1;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+	z-index: 2;
+}
+
+#leftTab
+{
+	left: 0%;
+}
+
+#rightTab
+{
+	left: 50%;
+}
+
+.tab:hover
+{
+    background-color: #cec;
+}
+
+.tab.active
+{
+	background-color: #ccc;
+}
+
+.tabItemContent
+{
+    display: none;
+}
+
+.tabContent
+{
 	width: 100%;
-	height: 100%;
+	height: calc(100% - 30px);
 	top:30px;
 	position: absolute;
 	z-index: 1;
 }
-#simulatorCanvas {
+
+#graphDiv
+{
 	width: 100%;
 	height: 100%;
-	top: 30px;
-	position: absolute;
-	z-index: 1;
+}
+
+#simulatorCanvas
+{
+	width: 100%;
+	height: 100%;
 }

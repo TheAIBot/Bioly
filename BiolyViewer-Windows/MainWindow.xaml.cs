@@ -38,8 +38,9 @@ namespace BiolyViewer_Windows
             Cef.Initialize(settings);
 
             InitializeComponent();
-            BiolyCompiler.Compiler fisk = new BiolyCompiler.Compiler();
-            fisk.DoStuff();
+            Browser.RegisterJsObject("saver", new Saver());
+            //BiolyCompiler.Compiler fisk = new BiolyCompiler.Compiler();
+            //fisk.DoStuff();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
