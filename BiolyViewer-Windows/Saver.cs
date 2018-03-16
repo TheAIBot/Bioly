@@ -27,7 +27,9 @@ namespace BiolyViewer_Windows
 
         internal void SaveAs()
         {
-
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.
+            dialog.DefaultExt = "";
         }
 
         internal void Load()
