@@ -20,19 +20,19 @@ namespace BiolyTests.ModuleTests
             rectangle.PlaceAt(x, y);
             
             Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
-            Tuple<Rectangle, Rectangle> splitRectangles = rectangle.SplitIntoSmallerRectangles(module);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
             
-            Assert.AreEqual(x, splitRectangles.Item1.x);
-            Assert.AreEqual(x + moduleWidth, splitRectangles.Item2.x);
+            Assert.AreEqual(x, TopRectangle.x);
+            Assert.AreEqual(x + moduleWidth, RightRectangle.x);
 
-            Assert.AreEqual(y + moduleHeight, splitRectangles.Item1.y);
-            Assert.AreEqual(y, splitRectangles.Item2.y);
+            Assert.AreEqual(y + moduleHeight, TopRectangle.y);
+            Assert.AreEqual(y, RightRectangle.y);
             
-            Assert.AreEqual(rectangleHeight - moduleHeight, splitRectangles.Item1.height);
-            Assert.AreEqual(rectangleHeight, splitRectangles.Item2.height);
+            Assert.AreEqual(rectangleHeight - moduleHeight, TopRectangle.height);
+            Assert.AreEqual(rectangleHeight, RightRectangle.height);
 
-            Assert.AreEqual(moduleWidth, splitRectangles.Item1.width);
-            Assert.AreEqual(rectangleWidth - moduleWidth, splitRectangles.Item2.width);
+            Assert.AreEqual(moduleWidth, TopRectangle.width);
+            Assert.AreEqual(rectangleWidth - moduleWidth, RightRectangle.width);
         }
 
 
@@ -46,19 +46,19 @@ namespace BiolyTests.ModuleTests
             rectangle.PlaceAt(x, y);
 
             Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
-            Tuple<Rectangle, Rectangle> splitRectangles = rectangle.SplitIntoSmallerRectangles(module);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
 
-            Assert.AreEqual(x, splitRectangles.Item1.x);
-            Assert.AreEqual(x + moduleWidth, splitRectangles.Item2.x);
+            Assert.AreEqual(x, TopRectangle.x);
+            Assert.AreEqual(x + moduleWidth, RightRectangle.x);
 
-            Assert.AreEqual(y + moduleHeight, splitRectangles.Item1.y);
-            Assert.AreEqual(y, splitRectangles.Item2.y);
+            Assert.AreEqual(y + moduleHeight, TopRectangle.y);
+            Assert.AreEqual(y, RightRectangle.y);
 
-            Assert.AreEqual(rectangleHeight - moduleHeight, splitRectangles.Item1.height);
-            Assert.AreEqual(moduleHeight, splitRectangles.Item2.height);
+            Assert.AreEqual(rectangleHeight - moduleHeight, TopRectangle.height);
+            Assert.AreEqual(moduleHeight, RightRectangle.height);
 
-            Assert.AreEqual(rectangleWidth, splitRectangles.Item1.width);
-            Assert.AreEqual(rectangleWidth - moduleWidth, splitRectangles.Item2.width);
+            Assert.AreEqual(rectangleWidth, TopRectangle.width);
+            Assert.AreEqual(rectangleWidth - moduleWidth, RightRectangle.width);
         }
 
         [TestMethod]
@@ -71,14 +71,14 @@ namespace BiolyTests.ModuleTests
             rectangle.PlaceAt(x, y);
 
             Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
-            Tuple<Rectangle, Rectangle> splitRectangles = rectangle.SplitIntoSmallerRectangles(module);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
 
-            Assert.AreEqual(null, splitRectangles.Item2);
+            Assert.AreEqual(null, RightRectangle);
 
-            Assert.AreEqual(x, splitRectangles.Item1.x);
-            Assert.AreEqual(y + moduleHeight, splitRectangles.Item1.y);
-            Assert.AreEqual(rectangleHeight - moduleHeight, splitRectangles.Item1.height);
-            Assert.AreEqual(rectangleWidth, splitRectangles.Item1.width);
+            Assert.AreEqual(x, TopRectangle.x);
+            Assert.AreEqual(y + moduleHeight, TopRectangle.y);
+            Assert.AreEqual(rectangleHeight - moduleHeight, TopRectangle.height);
+            Assert.AreEqual(rectangleWidth, TopRectangle.width);
         }
 
 
@@ -92,14 +92,14 @@ namespace BiolyTests.ModuleTests
             rectangle.PlaceAt(x, y);
 
             Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
-            Tuple<Rectangle, Rectangle> splitRectangles = rectangle.SplitIntoSmallerRectangles(module);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
 
-            Assert.AreEqual(null, splitRectangles.Item1);
+            Assert.AreEqual(null, TopRectangle);
 
-            Assert.AreEqual(x + moduleWidth, splitRectangles.Item2.x);
-            Assert.AreEqual(y, splitRectangles.Item2.y);
-            Assert.AreEqual(rectangleHeight, splitRectangles.Item2.height);
-            Assert.AreEqual(rectangleWidth - moduleWidth, splitRectangles.Item2.width);
+            Assert.AreEqual(x + moduleWidth, RightRectangle.x);
+            Assert.AreEqual(y, RightRectangle.y);
+            Assert.AreEqual(rectangleHeight, RightRectangle.height);
+            Assert.AreEqual(rectangleWidth - moduleWidth, RightRectangle.width);
         }
 
         [TestMethod]
@@ -176,14 +176,14 @@ namespace BiolyTests.ModuleTests
 
                 }
                 //It is a horizontal split.
-                Tuple<Rectangle, Rectangle> splitRectangles = emptyRectangle.SplitIntoSmallerRectangles(module);
+                (Rectangle TopRectangle, Rectangle RightRectangle) = emptyRectangle.SplitIntoSmallerRectangles(module);
                 Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(emptyRectangle));
-                Assert.IsTrue(module.shape.AdjacentRectangles.Contains(splitRectangles.Item1));
-                Assert.IsTrue(module.shape.AdjacentRectangles.Contains(splitRectangles.Item2));
-                Assert.IsTrue(splitRectangles.Item1.AdjacentRectangles.Contains(module.shape));
-                Assert.IsTrue(splitRectangles.Item2.AdjacentRectangles.Contains(module.shape));
-                Assert.IsTrue(splitRectangles.Item1.AdjacentRectangles.Contains(splitRectangles.Item2));
-                Assert.IsTrue(splitRectangles.Item2.AdjacentRectangles.Contains(splitRectangles.Item1));
+                Assert.IsTrue(module.shape.AdjacentRectangles.Contains(TopRectangle));
+                Assert.IsTrue(module.shape.AdjacentRectangles.Contains(RightRectangle));
+                Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(module.shape));
+                Assert.IsTrue(RightRectangle.AdjacentRectangles.Contains(module.shape));
+                Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(RightRectangle));
+                Assert.IsTrue(RightRectangle.AdjacentRectangles.Contains(TopRectangle));
 
                 if (neighborRectangle.y <= module.shape.getTopmostYPosition()) //They are adjacent
                 {
@@ -195,21 +195,21 @@ namespace BiolyTests.ModuleTests
                     Assert.IsFalse(module.shape.AdjacentRectangles.Contains(neighborRectangle));
                 }
 
-                if (splitRectangles.Item1.y <= neighborRectangle.getTopmostYPosition() && 
-                    neighborRectangle.y <= splitRectangles.Item1.getTopmostYPosition()) //They are adjacent
+                if (TopRectangle.y <= neighborRectangle.getTopmostYPosition() && 
+                    neighborRectangle.y <= TopRectangle.getTopmostYPosition()) //They are adjacent
                 {
-                    Assert.IsTrue(neighborRectangle.AdjacentRectangles.Contains(splitRectangles.Item1));
-                    Assert.IsTrue(splitRectangles.Item1.AdjacentRectangles.Contains(neighborRectangle));
+                    Assert.IsTrue(neighborRectangle.AdjacentRectangles.Contains(TopRectangle));
+                    Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(neighborRectangle));
                 } else
                 {
-                    Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(splitRectangles.Item1));
-                    Assert.IsFalse(splitRectangles.Item1.AdjacentRectangles.Contains(neighborRectangle));
+                    Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(TopRectangle));
+                    Assert.IsFalse(TopRectangle.AdjacentRectangles.Contains(neighborRectangle));
                 }
 
                 //They cannot be adjacent:
 
-                Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(splitRectangles.Item2));
-                Assert.IsFalse(splitRectangles.Item2.AdjacentRectangles.Contains(neighborRectangle));
+                Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(RightRectangle));
+                Assert.IsFalse(RightRectangle.AdjacentRectangles.Contains(neighborRectangle));
             }
             
         }

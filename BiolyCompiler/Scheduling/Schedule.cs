@@ -8,6 +8,7 @@ using BiolyCompiler.BlocklyParts.Blocks;
 using BiolyCompiler.Routing;
 using Priority_Queue;
 using BiolyCompiler.BlocklyParts;
+using System.Linq;
 //using BiolyCompiler.Modules.ModuleLibrary;
 
 namespace BiolyCompiler.Scheduling
@@ -15,9 +16,12 @@ namespace BiolyCompiler.Scheduling
 
     public class Schedule
     {
-        Dictionary<int, Module[][]> boardAtDifferentTimes = new Dictionary<int, Module[][]>();
+        Dictionary<int, Board> boardAtDifferentTimes = new Dictionary<int, Board>();
         Dictionary<string, Droplet> FluidVariableLocations = new Dictionary<string, Droplet>();
+        SimplePriorityQueue<Block> runningOperations = new SimplePriorityQueue<Block>();
+        List<Block> ScheduledOperations = new List<Block>();
         public const int DROP_MOVEMENT_TIME = 1;
+        public const int IGNORED_TIME_DIFFERENCE = 100;
 
         public Schedule(){
 
@@ -68,9 +72,13 @@ namespace BiolyCompiler.Scheduling
             throw new NotImplementedException();
         }
 
-        private int updateSchedule(Block operation)
+        private int updateSchedule(Block operation, Route routeToOperationModule)
         {
-            throw new NotImplementedException();
+            operation.startTime = routeToOperationModule.getEndTime();
+            operation.endTime = operation.startTime + operation.boundModule.operationTime;
+            runningOperations.Enqueue(operation, operation.endTime);
+            ScheduledOperations.Add(operation);
+            return operation.startTime;
         }
 
         private static void waitForAFinishedOperation()
@@ -78,7 +86,7 @@ namespace BiolyCompiler.Scheduling
             throw new NotImplementedException();
         }
 
-        public void GiveFluidVariableLocations(Dictionary<string, Droplet> Locations)
+        public void TransferFluidVariableLocationInformation(Dictionary<string, Droplet> Locations)
         {
             Locations.ForEach(pair => FluidVariableLocations.Add(pair.Key, pair.Value));
         }
@@ -87,46 +95,98 @@ namespace BiolyCompiler.Scheduling
             Implements/based on the list scheduling based algorithm found in 
             "Fault-tolerant digital microfluidic biochips - compilation and synthesis" page 72.
          */
-        public Tuple<int, Schedule> ListScheduling(Assay assay, Board board, ModuleLibrary library){
+        public int ListScheduling(Assay assay, Board board, ModuleLibrary library){
             
             //Place the modules that are fixed on the board, 
             //so that the dynamic algorithm doesn't have to handle this.
             //PlaceFixedModules(); //TODO implement.
+
+            //(*) TODO sammenlign igen med algoritmen set i artiklen
             
             //Many optimization can be made to this method (later)
+            int startTime = 0;
             assay.calculateCriticalPath();
             library.allocateModules(assay); 
             library.sortLibrary();
             List<Block> readyOperations = assay.getReadyOperations();
-            int startTime = 0;
+            boardAtDifferentTimes.Add(startTime, board);
+            board = board.Copy();
+            //Continue until all operations have been scheduled:
             while(readyOperations.Count > 0){
                 Block operation = removeOperation(readyOperations);
                 Module module   = library.getAndPlaceFirstPlaceableModule(operation, board); //Also called place
-                //If the module can't be placed, one must wait until there is enough place for it.
+                //If the module can't be placed, one must wait until there is enough space for it:
                 if (module != null){
-                    operation.Bind(module); //TODO make modules unique
-                    Route route   = determineRouteToModule(operation, module, board, startTime); //Will be included as part of a later step.
+                    operation.Bind(module); 
+                    Droplet sourceModule;
+                    bool doSourceExist = FluidVariableLocations.TryGetValue(operation.InputVariables[0], out sourceModule);
+                    if (!doSourceExist) throw new Exception("The source \"" + operation.InputVariables[0] + "\" for the operation \"" + operation.ToString() + "\" do not exist.");
+                    Route route   = determineRouteToModule(sourceModule, module, board, startTime); //Will be included as part of a later step.
                     //TODO (*) If it can't be routed
-                    if (route == null)
-                    {
+                    if (route == null) {
                         operation.Unbind(module);
                         waitForAFinishedOperation();
-                        module = null;
+                        if (runningOperations.Count == 0) throw new Exception("The scheduling can't be made: the routing can't be made.");
+                    } else{
+                        startTime = updateSchedule(operation, route);
+                        if (!sourceModule.isStaticModule()) {
+                            board.FastTemplateRemove(sourceModule);
+                        }
+                        board = board.Copy();
                     }
-                    else startTime = updateSchedule(operation); 
                 }
-                if (module == null)
-                {
+                else {
                     waitForAFinishedOperation();
-                    if (GetRunningOperationsCount() == 0) throw new Exception("The scheduling can't be made: either there aren't enough space for module: " + module.ToString() +
-                                                                              ", or the routing can't be made.");
+                    if (runningOperations.Count == 0) throw new Exception("The scheduling can't be made: there aren't enough space for module: " + module.ToString());
                 }
 
-                board = getCurrentBoard();
-                updateReadyOperations(assay, startTime, readyOperations);
-                readyOperations = assay.getReadyOperations();
+
+
+                /*(*)TODO fix edge case, where the drops are routed/operations are scheduled, 
+                 * so that in the mean time, some operations finishes. This might lead to routing problems.
+                */
+                //If all the operations that can currently be scheduled, have been scheduled, the board needs to be saved.
+                if (readyOperations.Count == 0 && runningOperations.Count > 0)
+                {
+                    boardAtDifferentTimes.Add(startTime, board);
+                }
+
+                //If there aren't any operations that can be started, wait until there are:
+                while (readyOperations.Count == 0 && runningOperations.Count > 0)
+                {
+                    List<Block> nextBatchOfFinishedOperations = getNextBatchOfFinishedOperations();
+                    startTime = nextBatchOfFinishedOperations.Last().endTime + 1;
+                    foreach (var finishedOperation in nextBatchOfFinishedOperations)
+                    {
+                        if (!finishedOperation.boundModule.isStaticModule())
+                        {
+                            board.replaceWithDroplets(finishedOperation);
+                        }
+                        assay.updateReadyOperations(finishedOperation);
+                    }
+                    boardAtDifferentTimes.Add(startTime, board);
+                    readyOperations = assay.getReadyOperations();
+                    board = board.Copy();
+                }
             }
-            return Tuple.Create(getCompletionTime(), this);
+            if (assay.dfg.Nodes.Exists(node => !node.value.hasBeenScheduled)) throw new Exception("There were operations that couldn't be scheduled.");
+            ScheduledOperations.Sort((x,y) => (x.startTime < y.startTime || (x.startTime == y.startTime && x.endTime <= y.endTime)) ? 0: 1);
+            return getCompletionTime();
+        }
+
+        private List<Block> getNextBatchOfFinishedOperations()
+        {
+            List<Block> batch = new List<Block>();
+            Block nextFinishedOperation = runningOperations.Dequeue();
+            batch.Add(nextFinishedOperation);
+            //Need to dequeue all operations that has finishes at the same time as nextFinishedOperation.
+            //Differences under "IGNORED_TIME_DIFFERENCE" are ignored.
+            while (runningOperations.Count > 0 && nextFinishedOperation.endTime >= runningOperations.First.endTime - IGNORED_TIME_DIFFERENCE)
+            {
+                batch.Add(runningOperations.Dequeue());
+            }
+
+            return batch;
         }
 
         private static int GetRunningOperationsCount()
@@ -147,20 +207,21 @@ namespace BiolyCompiler.Scheduling
             
         }
 
-        public static Route determineRouteToModule(Block operation, Module targetModule, Board board, int startTime){
+        public static Route determineRouteToModule(Module sourceModule, Module targetModule, Board board, int startTime){
 
             //Dijkstras algorithm, based on the one seen on wikipedia.
             Node<RoutingInformation>[,] dijkstraGraph = createDijkstraGraph(board);
-            Node<RoutingInformation> source = board.getOperationFluidPlacementOnBoard(operation, dijkstraGraph);
+            Node<RoutingInformation> source = board.getOperationFluidPlacementOnBoard(sourceModule, dijkstraGraph);
             source.value.distanceFromSource = 0;
             SimplePriorityQueue<Node<RoutingInformation>, int> priorityQueue = new SimplePriorityQueue<Node<RoutingInformation>, int>();
             foreach (var node in dijkstraGraph) priorityQueue.Enqueue(node, node.value.distanceFromSource);
             while (priorityQueue.Count > 0) {
                 Node<RoutingInformation> currentNode = priorityQueue.Dequeue();
+                Module moduleAtCurrentNode = board.grid[currentNode.value.x, currentNode.value.y];
                 if (currentNode.value.distanceFromSource == Int32.MaxValue) throw new Exception("No route to the desired component could be found");
-                else if (board.grid[currentNode.value.x, currentNode.value.y] == targetModule) return GetRouteFromSourceToTarget(currentNode, startTime); //Have reached the desired module
-                //No collisions with other modules are allowed:
-                else if (board.grid[currentNode.value.x, currentNode.value.y] != null) continue;
+                else if (moduleAtCurrentNode == targetModule) return GetRouteFromSourceToTarget(currentNode, startTime); //Have reached the desired module
+                //No collisions with other modules are allowed (except the starting module):
+                else if (moduleAtCurrentNode != null && moduleAtCurrentNode != sourceModule) continue;
                 foreach (var neighbor in currentNode.getOutgoingEdges())
                 {
                     //Unit lenght distances, and thus the distance is with a +1.

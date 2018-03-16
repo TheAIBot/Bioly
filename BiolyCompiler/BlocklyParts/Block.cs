@@ -18,6 +18,7 @@ namespace BiolyCompiler.BlocklyParts
         //For the scheduling:
         public Module boundModule;
         public bool hasBeenScheduled = false;
+        public int startTime, endTime;
         public int priority = Int32.MaxValue;
         
         private static readonly List<string> EmptyList = new List<string>();

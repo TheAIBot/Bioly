@@ -12,6 +12,8 @@ using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.Architechtures;
+using BiolyTests.TestObjects;
 
 namespace BiolyTests.ScheduleTests
 {
@@ -41,12 +43,46 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(OperationThatShouldBeRemoved, RemovedOperation);
         }
 
+        
+
         [TestMethod]
         public void TestListSchedulingFullyParallelAssay()
         {
-            Assay assay = new Assay(TestAssay.GetTotallyParallelDFG());
-            
+            String inputDroplet1 = "N1";
+            String inputDroplet2 = "N2";
+            DFG<Block> dfg = new DFG<Block>();
 
+            TestBlock operation1 = new TestBlock(new List<string>() {inputDroplet1}, null, null);
+            TestBlock operation2 = new TestBlock(new List<string>() {inputDroplet2}, null, null);
+
+            Node<Block> operation1Node = new Node<Block>(operation1);
+            Node<Block> operation2Node = new Node<Block>(operation2);
+
+            dfg.AddNode(operation1Node);
+            dfg.AddNode(operation2Node);
+
+            Assay assay = new Assay(dfg);
+
+            Board   board    = new Board(20,20);
+            Droplet droplet1 = new Droplet();
+            Droplet droplet2 = new Droplet();
+            board.FastTemplatePlace(droplet1);
+            board.FastTemplatePlace(droplet2);
+            Dictionary<string, Droplet> kage = new Dictionary<string, Droplet>();
+            kage.Add(inputDroplet1, droplet1);
+            kage.Add(inputDroplet2, droplet2);
+            Schedule schedule = new Schedule();
+            schedule.TransferFluidVariableLocationInformation(kage);
+            ModuleLibrary library = new ModuleLibrary();
+            int completionTime = schedule.ListScheduling(assay, board, library);
+
+            //It should be able to schedule everything to run in parallel, so the time taken by the schedule,
+            //should only be a bit bigger than the operation times. At the same time it must be larger:
+            //Assert.IsTrue(<= completionTime)
+            //Assert.IsTrue(completionTime <=)
+
+
+            Assert.Fail();
         }
 
     }

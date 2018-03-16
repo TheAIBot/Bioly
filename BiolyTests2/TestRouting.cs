@@ -30,11 +30,13 @@ namespace BiolyTests.RoutingTests
             targetModule.shape.y = 10;
             operation.Bind(sourceModule);
             Board board = new Board(20,20);
+            board.UpdateGridWithModulePlacement(sourceModule, sourceModule.shape);
             board.UpdateGridWithModulePlacement(targetModule, targetModule.shape);
             
             int startTime = 55;
-            Route route = Schedule.determineRouteToModule(operation, targetModule, board, startTime);
+            Route route = Schedule.determineRouteToModule(sourceModule, targetModule, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
+            Assert.IsTrue(hasNoCollisions(route, board, sourceModule), "Has detected collision while this shouldn't be possible");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, targetModule));
             Assert.AreEqual(route.getEndTime(), startTime + targetModule.shape.x + targetModule.shape.y);            
         }
@@ -44,7 +46,6 @@ namespace BiolyTests.RoutingTests
         [TestMethod]
         public void TestDetermineRouteToModuleWithObstacles()
         {
-            Block operation = new Sensor(null, null, null);
             Module sourceModule = new SensorModule();
             Module targetModule = new SensorModule();
             Module blockingModule = new MixerModule(3,15,2000);
@@ -54,29 +55,29 @@ namespace BiolyTests.RoutingTests
             targetModule.shape.y = 10;
             blockingModule.shape.x = 5;
             blockingModule.shape.y = 0;
-            operation.Bind(sourceModule);
             Board board = new Board(20, 20);
+            board.UpdateGridWithModulePlacement(sourceModule, sourceModule.shape);
             board.UpdateGridWithModulePlacement(targetModule, targetModule.shape);
             board.UpdateGridWithModulePlacement(blockingModule, blockingModule.shape);
 
 
             int startTime = 55;
-            Route route = Schedule.determineRouteToModule(operation, targetModule, board, startTime);
+            Route route = Schedule.determineRouteToModule(sourceModule, targetModule, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
-            Assert.IsTrue(hasNoCollisions(route, board), "Obstacle not avoided: the path has a collisition");
+            Assert.IsTrue(hasNoCollisions(route, board, sourceModule), "Obstacle not avoided: the path has a collisition");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, targetModule));
             //The manhatten distance to the target, is the lenght of the direct path to the target.
             //As the placed module should block the way somewhat, the path should be longer:
             Assert.IsTrue(route.getEndTime() > startTime + targetModule.shape.x + targetModule.shape.y);
         }
 
-        private bool hasNoCollisions(Route route, Board board)
+        private bool hasNoCollisions(Route route, Board board, Module sourceModule)
         {
             //The last node is not counted, as it should hopefully be at a target module.
             for (int i = 0; i < route.route.Count - 1; i++)
             {
                 Node<RoutingInformation> node = route.route[i];
-                if (board.grid[node.value.x, node.value.y] != null) return false;
+                if (board.grid[node.value.x, node.value.y] != null && board.grid[node.value.x, node.value.y] != sourceModule) return false;
             }
             return true;
         }

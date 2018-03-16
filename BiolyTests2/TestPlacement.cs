@@ -58,6 +58,13 @@ namespace BiolyTests.PlacementTests
         }
 
         [TestMethod]
+        public void TestFastTemplateReplace()
+        {
+            Assert.Fail("Not implemented yet");
+        }
+
+
+        [TestMethod]
         public void TestFastTemplateRemoveSplitMerge()
         {
             Assert.Fail("Not implemented yet");

@@ -29,7 +29,7 @@ namespace BiolyCompiler.Modules
             PlaceAt(x, y);
         }
         
-        public Rectangle(Rectangle rectangle) : this(rectangle.width, rectangle.height, rectangle.x, rectangle.y) { }
+        public Rectangle(Rectangle rectangle) : this(rectangle.width, rectangle.height, rectangle.x, rectangle.y) { isEmpty = rectangle.isEmpty; }
 
         public void PlaceAt(int x, int y)
         {
@@ -47,7 +47,7 @@ namespace BiolyCompiler.Modules
             return height * width;
         }
 
-        public Tuple<Rectangle, Rectangle> SplitIntoSmallerRectangles(Module module)
+        public (Rectangle, Rectangle) SplitIntoSmallerRectangles(Module module)
         {
             //The module is placed in the lower left corner of the rectangle.
 
@@ -93,14 +93,10 @@ namespace BiolyCompiler.Modules
             {
                 TopRectangle.AdjacentRectangles.Add(RightRectangle);
                 RightRectangle.AdjacentRectangles.Add(TopRectangle);
-            }
-            
+            }            
             ComputeAdjacencyList(module.shape);
-            
-
             RemoveAdjacencies();
-
-            return new Tuple<Rectangle, Rectangle>(TopRectangle, RightRectangle);
+            return (TopRectangle, RightRectangle);
         }
 
         private void RemoveAdjacencies()
@@ -212,12 +208,12 @@ namespace BiolyCompiler.Modules
             else return (RectangleSide.None, false);
         }
 
-        private void ComputeAdjacencyList(Rectangle rectangle)
+        private void ComputeAdjacencyList(Rectangle newRectangle)
         {
             foreach (var formerAdjacentRectangle in AdjacentRectangles) {
-                if (rectangle.IsAdjacent(formerAdjacentRectangle)) {
-                    rectangle.AdjacentRectangles.Add(formerAdjacentRectangle);
-                    formerAdjacentRectangle.AdjacentRectangles.Add(rectangle);
+                if (newRectangle.IsAdjacent(formerAdjacentRectangle)) {
+                    newRectangle.AdjacentRectangles.Add(formerAdjacentRectangle);
+                    formerAdjacentRectangle.AdjacentRectangles.Add(newRectangle);
                 }
             }
             //Also do for the other sides.
