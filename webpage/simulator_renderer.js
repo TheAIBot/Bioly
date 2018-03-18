@@ -1,14 +1,12 @@
 'use strict';
 
 var gl;
-var boardProgram;
-var dropProgram;
-var electrodeSize;
-var eletrodeVerticiesCount;
-var electrodeCount;
+var boardGLData = {};
+var dropGLData = {};
 
 const ELECTRODE_OFF_COLOR = vec4(0.8, 0.8, 0.8, 1.0);
 const ELECTRODE_ON_COLOR  = vec4(0.4, 0.4, 0.4, 1.0);
+const DROP_POINT_COUNT = 100;
 
 window.onload = function init()
 {
@@ -29,47 +27,51 @@ window.onload = function init()
     gl.viewport(0, 0, canvasSize, canvasSize);
     gl.clearColor(1, 1, 1, 1.0);
     
-    boardProgram = initShaders(gl, "board-vertex-shader", "board-fragment-shader");    
-	dropProgram  = initShaders(gl, "drop-vertex-shader", "drop-fragment-shader");
+    boardGLData.program = initShaders(gl, "board-vertex-shader", "board-fragment-shader");    
+	dropGLData.program  = initShaders(gl, "drop-vertex-shader", "drop-fragment-shader");
 	
-	setupBoard(11, 11);
-	render();
+	const data = setupBoard(11, 11);
+	setupDrops(data.electrodeSize / 2);
+	updateDropData([{position: [0, 0], size: 1, color: [1, 0, 0, 1]}]);
+	render(1);
 }
 
 function setupBoard(width, height)
 {
-	gl.useProgram(boardProgram);
+	gl.useProgram(boardGLData.program);
 	
     let boardData = createBoardVertexData(width, height);
-	electrodeSize = boardData.electrodeSize;
 	
-    var electrodeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, electrodeBuffer);
+    boardGLData.electrodeBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.electrodeBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeVerticies), gl.STATIC_DRAW);
 	
-    const vElectrode = gl.getAttribLocation(boardProgram, "vElectrode");
-    gl.vertexAttribPointer(vElectrode, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vElectrode);
+    boardGLData.electrodePointer = gl.getAttribLocation(boardGLData.program, "vElectrode");
+    gl.vertexAttribPointer(boardGLData.electrodePointer, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(boardGLData.electrodePointer);
 	
 	
-	var electrodePositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, electrodePositionBuffer);
+	boardGLData.positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodePositions), gl.STATIC_DRAW);
 	
-    const vPosition = gl.getAttribLocation(boardProgram, "vPosition");
-    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vPosition);
-	gl.vertexAttribDivisor(vPosition, 1);
+    boardGLData.positionPointer = gl.getAttribLocation(boardGLData.program, "vPosition");
+    gl.vertexAttribPointer(boardGLData.positionPointer, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(boardGLData.positionPointer);
+	gl.vertexAttribDivisor(boardGLData.positionPointer, 1);
 	
 	
-	var electrodeColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, electrodeColorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeColors), gl.STATIC_DRAW);
+	boardGLData.colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeColors), gl.DYNAMIC_DRAW);
 	
-    const vColor = gl.getAttribLocation(boardProgram, "vColor");
-    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vColor);
-	gl.vertexAttribDivisor(vColor, 1);
+    boardGLData.colorPointer = gl.getAttribLocation(boardGLData.program, "vColor");
+    gl.vertexAttribPointer(boardGLData.colorPointer, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(boardGLData.colorPointer);
+	gl.vertexAttribDivisor(boardGLData.colorPointer, 1);
+	
+	boardGLData.eletrodeVerticiesCount = boardData.electrodeVerticies.length;
+	boardGLData.electrodeCount = width * height;
 	
 	return boardData;
 }
@@ -81,9 +83,9 @@ function createBoardVertexData(width, height)
 	
 	//ratio between electrode size and electrode spacing
 	const ratioForSpace = 0.1;
-	const electrodeSize =  (boardSize  / Math.max(width, height)) * (1 - ratioForSpace);
-	const topLeftX = (-boardSize / 2) + (electrodeSize / 2) + (electrodeSize / 2) * ratioForSpace;
-	const topLeftY = ( boardSize / 2) - (electrodeSize / 2) - (electrodeSize / 2) * ratioForSpace;
+	const electrodeSize = ((boardSize - (boardSize  / Math.max(width, height)) * ratioForSpace * (Math.max(width, height) - 1))  / Math.max(width, height));
+	const topLeftX = -((electrodeSize * width + electrodeSize * (width - 1) * ratioForSpace) / 2) + (electrodeSize / 2);
+	const topLeftY = ((electrodeSize * height + electrodeSize * (height - 1) * ratioForSpace) / 2) - (electrodeSize / 2);
 	
 	let boardData = {};
 	boardData.electrodeSize = electrodeSize;
@@ -142,49 +144,46 @@ function createElectrodeColors(width, height)
 	return colors;
 }
 
-function setupDrops()
+function setupDrops(dropRadius)
 {
-	gl.useProgram(dropProgram);
+	gl.useProgram(dropGLData.program);
 	
-	let dropVerticies = createDropVerticies(electrodeSize);
+	let dropVerticies = createDropVerticies(dropRadius);
 	
-    var dropBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropBuffer);
+    dropGLData.dropBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.dropBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(dropVerticies), gl.STATIC_DRAW);
 	
-    const vDrop = gl.getAttribLocation(dropProgram, "vDrop");
-    gl.vertexAttribPointer(vDrop, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vDrop);
+    dropGLData.dropPointer = gl.getAttribLocation(dropGLData.program, "vDrop");
+    gl.vertexAttribPointer(dropGLData.dropPointer, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(dropGLData.dropPointer);
 	
 	
-	var dropPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropPositionBuffer);
-    //gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodePositions), gl.STATIC_DRAW);
+	dropGLData.positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.positionBuffer);
 	
-    const vPosition = gl.getAttribLocation(dropProgram, "vPosition");
-    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vPosition);
-	gl.vertexAttribDivisor(vPosition, 1);
-	
-	
-	var dropSizeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropSizeBuffer);
-    //gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodePositions), gl.STATIC_DRAW);
-	
-    const vSize = gl.getAttribLocation(dropProgram, "vSize");
-    gl.vertexAttribPointer(vSize, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vSize);
-	gl.vertexAttribDivisor(vSize, 1);
+    dropGLData.positionPointer = gl.getAttribLocation(dropGLData.program, "vPosition");
+    gl.vertexAttribPointer(dropGLData.positionPointer, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(dropGLData.positionPointer);
+	gl.vertexAttribDivisor(dropGLData.positionPointer, 1);
 	
 	
-	var dropColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropColorBuffer);
-    //gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeColors), gl.STATIC_DRAW);
+	dropGLData.sizeBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.sizeBuffer);
 	
-    const vColor = gl.getAttribLocation(dropProgram, "vColor");
-    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vColor);
-	gl.vertexAttribDivisor(vColor, 1);
+    dropGLData.sizePointer = gl.getAttribLocation(dropGLData.program, "size");
+    gl.vertexAttribPointer(dropGLData.sizePointer, 1, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(dropGLData.sizePointer);
+	gl.vertexAttribDivisor(dropGLData.sizePointer, 1);
+	
+	
+	dropGLData.colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.colorBuffer);
+	
+    dropGLData.colorPointer = gl.getAttribLocation(dropGLData.program, "vColor");
+    gl.vertexAttribPointer(dropGLData.colorPointer, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(dropGLData.colorPointer);
+	gl.vertexAttribDivisor(dropGLData.colorPointer, 1);
 }
 
 function createDropVerticies(circleRadius)
@@ -192,56 +191,116 @@ function createDropVerticies(circleRadius)
 	let verticies = [];
 	verticies.push(vec2(0, 0));
 	
-	const angleBetweenPoints = (Math.PI / 180) * (360 / 99);
-	for(var i = 0; i < 99; i++)
+	const missingPoints = DROP_POINT_COUNT - 2;
+	const angleBetweenPoints = (Math.PI / 180) * (360 / missingPoints);
+	for(var i = 0; i < missingPoints; i++)
 	{
 		verticies.push(vec2(circleRadius * Math.cos(i * angleBetweenPoints), circleRadius * Math.sin(i * angleBetweenPoints)));
 	}
+	verticies.push(vec2(circleRadius * Math.cos(0), circleRadius * Math.sin(0)));
 	
 	return verticies;
 }
 
 function renderBoard() 
 {
-	gl.useProgram(boardProgram);
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, eletrodeVerticiesCount, electrodeCount);
+	gl.useProgram(boardGLData.program);
+	
+    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.electrodeBuffer);
+    gl.vertexAttribPointer(boardGLData.electrodePointer, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(boardGLData.electrodePointer);
+	
+    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.positionBuffer);
+    gl.vertexAttribPointer(boardGLData.positionPointer, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(boardGLData.positionPointer);
+	gl.vertexAttribDivisor(boardGLData.positionPointer, 1);
+	
+    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
+    gl.vertexAttribPointer(boardGLData.colorPointer, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(boardGLData.colorPointer);
+	gl.vertexAttribDivisor(boardGLData.colorPointer, 1);
+	
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, boardGLData.eletrodeVerticiesCount, boardGLData.electrodeCount);
 }
 
 function renderDrops(dropCount)
 {
-	gl.useProgram(dropProgram);
-	gl.drawArraysInstanced(gl.TRIANGLES, 0, 100, dropCount);
-}
-
-function render(eletrodeVerticiesCount, electrodeCount, dropCount)
-{
-	gl.clear(gl.COLOR_BUFFER_BIT);
+	gl.useProgram(dropGLData.program);
 	
-	renderBoard(eletrodeVerticiesCount, electrodeCount);
-	renderDrops(dropCount);
+	gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.dropBuffer);
+	gl.vertexAttribPointer(dropGLData.dropPointer, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(dropGLData.dropPointer);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.positionBuffer);
+	gl.vertexAttribPointer(dropGLData.positionPointer, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(dropGLData.positionPointer);
+	gl.vertexAttribDivisor(dropGLData.positionPointer, 1);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.sizeBuffer);
+	gl.vertexAttribPointer(dropGLData.sizePointer, 1, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(dropGLData.sizePointer);
+	gl.vertexAttribDivisor(dropGLData.sizePointer, 1);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.colorBuffer);
+	gl.vertexAttribPointer(dropGLData.colorPointer, 4, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(dropGLData.colorPointer);
+	gl.vertexAttribDivisor(dropGLData.colorPointer, 1);
+	
+	gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, DROP_POINT_COUNT, dropCount);
 }
-
-//void drawElectrodeOn (int electrodeNumber);
-//void drawElectrodeOff(int electrodeNumber);
-
-//int spawnDrop(x, y, size);
-//void removeDrop(dropBumber);
-//void changeDropPosition(dropNumber, x, y);
-
-//render();
-
 
 function drawElectrodeOn(electrodeNumber)
 {
-	gl.bindBuffer(gl.ARRAY_BUFFER, electrodeColorBuffer);
+	gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
 	gl.bufferSubData(gl.ARRAY_BUFFER, electrodeNumber * 4 * 4, flatten(ELECTRODE_ON_COLOR), 0, 4);
 }
 
 function drawElectrodeOff(electrodeNumber)
 {
-	gl.bindBuffer(gl.ARRAY_BUFFER, electrodeColorBuffer);
+	gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
 	gl.bufferSubData(gl.ARRAY_BUFFER, electrodeNumber * 4 * 4, flatten(ELECTRODE_OFF_COLOR), 0, 4);
 }
+
+function updateDropData(drops)
+{
+	var dropPositions = new Float32Array(drops.length * 2);
+	var dropSizes     = new Float32Array(drops.length * 1);
+	var dropColors    = new Float32Array(drops.length * 4);
+	
+	for(var i = 0; i < drops.length; i++)
+	{
+		const drop = drops[i];
+		
+		dropPositions[i * 2 + 0] = drop.position[0];
+		dropPositions[i * 2 + 1] = drop.position[1];
+		
+		dropSizes[i * 1 + 0] = drop.size;
+		
+		dropColors[i * 4 + 0] = drop.color[0];
+		dropColors[i * 4 + 1] = drop.color[1];
+		dropColors[i * 4 + 2] = drop.color[2];
+		dropColors[i * 4 + 3] = drop.color[3];
+	}
+	
+    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, dropPositions, gl.DYNAMIC_DRAW);
+	
+    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.sizeBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, dropSizes, gl.DYNAMIC_DRAW);
+	
+    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, dropColors, gl.DYNAMIC_DRAW);
+}
+
+function render(dropCount)
+{
+	gl.clear(gl.COLOR_BUFFER_BIT);
+	
+	renderBoard();
+	renderDrops(dropCount);
+}
+
+
 
 
 

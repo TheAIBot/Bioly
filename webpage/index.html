@@ -29,14 +29,14 @@
 		<script id="drop-vertex-shader"   type="x-shader/x-vertex">
 			attribute vec4 vDrop;
 			attribute vec4 vPosition;
-			attribute vec4 vSize;
+			attribute float size;
 			attribute vec4 vColor;
 			varying vec4 fColor;
 
 			void main() 
 			{         
 				fColor = vColor;
-				gl_Position = vec4(vDrop.x + (vPosition.x * vSize.x), vDrop.y + (vPosition.y * vSize.y), vDrop.z, vDrop.w);
+				gl_Position = vec4(vPosition.x + (vDrop.x * size), vPosition.y + (vDrop.y * size), vDrop.z, vDrop.w);
 			}
 		</script>
 		<script id="drop-fragment-shader" type="x-shader/x-fragment">
