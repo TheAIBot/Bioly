@@ -13,6 +13,14 @@ var dropOutputs;
 var boardWidth;
 var boardHeight;
 
+const LEFT_NEIGHBOR_INDEX  = 0;
+const RIGHT_NEIGHBOR_INDEX = 1;
+const ABOVE_NEIGHBOR_INDEX = 2;
+const BELOW_NEIGHBOR_INDEX = 3;
+
+const ELECTRODE_SIZE_IN_CM = 1;
+const DROP_DISTANCE_PER_SEC = 20;
+
 function startSimulator(width, height, inputs, outputs)
 {
 	boardWidth = width;
@@ -24,6 +32,7 @@ function startSimulator(width, height, inputs, outputs)
 	setupDrops(boardData.electrodeSize / 2);
 
 	prepareElectrodes(width, height);
+	prepareInputs();
 	
 	drops = [];
 }
@@ -46,22 +55,50 @@ function prepareElectrodes(width, height)
 	{
 		const electrode = electrodes[i];
 		
+		//left electrode
 		if (i % width == (i - 1) % width)
 		{
 			electrode.neighbors.push(electrodes[i - 1]);
 		}
+		else
+		{
+			electrode.neighbors.push(null);
+		}
+		//right electrode
 		if (i % width == (i + 1) % width)
 		{
 			electrode.neighbors.push(electrodes[i + 1]);
 		}
+		else
+		{
+			electrode.neighbors.push(null);
+		}
+		//above electrode
 		if (i - width >= 0)
 		{
 			electrode.neighbors.push(electrodes[i - width]);
 		}
+		else
+		{
+			electrode.neighbors.push(null);
+		}
+		//below electrode
 		if (i + width < width * height)
 		{
 			electrode.neighbors.push(electrodes[i + width]);
 		}
+		else
+		{
+			electrode.neighbors.push(null);
+		}
+	}
+}
+
+function prepareInputs()
+{
+	for(var i = 0; i < dropInputs.length; i++)
+	{
+		dropInputs[i].canSpawn = [true, true, true, true];
 	}
 }
 
@@ -74,19 +111,27 @@ function updateLoop()
 	
 	spawnInputDrops();
 	
+	splitDrops();
+	
+	removeDrops();
+	
+	
+	
+	render(drops.length);
+	
 	//if new command then parse and execute command --done
 	
 	//spawn drops --done
 	
-	//split drops
+	//split drops --done
 
-	//remove drops
+	//remove drops --done
 	
 	//update drop positions
 	
 	//merge drops
 	
-	//render
+	//render --done
 }
 
 function executeCommand(command)
@@ -150,39 +195,46 @@ function electrodeIndexCheck(number)
 
 function spawnInputDrops()
 {
-	for(var i = 0; i < )
+	for(var i = 0; i < dropInputs.length; i++)
 	{
 		const input = dropInputs[i];
 		const neighbors = electrodes[input.index].neighbors;
 		
-		let eletrodesInRange = 0;
-		let electrodeIndex = -1;
+		let electrodesOnCount = 0;
 		for(var k = 0; k < neighbors.length; k++)
 		{
-			const electrode = neighbors[k];
-			if(electrode.isOn)
+			if(isElectrodeOn(neighbors[k]))
 			{
-				eletrodesInRange++;
-				electrodeIndex = k;
+				electrodesOnCount++;
+				
+				if (input.canSpawn[k])
+				{
+					spawnDrop(neighbors[k].position, 1, input.color);
+					input.canSpawn[k] = false;
+				}
+			}
+			else
+			{
+				input.canSpawn[k] = true;
 			}
 		}
 		
-		if (eletrodesInRange > 1)
+		if (electrodesOnCount > 1)
 		{
 			throw "Too many electrodes are turned on at an input";
 		}
-		
-		if (eletrodesInRange == 1)
-		{						
-			let newDrop = {};
-			newDrop.position = electrodes[electrodeIndex].position;
-			newDrop.amount = 1;
-			newDrop.size =  1;
-			newDrop.color = input.color;
-			
-			drops.push(newDrop);
-		}
 	}
+}
+
+function spawnDrop(position, amount, color)
+{
+	const newDrop = {};
+	newDrop.position = vec2(position[0], position[1]);
+	newDrop.amount = amount;
+	newDrop.size =  getDropSize(newDrop.amount);
+	newDrop.color = color;
+	
+	drops.push(newDrop);
 }
 
 function splitDrops()
@@ -192,18 +244,57 @@ function splitDrops()
 		const drop = drops[i];
 		const electrode = getClosestElectrode(drop.position);
 		
+		if (electrode.isOn)
+		{
+			continue;
+		}
 		
+		const leftElectrode  = electrode.neighbors[LEFT_NEIGHBOR_INDEX];
+		const rightElectrode = electrode.neighbors[RIGHT_NEIGHBOR_INDEX];
+		const aboveElectrode = electrode.neighbors[ABOVE_NEIGHBOR_INDEX];
+		const belowElectrode = electrode.neighbors[BELOW_NEIGHBOR_INDEX];
+		
+		const horizontalSplit = isElectrodeOn(leftElectrode)  && isElectrodeOn(rightElectrode);
+		const verticalSplit   = isElectrodeOn(aboveElectrode) && isElectrodeOn(belowElectrode);
+		
+		if (horizontalSplit && verticalSplit)
+		{
+			throw "Too many electrodes are turned on next to a drop";
+		}
+		
+		if (horizontalSplit || verticalSplit) 
+		{
+			if (drop.amount <= 1)
+			{
+				throw "Trying to split a drop that only has " + drop.amount + " drops in it";
+			}
+			
+			const electrodeA = horizontalSplit ? leftElectrode  : aboveElectrode;
+			const electrodeB = horizontalSplit ? rightElectrode : belowElectrode;
+			
+			spawnDrop(electrodeA.position, drop.amount / 2, drop.color);
+			spawnDrop(electrodeB.position, drop.amount / 2, drop.color);
+		}
 	}
+}
+
+function isElectrodeOn(electrode)
+{
+	return electrode && electrode.isOn;
+}
+
+function getDropSize(amount)
+{
+	return Math.sqrt(amount) / Math.sqrt(Math.PI);
 }
 
 function getClosestElectrode(position)
 {
 	let closest = null;
-	left bestDistance = 1000000;
+	let bestDistance = 1000000;
 	for(var i = 0; i < electrodes.length; i++)
 	{
-		const electrodePosition = electrodes[i].position;
-		const distance = Math.sqrt(Math.abs(position[0] - electrodePosition[0]) + Math.abs(position[1] - electrodePosition[1]));
+		const distance = distanceAB(position, electrodes[i].position);
 		if (distance < bestDistance)
 		{
 			closest = electrodes[i];
@@ -215,6 +306,52 @@ function getClosestElectrode(position)
 		throw "There was somehow no closest electrode";
 	}
 	return closest;
+}
+
+function removeDrops()
+{
+	for(var i = 0; i < dropOutputs.length; i++)
+	{
+		const output = dropOutputs[i];
+		const outputPosition = electrodes[output.index].position;
+		
+		//going through the array backwards so removed drops
+		//won't mess with the index
+		let dropIndex = drops.length;
+		let dropsRemovedCount = 0;
+		while (dropIndex-- >= 0) {
+			const drop = drops[dropIndex];
+			const dropPoisition = electrodes[drop.index].position;
+			
+			if (distanceAB(outputPosition, dropPoisition) <= boardData.electrodeSize * 0.1)
+			{
+				drops.splice(dropIndex,1);
+				dropsRemovedCount++;
+			}
+		}
+		
+		if (dropsRemovedCount > 1)
+		{
+			throw "A single output can't remove more than one drop at a time. An output just removed " + dropsRemovedCount + " drops";
+		}
+	}
+}
+
+function distanceAB(a, b)
+{
+	const ba0 = a[0] - b[0];
+	const ba1 = a[1] - b[1];
+	return Math.sqrt(ba0 * ba0 + ba1 * ba1);
+}
+
+function updateDropPositions()
+{
+	for(var i = 0; i < drops.length; i++)
+	{
+		const drop = drops[i];
+		
+		
+	}
 }
 
 //electrode
@@ -235,7 +372,13 @@ function getClosestElectrode(position)
 //inputs
 //{
 //	index
+//	canSpawn
 //	color
+//}
+
+//outputs
+//{
+//	index
 //}
 
 
