@@ -21,21 +21,49 @@ function startSimulator(width, height, inputs, outputs)
 	dropOutputs = outputs;
 	
 	boardData = setupBoard(width, height);
-	setupDrops();
+	setupDrops(boardData.electrodeSize / 2);
+
+	prepareElectrodes(width, height);
 	
+	drops = [];
+}
+
+function prepareElectrodes(width, height)
+{
 	electrodes = [];
 	for(var i = 0; i < width * height; i++)
 	{
 		let electrode = {};
 		electrode.position = boardData.electrodePositions[i];
 		electrode.isOn = false;
+		electrode.neighbors = [];
 		
 		electrodes.push(electrode);
 	}
 	
-	drops = [];
+	//add neighbors
+	for(var i = 0; i < width * height; i++)
+	{
+		const electrode = electrodes[i];
+		
+		if (i % width == (i - 1) % width)
+		{
+			electrode.neighbors.push(electrodes[i - 1]);
+		}
+		if (i % width == (i + 1) % width)
+		{
+			electrode.neighbors.push(electrodes[i + 1]);
+		}
+		if (i - width >= 0)
+		{
+			electrode.neighbors.push(electrodes[i - width]);
+		}
+		if (i + width < width * height)
+		{
+			electrode.neighbors.push(electrodes[i + width]);
+		}
+	}
 }
-
 
 function updateLoop()
 {
@@ -44,9 +72,11 @@ function updateLoop()
 		executeCommand(newCommand);
 	}
 	
+	spawnInputDrops();
+	
 	//if new command then parse and execute command --done
 	
-	//spawn drops
+	//spawn drops --done
 	
 	//split drops
 
@@ -122,18 +152,20 @@ function spawnInputDrops()
 {
 	for(var i = 0; i < )
 	{
-		const index = dropInputs[i].index;
-		let turnedOnElectrodesCount = 0;
+		const input = dropInputs[i];
+		const neighbors = electrodes[input.index].neighbors;
 		
-		const left  = getLeftElectrodeIndex(index);
-		const right = getRightElectrodeIndex(index);
-		const above = getAboveElectrodeIndex(index);
-		const below = getBelowElectrodeIndex(index);
-		
-		const eletrodesInRange = (left  == -1? 0 : 1) + 
-								 (right == -1? 0 : 1) + 
-								 (above == -1? 0 : 1) + 
-								 (below == -1? 0 : 1);
+		let eletrodesInRange = 0;
+		let electrodeIndex = -1;
+		for(var k = 0; k < neighbors.length; k++)
+		{
+			const electrode = neighbors[k];
+			if(electrode.isOn)
+			{
+				eletrodesInRange++;
+				electrodeIndex = k;
+			}
+		}
 		
 		if (eletrodesInRange > 1)
 		{
@@ -141,69 +173,56 @@ function spawnInputDrops()
 		}
 		
 		if (eletrodesInRange == 1)
-		{
-			const indexToSpawnDropOn = (left  == -1? 0 : 1) + 
-									   (right == -1? 0 : 1) + 
-									   (above == -1? 0 : 1) + 
-									   (below == -1? 0 : 1);
+		{						
+			let newDrop = {};
+			newDrop.position = electrodes[electrodeIndex].position;
+			newDrop.amount = 1;
+			newDrop.size =  1;
+			newDrop.color = input.color;
 			
-			let dropPosition = electrode[i].position;
+			drops.push(newDrop);
 		}
 	}
 }
 
-function getLeftElectrodeIndex(index)
+function splitDrops()
 {
-	let x = (index % boardWidth) - 1;
-	//electrodes in the first column can't
-	//get the left electrode because it would
-	//be the electrode from the last column
-	//or an indexoutofbounds error
-	if (x < 0)
+	for(var i = 0; i < drops.length; i++)
 	{
-		return -1;
+		const drop = drops[i];
+		const electrode = getClosestElectrode(drop.position);
+		
+		
 	}
-	
-	return index - 1;
 }
 
-function getRightElectrodeIndex(index)
+function getClosestElectrode(position)
 {
-	let x = (index % boardWidth) + 1;
-	//electrodes in the last column can't
-	//get the right electrode because it would
-	//be the electrode from the first column
-	//or an indexoutofbounds error
-	if (x >= boardWidth)
+	let closest = null;
+	left bestDistance = 1000000;
+	for(var i = 0; i < electrodes.length; i++)
 	{
-		return -1;
+		const electrodePosition = electrodes[i].position;
+		const distance = Math.sqrt(Math.abs(position[0] - electrodePosition[0]) + Math.abs(position[1] - electrodePosition[1]));
+		if (distance < bestDistance)
+		{
+			closest = electrodes[i];
+			bestDistance = distance;
+		}
 	}
-	
-	return index + 1;
+	if (closest == null)
+	{
+		throw "There was somehow no closest electrode";
+	}
+	return closest;
 }
 
-function getAboveElectrodeIndex(index)
-{
-	let y = (index / boardHeight) + 1;
-	if (y >= boardWidth)
-	{
-		return -1;
-	}
-	
-	return index + boardWidth;
-}
-
-function getBelowElectrodeIndex(index)
-{
-	let y = (index / boardHeight) - 1;
-	if (y < 0)
-	{
-		return -1;
-	}
-	
-	return index - boardWidth;
-}
-
+//electrode
+//{
+//	position
+//	isOn
+//	neighbors
+//}
 
 //drop
 //{
@@ -216,6 +235,7 @@ function getBelowElectrodeIndex(index)
 //inputs
 //{
 //	index
+//	color
 //}
 
 

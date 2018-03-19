@@ -32,7 +32,7 @@ window.onload = function init()
 	
 	const data = setupBoard(11, 11);
 	setupDrops(data.electrodeSize / 2);
-	updateDropData([{position: [0, 0], size: 1, color: [1, 0, 0, 1]}]);
+	updateDropData([{position: [0, 0], size: 3, color: [1, 0, 0, 1]}]);
 	render(1);
 }
 
