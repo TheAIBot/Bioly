@@ -239,7 +239,9 @@ function spawnDrop(position, amount, color)
 
 function splitDrops()
 {
-	for(var i = 0; i < drops.length; i++)
+	//drops are deleted so the array has to be iterated backwards
+	let i = drops.length;
+	while(i-- >= 0)
 	{
 		const drop = drops[i];
 		const electrode = getClosestElectrode(drop.position);
@@ -274,6 +276,9 @@ function splitDrops()
 			
 			spawnDrop(electrodeA.position, drop.amount / 2, drop.color);
 			spawnDrop(electrodeB.position, drop.amount / 2, drop.color);
+			
+			//delete drop that was splitted
+			drops.splice(i, 1);
 		}
 	}
 }
@@ -325,7 +330,7 @@ function removeDrops()
 			
 			if (distanceAB(outputPosition, dropPoisition) <= boardData.electrodeSize * 0.1)
 			{
-				drops.splice(dropIndex,1);
+				drops.splice(dropIndex, 1);
 				dropsRemovedCount++;
 			}
 		}
@@ -351,6 +356,15 @@ function updateDropPositions()
 		const drop = drops[i];
 		
 		
+	}
+}
+
+function getNearbyElectrodes(position)
+{
+	const nearbyElectrodes = [];
+	for(var i = 0; i < electrodes.length; i++)
+	{
+		const electrode = electrodes[i];
 	}
 }
 
