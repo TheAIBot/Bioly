@@ -344,9 +344,9 @@ function removeDrops()
 
 function distanceAB(a, b)
 {
-	const ba0 = a[0] - b[0];
-	const ba1 = a[1] - b[1];
-	return Math.sqrt(ba0 * ba0 + ba1 * ba1);
+	const baX = a[0] - b[0];
+	const baY = a[1] - b[1];
+	return Math.sqrt(baX * baX + baY * baY);
 }
 
 function updateDropPositions()
@@ -361,11 +361,20 @@ function updateDropPositions()
 
 function getNearbyElectrodes(position)
 {
+	const nearbyDistance = boardData.electrodeSize * 4;
 	const nearbyElectrodes = [];
 	for(var i = 0; i < electrodes.length; i++)
 	{
 		const electrode = electrodes[i];
+		const distance = distanceAB(position, electrode.position);
+		
+		if (distance <= nearbyDistance)
+		{
+			nearbyElectrodes.push(electrode);
+		}
 	}
+	
+	return nearbyElectrodes;
 }
 
 //electrode
