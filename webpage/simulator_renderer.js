@@ -30,7 +30,9 @@ window.onload = function init()
     boardGLData.program = initShaders(gl, "board-vertex-shader", "board-fragment-shader");    
 	dropGLData.program  = initShaders(gl, "drop-vertex-shader", "drop-fragment-shader");
 	
+	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
+	
 	const data = setupBoard(11, 11);
 	setupDrops(data.electrodeSize / 2);
 	updateDropData([{position: [0, 0], size: 4, color: [1, 0, 0, 0.5]}]);
