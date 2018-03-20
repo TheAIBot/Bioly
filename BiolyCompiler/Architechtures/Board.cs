@@ -14,8 +14,9 @@ namespace BiolyCompiler.Architechtures
         //Dummy class for now.
         public int heigth, width;
         public List<Module> placedModules = new List<Module>();
-        public Module[,] grid;
         public List<Rectangle> EmptyRectangles = new List<Rectangle>();
+        public HashSet<BoardFluid> fluids = new HashSet<BoardFluid>();
+        public Module[,] grid;
 
 
         public Board(int width, int heigth){
@@ -175,12 +176,14 @@ namespace BiolyCompiler.Architechtures
             return dijkstraGraph[sourceModule.shape.x, sourceModule.shape.y];
         }
 
-        public void replaceWithDroplets(Block finishedOperation)
+        public Droplet replaceWithDroplets(Block finishedOperation)
         {
             Droplet droplet = new Droplet();
             Rectangle moduleRectangle = finishedOperation.boundModule.shape;
             UpdateGridWithModulePlacement(droplet, moduleRectangle);
             FastTemplateReplace(moduleRectangle, droplet);
+            placedModules.Remove(finishedOperation.boundModule);
+            return droplet;
         }
 
         private void FastTemplateReplace(Rectangle oldRectangle, Module replacingModule)

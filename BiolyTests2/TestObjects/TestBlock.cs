@@ -13,6 +13,7 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyCompiler.Modules.OperationTypes;
 using System.Xml;
+using BiolyTests2.TestObjects;
 //using MoreLinq;
 
 namespace BiolyTests.TestObjects
@@ -20,13 +21,19 @@ namespace BiolyTests.TestObjects
 
     public class TestBlock : BiolyCompiler.BlocklyParts.Block
     {
-        public TestBlock(List<string> input, string output, XmlNode node) : base(true, input, output)
-        {
+        public readonly Module associatedModule;
 
+        public TestBlock(List<string> input, string output, XmlNode node, Module associatedModule) : base(true, input, output)
+        {
+            this.associatedModule = associatedModule;
         }
         public override OperationType getOperationType()
         {
             return OperationType.Test;
+        }
+        public override Module getAssociatedModule()
+        {
+            return associatedModule;
         }
     }
 }

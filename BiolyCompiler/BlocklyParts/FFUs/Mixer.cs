@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Modules.OperationTypes;
+using BiolyCompiler.Modules;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -34,6 +35,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public override string ToString()
         {
             return "Mixer";
+        }
+
+        public override Module getAssociatedModule()
+        {
+            return new MixerModule(4,4,2000);
         }
     }
 }

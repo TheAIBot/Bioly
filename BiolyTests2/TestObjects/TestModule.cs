@@ -20,7 +20,7 @@ namespace BiolyTests2.TestObjects
     class TestModule : BiolyCompiler.Modules.Module
     {
 
-        public TestModule() : base(4, 4, 3000)
+        public TestModule() : base(4, 4, 3000, 1, 1)
         {
         }
 

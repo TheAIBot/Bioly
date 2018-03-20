@@ -50,5 +50,10 @@ namespace BiolyCompiler.BlocklyParts
         {
             throw new NotImplementedException();
         }
+
+        public virtual Module getAssociatedModule()
+        {
+            throw new NotImplementedException("No modules have been associated with blocks/operations of type " + this.GetType().ToString());
+        }
     }
 }

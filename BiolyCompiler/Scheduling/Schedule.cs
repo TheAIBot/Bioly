@@ -16,18 +16,17 @@ namespace BiolyCompiler.Scheduling
 
     public class Schedule
     {
-        Dictionary<int, Board> boardAtDifferentTimes = new Dictionary<int, Board>();
-        Dictionary<string, Droplet> FluidVariableLocations = new Dictionary<string, Droplet>();
-        SimplePriorityQueue<Block> runningOperations = new SimplePriorityQueue<Block>();
-        List<Block> ScheduledOperations = new List<Block>();
+        public Dictionary<int, Board> boardAtDifferentTimes = new Dictionary<int, Board>();
+        public Dictionary<string, Droplet> FluidVariableLocations = new Dictionary<string, Droplet>();
+        public SimplePriorityQueue<Block> runningOperations = new SimplePriorityQueue<Block>();
+        public List<Block> ScheduledOperations = new List<Block>();
         public const int DROP_MOVEMENT_TIME = 1;
         public const int IGNORED_TIME_DIFFERENCE = 100;
 
         public Schedule(){
 
         }
-
-
+        
         public static Tuple<int, Schedule> SequentialScheduling(Assay assay, Architechture architecture, ModuleLibrary library)
         {
             Board board = new Board(architecture.width, architecture.heigth);
@@ -124,6 +123,7 @@ namespace BiolyCompiler.Scheduling
                     Route route   = determineRouteToModule(sourceModule, module, board, startTime); //Will be included as part of a later step.
                     //TODO (*) If it can't be routed
                     if (route == null) {
+                        throw new Exception("No route found. This is currently not handeled");
                         operation.Unbind(module);
                         waitForAFinishedOperation();
                         if (runningOperations.Count == 0) throw new Exception("The scheduling can't be made: the routing can't be made.");
@@ -132,7 +132,6 @@ namespace BiolyCompiler.Scheduling
                         if (!sourceModule.isStaticModule()) {
                             board.FastTemplateRemove(sourceModule);
                         }
-                        board = board.Copy();
                     }
                 }
                 else {
@@ -149,6 +148,7 @@ namespace BiolyCompiler.Scheduling
                 if (readyOperations.Count == 0 && runningOperations.Count > 0)
                 {
                     boardAtDifferentTimes.Add(startTime, board);
+                    board = board.Copy();
                 }
 
                 //If there aren't any operations that can be started, wait until there are:
@@ -160,7 +160,8 @@ namespace BiolyCompiler.Scheduling
                     {
                         if (!finishedOperation.boundModule.isStaticModule())
                         {
-                            board.replaceWithDroplets(finishedOperation);
+                            Droplet replacingDroplet = board.replaceWithDroplets(finishedOperation);
+                            FluidVariableLocations.Add(finishedOperation.OutputVariable, replacingDroplet);
                         }
                         assay.updateReadyOperations(finishedOperation);
                     }
@@ -189,22 +190,8 @@ namespace BiolyCompiler.Scheduling
             return batch;
         }
 
-        private static int GetRunningOperationsCount()
-        {
-            throw new NotImplementedException();
-        }
-
-        private static int updateSchedule(Block operation, Schedule schedule)
-        {
-            throw new NotImplementedException();
-        }
-
         public int getCompletionTime(){
-            return 0;
-        }
-
-        public static void updateReadyOperations(Assay assay, int newTime, List<Block> readyOperations){
-            
+            return ScheduledOperations.Max(operation => operation.endTime);
         }
 
         public static Route determineRouteToModule(Module sourceModule, Module targetModule, Board board, int startTime){
@@ -275,10 +262,6 @@ namespace BiolyCompiler.Scheduling
                 }
             }
             return dijkstraGraph;
-        }
-
-        public static int updateSchedule(Block operation, Schedule schedule, Route route){
-            return 0;
         }
 
         public static Block removeOperation(List<Block> readyOperations){
