@@ -33,10 +33,14 @@ window.onload = function init()
 	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
 	
+	/*
 	const data = setupBoard(11, 11);
 	setupDrops(data.electrodeSize / 2);
 	updateDropData([{position: [0, 0], size: 4, color: [1, 0, 0, 0.5]}]);
 	render(1);
+	*/
+	
+	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
 }
 
 function setupBoard(width, height)

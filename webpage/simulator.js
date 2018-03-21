@@ -19,7 +19,7 @@ const ABOVE_NEIGHBOR_INDEX = 2;
 const BELOW_NEIGHBOR_INDEX = 3;
 
 const ELECTRODE_SIZE_IN_CM = 1;
-const DROP_DISTANCE_PER_SEC_IN_CM = 20;
+const DROP_DISTANCE_PER_SEC_IN_CM = 5;
 const UPDATES_PER_SECOND = 60;
 
 function startSimulator(width, height, inputs, outputs)
@@ -36,6 +36,9 @@ function startSimulator(width, height, inputs, outputs)
 	prepareInputs();
 	
 	drops = [];
+	
+	render(drops.length);
+	updateLoop()
 }
 
 function prepareElectrodes(width, height)
@@ -57,7 +60,7 @@ function prepareElectrodes(width, height)
 		const electrode = electrodes[i];
 		
 		//left electrode
-		if (i % width == (i - 1) % width)
+		if ((i % width) - 1 >= 0)
 		{
 			electrode.neighbors.push(electrodes[i - 1]);
 		}
@@ -66,7 +69,7 @@ function prepareElectrodes(width, height)
 			electrode.neighbors.push(null);
 		}
 		//right electrode
-		if (i % width == (i + 1) % width)
+		if ((i % width) + 1 < width)
 		{
 			electrode.neighbors.push(electrodes[i + 1]);
 		}
@@ -118,9 +121,12 @@ function updateLoop()
 	
 	updateDropPositions();
 	
+	mergeDrops();
 	
-	
+	updateDropData(drops);
 	render(drops.length);
+	
+	window.requestAnimFrame(updateLoop);
 	
 	//if new command then parse and execute command --done
 	
@@ -132,7 +138,7 @@ function updateLoop()
 	
 	//update drop positions --done
 	
-	//merge drops
+	//merge drops --done
 	
 	//render --done
 }
@@ -174,21 +180,21 @@ function turnElectrodeOn(number)
 {
 	electrodeIndexCheck(number)
 	drawElectrodeOn(number - 1);
-	boardData.electrodePositions[number - 1].isOn = true;
+	electrodes[number - 1].isOn = true;
 }
 
 function turnElectrodeOff(number)
 {
 	electrodeIndexCheck(number)
 	drawElectrodeOff(number - 1);
-	boardData.electrodePositions[number - 1].isOn = false;
+	electrodes[number - 1].isOn = false;
 }
 
 function electrodeIndexCheck(number)
 {
 	if (!Number.isInteger(number))
 	{
-		throw "Electrode index was not a number. Was instead: " + splittedCommand[i];
+		throw "Electrode index was not a number. Was instead: " + number;
 	}
 	else if (number < 1 || number > boardData.electrodePositions.length)
 	{
@@ -244,7 +250,7 @@ function splitDrops()
 {
 	//drops are deleted so the array has to be iterated backwards
 	let i = drops.length;
-	while(i-- >= 0)
+	while(i--)
 	{
 		const drop = drops[i];
 		const electrode = getClosestElectrode(drop.position);
@@ -327,7 +333,7 @@ function removeDrops()
 		//won't mess with the index
 		let dropIndex = drops.length;
 		let dropsRemovedCount = 0;
-		while (dropIndex-- >= 0) {
+		while (dropIndex--) {
 			const drop = drops[dropIndex];
 			const dropPoisition = electrodes[drop.index].position;
 			
@@ -359,23 +365,23 @@ function updateDropPositions()
 	for(var i = 0; i < drops.length; i++)
 	{
 		const drop = drops[i];
-		const nearbyDistance = boardData.electrodeSize * 4 * drop.size;
+		const nearbyDistance = boardData.electrodeSize * 2;//don't do this for now * drop.size;
 		const nearbyElectrode = getSingleNearbyOnElectrode(drop.position, nearbyDistance);
 		
 		if (nearbyElectrode)
 		{
-			let dx = drop.position[0] - nearbyElectrode.position[0];
-			let dy = drop.position[1] - nearbyElectrode.position[1];
+			let dx = nearbyElectrode.position[0] - drop.position[0];
+			let dy = nearbyElectrode.position[1] - drop.position[1];
 			const dVectorLength = Math.sqrt(dx * dx + dy * dy);
 			
 			if (dVectorLength > distancePerUpdate)
 			{
 				dx = dx * (distancePerUpdate / dVectorLength);
-				dY = dY * (distancePerUpdate / dVectorLength);
+				dy = dy * (distancePerUpdate / dVectorLength);
 			}
 			
 			drop.position[0] += dx;
-			drop.position[1] += dY;
+			drop.position[1] += dy;
 		}
 		
 	}
@@ -388,7 +394,7 @@ function getSingleNearbyOnElectrode(position, nearbyDistance)
 	{
 		const electrode = electrodes[i];
 		
-		if (!electrode.isOn)
+		if (electrode.isOn)
 		{
 			const distance = distanceAB(position, electrode.position);
 			if (distance <= nearbyDistance)
@@ -410,7 +416,47 @@ function getSingleNearbyOnElectrode(position, nearbyDistance)
 
 function mergeDrops()
 {
+	const dropCount = drops.length;
+	for(var i = 0; i < dropCount / 2; i++)
+	{
+		const drop = drops[i];
+		const dropRadius = (boardData.electrodeSize / 2) * drop.size;
+		if (drop)
+		{
+			for(var k = i + 1; k < dropCount; k++)
+			{
+				const otherDrop = drops[k];
+				const otherDropRadius = (boardData.electrodeSize / 2) * otherDrop.size;
+				if(otherDrop)
+				{
+					const distance = distanceAB(drop.position, otherDrop.position);
+					if (distance - dropRadius - otherDropRadius < boardData.electrodeSize / 2)
+					{
+						const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
+												(drop.position[1] + otherDrop.position[1]) / 2);
+						const newDropColor = vec4((drop.color[0] + otherDrop.color[0]) / 2, 
+												  (drop.color[1] + otherDrop.color[1]) / 2, 
+												  (drop.color[2] + otherDrop.color[2]) / 2, 
+												  (drop.color[3] + otherDrop.color[3]) / 2);
+						spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropColor);
+						
+						drops[i] = null;
+						drops[k] = null;
+						break;
+					}
+				}
+			}
+		}
+	}
 	
+	let index = drops.length;
+	while(index--)
+	{
+		if (drops[index] == null)
+		{
+			drops.splice(index, 1);
+		}
+	}
 }
 
 //electrode
