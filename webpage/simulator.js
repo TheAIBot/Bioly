@@ -19,7 +19,8 @@ const ABOVE_NEIGHBOR_INDEX = 2;
 const BELOW_NEIGHBOR_INDEX = 3;
 
 const ELECTRODE_SIZE_IN_CM = 1;
-const DROP_DISTANCE_PER_SEC = 20;
+const DROP_DISTANCE_PER_SEC_IN_CM = 20;
+const UPDATES_PER_SECOND = 60;
 
 function startSimulator(width, height, inputs, outputs)
 {
@@ -115,6 +116,8 @@ function updateLoop()
 	
 	removeDrops();
 	
+	updateDropPositions();
+	
 	
 	
 	render(drops.length);
@@ -127,7 +130,7 @@ function updateLoop()
 
 	//remove drops --done
 	
-	//update drop positions
+	//update drop positions --done
 	
 	//merge drops
 	
@@ -351,30 +354,63 @@ function distanceAB(a, b)
 
 function updateDropPositions()
 {
+	const distancePerUpdate = (DROP_DISTANCE_PER_SEC_IN_CM / UPDATES_PER_SECOND) * ELECTRODE_SIZE_IN_CM * boardData.electrodeSize;
+	
 	for(var i = 0; i < drops.length; i++)
 	{
 		const drop = drops[i];
+		const nearbyDistance = boardData.electrodeSize * 4 * drop.size;
+		const nearbyElectrode = getSingleNearbyOnElectrode(drop.position, nearbyDistance);
 		
+		if (nearbyElectrode)
+		{
+			let dx = drop.position[0] - nearbyElectrode.position[0];
+			let dy = drop.position[1] - nearbyElectrode.position[1];
+			const dVectorLength = Math.sqrt(dx * dx + dy * dy);
+			
+			if (dVectorLength > distancePerUpdate)
+			{
+				dx = dx * (distancePerUpdate / dVectorLength);
+				dY = dY * (distancePerUpdate / dVectorLength);
+			}
+			
+			drop.position[0] += dx;
+			drop.position[1] += dY;
+		}
 		
 	}
 }
 
-function getNearbyElectrodes(position)
+function getSingleNearbyOnElectrode(position, nearbyDistance)
 {
-	const nearbyDistance = boardData.electrodeSize * 4;
-	const nearbyElectrodes = [];
+	let nearbyElectrode = null;
 	for(var i = 0; i < electrodes.length; i++)
 	{
 		const electrode = electrodes[i];
-		const distance = distanceAB(position, electrode.position);
 		
-		if (distance <= nearbyDistance)
+		if (!electrode.isOn)
 		{
-			nearbyElectrodes.push(electrode);
+			const distance = distanceAB(position, electrode.position);
+			if (distance <= nearbyDistance)
+			{
+				if (nearbyElectrode == null)
+				{
+					nearbyElectrode = electrode;	
+				}
+				else 
+				{
+					throw "Two or more electrodes are turned on near a drop";
+				}
+			}
 		}
 	}
 	
-	return nearbyElectrodes;
+	return nearbyElectrode;
+}
+
+function mergeDrops()
+{
+	
 }
 
 //electrode
