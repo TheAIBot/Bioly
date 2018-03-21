@@ -52,30 +52,17 @@ function setupBoard(width, height)
     boardGLData.electrodeBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.electrodeBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeVerticies), gl.STATIC_DRAW);
-	
     boardGLData.electrodePointer = gl.getAttribLocation(boardGLData.program, "vElectrode");
-    gl.vertexAttribPointer(boardGLData.electrodePointer, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(boardGLData.electrodePointer);
-	
 	
 	boardGLData.positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodePositions), gl.STATIC_DRAW);
-	
     boardGLData.positionPointer = gl.getAttribLocation(boardGLData.program, "vPosition");
-    gl.vertexAttribPointer(boardGLData.positionPointer, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(boardGLData.positionPointer);
-	gl.vertexAttribDivisor(boardGLData.positionPointer, 1);
-	
 	
 	boardGLData.colorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeColors), gl.DYNAMIC_DRAW);
-	
     boardGLData.colorPointer = gl.getAttribLocation(boardGLData.program, "vColor");
-    gl.vertexAttribPointer(boardGLData.colorPointer, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(boardGLData.colorPointer);
-	gl.vertexAttribDivisor(boardGLData.colorPointer, 1);
 	
 	boardGLData.eletrodeVerticiesCount = boardData.electrodeVerticies.length;
 	boardGLData.electrodeCount = width * height;
@@ -160,37 +147,16 @@ function setupDrops(dropRadius)
     dropGLData.dropBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.dropBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(dropVerticies), gl.STATIC_DRAW);
-	
     dropGLData.dropPointer = gl.getAttribLocation(dropGLData.program, "vDrop");
-    gl.vertexAttribPointer(dropGLData.dropPointer, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(dropGLData.dropPointer);
-	
 	
 	dropGLData.positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.positionBuffer);
-	
     dropGLData.positionPointer = gl.getAttribLocation(dropGLData.program, "vPosition");
-    gl.vertexAttribPointer(dropGLData.positionPointer, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(dropGLData.positionPointer);
-	gl.vertexAttribDivisor(dropGLData.positionPointer, 1);
-	
 	
 	dropGLData.sizeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.sizeBuffer);
-	
     dropGLData.sizePointer = gl.getAttribLocation(dropGLData.program, "size");
-    gl.vertexAttribPointer(dropGLData.sizePointer, 1, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(dropGLData.sizePointer);
-	gl.vertexAttribDivisor(dropGLData.sizePointer, 1);
-	
 	
 	dropGLData.colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.colorBuffer);
-	
     dropGLData.colorPointer = gl.getAttribLocation(dropGLData.program, "vColor");
-    gl.vertexAttribPointer(dropGLData.colorPointer, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(dropGLData.colorPointer);
-	gl.vertexAttribDivisor(dropGLData.colorPointer, 1);
 }
 
 function createDropVerticies(circleRadius)
