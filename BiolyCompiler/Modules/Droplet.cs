@@ -8,7 +8,10 @@ namespace BiolyCompiler.Modules
     {
         public BoardFluid fluidType;
 
-        public Droplet(BoardFluid fluidType) : base(3, 3, 0, 0, 0){}
+        public Droplet(BoardFluid fluidType) : base(3, 3, 0, 0, 0)
+        {
+            this.fluidType = fluidType;
+        }
 
 
         public override OperationType getOperationType(){

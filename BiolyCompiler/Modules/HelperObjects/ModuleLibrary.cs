@@ -35,13 +35,13 @@ namespace BiolyCompiler.Modules
 
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
-            HashSet<Type> operationTypesUsed = new HashSet<Type>();
+            HashSet<Module> associatedModules = new HashSet<Module>();
             foreach (var node in assay.dfg.Nodes)
             {
                 Block operation = node.value;
-                if (!operationTypesUsed.Contains(operation.GetType()))
+                if (!associatedModules.Contains(operation.getAssociatedModule()))
                 {
-                    operationTypesUsed.Add(operation.GetType());
+                    associatedModules.Add(operation.getAssociatedModule());
                     allocatedModules.Add(operation.getAssociatedModule());
                 }
             }
@@ -54,7 +54,7 @@ namespace BiolyCompiler.Modules
             {
                 //The modules are sorted after speed,
                 //so it will chose the fastest module that can execute the operation.
-                if (allocatedModules[i].getOperationType() == operation.getOperationType())
+                if (allocatedModules[i].Equals(operation.getAssociatedModule()))
                 {
                     module = allocatedModules[i];
                     break;

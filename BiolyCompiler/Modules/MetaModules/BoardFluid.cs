@@ -6,7 +6,12 @@ namespace BiolyCompiler.Modules
     {
         public readonly string fluidName;
         public HashSet<Droplet> droplets = new HashSet<Droplet>();
-        
+
+        public BoardFluid(string fluidName)
+        {
+            this.fluidName = fluidName;
+        }
+
         public override int GetHashCode()
         {
             return fluidName.GetHashCode();

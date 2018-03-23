@@ -15,14 +15,14 @@ namespace BiolyCompiler.Architechtures
         public int heigth, width;
         public List<Module> placedModules = new List<Module>();
         public List<Rectangle> EmptyRectangles = new List<Rectangle>();
-        public HashSet<BoardFluid> fluids = new HashSet<BoardFluid>();
+        public Dictionary<string,BoardFluid> fluids = new Dictionary<string,BoardFluid>();
         public Module[,] grid;
 
 
         public Board(int width, int heigth){
             this.width  = width;
             this.heigth = heigth;
-            this.grid = new Module[heigth, width];
+            this.grid = new Module[width,heigth];
             EmptyRectangles.Add(new Rectangle(width, heigth));
         }
 
@@ -125,50 +125,25 @@ namespace BiolyCompiler.Architechtures
             throw new NotImplementedException();
         }
 
-        public String print()
+        public String print(List<Module> allPlacedModules)
         {
             StringBuilder printedBoard = new StringBuilder();
-            for (int i = 0; i < width; i++)
+            int paddingLenght = (int) Math.Log10(allPlacedModules.Count) + 1;
+            for (int j = heigth - 1; j >= 0; j--)
             {
-                for (int j = 0; j < heigth; j++)
+                for (int i = 0; i < width; i++)
                 {
-                    if (grid[i, j] == null) printedBoard.Append("O");
-                    else printedBoard.Append("X");
+                    if (grid[i, j] == null) printedBoard.Append(String.Format("{0,2}", "O"));
+                    else {
+                        int index = allPlacedModules.IndexOf(grid[i,j]);
+                        printedBoard.Append(String.Format("{0,2}", index));
+                    }
                 }
                 printedBoard.AppendLine();
             }
+            printedBoard.AppendLine();
+            printedBoard.AppendLine();
             return printedBoard.ToString();
-        }
-
-        private List<Rectangle> UpdateFreeSpace()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void removeAllDroplets()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal bool sequentiallyPlace(Module module)
-        {
-            throw new NotImplementedException();
-        }
-
-        private Rectangle SelectRectangle(Module module){
-            List<Rectangle> fittingRectangles = new List<Rectangle>();// = emptyRectangles.Where(emptyRectangle => emptyRectangle.fits(module.rectangle));
-            int bestFitValue = -1;
-            Rectangle bestFit;
-            foreach (var Rectangle in fittingRectangles)
-            {
-                
-            }
-            return null;
-        }
-
-        internal bool placeAllDroplets()
-        {
-            throw new NotImplementedException();
         }
 
         public Node<RoutingInformation> getOperationFluidPlacementOnBoard(Module sourceModule, Node<RoutingInformation>[,] dijkstraGraph)
@@ -178,7 +153,14 @@ namespace BiolyCompiler.Architechtures
 
         public Droplet replaceWithDroplets(Block finishedOperation)
         {
-            Droplet droplet = new Droplet();
+            BoardFluid fluidType;
+            if (fluids.ContainsKey(finishedOperation.OutputVariable)) fluids.TryGetValue(finishedOperation.OutputVariable, out fluidType);
+            else
+            {
+                fluidType = new BoardFluid(finishedOperation.OutputVariable);
+                fluids.Add(fluidType.fluidName, fluidType);
+            }
+            Droplet droplet = new Droplet(fluidType);
             Rectangle moduleRectangle = finishedOperation.boundModule.shape;
             UpdateGridWithModulePlacement(droplet, moduleRectangle);
             FastTemplateReplace(moduleRectangle, droplet);

@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.Modules;
+using BiolyCompiler.Scheduling;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -44,6 +45,7 @@ namespace BiolyCompiler.BlocklyParts
         public void Bind(Module module)
         {
             boundModule = module;
+            module.bindingOperation = this;
         }
 
         internal void Unbind(Module module)
@@ -54,6 +56,19 @@ namespace BiolyCompiler.BlocklyParts
         public virtual Module getAssociatedModule()
         {
             throw new NotImplementedException("No modules have been associated with blocks/operations of type " + this.GetType().ToString());
+        }
+
+        public override int GetHashCode()
+        {
+            return OutputVariable.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            Block blockObj = obj as Block;
+            if (blockObj == null) return false;
+            else if (blockObj.GetType() != this.GetType()) return false;
+            else return (OutputVariable.Equals(blockObj.OutputVariable));
         }
     }
 }

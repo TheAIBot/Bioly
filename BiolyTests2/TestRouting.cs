@@ -71,6 +71,13 @@ namespace BiolyTests.RoutingTests
             Assert.IsTrue(route.getEndTime() > startTime + targetModule.shape.x + targetModule.shape.y);
         }
 
+
+        [TestMethod]
+        public void TestMultipleDropsToOneModuleRouting()
+        {
+            Assert.Fail("Not implemented yet.");
+        }
+
         private bool hasNoCollisions(Route route, Board board, Module sourceModule)
         {
             //The last node is not counted, as it should hopefully be at a target module.

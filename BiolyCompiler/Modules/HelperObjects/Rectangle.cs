@@ -251,6 +251,16 @@ namespace BiolyCompiler.Modules
             return "Rectangle. Width = " + width + ", Height = " + height + ", x = " + x + ", y = " + y; 
         }
 
+        public override int GetHashCode()
+        {
+            //It does not guarentee uniqueness, in the sense that for a given hashcode, 
+            //there might be more than one unique set of heigh, width, x, and y values,
+            //that could result in that value.
+
+            //The +1 is to avoid everything becoming 0, if one value is 0.
+            return (height+1) * (width+1) * (x+1) * (y+1);
+        }
+
         public override bool Equals(object obj)
         {
             Rectangle rectangleObj = obj as Rectangle;

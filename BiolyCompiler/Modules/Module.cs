@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.Scheduling;
 
@@ -8,22 +10,24 @@ namespace BiolyCompiler.Modules
     public abstract class Module
     {
         public Rectangle shape;
-        public Route routeToModule;
         public int operationTime;
-        int numberOfInputs, numberOfOutputs;
+        public Block bindingOperation;
+        public readonly int numberOfInputs, numberOfOutputs;
+        //The key is the input fluid name, see the operation/block which the module is bound to.
+        public Dictionary<string, Route> InputRoutes = new Dictionary<string, Route>();
         
         public Module(int width, int height, int operationTime){
             shape = new Rectangle(width, height);
             this.operationTime = operationTime;
             shape.isEmpty = false;
         }
+
         public Module(int width, int height, int operationTime, int numberOfInputs, int numberOfOutputs) : this(width, height, operationTime)
         {
             this.numberOfInputs  = numberOfInputs;
             this.numberOfOutputs = numberOfOutputs;
         }
-
-
+        
         public abstract OperationType getOperationType();
 
         public override String ToString()
@@ -43,7 +47,8 @@ namespace BiolyCompiler.Modules
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            //TODO Can be improved.
+            return shape.GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -51,9 +56,23 @@ namespace BiolyCompiler.Modules
             Module moduleObj = obj as Module;
             if (moduleObj == null) return false;
             else if (moduleObj.GetType() != this.GetType()) return false;
-            else return shape.Equals(moduleObj.shape) && 
-                        numberOfInputs == moduleObj.numberOfInputs && 
-                        numberOfOutputs == moduleObj.numberOfOutputs;
+            else
+            {
+                bool sameBindingOperation = (bindingOperation != null && moduleObj.bindingOperation != null && bindingOperation.Equals(moduleObj.bindingOperation)) ||
+                                            (bindingOperation == null && moduleObj.bindingOperation == null);
+                return shape.Equals(moduleObj.shape) &&
+                        operationTime == moduleObj.operationTime &&
+                        numberOfInputs == moduleObj.numberOfInputs &&
+                        numberOfOutputs == moduleObj.numberOfOutputs &&
+                        sameBindingOperation;
+            }
+        }
+
+        public bool Implements(Block operation)
+        {
+            return  numberOfInputs  == operation.InputVariables.Count && 
+                    //numberOfOutputs == operation.OutputVariable.Count &&
+                    this.GetType().Equals(operation.getAssociatedModule().GetType());
         }
     }
 }

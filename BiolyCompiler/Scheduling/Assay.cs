@@ -44,14 +44,18 @@ namespace BiolyCompiler.Scheduling
             foreach (var successorOperationNode in operationNode.getOutgoingEdges())
             {
 
-                if (!successorOperationNode.getIngoingEdges().Any(node => node.value.hasBeenScheduled == false))
+                if (successorOperationNode.getIngoingEdges().All(node => node.value.hasBeenScheduled == true))
                 {
                     readyOperations.Add(successorOperationNode.value);
                     //This will not happen multiple times, as once an operation list has been added to the readyOperaition list,
                     //all operations it depends on has already been scheduled, and as such they have been removed from readyOperaition.
                 }
             }
-            operationNode.getOutgoingEdges();
+        }
+
+        public bool hasUnfinishedOperations()
+        {
+            return readyOperations.Count > 0;
         }
     }
 }
