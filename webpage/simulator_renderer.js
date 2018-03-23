@@ -44,20 +44,20 @@ window.onload = function init()
 	render(1);
 	*/
 	
-	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
+	startSimulator(100, 100, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
 
 	canvas.addEventListener('mousemove', function(e)
 	{
 		if (e.buttons == 1)
 		{
-			const canvas = document.getElementById("simulatorCanvas");			
-			offsetCurrentViewPosition((e.movementX / canvas.width) * 2, (-e.movementY / canvas.height) * 2);
+			const canvas = document.getElementById("simulatorCanvas");
+			offsetCurrentViewPosition(e.movementX / canvas.width, -e.movementY / canvas.height);
 		}
 	});
 	
 	canvas.addEventListener('wheel', function(e)
 	{
-		changeZoom(e.deltaY / 1250);
+		changeZoom(e.deltaY > 0 ? -0.1 : 0.1);
 		e.preventDefault();
 	});
 }
@@ -308,6 +308,9 @@ function offsetCurrentViewPosition(x, y)
 {
 	currentViewOffsetX += x;
 	currentViewOffsetY += y;
+	
+	currentViewOffsetX = Math.min(0.95, Math.max(-0.95, currentViewOffsetX));
+	currentViewOffsetY = Math.min(0.95, Math.max(-0.95, currentViewOffsetY));
 	
 	gl.useProgram(dropGLData.program);
     gl.uniform2f(dropGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
