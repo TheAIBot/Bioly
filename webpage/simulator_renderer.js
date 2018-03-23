@@ -8,6 +8,10 @@ const ELECTRODE_OFF_COLOR = vec4(0.8, 0.8, 0.8, 1.0);
 const ELECTRODE_ON_COLOR  = vec4(0.4, 0.4, 0.4, 1.0);
 const DROP_POINT_COUNT = 100;
 
+var currentZoom = 1;
+var currentViewOffsetX = 0;
+var currentViewOffsetY = 0;
+
 window.onload = function init()
 {
     const canvas = document.getElementById("simulatorCanvas");
@@ -41,6 +45,21 @@ window.onload = function init()
 	*/
 	
 	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
+
+	canvas.addEventListener('mousemove', function(e)
+	{
+		if (e.buttons == 1)
+		{
+			const canvas = document.getElementById("simulatorCanvas");			
+			offsetCurrentViewPosition((e.movementX / canvas.width) * 2, (-e.movementY / canvas.height) * 2);
+		}
+	});
+	
+	canvas.addEventListener('wheel', function(e)
+	{
+		changeZoom(e.deltaY / 1250);
+		e.preventDefault();
+	});
 }
 
 function setupBoard(width, height)
@@ -63,6 +82,12 @@ function setupBoard(width, height)
     gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeColors), gl.DYNAMIC_DRAW);
     boardGLData.colorPointer = gl.getAttribLocation(boardGLData.program, "vColor");
+	
+	boardGLData.zoomPointer = gl.getUniformLocation(boardGLData.program, "zoom");
+    gl.uniform1f(boardGLData.zoomPointer, currentZoom);
+	
+	boardGLData.viewOffsetPointer = gl.getUniformLocation(boardGLData.program, "viewOffset");
+    gl.uniform2f(boardGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
 	
 	boardGLData.eletrodeVerticiesCount = boardData.electrodeVerticies.length;
 	boardGLData.electrodeCount = width * height;
@@ -157,6 +182,12 @@ function setupDrops(dropRadius)
 	
 	dropGLData.colorBuffer = gl.createBuffer();
     dropGLData.colorPointer = gl.getAttribLocation(dropGLData.program, "vColor");
+	
+	dropGLData.zoomPointer = gl.getUniformLocation(dropGLData.program, "zoom");
+    gl.uniform1f(dropGLData.zoomPointer, currentZoom);
+	
+	dropGLData.viewOffsetPointer = gl.getUniformLocation(dropGLData.program, "viewOffset");
+    gl.uniform2f(dropGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
 }
 
 function createDropVerticies(circleRadius)
@@ -271,6 +302,29 @@ function render(dropCount)
 	
 	renderBoard();
 	renderDrops(dropCount);
+}
+
+function offsetCurrentViewPosition(x, y)
+{
+	currentViewOffsetX += x;
+	currentViewOffsetY += y;
+	
+	gl.useProgram(dropGLData.program);
+    gl.uniform2f(dropGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
+	
+	gl.useProgram(boardGLData.program);
+    gl.uniform2f(boardGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
+}
+
+function changeZoom(zoom)
+{
+	currentZoom += zoom;
+	
+	gl.useProgram(dropGLData.program);
+    gl.uniform1f(dropGLData.zoomPointer, currentZoom);
+	
+	gl.useProgram(boardGLData.program);
+    gl.uniform1f(boardGLData.zoomPointer, currentZoom);
 }
 
 
