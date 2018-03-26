@@ -6,8 +6,8 @@
 		<link href="style.css" rel="stylesheet" />
 		
 		<script id="board-vertex-shader"   type="x-shader/x-vertex">
-			attribute vec4 vElectrode;
-			attribute vec4 vPosition;
+			attribute vec2 vElectrode;
+			attribute vec2 vPosition;
 			attribute vec4 vColor;
 			uniform float zoom;
 			uniform vec2 viewOffset;
@@ -16,9 +16,8 @@
 			void main() 
 			{         
 				fColor = vColor;
-				float x = (vElectrode.x + vPosition.x) * zoom + viewOffset.x;
-				float y = (vElectrode.y + vPosition.y) * zoom + viewOffset.y;
-				gl_Position = vec4(x, y, vElectrode.z, vElectrode.w);
+				gl_Position.xy = (vElectrode.xy + vPosition.xy) * zoom + viewOffset.xy;
+				gl_Position.w = 1.0;
 			}
 		</script>
 		<script id="board-fragment-shader" type="x-shader/x-fragment">
@@ -31,8 +30,8 @@
 			}
 		</script>
 		<script id="drop-vertex-shader"   type="x-shader/x-vertex">
-			attribute vec4 vDrop;
-			attribute vec4 vPosition;
+			attribute vec2 vDrop;
+			attribute vec2 vPosition;
 			attribute float size;
 			attribute vec4 vColor;
 			uniform float zoom;
@@ -42,9 +41,8 @@
 			void main() 
 			{         
 				fColor = vColor;
-				float x = (vPosition.x + (vDrop.x * size)) * zoom + viewOffset.x;
-				float y = (vPosition.y + (vDrop.y * size)) * zoom + viewOffset.y;
-				gl_Position = vec4(x, y, vDrop.z, vDrop.w);
+				gl_Position.xy = (vPosition.xy + (vDrop.xy * size)) * zoom + viewOffset.xy;
+				gl_Position.w = 1.0;
 			}
 		</script>
 		<script id="drop-fragment-shader" type="x-shader/x-fragment">
