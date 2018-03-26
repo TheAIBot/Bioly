@@ -44,7 +44,7 @@ window.onload = function init()
 	render(1);
 	*/
 	
-	startSimulator(100, 100, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
+	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
 
 	canvas.addEventListener('mousemove', function(e)
 	{
@@ -103,6 +103,8 @@ function createBoardVertexData(width, height)
 	//ratio between electrode size and electrode spacing
 	const ratioForSpace = 0.1;
 	const electrodeSize = ((boardSize - (boardSize  / Math.max(width, height)) * ratioForSpace * (Math.max(width, height) - 1))  / Math.max(width, height));
+	//const electrodeSize = (boardSize + ratioForSpace * Math.max(width, height)) / (Math.max(width, height) + ratioForSpace * Math.max(width, height));
+	//const electrodeSize = (boardSize + ratioForSpace - ratioForSpace * Math.max(width, height)) / (Math.max(width, height));
 	const topLeftX = -((electrodeSize * width + electrodeSize * (width - 1) * ratioForSpace) / 2) + (electrodeSize / 2);
 	const topLeftY = ((electrodeSize * height + electrodeSize * (height - 1) * ratioForSpace) / 2) - (electrodeSize / 2);
 	
