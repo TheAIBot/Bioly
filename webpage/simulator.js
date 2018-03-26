@@ -240,7 +240,7 @@ function spawnDrop(position, amount, color)
 	const newDrop = {};
 	newDrop.position = vec2(position[0], position[1]);
 	newDrop.amount = amount;
-	newDrop.size =  getDropSize(newDrop.amount);
+	newDrop.size = getDropSize(newDrop.amount);
 	newDrop.color = color;
 	
 	drops.push(newDrop);
@@ -299,7 +299,7 @@ function isElectrodeOn(electrode)
 
 function getDropSize(amount)
 {
-	return Math.sqrt(amount) / Math.sqrt(Math.PI);
+	return Math.sqrt(amount);
 }
 
 function getClosestElectrode(position)
