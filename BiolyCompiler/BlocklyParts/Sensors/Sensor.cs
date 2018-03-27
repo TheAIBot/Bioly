@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.BlocklyParts.Sensors
@@ -21,6 +22,11 @@ namespace BiolyCompiler.BlocklyParts.Sensors
 
         public override OperationType getOperationType(){
             return OperationType.Sensor;
+        }
+
+        public override Module getAssociatedModule()
+        {
+            return new SensorModule();
         }
     }
 }

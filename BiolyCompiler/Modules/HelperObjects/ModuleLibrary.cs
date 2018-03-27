@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using BiolyCompiler.Architechtures;
+<<<<<<< HEAD:BiolyCompiler/Modules/ModuleLibrary.cs
 using BiolyCompiler.Modules;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules.OperationTypes;
+=======
+>>>>>>> refs/remotes/origin/Scheduler:BiolyCompiler/Modules/HelperObjects/ModuleLibrary.cs
 using BiolyCompiler.Scheduling;
 using BiolyCompiler.BlocklyParts;
 
@@ -39,25 +41,16 @@ namespace BiolyCompiler.Modules
 
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
-            HashSet<OperationType> operationsUsed = new HashSet<OperationType>();
-            operationsUsed.UnionWith(assay.dfg.Nodes.Select(node => node.value.getOperationType()));
-            
-            foreach (var operation in operationsUsed)
+            HashSet<Module> associatedModules = new HashSet<Module>();
+            foreach (var node in assay.dfg.Nodes)
             {
-                //Can be implemented as part of the different classes later.
-                switch(operation){
-                    case OperationType.Mixer:
-                        allocatedModules.Add(new MixerModule(4,4,2000));
-                        break;
-                    case OperationType.Sensor:
-                        allocatedModules.Add(new SensorModule());
-                        break;
-                    default:
-                        throw new Exception("Operations of type " + operation.ToString() + " not handled in the allocation phase");
-                        break;
+                Block operation = node.value;
+                if (!associatedModules.Contains(operation.getAssociatedModule()))
+                {
+                    associatedModules.Add(operation.getAssociatedModule());
+                    allocatedModules.Add(operation.getAssociatedModule());
                 }
             }
-
         }
 
         public Module getOptimalModule(Block operation)
@@ -67,7 +60,7 @@ namespace BiolyCompiler.Modules
             {
                 //The modules are sorted after speed,
                 //so it will chose the fastest module that can execute the operation.
-                if (allocatedModules[i].getOperationType() == operation.getOperationType())
+                if (allocatedModules[i].Equals(operation.getAssociatedModule()))
                 {
                     module = allocatedModules[i];
                     break;

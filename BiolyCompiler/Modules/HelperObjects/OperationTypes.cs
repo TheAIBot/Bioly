@@ -10,6 +10,7 @@ namespace BiolyCompiler.Modules.OperationTypes
         Mixer,
         Sensor,
         DropletStorage,
+        Test,
         Unknown,
     }
 }

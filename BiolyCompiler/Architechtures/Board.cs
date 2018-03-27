@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
@@ -12,15 +13,15 @@ namespace BiolyCompiler.Architechtures
         //Dummy class for now.
         public int heigth, width;
         public List<Module> placedModules = new List<Module>();
-        public List<Droplet> placedDroplets = new List<Droplet>();
-        public Module[,] grid;
         public List<Rectangle> EmptyRectangles = new List<Rectangle>();
+        public Dictionary<string,BoardFluid> fluids = new Dictionary<string,BoardFluid>();
+        public Module[,] grid;
 
 
         public Board(int width, int heigth){
             this.width  = width;
             this.heigth = heigth;
-            this.grid = new Module[heigth, width];
+            this.grid = new Module[width,heigth];
             EmptyRectangles.Add(new Rectangle(width, heigth));
         }
 
@@ -49,31 +50,44 @@ namespace BiolyCompiler.Architechtures
             if (bestFitRectangle != null)
             {
                 //Removes bestFitRectangle, hopefully in constant time
-                EmptyRectangles[bestIndex] = EmptyRectangles[EmptyRectangles.Count - 1];
-                EmptyRectangles.RemoveAt(EmptyRectangles.Count - 1);
-                UpdateGridWithModulePlacement(module, bestFitRectangle);
-                Tuple<Rectangle, Rectangle> splittedRectangles = bestFitRectangle.SplitIntoSmallerRectangles(module);
-                if (splittedRectangles.Item1 != null) EmptyRectangles.Add(splittedRectangles.Item1);
-                if (splittedRectangles.Item2 != null) EmptyRectangles.Add(splittedRectangles.Item2);
+                PlaceModuleInRectangle(module, bestFitRectangle, bestIndex);
                 return true;
             }
             else return false;
         }
 
+        private (Rectangle, Rectangle) PlaceModuleInRectangle(Module module, Rectangle bestFitRectangle, int bestIndex)
+        {
+            EmptyRectangles[bestIndex] = EmptyRectangles[EmptyRectangles.Count - 1];
+            EmptyRectangles.RemoveAt(EmptyRectangles.Count - 1);
+            UpdateGridWithModulePlacement(module, bestFitRectangle);            
+            (Rectangle topRectangle, Rectangle rightRectangle) = bestFitRectangle.SplitIntoSmallerRectangles(module);
+            if (topRectangle != null) EmptyRectangles.Add(topRectangle);
+            if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
+            return (topRectangle, rightRectangle);
+        }
+
         public void FastTemplateRemove(Module module)
         {
             placedModules.Remove(module);
+            FastTemplateRemove(module.shape);                   
+        }
+
+
+        public void FastTemplateRemove(Rectangle rectangle)
+        {
             //All dependencies on the rectangle from the module, should be moved to the new empty rectangle.
             //It is easier to just create a new rectangle for the module:
-            Rectangle NewModuleRectangle = new Rectangle(module.shape);
-            Rectangle EmptyRectangle     = module.shape;
+            Rectangle NewModuleRectangle = new Rectangle(rectangle);
+            Rectangle EmptyRectangle = rectangle;
             EmptyRectangles.Add(EmptyRectangle);
             EmptyRectangle.isEmpty = true;
-            module.shape = NewModuleRectangle;
+            rectangle = NewModuleRectangle;
             NewModuleRectangle.isEmpty = false;
 
             ClearBoard(EmptyRectangle);
-            EmptyRectangle.MergeWithOtherRectangles(this);            
+            EmptyRectangle.MergeWithOtherRectangles(this);
+
         }
 
         private void ClearBoard(Rectangle emptyRectangle)
@@ -105,65 +119,96 @@ namespace BiolyCompiler.Architechtures
             return Math.Abs(rectangle.GetArea() - module.shape.GetArea());
         }
 
-
-
-
-        //based on the algorithm seen in figure 6.3, "Fault-Tolerant Digital Microfluidic Biochips - Compilation and Synthesis"
-        public bool place(Module module){
-
-            //List<Rectangle> rectangles = ConstructRectangleList(module.grid);
-            /*
-            Rectangle bestFit = SelectRectangle(module);
-            if (bestFit != null){
-                bool couldBePlaced = UpdatePlacement(bestFit, module);
-                EmptyRectangles = UpdateFreeSpace();
-            }
-
-            return false;
-            */
-            throw new NotImplementedException();
-
-        }
-
         private bool UpdatePlacement(Rectangle rectangle, Module module)
         {
             throw new NotImplementedException();
         }
 
-        private List<Rectangle> UpdateFreeSpace()
+        public String print(List<Module> allPlacedModules)
         {
-            throw new NotImplementedException();
-        }
-
-        internal void removeAllDroplets()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal bool sequentiallyPlace(Module module)
-        {
-            throw new NotImplementedException();
-        }
-
-        private Rectangle SelectRectangle(Module module){
-            List<Rectangle> fittingRectangles = new List<Rectangle>();// = emptyRectangles.Where(emptyRectangle => emptyRectangle.fits(module.rectangle));
-            int bestFitValue = -1;
-            Rectangle bestFit;
-            foreach (var Rectangle in fittingRectangles)
+            StringBuilder printedBoard = new StringBuilder();
+            int paddingLenght = (int) Math.Log10(allPlacedModules.Count) + 1;
+            for (int j = heigth - 1; j >= 0; j--)
             {
-                
+                for (int i = 0; i < width; i++)
+                {
+                    if (grid[i, j] == null) printedBoard.Append(String.Format("{0,2}", "O"));
+                    else {
+                        int index = allPlacedModules.IndexOf(grid[i,j]);
+                        printedBoard.Append(String.Format("{0,2}", index));
+                    }
+                }
+                printedBoard.AppendLine();
             }
-            return null;
+            printedBoard.AppendLine();
+            printedBoard.AppendLine();
+            return printedBoard.ToString();
         }
 
-        internal bool placeAllDroplets()
+        public Node<RoutingInformation> getOperationFluidPlacementOnBoard(Module sourceModule, Node<RoutingInformation>[,] dijkstraGraph)
         {
-            throw new NotImplementedException();
+            return dijkstraGraph[sourceModule.shape.x, sourceModule.shape.y];
         }
 
-        public Node<RoutingInformation> getOperationFluidPlacementOnBoard(Block operation, Node<RoutingInformation>[,] dijkstraGraph)
+        public Droplet replaceWithDroplets(Block finishedOperation)
         {
-            return dijkstraGraph[operation.boundModule.shape.x, operation.boundModule.shape.y];
+            BoardFluid fluidType;
+            if (fluids.ContainsKey(finishedOperation.OutputVariable)) fluids.TryGetValue(finishedOperation.OutputVariable, out fluidType);
+            else
+            {
+                fluidType = new BoardFluid(finishedOperation.OutputVariable);
+                fluids.Add(fluidType.fluidName, fluidType);
+            }
+            Droplet droplet = new Droplet(fluidType);
+            Rectangle moduleRectangle = finishedOperation.boundModule.shape;
+            UpdateGridWithModulePlacement(droplet, moduleRectangle);
+            FastTemplateReplace(moduleRectangle, droplet);
+            placedModules.Remove(finishedOperation.boundModule);
+            return droplet;
+        }
+
+        private void FastTemplateReplace(Rectangle oldRectangle, Module replacingModule)
+        {
+            (Rectangle TopRectangle, Rectangle RightRectangle) = oldRectangle.SplitIntoSmallerRectangles(replacingModule);
+            //All the adjacenecies from the old rectangle (moduleRectangle), should be removed, and added to the new rectangles.
+            foreach (var adjacentRectangle in oldRectangle.AdjacentRectangles)
+            {
+                adjacentRectangle.AdjacentRectangles.Remove(oldRectangle);
+                if (adjacentRectangle.IsAdjacent(replacingModule.shape))
+                {
+                    replacingModule.shape.AdjacentRectangles.Add(adjacentRectangle);
+                    adjacentRectangle.AdjacentRectangles.Add(replacingModule.shape);
+                }
+                if (TopRectangle != null && adjacentRectangle.IsAdjacent(TopRectangle))
+                {
+                    TopRectangle.AdjacentRectangles.Add(adjacentRectangle);
+                    adjacentRectangle.AdjacentRectangles.Add(TopRectangle);
+                }
+                if (RightRectangle != null && adjacentRectangle.IsAdjacent(RightRectangle))
+                {
+                    RightRectangle.AdjacentRectangles.Add(adjacentRectangle);
+                    adjacentRectangle.AdjacentRectangles.Add(RightRectangle);
+                }
+            }
+            //The two empty rectangles from the splitting can be removed, as they are not used by the placed module:
+            if (TopRectangle != null) FastTemplateRemove(TopRectangle);
+            if (RightRectangle != null) FastTemplateRemove(RightRectangle);
+        }
+
+        public Board Copy()
+        {
+            Board board = new Board(width, heigth);
+            board.EmptyRectangles.Clear();
+            placedModules.  ForEach(x => board.placedModules.Add(x));
+            EmptyRectangles.ForEach(x => board.EmptyRectangles.Add(x));
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < heigth; j++)
+                {
+                    board.grid[i, j] = grid[i, j];
+                }
+            }
+            return board;
         }
     }
 }

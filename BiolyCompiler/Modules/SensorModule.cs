@@ -16,7 +16,9 @@ namespace BiolyCompiler.Modules
 
         public override Module GetCopyOf()
         {
-            throw new NotImplementedException();
+            SensorModule sensor = new SensorModule();
+            sensor.shape = new Rectangle(shape);
+            return sensor;
         }
     }
 }
