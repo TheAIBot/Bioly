@@ -5,31 +5,37 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 		<link href="style.css" rel="stylesheet" />
 		
-		<script id="vertex-shader" type="x-shader/x-vertex">
-			attribute vec4 vPosition;
-			//attribute vec4 vColor;
-			//varying vec4 fColor;
+		<script id="vertex-shader"   type="x-shader/x-vertex">
+			attribute vec2 vShape;
+			attribute vec2 vPosition;
+			attribute float size;
+			attribute vec4 vColor;
+			uniform float zoom;
+			uniform vec2 viewOffset;
+			varying vec4 fColor;
 
 			void main() 
 			{         
-				//fColor = vec4(0, 0, 0, 1);
-				gl_Position = vPosition;
+				fColor = vColor;
+				gl_Position.xy = (vShape.xy + (vPosition.xy * size)) * zoom + viewOffset.xy;
+				gl_Position.w = 1.0;
 			}
 		</script>
 		<script id="fragment-shader" type="x-shader/x-fragment">
 			precision mediump float;
-			//varying vec4 fColor;
+			varying vec4 fColor;
 
 			void main()
 			{
-				//gl_FragColor = fColor;
-				gl_FragColor = vec4(0, 0, 0, 1);
+				gl_FragColor = fColor;
 			}
 		</script>
-		<script src="simulator.js"></script>
+		
 		<script src="WebGL/angelCommon/initShaders.js"></script>
 		<script src="WebGL/angelCommon/webgl-utils.js"></script>
 		<script src="WebGL/angelCommon/MV.js"></script>
+		<script src="simulator_renderer.js"></script>
+		<script src="simulator.js"></script>
 
 		<script src="blockly_compressed.js"></script>
 		<script src="blocks_compressed.js"></script>
@@ -92,6 +98,6 @@
 			</div>
 		</div>
 		<script src="helperFunctions.js"></script>
-		<script>document.getElementById("leftTab").click();</script>
+		<script>document.getElementById("rightTab").click();</script>
 	</body>
 </html>
