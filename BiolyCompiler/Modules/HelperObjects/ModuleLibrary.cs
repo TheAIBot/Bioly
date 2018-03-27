@@ -1,12 +1,6 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Architechtures;
-<<<<<<< HEAD:BiolyCompiler/Modules/ModuleLibrary.cs
-using BiolyCompiler.Modules;
-using BiolyCompiler.Graphs;
-using BiolyCompiler.Modules.OperationTypes;
-=======
->>>>>>> refs/remotes/origin/Scheduler:BiolyCompiler/Modules/HelperObjects/ModuleLibrary.cs
 using BiolyCompiler.Scheduling;
 using BiolyCompiler.BlocklyParts;
 

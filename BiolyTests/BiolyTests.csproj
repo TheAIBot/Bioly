@@ -68,6 +68,9 @@
     <Reference Include="MoreLinq, Version=2.10.21623.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
       <HintPath>..\packages\morelinq.2.10.0\lib\net40\MoreLinq.dll</HintPath>
     </Reference>
+    <Reference Include="Priority Queue, Version=4.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OptimizedPriorityQueue.4.1.1\lib\net45\Priority Queue.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -87,6 +90,8 @@
     <Compile Include="TestAssay.cs" />
     <Compile Include="TestLibrary.cs" />
     <Compile Include="TestModules.cs" />
+    <Compile Include="TestObjects\TestBlock.cs" />
+    <Compile Include="TestObjects\TestModule.cs" />
     <Compile Include="TestParseBlocks.cs" />
     <Compile Include="TestPlacement.cs" />
     <Compile Include="TestRouting.cs" />

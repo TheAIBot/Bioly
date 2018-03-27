@@ -1,5 +1,4 @@
 ﻿using System;
-using BiolyCompiler.BlocklyParts.Blocks;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
@@ -15,7 +14,7 @@ using BiolyCompiler.Modules.OperationTypes;
 using System.Xml;
 //using MoreLinq;
 
-namespace BiolyTests2.TestObjects
+namespace BiolyTests.TestObjects
 {
     class TestModule : BiolyCompiler.Modules.Module
     {
