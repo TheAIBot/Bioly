@@ -1,8 +1,11 @@
 'use strict';
 
 var gl;
-var boardGLData = {};
-var dropGLData = {};
+var glData = 
+{
+	electrode: {},
+	drop: {}
+};
 
 const ELECTRODE_OFF_COLOR = vec4(0.8, 0.8, 0.8, 1.0);
 const ELECTRODE_ON_COLOR  = vec4(0.4, 0.4, 0.4, 1.0);
@@ -31,18 +34,11 @@ window.onload = function init()
     gl.viewport(0, 0, canvasSize, canvasSize);
     gl.clearColor(0, 0, 0, 0);
     
-    boardGLData.program = initShaders(gl, "board-vertex-shader", "board-fragment-shader");    
-	dropGLData.program  = initShaders(gl, "drop-vertex-shader", "drop-fragment-shader");
+    glData.program = initShaders(gl, "vertex-shader", "fragment-shader");
+	gl.useProgram(glData.program);
 	
 	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
-	
-	/*
-	const data = setupBoard(11, 11);
-	setupDrops(data.electrodeSize / 2);
-	updateDropData([{position: [0, 0], size: 4, color: [1, 0, 0, 0.5]}]);
-	render(1);
-	*/
 	
 	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
 
@@ -62,40 +58,52 @@ window.onload = function init()
 	});
 }
 
-function setupBoard(width, height)
+function setupBuffers(width, height)
 {
-	gl.useProgram(boardGLData.program);
+	glData.shapePointer = gl.getAttribLocation(glData.program, "vShape");
+	glData.positionPointer = gl.getAttribLocation(glData.program, "vPosition");
+	glData.sizePointer = gl.getAttribLocation(glData.program, "size");
+	glData.colorPointer = gl.getAttribLocation(glData.program, "vColor");
+				
+	glData.zoomPointer = gl.getUniformLocation(glData.program, "zoom");
+    gl.uniform1f(glData.zoomPointer, currentZoom);
 	
-    let boardData = createBoardVertexData(width, height);
+	glData.viewOffsetPointer = gl.getUniformLocation(glData.program, "viewOffset");
+    gl.uniform2f(glData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
 	
-    boardGLData.electrodeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.electrodeBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeVerticies), gl.STATIC_DRAW);
-    boardGLData.electrodePointer = gl.getAttribLocation(boardGLData.program, "vElectrode");
+	const electrodeData = setupElectrodeBuffers(width, height);
+	setupDropBuffers(electrodeData.electrodeSize / 2);
 	
-	boardGLData.positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodePositions), gl.STATIC_DRAW);
-    boardGLData.positionPointer = gl.getAttribLocation(boardGLData.program, "vPosition");
-	
-	boardGLData.colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(boardData.electrodeColors), gl.DYNAMIC_DRAW);
-    boardGLData.colorPointer = gl.getAttribLocation(boardGLData.program, "vColor");
-	
-	boardGLData.zoomPointer = gl.getUniformLocation(boardGLData.program, "zoom");
-    gl.uniform1f(boardGLData.zoomPointer, currentZoom);
-	
-	boardGLData.viewOffsetPointer = gl.getUniformLocation(boardGLData.program, "viewOffset");
-    gl.uniform2f(boardGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
-	
-	boardGLData.eletrodeVerticiesCount = boardData.electrodeVerticies.length;
-	boardGLData.electrodeCount = width * height;
-	
-	return boardData;
+	return electrodeData;
 }
 
-function createBoardVertexData(width, height)
+function setupElectrodeBuffers(width, height)
+{	
+    let electrodeData = createElectrodeVertexData(width, height);
+	
+    glData.electrode.shapeBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, glData.electrode.shapeBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(electrodeData.electrodeVerticies), gl.STATIC_DRAW);
+
+	glData.electrode.positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, glData.electrode.positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(electrodeData.electrodePositions), gl.STATIC_DRAW);
+
+	glData.electrode.sizeBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, glData.electrode.sizeBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(electrodeData.electrodeSizes), gl.STATIC_DRAW);
+	
+	glData.electrode.colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, glData.electrode.colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(electrodeData.electrodeColors), gl.DYNAMIC_DRAW);
+	
+	glData.electrode.shapeVerticiesCount = electrodeData.electrodeVerticies.length;
+	glData.electrode.electrodesCount = width * height;
+	
+	return electrodeData;
+}
+
+function createElectrodeVertexData(width, height)
 {	
 	const borderSize = 0.10;
 	const boardSize = 2 - (borderSize * 2);
@@ -110,6 +118,7 @@ function createBoardVertexData(width, height)
 	boardData.electrodeSize = electrodeSize;
 	boardData.electrodeVerticies = createElectrodeVerticies(electrodeSize);
 	boardData.electrodePositions = createElectrodePositions(width, height, topLeftX, topLeftY, ratioForSpace, electrodeSize);
+	boardData.electrodeSizes     = createElectrodeSizes(width, height);
 	boardData.electrodeColors    = createElectrodeColors(width, height);
 	
 	return boardData;
@@ -151,6 +160,18 @@ function createElectrodePositions(width, height, topLeftX, topLeftY, ratioForSpa
 	return electrodePositions;
 }
 
+function createElectrodeSizes(width, height)
+{
+	let sizes = [];
+	
+	for(var x = 0; x < width * height; x++)
+	{
+		sizes.push(1);
+	}
+	
+	return sizes;
+}
+
 function createElectrodeColors(width, height)
 {
 	let colors = [];
@@ -163,31 +184,19 @@ function createElectrodeColors(width, height)
 	return colors;
 }
 
-function setupDrops(dropRadius)
-{
-	gl.useProgram(dropGLData.program);
-	
+function setupDropBuffers(dropRadius)
+{	
 	let dropVerticies = createDropVerticies(dropRadius);
 	
-    dropGLData.dropBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.dropBuffer);
+    glData.drop.shapeBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, glData.drop.shapeBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(dropVerticies), gl.STATIC_DRAW);
-    dropGLData.dropPointer = gl.getAttribLocation(dropGLData.program, "vDrop");
 	
-	dropGLData.positionBuffer = gl.createBuffer();
-    dropGLData.positionPointer = gl.getAttribLocation(dropGLData.program, "vPosition");
+	glData.drop.positionBuffer = gl.createBuffer();
+	glData.drop.sizeBuffer = gl.createBuffer();
+	glData.drop.colorBuffer = gl.createBuffer();
 	
-	dropGLData.sizeBuffer = gl.createBuffer();
-    dropGLData.sizePointer = gl.getAttribLocation(dropGLData.program, "size");
-	
-	dropGLData.colorBuffer = gl.createBuffer();
-    dropGLData.colorPointer = gl.getAttribLocation(dropGLData.program, "vColor");
-	
-	dropGLData.zoomPointer = gl.getUniformLocation(dropGLData.program, "zoom");
-    gl.uniform1f(dropGLData.zoomPointer, currentZoom);
-	
-	dropGLData.viewOffsetPointer = gl.getUniformLocation(dropGLData.program, "viewOffset");
-    gl.uniform2f(dropGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
+	glData.drop.shapeVerticiesCount = DROP_POINT_COUNT;
 }
 
 function createDropVerticies(circleRadius)
@@ -206,62 +215,39 @@ function createDropVerticies(circleRadius)
 	return verticies;
 }
 
-function renderBoard() 
+function renderBuffers(drawMode, buffers, shapesCount)
 {
-	gl.useProgram(boardGLData.program);
-	
-    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.electrodeBuffer);
-    gl.vertexAttribPointer(boardGLData.electrodePointer, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(boardGLData.electrodePointer);
-	
-    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.positionBuffer);
-    gl.vertexAttribPointer(boardGLData.positionPointer, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(boardGLData.positionPointer);
-	gl.vertexAttribDivisor(boardGLData.positionPointer, 1);
-	
-    gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
-    gl.vertexAttribPointer(boardGLData.colorPointer, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(boardGLData.colorPointer);
-	gl.vertexAttribDivisor(boardGLData.colorPointer, 1);
-	
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, boardGLData.eletrodeVerticiesCount, boardGLData.electrodeCount);
-}
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.shapeBuffer);
+	gl.vertexAttribPointer(glData.shapePointer, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(glData.shapePointer);
 
-function renderDrops(dropCount)
-{
-	gl.useProgram(dropGLData.program);
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positionBuffer);
+	gl.vertexAttribPointer(glData.positionPointer, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(glData.positionPointer);
+	gl.vertexAttribDivisor(glData.positionPointer, 1);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.sizeBuffer);
+	gl.vertexAttribPointer(glData.sizePointer, 1, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(glData.sizePointer);
+	gl.vertexAttribDivisor(glData.sizePointer, 1);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.colorBuffer);
+	gl.vertexAttribPointer(glData.colorPointer, 4, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(glData.colorPointer);
+	gl.vertexAttribDivisor(glData.colorPointer, 1);
 	
-	gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.dropBuffer);
-	gl.vertexAttribPointer(dropGLData.dropPointer, 2, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(dropGLData.dropPointer);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.positionBuffer);
-	gl.vertexAttribPointer(dropGLData.positionPointer, 2, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(dropGLData.positionPointer);
-	gl.vertexAttribDivisor(dropGLData.positionPointer, 1);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.sizeBuffer);
-	gl.vertexAttribPointer(dropGLData.sizePointer, 1, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(dropGLData.sizePointer);
-	gl.vertexAttribDivisor(dropGLData.sizePointer, 1);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.colorBuffer);
-	gl.vertexAttribPointer(dropGLData.colorPointer, 4, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(dropGLData.colorPointer);
-	gl.vertexAttribDivisor(dropGLData.colorPointer, 1);
-	
-	gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, DROP_POINT_COUNT, dropCount);
+	gl.drawArraysInstanced(drawMode, 0, buffers.shapeVerticiesCount, shapesCount);
 }
 
 function drawElectrodeOn(electrodeNumber)
 {
-	gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
+	gl.bindBuffer(gl.ARRAY_BUFFER, glData.electrode.colorBuffer);
 	gl.bufferSubData(gl.ARRAY_BUFFER, electrodeNumber * 4 * 4, flatten(ELECTRODE_ON_COLOR), 0, 4);
 }
 
 function drawElectrodeOff(electrodeNumber)
 {
-	gl.bindBuffer(gl.ARRAY_BUFFER, boardGLData.colorBuffer);
+	gl.bindBuffer(gl.ARRAY_BUFFER, glData.electrode.colorBuffer);
 	gl.bufferSubData(gl.ARRAY_BUFFER, electrodeNumber * 4 * 4, flatten(ELECTRODE_OFF_COLOR), 0, 4);
 }
 
@@ -286,13 +272,13 @@ function updateDropData(drops)
 		dropColors[i * 4 + 3] = drop.color[3];
 	}
 	
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.positionBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glData.drop.positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, dropPositions, gl.DYNAMIC_DRAW);
 	
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.sizeBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glData.drop.sizeBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, dropSizes, gl.DYNAMIC_DRAW);
 	
-    gl.bindBuffer(gl.ARRAY_BUFFER, dropGLData.colorBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glData.drop.colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, dropColors, gl.DYNAMIC_DRAW);
 }
 
@@ -300,8 +286,8 @@ function render(dropCount)
 {
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	
-	renderBoard();
-	renderDrops(dropCount);
+	renderBuffers(gl.TRIANGLES, glData.electrode, glData.electrode.electrodesCount);
+	renderBuffers(gl.TRIANGLE_FAN, glData.drop, dropCount);
 }
 
 function offsetCurrentViewPosition(x, y)
@@ -312,22 +298,14 @@ function offsetCurrentViewPosition(x, y)
 	currentViewOffsetX = Math.min(0.95, Math.max(-0.95, currentViewOffsetX));
 	currentViewOffsetY = Math.min(0.95, Math.max(-0.95, currentViewOffsetY));
 	
-	gl.useProgram(dropGLData.program);
-    gl.uniform2f(dropGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
-	
-	gl.useProgram(boardGLData.program);
-    gl.uniform2f(boardGLData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
+    gl.uniform2f(glData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
 }
 
 function changeZoom(zoom)
 {
 	currentZoom += zoom;
 	
-	gl.useProgram(dropGLData.program);
-    gl.uniform1f(dropGLData.zoomPointer, currentZoom);
-	
-	gl.useProgram(boardGLData.program);
-    gl.uniform1f(boardGLData.zoomPointer, currentZoom);
+    gl.uniform1f(glData.zoomPointer, currentZoom);
 }
 
 

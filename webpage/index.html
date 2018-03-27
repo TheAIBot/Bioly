@@ -5,32 +5,8 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 		<link href="style.css" rel="stylesheet" />
 		
-		<script id="board-vertex-shader"   type="x-shader/x-vertex">
-			attribute vec2 vElectrode;
-			attribute vec2 vPosition;
-			attribute vec4 vColor;
-			uniform float zoom;
-			uniform vec2 viewOffset;
-			varying vec4 fColor;
-
-			void main() 
-			{         
-				fColor = vColor;
-				gl_Position.xy = (vElectrode.xy + vPosition.xy) * zoom + viewOffset.xy;
-				gl_Position.w = 1.0;
-			}
-		</script>
-		<script id="board-fragment-shader" type="x-shader/x-fragment">
-			precision mediump float;
-			varying vec4 fColor;
-
-			void main()
-			{
-				gl_FragColor = fColor;
-			}
-		</script>
-		<script id="drop-vertex-shader"   type="x-shader/x-vertex">
-			attribute vec2 vDrop;
+		<script id="vertex-shader"   type="x-shader/x-vertex">
+			attribute vec2 vShape;
 			attribute vec2 vPosition;
 			attribute float size;
 			attribute vec4 vColor;
@@ -41,11 +17,11 @@
 			void main() 
 			{         
 				fColor = vColor;
-				gl_Position.xy = (vPosition.xy + (vDrop.xy * size)) * zoom + viewOffset.xy;
+				gl_Position.xy = (vShape.xy + (vPosition.xy * size)) * zoom + viewOffset.xy;
 				gl_Position.w = 1.0;
 			}
 		</script>
-		<script id="drop-fragment-shader" type="x-shader/x-fragment">
+		<script id="fragment-shader" type="x-shader/x-fragment">
 			precision mediump float;
 			varying vec4 fColor;
 

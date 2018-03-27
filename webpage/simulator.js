@@ -5,7 +5,7 @@
 var newCommand = null;
 var errorMessages = [];
 
-var boardData;
+var electrodeSize;
 var electrodes;
 var drops;
 var dropInputs;
@@ -29,10 +29,10 @@ function startSimulator(width, height, inputs, outputs)
 	dropInputs = inputs;
 	dropOutputs = outputs;
 	
-	boardData = setupBoard(width, height);
-	setupDrops(boardData.electrodeSize / 2);
+	let electrodeData = setupBuffers(width, height);
+	electrodeSize = electrodeData.electrodeSize;
 
-	prepareElectrodes(width, height);
+	prepareElectrodes(width, height, electrodeData.electrodePositions);
 	prepareInputs();
 	
 	drops = [];
@@ -41,13 +41,13 @@ function startSimulator(width, height, inputs, outputs)
 	updateLoop()
 }
 
-function prepareElectrodes(width, height)
+function prepareElectrodes(width, height, electrodePositions)
 {
 	electrodes = [];
 	for(var i = 0; i < width * height; i++)
 	{
 		let electrode = {};
-		electrode.position = boardData.electrodePositions[i];
+		electrode.position = electrodePositions[i];
 		electrode.isOn = false;
 		electrode.neighbors = [];
 		
@@ -127,20 +127,6 @@ function updateLoop()
 	render(drops.length);
 	
 	window.requestAnimFrame(updateLoop);
-	
-	//if new command then parse and execute command --done
-	
-	//spawn drops --done
-	
-	//split drops --done
-
-	//remove drops --done
-	
-	//update drop positions --done
-	
-	//merge drops --done
-	
-	//render --done
 }
 
 function executeCommand(command)
@@ -165,7 +151,7 @@ function executeCommand(command)
 	}
 	else if(commandType == "clra")
 	{
-		for(var i = 1; i <= boardData.electrodePositions.length; i++)
+		for(var i = 1; i <= electrodes.length; i++)
 		{
 			turnElectrodeOff(i);
 		}
@@ -196,9 +182,9 @@ function electrodeIndexCheck(number)
 	{
 		throw "Electrode index was not a number. Was instead: " + number;
 	}
-	else if (number < 1 || number > boardData.electrodePositions.length)
+	else if (number < 1 || number > electrodes.length)
 	{
-		throw "Electrode index was outside the bounds 1.." + boardData.electrodePositions.length + ". Number was: " + number;
+		throw "Electrode index was outside the bounds 1.." + electrodes.length + ". Number was: " + number;
 	}
 }
 
@@ -337,7 +323,7 @@ function removeDrops()
 			const drop = drops[dropIndex];
 			const dropPoisition = electrodes[drop.index].position;
 			
-			if (distanceAB(outputPosition, dropPoisition) <= boardData.electrodeSize * 0.1)
+			if (distanceAB(outputPosition, dropPoisition) <= electrodeSize * 0.1)
 			{
 				drops.splice(dropIndex, 1);
 				dropsRemovedCount++;
@@ -360,12 +346,12 @@ function distanceAB(a, b)
 
 function updateDropPositions()
 {
-	const distancePerUpdate = (DROP_DISTANCE_PER_SEC_IN_CM / UPDATES_PER_SECOND) * ELECTRODE_SIZE_IN_CM * boardData.electrodeSize;
+	const distancePerUpdate = (DROP_DISTANCE_PER_SEC_IN_CM / UPDATES_PER_SECOND) * ELECTRODE_SIZE_IN_CM * electrodeSize;
 	
 	for(var i = 0; i < drops.length; i++)
 	{
 		const drop = drops[i];
-		const nearbyDistance = boardData.electrodeSize * 2;//don't do this for now * drop.size;
+		const nearbyDistance = electrodeSize * 2;//don't do this for now * drop.size;
 		const nearbyElectrode = getSingleNearbyOnElectrode(drop.position, nearbyDistance);
 		
 		if (nearbyElectrode)
@@ -420,17 +406,17 @@ function mergeDrops()
 	for(var i = 0; i < dropCount / 2; i++)
 	{
 		const drop = drops[i];
-		const dropRadius = (boardData.electrodeSize / 2) * drop.size;
+		const dropRadius = (electrodeSize / 2) * drop.size;
 		if (drop)
 		{
 			for(var k = i + 1; k < dropCount; k++)
 			{
 				const otherDrop = drops[k];
-				const otherDropRadius = (boardData.electrodeSize / 2) * otherDrop.size;
+				const otherDropRadius = (electrodeSize / 2) * otherDrop.size;
 				if(otherDrop)
 				{
 					const distance = distanceAB(drop.position, otherDrop.position);
-					if (distance - dropRadius - otherDropRadius < boardData.electrodeSize / 2)
+					if (distance - dropRadius - otherDropRadius < electrodeSize / 2)
 					{
 						const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
 												(drop.position[1] + otherDrop.position[1]) / 2);
