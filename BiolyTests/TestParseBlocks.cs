@@ -27,8 +27,9 @@ namespace BiolyTests
         [TestMethod]
         public void ParseInputBlock()
         {
-            string js = @"workspace.newBlock(""input"");";
-            TestTools.ExecuteJS(js);
+            JSProgram program = new JSProgram();
+            program.AddBlock("a", "input");
+            TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
@@ -37,19 +38,14 @@ namespace BiolyTests
         [TestMethod]
         public void ParseHeaterBlock()
         {
-            string js = @"
-                        const newFluid   = workspace.newBlock(""fluid"");
-                        const heater     = workspace.newBlock(""heater"");
-                        const fluidInput = workspace.newBlock(""getInput"");
+            JSProgram program = new JSProgram();
+            program.AddBlock("a", "fluid");
+            program.AddBlock("b", "heater");
+            program.AddBlock("c", "getInput");
+            program.AddConnection("a", "inputFluid", "b");
+            program.AddConnection("b", "inputFluid", "c");
 
-                        const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
-                        const heaterIn      = heater.getInput(""inputFluid"").connection;
-                        const heaterOut     = heater.outputConnection;
-                        const fluidInputOut = fluidInput.outputConnection;
-
-                        newFluidIn.connect(heaterOut);
-                        heaterIn.connect(fluidInputOut);";
-            TestTools.ExecuteJS(js);
+            TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
@@ -60,23 +56,15 @@ namespace BiolyTests
         [TestMethod]
         public void ParseMixerBlock()
         {
-            string js = @"
-                        const newFluid    = workspace.newBlock(""fluid"");
-                        const mixer       = workspace.newBlock(""mixer"");
-                        const fluidInputA = workspace.newBlock(""getInput"");
-                        const fluidInputB = workspace.newBlock(""getInput"");
-
-                        const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
-                        const mixerInA      = mixer.getInput(""inputFluidA"").connection;
-                        const mixerInB      = mixer.getInput(""inputFluidB"").connection;
-                        const heaterOut     = mixer.outputConnection;
-                        const fluidInputAOut = fluidInputA.outputConnection;
-                        const fluidInputBOut = fluidInputB.outputConnection;
-
-                        newFluidIn.connect(heaterOut);
-                        mixerInA.connect(fluidInputAOut);
-                        mixerInB.connect(fluidInputBOut);";
-            TestTools.ExecuteJS(js);
+            JSProgram program = new JSProgram();
+            program.AddBlock("a", "fluid");
+            program.AddBlock("b", "mixer");
+            program.AddBlock("c", "getInput");
+            program.AddBlock("d", "getInput");
+            program.AddConnection("a", "inputFluid", "b");
+            program.AddConnection("b", "inputFluidA", "c");
+            program.AddConnection("b", "inputFluidB", "d");
+            TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
@@ -84,34 +72,35 @@ namespace BiolyTests
             Assert.IsTrue(input is Mixer);
         }
 
-        [TestMethod]
-        public void ParseSplitterBlock()
-        {
-            string js = @"
-                        const newFluid   = workspace.newBlock(""fluid"");
-                        const splitter   = workspace.newBlock(""splitter"");
-                        const fluidInput = workspace.newBlock(""getInput"");
+        //[TestMethod]
+        //public void ParseSplitterBlock()
+        //{
+        //    string js = @"
+        //                const newFluid   = workspace.newBlock(""fluid"");
+        //                const splitter   = workspace.newBlock(""splitter"");
+        //                const fluidInput = workspace.newBlock(""getInput"");
 
-                        const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
-                        const heaterIn      = splitter.getInput(""inputFluid"").connection;
-                        const heaterOut     = splitter.outputConnection;
-                        const fluidInputOut = fluidInput.outputConnection;
+        //                const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
+        //                const heaterIn      = splitter.getInput(""inputFluid"").connection;
+        //                const heaterOut     = splitter.outputConnection;
+        //                const fluidInputOut = fluidInput.outputConnection;
 
-                        newFluidIn.connect(heaterOut);
-                        heaterIn.connect(fluidInputOut);";
-            TestTools.ExecuteJS(js);
+        //                newFluidIn.connect(heaterOut);
+        //                heaterIn.connect(fluidInputOut);";
+        //    TestTools.ExecuteJS(js);
 
-            XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+        //    XmlNode node = TestTools.GetWorkspace();
+        //    Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
 
-            Assert.IsTrue(input is Splitter);
-        }
+        //    Assert.IsTrue(input is Splitter);
+        //}
 
         [TestMethod]
         public void ParseConstantBlock()
         {
-            string js = @"workspace.newBlock(""math_number"");";
-            TestTools.ExecuteJS(js);
+            JSProgram program = new JSProgram();
+            program.AddBlock("a", "math_number");
+            TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
@@ -122,20 +111,13 @@ namespace BiolyTests
         [TestMethod]
         public void ParseArithOPBlock()
         {
-            string js = @"
-                        const const1 = workspace.newBlock(""math_number"");
-                        const const2 = workspace.newBlock(""math_number"");
-                        const arithOP = workspace.newBlock(""math_arithmetic"");
-
-                        const arithOPAIn = arithOP.getInput(""A"").connection;
-                        const arithOPBIn = arithOP.getInput(""B"").connection;
-                        const const1Out = const1.outputConnection;
-                        const const2Out = const2.outputConnection;
-
-                        arithOPAIn.connect(const1Out);
-                        arithOPBIn.connect(const2Out);";
-                        
-            TestTools.ExecuteJS(js);
+            JSProgram program = new JSProgram();
+            program.AddBlock("a", "math_number");
+            program.AddBlock("b", "math_number");
+            program.AddBlock("c", "math_arithmetic");
+            program.AddConnection("c", "A", "a");
+            program.AddConnection("c", "B", "b");
+            TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
@@ -146,20 +128,13 @@ namespace BiolyTests
         [TestMethod]
         public void ParseBoolOPBlock()
         {
-            string js = @"
-                        const const1 = workspace.newBlock(""math_number"");
-                        const const2 = workspace.newBlock(""math_number"");
-                        const boolOP = workspace.newBlock(""logic_compare"");
-
-                        const boolOPAIn = boolOP.getInput(""A"").connection;
-                        const boolOPBIn = boolOP.getInput(""B"").connection;
-                        const const1Out = const1.outputConnection;
-                        const const2Out = const2.outputConnection;
-
-                        boolOPAIn.connect(const1Out);
-                        boolOPBIn.connect(const2Out);";
-
-            TestTools.ExecuteJS(js);
+            JSProgram program = new JSProgram();
+            program.AddBlock("a", "math_number");
+            program.AddBlock("b", "math_number");
+            program.AddBlock("c", "logic_compare");
+            program.AddConnection("c", "A", "a");
+            program.AddConnection("c", "B", "b");
+            TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
@@ -170,16 +145,11 @@ namespace BiolyTests
         [TestMethod]
         public void ParseWasteBlock()
         {
-            string js = @"
-                        const waste = workspace.newBlock(""waste"");
-                        const input = workspace.newBlock(""getInput"");
-
-                        const wasteIn = waste.getInput(""inputFluid"").connection;
-                        const inputOut = input.outputConnection;
-
-                        wasteIn.connect(inputOut);";
-
-            TestTools.ExecuteJS(js);
+            JSProgram program = new JSProgram();
+            program.AddBlock("a", "waste");
+            program.AddBlock("b", "getInput");
+            program.AddConnection("a", "inputFluid", "b");
+            TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
@@ -190,16 +160,11 @@ namespace BiolyTests
         [TestMethod]
         public void ParseOutputBlock()
         {
-            string js = @"
-                        const waste = workspace.newBlock(""output"");
-                        const input = workspace.newBlock(""getInput"");
-
-                        const wasteIn = waste.getInput(""inputFluid"").connection;
-                        const inputOut = input.outputConnection;
-
-                        wasteIn.connect(inputOut);";
-
-            TestTools.ExecuteJS(js);
+            JSProgram program = new JSProgram();
+            program.AddBlock("a", "output");
+            program.AddBlock("b", "getInput");
+            program.AddConnection("a", "inputFluid", "b");
+            TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());

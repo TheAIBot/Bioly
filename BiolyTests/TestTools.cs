@@ -41,6 +41,11 @@ namespace BiolyTests
             Browser?.Dispose();
         }
 
+        public static string ExecuteJS(JSProgram program)
+        {
+            return ExecuteJS(program.ToString());
+        }
+
         public static string ExecuteJS(string js)
         {
             IJavaScriptExecutor jsExe = (IJavaScriptExecutor)TestTools.Browser;
