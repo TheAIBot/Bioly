@@ -41,21 +41,6 @@ window.onload = function init()
 	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
 	
 	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
-
-	canvas.addEventListener('mousemove', function(e)
-	{
-		if (e.buttons == 1)
-		{
-			const canvas = document.getElementById("simulatorCanvas");
-			offsetCurrentViewPosition(e.movementX / canvas.width, -e.movementY / canvas.height);
-		}
-	});
-	
-	canvas.addEventListener('wheel', function(e)
-	{
-		changeZoom(e.deltaY > 0 ? -0.1 : 0.1);
-		e.preventDefault();
-	});
 }
 
 function setupBuffers(width, height)
