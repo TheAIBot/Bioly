@@ -46,8 +46,8 @@ namespace BiolyTests2.TestObjects
 
         public override Module GetCopyOf()
         {
-            TestModule module = new TestModule(shape.width, shape.height, operationTime, numberOfInputs, numberOfOutputs);
-            module.shape = new Rectangle(shape);
+            TestModule module = new TestModule(Shape.width, Shape.height, OperationTime, NumberOfInputs, NumberOfOutputs);
+            module.Shape = new Rectangle(Shape);
             return module;
         }
 

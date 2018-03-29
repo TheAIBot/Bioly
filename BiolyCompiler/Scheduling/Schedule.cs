@@ -37,7 +37,7 @@ namespace BiolyCompiler.Scheduling
         private int updateSchedule(Block operation, int startTime)
         {
             operation.startTime = startTime;
-            operation.endTime   = operation.startTime + operation.boundModule.operationTime;
+            operation.endTime   = operation.startTime + operation.boundModule.OperationTime;
             runningOperations.Enqueue(operation, operation.endTime);
             ScheduledOperations.Add(operation);
             return operation.startTime;

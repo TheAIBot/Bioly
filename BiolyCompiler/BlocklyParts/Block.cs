@@ -45,7 +45,7 @@ namespace BiolyCompiler.BlocklyParts
         public void Bind(Module module)
         {
             boundModule = module;
-            module.bindingOperation = this;
+            module.BindingOperation = this;
         }
 
         internal void Unbind(Module module)

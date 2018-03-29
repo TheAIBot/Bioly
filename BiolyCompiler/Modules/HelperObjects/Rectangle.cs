@@ -10,12 +10,9 @@ namespace BiolyCompiler.Modules
     {
         public int height, width;
         public int x, y; //Coordinates for lower left corner.
-        //Used by the FTP aalgorithm for deleting rectangles.
+        //Used by the FTP algorithm for deleting rectangles.
         public HashSet<Rectangle>  AdjacentRectangles    = new HashSet<Rectangle>();
         public bool isEmpty = true;
-        //public List<Rectangle> bottomAdjacentRectangles = new List<Rectangle>();
-        //public List<Rectangle> leftAdjacentRectangles   = new List<Rectangle>();
-        //public List<Rectangle> rightAdjacentRectangles  = new List<Rectangle>();
 
 
         public Rectangle(int width, int height)
@@ -39,7 +36,7 @@ namespace BiolyCompiler.Modules
 
         public bool DoesFit(Module module)
         {
-            return module.shape.height <= this.height && module.shape.width <= this.width;
+            return module.Shape.height <= this.height && module.Shape.width <= this.width;
         }
 
         public int GetArea()
@@ -56,22 +53,22 @@ namespace BiolyCompiler.Modules
             //based on which segments extending from the rectangle (see FTP algorithm papier) that are shortest:
             Rectangle TopRectangle;
             Rectangle RightRectangle;
-            int VerticalSegmentLenght   = this.height - module.shape.height;
-            int HorizontalSegmentLenght = this.width  - module.shape.width;
+            int VerticalSegmentLenght   = this.height - module.Shape.height;
+            int HorizontalSegmentLenght = this.width  - module.Shape.width;
             if (HorizontalSegmentLenght <= VerticalSegmentLenght)
             {
                 //Split at the horizontal line segment:
                 TopRectangle   = new Rectangle(this.width, VerticalSegmentLenght);
-                RightRectangle = new Rectangle(HorizontalSegmentLenght, module.shape.height);
+                RightRectangle = new Rectangle(HorizontalSegmentLenght, module.Shape.height);
             } else
             {
                 //Split at the vertical line segment:
-                TopRectangle   = new Rectangle(module.shape.width, VerticalSegmentLenght);
+                TopRectangle   = new Rectangle(module.Shape.width, VerticalSegmentLenght);
                 RightRectangle = new Rectangle(HorizontalSegmentLenght, this.height);
             }
-            module.shape.PlaceAt(this.x, this.y);
-            TopRectangle.PlaceAt(this.x, module.shape.getTopmostYPosition() + 1);
-            RightRectangle.PlaceAt(module.shape.getRightmostXPosition() + 1, this.y);
+            module.Shape.PlaceAt(this.x, this.y);
+            TopRectangle.PlaceAt(this.x, module.Shape.getTopmostYPosition() + 1);
+            RightRectangle.PlaceAt(module.Shape.getRightmostXPosition() + 1, this.y);
 
             //If the line segments has size = 0, the rectangles has an area of 0, 
             //and as such they can be discarded:
@@ -79,14 +76,14 @@ namespace BiolyCompiler.Modules
             if (VerticalSegmentLenght == 0) TopRectangle = null;
             else {
                 ComputeAdjacencyList(TopRectangle);
-                TopRectangle.AdjacentRectangles.Add(module.shape);
-                module.shape.AdjacentRectangles.Add(TopRectangle);
+                TopRectangle.AdjacentRectangles.Add(module.Shape);
+                module.Shape.AdjacentRectangles.Add(TopRectangle);
             }
             if (HorizontalSegmentLenght == 0) RightRectangle = null;
             else {
                 ComputeAdjacencyList(RightRectangle);
-                RightRectangle.AdjacentRectangles.Add(module.shape);
-                module.shape.AdjacentRectangles.Add(RightRectangle);
+                RightRectangle.AdjacentRectangles.Add(module.Shape);
+                module.Shape.AdjacentRectangles.Add(RightRectangle);
             }
 
             if (TopRectangle != null && RightRectangle != null)
@@ -94,7 +91,7 @@ namespace BiolyCompiler.Modules
                 TopRectangle.AdjacentRectangles.Add(RightRectangle);
                 RightRectangle.AdjacentRectangles.Add(TopRectangle);
             }            
-            ComputeAdjacencyList(module.shape);
+            ComputeAdjacencyList(module.Shape);
             RemoveAdjacencies();
             return (TopRectangle, RightRectangle);
         }

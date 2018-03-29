@@ -178,21 +178,21 @@ namespace BiolyTests.ModuleTests
                 //It is a horizontal split.
                 (Rectangle TopRectangle, Rectangle RightRectangle) = emptyRectangle.SplitIntoSmallerRectangles(module);
                 Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(emptyRectangle));
-                Assert.IsTrue(module.shape.AdjacentRectangles.Contains(TopRectangle));
-                Assert.IsTrue(module.shape.AdjacentRectangles.Contains(RightRectangle));
-                Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(module.shape));
-                Assert.IsTrue(RightRectangle.AdjacentRectangles.Contains(module.shape));
+                Assert.IsTrue(module.Shape.AdjacentRectangles.Contains(TopRectangle));
+                Assert.IsTrue(module.Shape.AdjacentRectangles.Contains(RightRectangle));
+                Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(module.Shape));
+                Assert.IsTrue(RightRectangle.AdjacentRectangles.Contains(module.Shape));
                 Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(RightRectangle));
                 Assert.IsTrue(RightRectangle.AdjacentRectangles.Contains(TopRectangle));
 
-                if (neighborRectangle.y <= module.shape.getTopmostYPosition()) //They are adjacent
+                if (neighborRectangle.y <= module.Shape.getTopmostYPosition()) //They are adjacent
                 {
-                    Assert.IsTrue(neighborRectangle.AdjacentRectangles.Contains(module.shape));
-                    Assert.IsTrue(module.shape.AdjacentRectangles.Contains(neighborRectangle));
+                    Assert.IsTrue(neighborRectangle.AdjacentRectangles.Contains(module.Shape));
+                    Assert.IsTrue(module.Shape.AdjacentRectangles.Contains(neighborRectangle));
                 } else
                 {
-                    Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(module.shape));
-                    Assert.IsFalse(module.shape.AdjacentRectangles.Contains(neighborRectangle));
+                    Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(module.Shape));
+                    Assert.IsFalse(module.Shape.AdjacentRectangles.Contains(neighborRectangle));
                 }
 
                 if (TopRectangle.y <= neighborRectangle.getTopmostYPosition() && 

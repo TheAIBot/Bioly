@@ -24,9 +24,9 @@ namespace BiolyTests.PlacementTests
             MixerModule mixer = new MixerModule(3,3,2000);
             Assert.IsTrue(board.FastTemplatePlace(mixer));
             Assert.AreEqual(2, board.EmptyRectangles.Count);
-            Assert.AreEqual(2, mixer.shape.AdjacentRectangles.Count);
+            Assert.AreEqual(2, mixer.Shape.AdjacentRectangles.Count);
             foreach (var rectangle in board.EmptyRectangles) {
-                mixer.shape.AdjacentRectangles.Contains(rectangle);
+                mixer.Shape.AdjacentRectangles.Contains(rectangle);
             }            
         }
 
@@ -42,18 +42,18 @@ namespace BiolyTests.PlacementTests
             //Module 1 should go in the lower left corner
             Assert.IsTrue(board.FastTemplatePlace(module1));
             Assert.AreEqual(2, board.EmptyRectangles.Count);
-            Assert.AreEqual(0, module1.shape.x);
-            Assert.AreEqual(0, module1.shape.y);
+            Assert.AreEqual(0, module1.Shape.x);
+            Assert.AreEqual(0, module1.Shape.y);
             //It should have split vertically, and module 2 should only fit to the right rectangle, though the other is smaller:
             Assert.IsTrue(board.FastTemplatePlace(module2));
             Assert.AreEqual(3, board.EmptyRectangles.Count);
-            Assert.AreEqual(module1.shape.getRightmostXPosition() + 1, module2.shape.x);
-            Assert.AreEqual(0, module2.shape.y);
+            Assert.AreEqual(module1.Shape.getRightmostXPosition() + 1, module2.Shape.x);
+            Assert.AreEqual(0, module2.Shape.y);
             //The top rectangle should be the smallest:
             Assert.IsTrue(board.FastTemplatePlace(module3));
             Assert.AreEqual(3, board.EmptyRectangles.Count); //No new right empty rectangle
-            Assert.AreEqual(0, module3.shape.x);
-            Assert.AreEqual(module1.shape.getTopmostYPosition() + 1, module3.shape.y);
+            Assert.AreEqual(0, module3.Shape.x);
+            Assert.AreEqual(module1.Shape.getTopmostYPosition() + 1, module3.Shape.y);
 
         }
 

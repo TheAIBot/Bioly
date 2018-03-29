@@ -17,7 +17,7 @@ namespace BiolyCompiler.Modules
         public override Module GetCopyOf()
         {
             SensorModule sensor = new SensorModule();
-            sensor.shape = new Rectangle(shape);
+            sensor.Shape = new Rectangle(Shape);
             return sensor;
         }
     }

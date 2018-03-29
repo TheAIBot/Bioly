@@ -17,7 +17,7 @@ namespace BiolyCompiler.Modules
 
         //Orders the modules after their operation times.
         public void sortLibrary(){
-            allocatedModules.Sort((x,y) => (x.operationTime < y.operationTime)? 0: 1);
+            allocatedModules.Sort((x,y) => (x.OperationTime < y.OperationTime)? 0: 1);
         }
 
         public Module GetFirstPlaceableModule(Block operation, Architechture archetichture){

@@ -11,6 +11,7 @@ using System.Linq;
 using BiolyCompiler.Routing;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
+using BiolyTests2.TestObjects;
 //using MoreLinq;
 
 namespace BiolyTests.RoutingTests
@@ -24,21 +25,21 @@ namespace BiolyTests.RoutingTests
             Block operation = new Sensor(null, null, null);
             Module sourceModule = new SensorModule();
             Module targetModule = new SensorModule();
-            sourceModule.shape.x = 0;
-            sourceModule.shape.y = 0;
-            targetModule.shape.x = 10;
-            targetModule.shape.y = 10;
+            sourceModule.Shape.x = 0;
+            sourceModule.Shape.y = 0;
+            targetModule.Shape.x = 10;
+            targetModule.Shape.y = 10;
             operation.Bind(sourceModule);
             Board board = new Board(20,20);
-            board.UpdateGridWithModulePlacement(sourceModule, sourceModule.shape);
-            board.UpdateGridWithModulePlacement(targetModule, targetModule.shape);
+            board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
+            board.UpdateGridWithModulePlacement(targetModule, targetModule.Shape);
             
             int startTime = 55;
             Route route = Schedule.determineRouteToModule(sourceModule, targetModule, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule), "Has detected collision while this shouldn't be possible");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, targetModule));
-            Assert.AreEqual(route.getEndTime(), startTime + targetModule.shape.x + targetModule.shape.y);            
+            Assert.AreEqual(route.getEndTime(), startTime + targetModule.Shape.x + targetModule.Shape.y);            
         }
 
 
@@ -48,17 +49,17 @@ namespace BiolyTests.RoutingTests
         {
             Module sourceModule = new SensorModule();
             Module targetModule = new SensorModule();
-            Module blockingModule = new MixerModule(3,15,2000);
-            sourceModule.shape.x = 0;
-            sourceModule.shape.y = 0;
-            targetModule.shape.x = 10;
-            targetModule.shape.y = 10;
-            blockingModule.shape.x = 5;
-            blockingModule.shape.y = 0;
+            Module blockingModule = new TestModule(3,15,2000);
+            sourceModule.Shape.x = 0;
+            sourceModule.Shape.y = 0;
+            targetModule.Shape.x = 10;
+            targetModule.Shape.y = 10;
+            blockingModule.Shape.x = 5;
+            blockingModule.Shape.y = 0;
             Board board = new Board(20, 20);
-            board.UpdateGridWithModulePlacement(sourceModule, sourceModule.shape);
-            board.UpdateGridWithModulePlacement(targetModule, targetModule.shape);
-            board.UpdateGridWithModulePlacement(blockingModule, blockingModule.shape);
+            board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
+            board.UpdateGridWithModulePlacement(targetModule, targetModule.Shape);
+            board.UpdateGridWithModulePlacement(blockingModule, blockingModule.Shape);
 
 
             int startTime = 55;
@@ -68,7 +69,7 @@ namespace BiolyTests.RoutingTests
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, targetModule));
             //The manhatten distance to the target, is the lenght of the direct path to the target.
             //As the placed module should block the way somewhat, the path should be longer:
-            Assert.IsTrue(route.getEndTime() > startTime + targetModule.shape.x + targetModule.shape.y);
+            Assert.IsTrue(route.getEndTime() > startTime + targetModule.Shape.x + targetModule.Shape.y);
         }
 
 
@@ -92,8 +93,8 @@ namespace BiolyTests.RoutingTests
         private bool hasCorrectStartAndEnding(Route route, Board board, Module sourceModule, Module targetModule)
         {
             RoutingInformation startOfPath = route.route[0].value;
-            return  sourceModule.shape.x == startOfPath.x &&
-                    sourceModule.shape.y == startOfPath.y &&
+            return  sourceModule.Shape.x == startOfPath.x &&
+                    sourceModule.Shape.y == startOfPath.y &&
                     targetModule == board.grid[route.route.Last().value.x, route.route.Last().value.y];
         }
 

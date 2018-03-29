@@ -71,7 +71,7 @@ namespace BiolyCompiler.Architechtures
         public void FastTemplateRemove(Module module)
         {
             placedModules.Remove(module);
-            FastTemplateRemove(module.shape);                   
+            FastTemplateRemove(module.Shape);                   
         }
 
 
@@ -104,12 +104,12 @@ namespace BiolyCompiler.Architechtures
 
         public void UpdateGridWithModulePlacement(Module module, Rectangle rectangleToPlaceAt)
         {
-            module.shape.PlaceAt(rectangleToPlaceAt.x, rectangleToPlaceAt.y);
-            for (int i = 0; i < module.shape.width; i++)
+            module.Shape.PlaceAt(rectangleToPlaceAt.x, rectangleToPlaceAt.y);
+            for (int i = 0; i < module.Shape.width; i++)
             {
-                for (int j = 0; j < module.shape.height; j++)
+                for (int j = 0; j < module.Shape.height; j++)
                 {
-                    grid[i + module.shape.x, j + module.shape.y] = module;
+                    grid[i + module.Shape.x, j + module.Shape.y] = module;
                 }
             }
             placedModules.Add(module);
@@ -117,7 +117,7 @@ namespace BiolyCompiler.Architechtures
 
         private int RectangleCost(Rectangle rectangle, Module module)
         {
-            return Math.Abs(rectangle.GetArea() - module.shape.GetArea());
+            return Math.Abs(rectangle.GetArea() - module.Shape.GetArea());
         }
 
         private bool UpdatePlacement(Rectangle rectangle, Module module)
@@ -148,7 +148,7 @@ namespace BiolyCompiler.Architechtures
 
         public Node<RoutingInformation> getOperationFluidPlacementOnBoard(Module sourceModule, Node<RoutingInformation>[,] dijkstraGraph)
         {
-            return dijkstraGraph[sourceModule.shape.x, sourceModule.shape.y];
+            return dijkstraGraph[sourceModule.Shape.x, sourceModule.Shape.y];
         }
 
         public Droplet replaceWithDroplets(Block finishedOperation)
@@ -161,7 +161,7 @@ namespace BiolyCompiler.Architechtures
                 fluids.Add(fluidType.fluidName, fluidType);
             }
             Droplet droplet = new Droplet(fluidType);
-            Rectangle moduleRectangle = finishedOperation.boundModule.shape;
+            Rectangle moduleRectangle = finishedOperation.boundModule.Shape;
             UpdateGridWithModulePlacement(droplet, moduleRectangle);
             FastTemplateReplace(moduleRectangle, droplet);
             placedModules.Remove(finishedOperation.boundModule);
@@ -175,10 +175,10 @@ namespace BiolyCompiler.Architechtures
             foreach (var adjacentRectangle in oldRectangle.AdjacentRectangles)
             {
                 adjacentRectangle.AdjacentRectangles.Remove(oldRectangle);
-                if (adjacentRectangle.IsAdjacent(replacingModule.shape))
+                if (adjacentRectangle.IsAdjacent(replacingModule.Shape))
                 {
-                    replacingModule.shape.AdjacentRectangles.Add(adjacentRectangle);
-                    adjacentRectangle.AdjacentRectangles.Add(replacingModule.shape);
+                    replacingModule.Shape.AdjacentRectangles.Add(adjacentRectangle);
+                    adjacentRectangle.AdjacentRectangles.Add(replacingModule.Shape);
                 }
                 if (TopRectangle != null && adjacentRectangle.IsAdjacent(TopRectangle))
                 {
