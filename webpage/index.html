@@ -1,9 +1,41 @@
 <!DOCTYPE>
 <html>
 	<head>
-		<title>cytoscape-dagre.js demo</title>
+		<title>Bioly</title>
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 		<link href="style.css" rel="stylesheet" />
+		
+		<script id="vertex-shader"   type="x-shader/x-vertex">
+			attribute vec2 vShape;
+			attribute vec2 vPosition;
+			attribute float size;
+			attribute vec4 vColor;
+			uniform float zoom;
+			uniform vec2 viewOffset;
+			varying vec4 fColor;
+
+			void main() 
+			{         
+				fColor = vColor;
+				gl_Position.xy = (vShape.xy + (vPosition.xy * size)) * zoom + viewOffset.xy;
+				gl_Position.w = 1.0;
+			}
+		</script>
+		<script id="fragment-shader" type="x-shader/x-fragment">
+			precision mediump float;
+			varying vec4 fColor;
+
+			void main()
+			{
+				gl_FragColor = fColor;
+			}
+		</script>
+		
+		<script src="WebGL/angelCommon/initShaders.js"></script>
+		<script src="WebGL/angelCommon/webgl-utils.js"></script>
+		<script src="WebGL/angelCommon/MV.js"></script>
+		<script src="simulator_renderer.js"></script>
+		<script src="simulator.js"></script>
 
 		<script src="blockly_compressed.js"></script>
 		<script src="blocks_compressed.js"></script>
@@ -14,43 +46,59 @@
 		<script src="cytoscape-dagre.js"></script>
 	</head>
 	<body>
-		<div id="blocklyDiv"></div>
-		<div id="graphDiv"></div>
-		<xml id="toolbox" style="display: none">
-			<category name="Control">
-				<block type="controls_if"></block>
-				<block type="controls_repeat_ext"></block>
-			</category>
-			<category name="Arithmetic">
-				<block type="math_number"></block>
-				<block type="math_arithmetic"></block>
-			</category>
-			<category name="Logic">
-				<block type="logic_compare"></block>
-			</category>
-			<category name="Fluids">
-				<block type="input"></block>
-				<block type="getInput"></block>
-				<block type="fluid"></block>
-				<block type="getFluid"></block>
-			</category>
-			<category name="Fluid operator">
-				<block type="mixer"></block>
-				<block type="splitter"></block>
-				<block type="heater"></block>
-			</category>
-			<category name="Misc">
-				<block type="start"></block>
-				<block type="waste"></block>
-				<block type="output"></block>
-				<block type="sensor"></block>
-			</category>
-			<category name="Arrays">
-				<block type="fluidArray"></block>
-				<block type="setFLuidArrayIndex"></block>
-				<block type="getFLuidArrayIndex"></block>
-			</category>
-		</xml>
+		<div  class="side" id="leftSide">
+			<button class="tab" id="loadButton"   onclick="saver.load();">Load</button>
+			<button class="tab" id="saveButton"   onclick="saver.save();">Save</button>
+			<button class="tab" id="saveAsButton" onclick="saver.saveAs();">Save as...</button>
+			<div class="tabContent">
+				<div id="blocklyDiv"></div>
+			</div>
+			<xml id="toolbox" style="display: none">
+				<category name="Control">
+					<block type="controls_if"></block>
+					<block type="controls_repeat_ext"></block>
+				</category>
+				<category name="Arithmetic">
+					<block type="math_number"></block>
+					<block type="math_arithmetic"></block>
+				</category>
+				<category name="Logic">
+					<block type="logic_compare"></block>
+				</category>
+				<category name="Fluids">
+					<block type="input"></block>
+					<block type="getInput"></block>
+					<block type="fluid"></block>
+					<block type="getFluid"></block>
+				</category>
+				<category name="Fluid operator">
+					<block type="mixer"></block>
+					<block type="splitter"></block>
+					<block type="heater"></block>
+				</category>
+				<category name="Misc">
+					<block type="start"></block>
+					<block type="waste"></block>
+					<block type="output"></block>
+					<block type="sensor"></block>
+				</category>
+				<category name="Arrays">
+					<block type="fluidArray"></block>
+					<block type="setFLuidArrayIndex"></block>
+					<block type="getFLuidArrayIndex"></block>
+				</category>
+			</xml>
+		</div>
+		<div class="side" id="rightSide">
+			<button class="tab tabLink" id="leftTab"  onclick="openTab(event, 'graphDiv'); return false;">Graph</button>
+			<button class="tab tabLink" id="rightTab" onclick="openTab(event, 'simulatorCanvas'); return false;">Simulator</button>
+			<div class="tabContent">
+				<div    class="tabItemContent" id="graphDiv"></div>
+				<canvas class="tabItemContent" id="simulatorCanvas"></canvas>
+			</div>
+		</div>
 		<script src="helperFunctions.js"></script>
+		<script>document.getElementById("rightTab").click();</script>
+		<script src="simulator_events.js"></script>
 	</body>
 </html>

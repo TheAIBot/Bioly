@@ -1,24 +1,101 @@
-body {
+body
+{
 	background-color: #fff;
 	font-family: sans-serif;
 }
-h1 {
-	font-weight: normal;
-	font-size: 140%;
-}
-#blocklyDiv {
+
+.side
+{
 	width: 50%;
 	height: 100%;
+	top: 0%;
 	position: absolute;
-	left: 0;
-	top: 0;
-	z-index: 999;
+    background-color: #f1f1f1;
 }
-#graphDiv {
+
+#leftSide
+{
+	left: 0%;	
+}
+
+#loadButton
+{
+	left: 0%;
 	width: 50%;
-	height: 100%;
-	position: absolute;
+}
+
+#saveButton
+{
 	left: 50%;
-	top: 0;
-	z-index: 999;
+	width: 25%;
+}
+
+#saveAsButton
+{
+	left: 75%;
+	width: 25%;
+}
+
+#rightSide
+{
+	left: 50%;
+}
+.tab
+{
+	width: 50%;
+	height: 30px;
+	position: absolute;
+    background-color: f1f1f1;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+	z-index: 2;
+}
+
+#leftTab
+{
+	left: 0%;
+}
+
+#rightTab
+{
+	left: 50%;
+}
+
+.tab:hover
+{
+    background-color: #cec;
+}
+
+.tab.active
+{
+	background-color: #ccc;
+}
+
+.tabItemContent
+{
+    display: none;
+}
+
+.tabContent
+{
+	width: 100%;
+	height: calc(100% - 30px);
+	top:30px;
+	position: absolute;
+	z-index: 1;
+}
+
+#graphDiv
+{
+	width: 100%;
+	height: 100%;
+}
+
+#simulatorCanvas
+{
+	width: 100%;
+	height: 100%;
 }

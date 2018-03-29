@@ -31,13 +31,14 @@ namespace BiolyViewer_Windows
             settings.RegisterScheme(new CefCustomScheme
             {
                 SchemeName = "costum",
-                SchemeHandlerFactory = new FolderSchemeHandlerFactory(rootFolder: @"../../../../webpage"),
+                SchemeHandlerFactory = new FolderSchemeHandlerFactory(@"../../../../webpage"),
                 IsSecure = true
             });
 
             Cef.Initialize(settings);
 
             InitializeComponent();
+            //Browser.RegisterJsObject("saver", new Saver());
             //BiolyCompiler.Compiler fisk = new BiolyCompiler.Compiler();
             //fisk.DoStuff();
         }

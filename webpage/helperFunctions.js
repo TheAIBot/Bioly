@@ -40,8 +40,8 @@ function setGraph(nodes, edges)
 					'curve-style': 'bezier',
 					'width': 4,
 					'target-arrow-shape': 'triangle',
-					'line-color': '#9dbaea',
-					'target-arrow-color': '#9dbaea'
+					'line-color': '#000000',
+					'target-arrow-color': '#000000'
 				}
 			},
 			{
@@ -62,14 +62,8 @@ function setGraph(nodes, edges)
 	});
 }
 
-function save() {
-	const xml = Blockly.Xml.workspaceToDom(workspace);
-	const xml_text = Blockly.Xml.domToText(xml);
-	document.cookie = "dd=0" + xml_text;
-}
-function load() {
-	const xml_text = document.cookie;
-	const xml = Blockly.Xml.textToDom(xml_text);
+function loadWorkspace(xmlText) {
+	const xml = Blockly.Xml.textToDom(xmlText);
 	Blockly.Xml.domToWorkspace(xml, workspace);
 }
 
@@ -100,7 +94,23 @@ function getIfWorkspaceChanged()
 	return didChange;
 }
 
+//based on 
+function openTab(e, tabName) {
 
+    const tabs = document.getElementsByClassName("tabItemContent");
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].style.display = "none";
+    }
+
+    const tablinks = document.getElementsByClassName("tabLink");
+    for (var i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(tabName).style.display = "block";
+    e.currentTarget.className += " active";
+}
 
 
 
