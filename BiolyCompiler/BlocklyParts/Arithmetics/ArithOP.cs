@@ -9,15 +9,15 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
     public class ArithOP : Block
     {
-        private const string OPTypeName = "OP";
-        private const string LeftArithName = "A";
-        private const string RightArithName = "B";
+        public const string OPTypeFieldName = "OP";
+        public const string LeftArithFieldName = "A";
+        public const string RightArithFieldName = "B";
         public const string XmlTypeName = "math_arithmetic";
         public readonly ArithOPTypes OPType;
 
         public ArithOP(List<string> input, string output, XmlNode node) : base(false, input, output)
         {
-            switch (node.GetNodeWithAttributeValue(OPTypeName).InnerText)
+            switch (node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText)
             {
                 case "ADD":
                     this.OPType = ArithOPTypes.ADD;
@@ -38,8 +38,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
-            XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithName).FirstChild;
-            XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithName).FirstChild;
+            XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithFieldName).FirstChild;
+            XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithFieldName).FirstChild;
 
             Block leftArithBlock = XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
             Block rightArithBlock = XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);

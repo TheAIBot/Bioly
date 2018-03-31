@@ -9,8 +9,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
 {
     public class Fluid : Block
     {
-        private const string InputFluidName = "inputFluid";
-        private const string OutputFluidName = "fluidName";
+        public const string InputFluidFieldName = "inputFluid";
+        public const string OutputFluidFieldName = "fluidName";
         public const string XmlTypeName = "fluid";
 
         public Fluid(List<string> input, string output, XmlNode node) : base(true, input, output)
@@ -27,8 +27,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            string output = node.GetNodeWithAttributeValue(OutputFluidName).InnerText;
-            XmlNode innerNode = node.GetNodeWithAttributeValue(InputFluidName).FirstChild;
+            string output = node.GetNodeWithAttributeValue(OutputFluidFieldName).InnerText;
+            XmlNode innerNode = node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild;
             switch (innerNode.Attributes["type"].Value)
             {
                 case Heater.XmlTypeName:

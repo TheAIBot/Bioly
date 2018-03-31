@@ -8,6 +8,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
     public class Constant : Block
     {
+        public const string NumberFieldName = "NUM";
         public const string XmlTypeName = "math_number";
         public readonly float Value;
 

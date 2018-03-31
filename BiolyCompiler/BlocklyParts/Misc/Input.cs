@@ -8,22 +8,22 @@ namespace BiolyCompiler.BlocklyParts.Misc
 {
     public class Input : Block
     {
-        private const string InputFluidName = "inputName";
-        private const string InputAmount = "inputAmount";
-        private const string FluidUnitName = "inputUnit";
+        public const string InputFluidFieldName = "inputName";
+        public const string InputAmountFieldName = "inputAmount";
+        public const string FluidUnitFieldName = "inputUnit";
         public const string XmlTypeName = "input";
         public readonly int Amount;
         public readonly FluidUnit Unit;
 
         public Input(string output, XmlNode node) : base(true, output)
         {
-            this.Amount = node.GetNodeWithAttributeValue(InputAmount).TextToInt();
-            this.Unit = (FluidUnit)node.GetNodeWithAttributeValue(FluidUnitName).TextToInt();
+            this.Amount = node.GetNodeWithAttributeValue(InputAmountFieldName).TextToInt();
+            this.Unit = (FluidUnit)node.GetNodeWithAttributeValue(FluidUnitFieldName).TextToInt();
         }
 
         public static Block Parse(XmlNode node)
         {
-            string output = node.GetNodeWithAttributeValue(InputFluidName).InnerText;
+            string output = node.GetNodeWithAttributeValue(InputFluidFieldName).InnerText;
             return new Input(output, node);
         }
 

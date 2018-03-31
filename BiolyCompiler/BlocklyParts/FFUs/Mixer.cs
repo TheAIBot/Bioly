@@ -10,8 +10,8 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 {
     public class Mixer : Block
     {
-        private const string FirstInputName = "inputFluidA";
-        private const string SecondInputName = "inputFluidB";
+        public const string FirstInputFieldName = "inputFluidA";
+        public const string SecondInputFieldName = "inputFluidB";
         public const string XmlTypeName = "mixer";
 
         public Mixer(List<string> input, string output, XmlNode node) : base(true, input, output)
@@ -22,8 +22,8 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public static Block CreateMixer(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<string> inputs = new List<string>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(FirstInputName), mostRecentRef));
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputName), mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(FirstInputFieldName), mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputFieldName), mostRecentRef));
 
             return new Mixer(inputs, output, node);
         }

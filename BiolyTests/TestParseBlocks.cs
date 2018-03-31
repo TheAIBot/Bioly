@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.BlocklyParts;
+﻿using BiolyCompiler;
+using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Arithmetics;
 using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.BlocklyParts.FFUs;
@@ -28,7 +29,7 @@ namespace BiolyTests
         public void ParseInputBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddBlock("a", "input");
+            program.AddInputBlock("a", 20, FluidUnit.ml);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
@@ -57,19 +58,14 @@ namespace BiolyTests
         public void ParseMixerBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddBlock("a", "fluid");
-            program.AddBlock("b", "mixer");
-            program.AddBlock("c", "getInput");
-            program.AddBlock("d", "getInput");
-            program.AddConnection("a", "inputFluid", "b");
-            program.AddConnection("b", "inputFluidA", "c");
-            program.AddConnection("b", "inputFluidB", "d");
+            program.AddMixerSegment("a", "b", "c");
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
-
+            
             Assert.IsTrue(input is Mixer);
+            Assert.AreEqual("a", input.OriginalOutputVariable);
         }
 
         //[TestMethod]

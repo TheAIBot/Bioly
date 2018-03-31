@@ -1,4 +1,7 @@
-﻿using System;
+﻿using BiolyCompiler;
+using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.Misc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,20 +24,36 @@ namespace BiolyTests
             Builder.Append($"{inputBlockname}.getInput(\"{inputName}\").connection.connect({outputBlockName}.outputConnection);");
         }
 
+        public void SetField<T>(string blockName, string fieldName, T newValue)
+        {
+            Builder.Append($"{blockName}.setFieldValue(\"{newValue.ToString()}\", \"{fieldName}\");");
+        }
+
+        public void AddInputBlock(string fluidName, int fluidAmount, FluidUnit unit)
+        {
+            string a = GetRandomName();
+            AddBlock(a, Input.XmlTypeName);
+            SetField(a, Input.InputFluidFieldName, fluidName);
+            SetField(a, Input.InputAmountFieldName, fluidAmount);
+            SetField(a, Input.FluidUnitFieldName, unit);
+        }
+
         public void AddMixerSegment(string outputName, string inputNameA, string inputNameB)
         {
-            JSProgram program = new JSProgram();
             string a = GetRandomName();
             string b = GetRandomName();
             string c = GetRandomName();
             string d = GetRandomName();
-            program.AddBlock(a, "fluid");
-            program.AddBlock(b, "mixer");
-            program.AddBlock(c, "getInput");
-            program.AddBlock(d, "getInput");
-            program.AddConnection(a, "inputFluid", b);
-            program.AddConnection(b, "inputFluidA", c);
-            program.AddConnection(b, "inputFluidB", d);
+            AddBlock(a, Fluid.XmlTypeName);
+            AddBlock(b, Mixer.XmlTypeName);
+            AddBlock(c, FluidAsInput.XmlTypeName);
+            AddBlock(d, FluidAsInput.XmlTypeName);
+            SetField(a, Fluid.OutputFluidFieldName, outputName);
+            SetField(c, FluidAsInput.InputFluidFieldName, inputNameA);
+            SetField(d, FluidAsInput.InputFluidFieldName, inputNameB);
+            AddConnection(a, Fluid.InputFluidFieldName, b);
+            AddConnection(b, Mixer.FirstInputFieldName , c);
+            AddConnection(b, Mixer.SecondInputFieldName, d);
         }
 
         public string GetRandomName()
