@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using BiolyCompiler.Modules.RectangleSides;
 using System.Linq;
+using BiolyTests.TestObjects;
 //using MoreLinq;
 
 namespace BiolyTests.PlacementTests
@@ -20,12 +21,12 @@ namespace BiolyTests.PlacementTests
             int boardHeight = 20, boardWidth = 20;
             Board board = new Board(boardWidth, boardHeight);
             Assert.AreEqual(board.EmptyRectangles.Count, 1);
-            MixerModule mixer = new MixerModule(3,3,2000);
-            Assert.IsTrue(board.FastTemplatePlace(mixer));
+            TestModule testModule = new TestModule(3,3,2000);
+            Assert.IsTrue(board.FastTemplatePlace(testModule));
             Assert.AreEqual(2, board.EmptyRectangles.Count);
-            Assert.AreEqual(2, mixer.Shape.AdjacentRectangles.Count);
+            Assert.AreEqual(2, testModule.Shape.AdjacentRectangles.Count);
             foreach (var rectangle in board.EmptyRectangles) {
-                mixer.Shape.AdjacentRectangles.Contains(rectangle);
+                testModule.Shape.AdjacentRectangles.Contains(rectangle);
             }            
         }
 
@@ -34,9 +35,9 @@ namespace BiolyTests.PlacementTests
         {
             int boardHeight = 20, boardWidth = 20;
             Board board = new Board(boardWidth, boardHeight);
-            Module module1 = new MixerModule(3, 8, 2000);
-            Module module2 = new MixerModule(4, 3, 2000);
-            Module module3 = new MixerModule(3, 3, 2000);
+            Module module1 = new TestModule(3, 8, 2000);
+            Module module2 = new TestModule(4, 3, 2000);
+            Module module3 = new TestModule(3, 3, 2000);
 
             //Module 1 should go in the lower left corner
             Assert.IsTrue(board.FastTemplatePlace(module1));
@@ -74,9 +75,9 @@ namespace BiolyTests.PlacementTests
         {
             int boardHeight = 20, boardWidth = 20;
             Board board = new Board(boardWidth, boardHeight);
-            Module module1 = new MixerModule(3, 8, 2000);
-            Module module2 = new MixerModule(4, 3, 2000);
-            Module module3 = new MixerModule(3, 3, 2000);
+            Module module1 = new TestModule(3, 8, 2000);
+            Module module2 = new TestModule(4, 3, 2000);
+            Module module3 = new TestModule(3, 3, 2000);
             //Placing some components:
             List<HashSet<Rectangle>> listEmptyRectangles = new List<HashSet<Rectangle>>();
             listEmptyRectangles.Add(new HashSet<Rectangle>());
@@ -146,7 +147,7 @@ namespace BiolyTests.PlacementTests
             //After adding a lot of modules, removing them all should give the empty rectangle again.
             int boardHeight = 20, boardWidth = 20;
             Board board = new Board(boardWidth, boardHeight);
-            Module[] modules = new MixerModule[10];
+            Module[] modules = new TestModule[10];
             Assert.Fail("Not implemented yet");
         }
 

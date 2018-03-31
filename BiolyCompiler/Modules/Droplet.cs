@@ -23,5 +23,11 @@ namespace BiolyCompiler.Modules
         {
             throw new NotImplementedException();
         }
+
+        public void SetFluidType(BoardFluid fluidType)
+        {
+            this.fluidType = fluidType;
+            fluidType.droplets.Add(this);
+        }
     }
 }

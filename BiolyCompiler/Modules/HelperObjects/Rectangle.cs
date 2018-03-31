@@ -44,6 +44,21 @@ namespace BiolyCompiler.Modules
             return height * width;
         }
 
+        /// <summary>
+        /// Given a module, the rectangle is split up into three rectangles, 
+        /// with one of the rectangles being the one associated with the module. 
+        /// The module is placed in the lower left corner. Other than that, there are a top rectangle directly above it,
+        /// and a right rectangle to the right of the module. 
+        /// This split is based on the Shorter Segment (SSEG) approach to splitting the rectangle in to smaller pieces.
+        /// 
+        /// The adjacency graph that this rectangle takes part in, is also updated correctly, with the new rectangles.
+        /// 
+        /// The method is based on the method described in the article on fast template placement.
+        /// 
+        /// 
+        /// </summary>
+        /// <param name="module">The module to be placed in the rectangle.</param>
+        /// <returns>(TopRectangle, RightRectangle) from the split. They are null if they have either width = 0 or height = 0.</returns>
         public (Rectangle, Rectangle) SplitIntoSmallerRectangles(Module module)
         {
             //The module is placed in the lower left corner of the rectangle.

@@ -39,7 +39,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override Module getAssociatedModule()
         {
-            return new MixerModule(4,4,2000);
+            return new MixerModule(3000);
         }
     }
 }

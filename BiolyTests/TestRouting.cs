@@ -10,7 +10,7 @@ using System.Linq;
 using BiolyCompiler.Routing;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
-using BiolyTests2.TestObjects;
+using BiolyTests.TestObjects;
 //using MoreLinq;
 
 namespace BiolyTests.RoutingTests
@@ -21,24 +21,25 @@ namespace BiolyTests.RoutingTests
         [TestMethod]
         public void TestDetermineRouteToModuleNoObstacles()
         {
-            Block operation = new Sensor(null, null, null);
-            Module sourceModule = new SensorModule();
-            Module targetModule = new SensorModule();
+            Block operation = new TestBlock(null, null, null, new TestModule());
+            Module  sourceModule = new TestModule();
+            BoardFluid fluidType = new BoardFluid("test");
+            Droplet droplet = new Droplet(fluidType);
             sourceModule.Shape.x = 0;
             sourceModule.Shape.y = 0;
-            targetModule.Shape.x = 10;
-            targetModule.Shape.y = 10;
+            droplet.Shape.x = 10;
+            droplet.Shape.y = 10;
             operation.Bind(sourceModule);
             Board board = new Board(20,20);
             board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
-            board.UpdateGridWithModulePlacement(targetModule, targetModule.Shape);
+            board.UpdateGridWithModulePlacement(droplet, droplet.Shape);
             
             int startTime = 55;
-            Route route = Schedule.determineRouteToModule(sourceModule, targetModule, board, startTime);
+            Route route = Schedule.determineRouteToModule(fluidType, droplet, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule), "Has detected collision while this shouldn't be possible");
-            Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, targetModule));
-            Assert.AreEqual(route.getEndTime(), startTime + targetModule.Shape.x + targetModule.Shape.y);            
+            Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, droplet));
+            Assert.AreEqual(route.getEndTime(), startTime + droplet.Shape.x + droplet.Shape.y);            
         }
 
 
@@ -46,29 +47,30 @@ namespace BiolyTests.RoutingTests
         [TestMethod]
         public void TestDetermineRouteToModuleWithObstacles()
         {
-            Module sourceModule = new SensorModule();
-            Module targetModule = new SensorModule();
+            Module sourceModule = new TestModule();
+            BoardFluid fluidType = new BoardFluid("test");
+            Module droplet = new Droplet(fluidType);
             Module blockingModule = new TestModule(3,15,2000);
             sourceModule.Shape.x = 0;
             sourceModule.Shape.y = 0;
-            targetModule.Shape.x = 10;
-            targetModule.Shape.y = 10;
+            droplet.Shape.x = 10;
+            droplet.Shape.y = 10;
             blockingModule.Shape.x = 5;
             blockingModule.Shape.y = 0;
             Board board = new Board(20, 20);
             board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
-            board.UpdateGridWithModulePlacement(targetModule, targetModule.Shape);
+            board.UpdateGridWithModulePlacement(droplet, droplet.Shape);
             board.UpdateGridWithModulePlacement(blockingModule, blockingModule.Shape);
 
 
             int startTime = 55;
-            Route route = Schedule.determineRouteToModule(sourceModule, targetModule, board, startTime);
+            Route route = Schedule.determineRouteToModule(fluidType, sourceModule, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule), "Obstacle not avoided: the path has a collisition");
-            Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, targetModule));
+            Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, droplet));
             //The manhatten distance to the target, is the lenght of the direct path to the target.
             //As the placed module should block the way somewhat, the path should be longer:
-            Assert.IsTrue(route.getEndTime() > startTime + targetModule.Shape.x + targetModule.Shape.y);
+            Assert.IsTrue(route.getEndTime() > startTime + droplet.Shape.x + droplet.Shape.y);
         }
 
 

@@ -2,6 +2,7 @@ using System;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
+using BiolyTests.TestObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BiolyTests.ModuleTests
@@ -18,7 +19,7 @@ namespace BiolyTests.ModuleTests
             Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
             rectangle.PlaceAt(x, y);
             
-            Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
+            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
             (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
             
             Assert.AreEqual(x, TopRectangle.x);
@@ -44,7 +45,7 @@ namespace BiolyTests.ModuleTests
             Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
             rectangle.PlaceAt(x, y);
 
-            Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
+            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
             (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
 
             Assert.AreEqual(x, TopRectangle.x);
@@ -69,7 +70,7 @@ namespace BiolyTests.ModuleTests
             Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
             rectangle.PlaceAt(x, y);
 
-            Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
+            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
             (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
 
             Assert.AreEqual(null, RightRectangle);
@@ -90,7 +91,7 @@ namespace BiolyTests.ModuleTests
             Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
             rectangle.PlaceAt(x, y);
 
-            Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
+            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
             (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
 
             Assert.AreEqual(null, TopRectangle);
@@ -162,7 +163,7 @@ namespace BiolyTests.ModuleTests
             int x = 5, y = 5;
             int moduleHeight = 4, moduleWidth = 6;
             Rectangle emptyRectangle = new Rectangle(rectangleWidth, rectangleHeight, x, y);
-            Module module = new MixerModule(moduleWidth, moduleHeight, 1000);
+            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
 
             for (int i = 0; i < 100; i++)
             {

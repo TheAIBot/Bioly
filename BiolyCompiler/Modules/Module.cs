@@ -17,6 +17,7 @@ namespace BiolyCompiler.Modules
         public Dictionary<string, Route> InputRoutes = new Dictionary<string, Route>();
         protected ModuleLayout Layout;
         
+
         public Module(int width, int height, int operationTime){
             Shape = new Rectangle(width, height);
             this.OperationTime = operationTime;
@@ -24,12 +25,7 @@ namespace BiolyCompiler.Modules
             NumberOfInputs = 1;
             NumberOfOutputs = 1;
             //At default, the output is placed in the left corner of the module.
-            Layout = GetDefaultLayout();
-        }
-
-        private ModuleLayout GetDefaultLayout()
-        {
-            throw new NotImplementedException();
+            Layout = GetDefaultLayout(Shape);
         }
 
         public Module(int Width, int Height, int OperationTime, int NumberOfInputs, int NumberOfOutputs) : this(Width, Height, OperationTime)
@@ -49,6 +45,23 @@ namespace BiolyCompiler.Modules
                                                                                      width + ", " + height + "), and the output locations are : [" + String.Join(", ", DropletOutputLocations) + "].");
             else this.DropletOutputLocations = DropletOutputLocations;
             */
+        }
+
+
+        private ModuleLayout GetDefaultLayout(Rectangle rectangle)
+        {
+            Droplet droplet = new Droplet(new BoardFluid("Test"));
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(droplet);
+            List<Rectangle> emptyRectangles = new List<Rectangle>();
+            if (TopRectangle != null) emptyRectangles.Add(TopRectangle);
+            if (RightRectangle != null) emptyRectangles.Add(RightRectangle);
+            return new ModuleLayout(rectangle.width, rectangle.height, emptyRectangles, new List<Droplet>() {droplet});
+        }
+
+        public virtual ModuleLayout GetModuleLayout() {
+            if (Layout == null) {
+                throw new Exception("The layout for the module \"" + this.ToString() + "\" have not been set/is null");
+            } else return Layout;
         }
 
         private bool canContainPoints(List<Point> DropletOutputLocations)

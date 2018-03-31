@@ -16,13 +16,16 @@ namespace BiolyCompiler.Scheduling
 
     public class Schedule
     {
+        //Records how the board looks at all the times where the board have been changed. 
+        //This is primarily for testing and visulization purposes.
         public Dictionary<int, Board> boardAtDifferentTimes = new Dictionary<int, Board>();
-        public Dictionary<string, Droplet> FluidVariableLocations = new Dictionary<string, Droplet>();
-        public SimplePriorityQueue<Block> runningOperations = new SimplePriorityQueue<Block>();
+        // For debuging. Used when printing the board to the console, for visulization purposes.
+        private List<Module> allUsedModules = new List<Module>(); 
+        public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
+        public SimplePriorityQueue<Block> CurrentlyRunningOpertions = new SimplePriorityQueue<Block>();
         public List<Block> ScheduledOperations = new List<Block>();
-        private List<Module> allUsedModules = new List<Module>(); // For debuging. Used when printing the board to the console.
-        public const int DROP_MOVEMENT_TIME = 1;
-        public const int IGNORED_TIME_DIFFERENCE = 100;
+        public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move over one electrode.
+        public const int IGNORED_TIME_DIFFERENCE = 100; 
 
         public Schedule(){
 
@@ -37,7 +40,7 @@ namespace BiolyCompiler.Scheduling
         {
             operation.startTime = startTime;
             operation.endTime   = operation.startTime + operation.boundModule.OperationTime;
-            runningOperations.Enqueue(operation, operation.endTime);
+            CurrentlyRunningOpertions.Enqueue(operation, operation.endTime);
             ScheduledOperations.Add(operation);
             return operation.startTime;
         }
@@ -47,30 +50,26 @@ namespace BiolyCompiler.Scheduling
             throw new NotImplementedException();
         }
 
-        public void TransferFluidVariableLocationInformation(Dictionary<string, Droplet> Locations)
+        public void TransferFluidVariableLocationInformation(Dictionary<string, BoardFluid> FluidLocationInformation)
         {
-            Locations.ForEach(pair => FluidVariableLocations.Add(pair.Key, pair.Value));
+            FluidLocationInformation.ForEach(pair => FluidVariableLocations.Add(pair.Key, pair.Value));
         }
 
         /**
             Implements/based on the list scheduling based algorithm found in 
             "Fault-tolerant digital microfluidic biochips - compilation and synthesis" page 72.
          */
-        public int ListScheduling(Assay assay, Board board, ModuleLibrary library){
+        public int ListScheduling(Assay assay, Board board, ModuleLibrary library)
+        {
             //(*) TODO sammenlign igen med algoritmen set i artiklen
-            
+
             //Setup:
             int startTime = 0;
-            assay.calculateCriticalPath();
-            library.allocateModules(assay); 
-            library.sortLibrary();
-            allUsedModules.AddRange(board.placedModules);
+            board = ListSchedulingSetup(assay, board, library, startTime);
             List<Block> readyOperations = assay.getReadyOperations();
-            boardAtDifferentTimes.Add(startTime, board);
-            Debug.WriteLine(board.print(allUsedModules));
-            board = board.Copy();
+
             //Continue until all operations have been scheduled:
-            while(assay.hasUnfinishedOperations() && canExecuteMoreOperations(readyOperations))
+            while (assay.hasUnfinishedOperations() && canExecuteMoreOperations(readyOperations))
             {
                 Block topPriorityOperation = removeOperation(readyOperations);
                 Module operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
@@ -84,7 +83,7 @@ namespace BiolyCompiler.Scheduling
                 {
                     throw new Exception("Not enough space for a module: this is not handeled yet");
                     waitForAFinishedOperation();
-                    if (runningOperations.Count == 0) throw new Exception("The scheduling can't be made: there aren't enough space for module: " + operationExecutingModule.ToString());
+                    if (CurrentlyRunningOpertions.Count == 0) throw new Exception("The scheduling can't be made: there aren't enough space for module: " + operationExecutingModule.ToString());
                 }
 
                 //Now all the droplet that the module should operate on, needs to be delivered to it.
@@ -93,7 +92,7 @@ namespace BiolyCompiler.Scheduling
                 startTime = RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
                 Debug.WriteLine(board.print(allUsedModules));
 
-                runningOperations.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
+                CurrentlyRunningOpertions.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
 
                 //Note that it will also wait for operations to finish, 
                 //in the case that there are no more operations that can be executed, before this happen:
@@ -102,8 +101,19 @@ namespace BiolyCompiler.Scheduling
                 Debug.WriteLine(board.print(allUsedModules));
             }
             if (assay.hasUnfinishedOperations()) throw new Exception("There were operations that couldn't be scheduled.");
-            ScheduledOperations.Sort((x,y) => (x.startTime < y.startTime || (x.startTime == y.startTime && x.endTime <= y.endTime)) ? 0: 1);
+            ScheduledOperations.Sort((x, y) => (x.startTime < y.startTime || (x.startTime == y.startTime && x.endTime <= y.endTime)) ? 0 : 1);
             return getCompletionTime();
+        }
+
+        private Board ListSchedulingSetup(Assay assay, Board board, ModuleLibrary library, int startTime) {
+            assay.calculateCriticalPath();
+            library.allocateModules(assay);
+            library.sortLibrary();
+            allUsedModules.AddRange(board.placedModules);
+            boardAtDifferentTimes.Add(startTime, board);
+            Debug.WriteLine(board.print(allUsedModules));
+            board = board.Copy();
+            return board;
         }
 
         public (int, Board) handleFinishingOperations(int startTime, Assay assay, Board board)
@@ -133,9 +143,16 @@ namespace BiolyCompiler.Scheduling
                 {
                     if (!finishedOperation.boundModule.isStaticModule())
                     {
-                        Droplet replacingDroplet = board.replaceWithDroplets(finishedOperation);
-                        FluidVariableLocations.Add(finishedOperation.OutputVariable, replacingDroplet);
-                        allUsedModules.Add(replacingDroplet);
+                        BoardFluid dropletOutputFluid;
+                        FluidVariableLocations.TryGetValue(finishedOperation.OutputVariable, out dropletOutputFluid);
+                        //If it is the first time this type of fluid has been outputed, record it:
+                        if (dropletOutputFluid == null)
+                        {
+                            dropletOutputFluid = new BoardFluid(finishedOperation.OutputVariable);
+                            FluidVariableLocations.Add(finishedOperation.OutputVariable, dropletOutputFluid);
+                        }
+                        List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
+                        allUsedModules.AddRange(replacingDroplets);
                     }
                     assay.updateReadyOperations(finishedOperation);
                 }
@@ -154,21 +171,22 @@ namespace BiolyCompiler.Scheduling
 
         private bool areOperationsFinishing(int startTime, List<Block> readyOperations)
         {
-            return runningOperations.Count > 0 && (readyOperations.Count == 0  || startTime >= runningOperations.First().endTime);
+            return CurrentlyRunningOpertions.Count > 0 && (readyOperations.Count == 0  || startTime >= CurrentlyRunningOpertions.First().endTime);
         }
 
         private int RouteDropletsToModule(Module operationExecutingModule, Board board, int startTime, Block topPriorityOperation)
         {
-            foreach (var Input in topPriorityOperation.InputVariables)
+            foreach (var InputFluidName in topPriorityOperation.InputVariables)
             {
-                Droplet InputDroplet;
-                bool doSourceExist = FluidVariableLocations.TryGetValue(Input, out InputDroplet);
-                if (!doSourceExist) throw new Exception("The source \"" + Input + "\" for the operation \"" + topPriorityOperation.ToString() + "\" do not exist.");
-                Route route = determineRouteToModule(InputDroplet, operationExecutingModule, board, startTime); //Will be included as part of a later step.
+                BoardFluid InputFluid;
+                bool doSourceExist = FluidVariableLocations.TryGetValue(InputFluidName, out InputFluid);
+                if (!doSourceExist) throw new Exception("The source \"" + InputFluidName + "\" for the operation \"" + topPriorityOperation.ToString() + "\" do not exist.");
+                //Routes a droplet of type InputFluid to the module.
+                Route route = determineRouteToModule(InputFluid, operationExecutingModule, board, startTime); //Will be included as part of a later step.
                 if (route == null) throw new Exception("No route found. This should not be possible.");
-                operationExecutingModule.InputRoutes.Add(Input, route);
+                operationExecutingModule.InputRoutes.Add(InputFluidName, route);
                 //One could move this (with some code change) up to before the module is placed.
-                board.FastTemplateRemove(InputDroplet);
+                board.FastTemplateRemove(route.routedDroplet);
                 //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
                 //This will give an overhead of +1 for the operation starting time, for each droplet routed:
                 startTime = route.getEndTime() + 1;
@@ -181,13 +199,13 @@ namespace BiolyCompiler.Scheduling
         private List<Block> getNextBatchOfFinishedOperations()
         {
             List<Block> batch = new List<Block>();
-            Block nextFinishedOperation = runningOperations.Dequeue();
+            Block nextFinishedOperation = CurrentlyRunningOpertions.Dequeue();
             batch.Add(nextFinishedOperation);
             //Need to dequeue all operations that has finishes at the same time as nextFinishedOperation.
             //Differences under "IGNORED_TIME_DIFFERENCE" are ignored.
-            while (runningOperations.Count > 0 && nextFinishedOperation.endTime >= runningOperations.First.endTime - IGNORED_TIME_DIFFERENCE)
+            while (CurrentlyRunningOpertions.Count > 0 && nextFinishedOperation.endTime >= CurrentlyRunningOpertions.First.endTime - IGNORED_TIME_DIFFERENCE)
             {
-                batch.Add(runningOperations.Dequeue());
+                batch.Add(CurrentlyRunningOpertions.Dequeue());
             }
 
             return batch;
@@ -197,11 +215,13 @@ namespace BiolyCompiler.Scheduling
             return ScheduledOperations.Max(operation => operation.endTime);
         }
 
-        public static Route determineRouteToModule(Module sourceModule, Module targetModule, Board board, int startTime){
+        public static Route determineRouteToModule(BoardFluid targetFluidType, Module sourceModule, Board board, int startTime){
 
             //Dijkstras algorithm, based on the one seen on wikipedia.
+            //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
+            //and then inverts the route.
             Node<RoutingInformation>[,] dijkstraGraph = createDijkstraGraph(board);
-            Node<RoutingInformation> source = board.getOperationFluidPlacementOnBoard(sourceModule, dijkstraGraph);
+            Node<RoutingInformation> source = board.getSourceNodeForSourceModule(sourceModule, dijkstraGraph);
             source.value.distanceFromSource = 0;
             SimplePriorityQueue<Node<RoutingInformation>, int> priorityQueue = new SimplePriorityQueue<Node<RoutingInformation>, int>();
             foreach (var node in dijkstraGraph) priorityQueue.Enqueue(node, node.value.distanceFromSource);
@@ -214,7 +234,7 @@ namespace BiolyCompiler.Scheduling
                 Module moduleAtCurrentNode = board.grid[currentNode.value.x, currentNode.value.y];
 
                 if (isUnreachableNode(currentNode)) throw new Exception("No route to the desired component could be found");
-                else if (haveReachedTargetModule(targetModule, moduleAtCurrentNode)) return GetRouteFromSourceToTarget(currentNode, startTime); //Have reached the desired module
+                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode)) return GetRouteFromSourceToTarget(currentNode, (Droplet) moduleAtCurrentNode, startTime); //Have reached the desired module
                 //No collisions with other modules are allowed (except the starting module):
                 else if (hasNoCollisionWithOtherModules(sourceModule, moduleAtCurrentNode)) continue;
 
@@ -245,14 +265,14 @@ namespace BiolyCompiler.Scheduling
             return currentNode.value.distanceFromSource == Int32.MaxValue;
         }
 
-        private static bool haveReachedTargetModule(Module targetModule, Module moduleAtCurrentNode)
+        private static bool haveReachedDropletOfTargetType(BoardFluid targetFluidType, Module moduleAtCurrentNode)
         {
-            return moduleAtCurrentNode == targetModule;
+            Droplet droplet = moduleAtCurrentNode as Droplet;
+            return droplet != null && droplet.fluidType.Equals(targetFluidType);
         }
 
-        private static Route GetRouteFromSourceToTarget(Node<RoutingInformation> currentNode, int startTime)
+        private static Route GetRouteFromSourceToTarget(Node<RoutingInformation> currentNode, Droplet routedDroplet, int startTime)
         {
-            Route route = new Route();
             List<Node<RoutingInformation>> routeNodes = new List<Node<RoutingInformation>>();
             while(currentNode.value.previous != null)
             {
@@ -260,9 +280,7 @@ namespace BiolyCompiler.Scheduling
                 currentNode = currentNode.value.previous;
             }
             routeNodes.Add(currentNode);
-            routeNodes.Reverse();
-            route.route = routeNodes;
-            route.startTime = startTime;
+            Route route = new Route(routeNodes, routedDroplet, startTime);
             return route;
         }
 
@@ -299,7 +317,15 @@ namespace BiolyCompiler.Scheduling
 
     public class Route{
         public List<Node<RoutingInformation>> route;
+        public readonly Droplet routedDroplet;
         public int startTime;
+
+        public Route(List<Node<RoutingInformation>> route, Droplet routedDroplet, int startTime)
+        {
+            this.route = route;
+            this.routedDroplet = routedDroplet;
+            this.startTime = startTime;
+        }
 
         public int getEndTime(){
             //Minus 1 to route.Count, as the initial position of the drop is included in the route.

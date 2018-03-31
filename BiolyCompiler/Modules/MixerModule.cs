@@ -8,7 +8,7 @@ namespace BiolyCompiler.Modules
     {
         public MixerModule(int operationTime) : base(2*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, operationTime, 2, 2)
         {
-            Layout = GetBasicMixerLayout();
+            Layout = GetDefaultLayout();
         }
 
         /*
@@ -17,7 +17,7 @@ namespace BiolyCompiler.Modules
         }
         */
 
-        private ModuleLayout GetBasicMixerLayout()
+        public ModuleLayout GetDefaultLayout()
         {
             List<Rectangle> EmptyRectangles = new List<Rectangle>();
             List<Droplet> OutputLocations  = new List<Droplet>();

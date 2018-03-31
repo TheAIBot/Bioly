@@ -64,13 +64,15 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
 
             Board   board    = new Board(20,20);
-            Droplet droplet1 = new Droplet(new BoardFluid(inputFluid1));
-            Droplet droplet2 = new Droplet(new BoardFluid(inputFluid2));
+            BoardFluid fluidType1 = new BoardFluid(inputFluid1);
+            BoardFluid fluidType2 = new BoardFluid(inputFluid2);
+            Droplet droplet1 = new Droplet(fluidType1);
+            Droplet droplet2 = new Droplet(fluidType2);
             board.FastTemplatePlace(droplet1);
             board.FastTemplatePlace(droplet2);
-            Dictionary<string, Droplet> kage = new Dictionary<string, Droplet>();
-            kage.Add(inputFluid1, droplet1);
-            kage.Add(inputFluid2, droplet2);
+            Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
+            kage.Add(inputFluid1, fluidType1);
+            kage.Add(inputFluid2, fluidType2);
             Schedule schedule = new Schedule();
             schedule.TransferFluidVariableLocationInformation(kage);
             ModuleLibrary library = new ModuleLibrary();
@@ -118,10 +120,11 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            Droplet droplet1 = new Droplet(new BoardFluid("TestFluid"));
+            BoardFluid fluidType = new BoardFluid("TestFluid");
+            Droplet droplet1 = new Droplet(fluidType);
             board.FastTemplatePlace(droplet1);
-            Dictionary<string, Droplet> kage = new Dictionary<string, Droplet>();
-            kage.Add(inputFluid, droplet1);
+            Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
+            kage.Add(inputFluid, fluidType);
             Schedule schedule = new Schedule();
             schedule.TransferFluidVariableLocationInformation(kage);
             ModuleLibrary library = new ModuleLibrary();
@@ -190,13 +193,15 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            Droplet droplet1 = new Droplet(new BoardFluid("TestFluid1"));
-            Droplet droplet2 = new Droplet(new BoardFluid("TestFluid2"));
+            BoardFluid fluidType1 = new BoardFluid("TestFluid1");
+            BoardFluid fluidType2 = new BoardFluid("TestFluid2");
+            Droplet droplet1 = new Droplet(fluidType1);
+            Droplet droplet2 = new Droplet(fluidType2);
             board.FastTemplatePlace(droplet1);
             board.FastTemplatePlace(droplet2);
-            Dictionary<string, Droplet> kage = new Dictionary<string, Droplet>();
-            kage.Add(inputFluid1, droplet1);
-            kage.Add(inputFluid2, droplet2);
+            Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
+            kage.Add(inputFluid1, fluidType1);
+            kage.Add(inputFluid2, fluidType2);
             Schedule schedule = new Schedule();
             schedule.TransferFluidVariableLocationInformation(kage);
             ModuleLibrary library = new ModuleLibrary();
@@ -253,13 +258,15 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            Droplet droplet1 = new Droplet(new BoardFluid("TestFluid1"));
-            Droplet droplet2 = new Droplet(new BoardFluid("TestFluid2"));
+            BoardFluid fluidType1 = new BoardFluid("TestFluid1");
+            BoardFluid fluidType2 = new BoardFluid("TestFluid2");
+            Droplet droplet1 = new Droplet(fluidType1);
+            Droplet droplet2 = new Droplet(fluidType2);
             board.FastTemplatePlace(droplet1);
             board.FastTemplatePlace(droplet2);
-            Dictionary<string, Droplet> kage = new Dictionary<string, Droplet>();
-            kage.Add(inputFluid1, droplet1);
-            kage.Add(inputFluid2, droplet2);
+            Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
+            kage.Add(inputFluid1, fluidType1);
+            kage.Add(inputFluid2, fluidType2);
             Schedule schedule = new Schedule();
             schedule.TransferFluidVariableLocationInformation(kage);
             ModuleLibrary library = new ModuleLibrary();
@@ -337,16 +344,19 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            Droplet droplet1 = new Droplet(new BoardFluid("TestFluid1"));
-            Droplet droplet2 = new Droplet(new BoardFluid("TestFluid2"));
-            Droplet droplet3 = new Droplet(new BoardFluid("TestFluid3"));
+            BoardFluid fluidType1 = new BoardFluid("TestFluid1");
+            BoardFluid fluidType2 = new BoardFluid("TestFluid2");
+            BoardFluid fluidType3 = new BoardFluid("TestFluid3");
+            Droplet droplet1 = new Droplet(fluidType1);
+            Droplet droplet2 = new Droplet(fluidType2);
+            Droplet droplet3 = new Droplet(fluidType3);
             board.FastTemplatePlace(droplet1);
             board.FastTemplatePlace(droplet2);
             board.FastTemplatePlace(droplet3);
-            Dictionary<string, Droplet> kage = new Dictionary<string, Droplet>();
-            kage.Add(inputFluid1, droplet1);
-            kage.Add(inputFluid2, droplet2);
-            kage.Add(inputFluid3, droplet3);
+            Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
+            kage.Add(inputFluid1, fluidType1);
+            kage.Add(inputFluid2, fluidType2);
+            kage.Add(inputFluid3, fluidType3);
             Schedule schedule = new Schedule();
             schedule.TransferFluidVariableLocationInformation(kage);
             ModuleLibrary library = new ModuleLibrary();
