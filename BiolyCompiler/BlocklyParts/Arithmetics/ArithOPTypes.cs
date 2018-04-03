@@ -9,6 +9,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         ADD,
         SUB,
         MUL,
-        DIV
+        DIV,
+        POW
     }
 }

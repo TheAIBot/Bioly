@@ -33,25 +33,26 @@ namespace BiolyTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+            Input input = (Input)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+
+            Assert.AreEqual("a", input.OriginalOutputVariable);
+            Assert.AreEqual(20, input.Amount);
+            Assert.AreEqual(FluidUnit.ml, input.Unit);
         }
 
         [TestMethod]
         public void ParseHeaterBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddBlock("a", "fluid");
-            program.AddBlock("b", "heater");
-            program.AddBlock("c", "getInput");
-            program.AddConnection("a", "inputFluid", "b");
-            program.AddConnection("b", "inputFluid", "c");
-
+            program.AddHeaterSegment("a", 173, 39);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+            Heater heater = (Heater)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
 
-            Assert.IsTrue(input is Heater);
+            Assert.AreEqual("a", heater.OriginalOutputVariable);
+            Assert.AreEqual(173, heater.Temperature);
+            Assert.AreEqual(39, heater.Time);
         }
 
         [TestMethod]
@@ -62,63 +63,37 @@ namespace BiolyTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+            Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
             
-            Assert.IsTrue(input is Mixer);
-            Assert.AreEqual("a", input.OriginalOutputVariable);
+            Assert.AreEqual("a", mixer.OriginalOutputVariable);
         }
-
-        //[TestMethod]
-        //public void ParseSplitterBlock()
-        //{
-        //    string js = @"
-        //                const newFluid   = workspace.newBlock(""fluid"");
-        //                const splitter   = workspace.newBlock(""splitter"");
-        //                const fluidInput = workspace.newBlock(""getInput"");
-
-        //                const newFluidIn    = newFluid.getInput(""inputFluid"").connection;
-        //                const heaterIn      = splitter.getInput(""inputFluid"").connection;
-        //                const heaterOut     = splitter.outputConnection;
-        //                const fluidInputOut = fluidInput.outputConnection;
-
-        //                newFluidIn.connect(heaterOut);
-        //                heaterIn.connect(fluidInputOut);";
-        //    TestTools.ExecuteJS(js);
-
-        //    XmlNode node = TestTools.GetWorkspace();
-        //    Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
-
-        //    Assert.IsTrue(input is Splitter);
-        //}
 
         [TestMethod]
         public void ParseConstantBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddBlock("a", "math_number");
+            program.AddConstantBlock(210);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+            Constant constant = (Constant)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
 
-            Assert.IsTrue(input is Constant);
+            Assert.AreEqual(210, constant.Value);
         }
 
         [TestMethod]
         public void ParseArithOPBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddBlock("a", "math_number");
-            program.AddBlock("b", "math_number");
-            program.AddBlock("c", "math_arithmetic");
-            program.AddConnection("c", "A", "a");
-            program.AddConnection("c", "B", "b");
+            string a = program.AddConstantBlock(20);
+            string b = program.AddConstantBlock(12);
+            program.AddArithOPBlock(ArithOPTypes.ADD, a, b);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
+            ArithOP arithOP = (ArithOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
 
-            Assert.IsTrue(input is ArithOP);
+            Assert.AreEqual(ArithOPTypes.ADD, arithOP.OPType);
         }
 
         [TestMethod]

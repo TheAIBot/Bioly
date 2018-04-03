@@ -1,4 +1,6 @@
 ﻿using BiolyCompiler;
+using BiolyCompiler.BlocklyParts.Arithmetics;
+using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using System;
@@ -29,16 +31,35 @@ namespace BiolyTests
             Builder.Append($"{blockName}.setFieldValue(\"{newValue.ToString()}\", \"{fieldName}\");");
         }
 
-        public void AddInputBlock(string fluidName, int fluidAmount, FluidUnit unit)
+        public string AddInputBlock(string fluidName, int fluidAmount, FluidUnit unit)
         {
             string a = GetRandomName();
             AddBlock(a, Input.XmlTypeName);
             SetField(a, Input.InputFluidFieldName, fluidName);
             SetField(a, Input.InputAmountFieldName, fluidAmount);
             SetField(a, Input.FluidUnitFieldName, unit);
+
+            return a;
         }
 
-        public void AddMixerSegment(string outputName, string inputNameA, string inputNameB)
+        public string AddHeaterSegment(string outputName, int temperature, int time)
+        {
+            string a = GetRandomName();
+            string b = GetRandomName();
+            string c = GetRandomName();
+            AddBlock(a, Fluid.XmlTypeName);
+            AddBlock(b, Heater.XmlTypeName);
+            AddBlock(c, FluidAsInput.XmlTypeName);
+            SetField(a, Fluid.OutputFluidFieldName, outputName);
+            SetField(b, Heater.TemperatureFieldName, temperature);
+            SetField(b, Heater.TimeFieldName, time);
+            AddConnection(a, Fluid.InputFluidFieldName, b);
+            AddConnection(b, Heater.InputFluidFieldName, c);
+
+            return a;
+        }
+
+        public string AddMixerSegment(string outputName, string inputNameA, string inputNameB)
         {
             string a = GetRandomName();
             string b = GetRandomName();
@@ -54,6 +75,34 @@ namespace BiolyTests
             AddConnection(a, Fluid.InputFluidFieldName, b);
             AddConnection(b, Mixer.FirstInputFieldName , c);
             AddConnection(b, Mixer.SecondInputFieldName, d);
+
+            return a;
+        }
+
+        public string AddConstantBlock(int number)
+        {
+            string a = GetRandomName();
+            AddBlock(a, Constant.XmlTypeName);
+            SetField(a, Constant.NumberFieldName, number);
+
+            return a;
+        }
+
+        public string AddArithOPBlock(ArithOPTypes type, string leftBlock, string rightBlock)
+        {
+            string a = GetRandomName();
+            AddBlock(a, ArithOP.XmlTypeName);
+            SetField(a, ArithOP.OPTypeFieldName, ArithOP.ArithOpTypeToString(type));
+            AddConnection(a, ArithOP.LeftArithFieldName, leftBlock);
+            AddConnection(a, ArithOP.RightArithFieldName, rightBlock);
+
+            return a;
+        }
+
+        public string AddBoolOPBlock(BoolOPTypes type, string leftBlock, string rightBlock)
+        {
+            string a = GetRandomName();
+            AddBlock(a, BoolOP.XmlTypeName);
         }
 
         public string GetRandomName()

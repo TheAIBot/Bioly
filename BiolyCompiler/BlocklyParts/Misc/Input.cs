@@ -18,7 +18,17 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public Input(string output, XmlNode node) : base(true, output)
         {
             this.Amount = node.GetNodeWithAttributeValue(InputAmountFieldName).TextToInt();
-            this.Unit = (FluidUnit)node.GetNodeWithAttributeValue(FluidUnitFieldName).TextToInt();
+            switch (node.GetNodeWithAttributeValue(FluidUnitFieldName).InnerText)
+            {
+                case "ml":
+                    this.Unit = FluidUnit.ml;
+                    break;
+                case "drops":
+                    this.Unit = FluidUnit.drops;
+                    break;
+                default:
+                    throw new Exception("Unknown fluid unit");
+            }
         }
 
         public static Block Parse(XmlNode node)

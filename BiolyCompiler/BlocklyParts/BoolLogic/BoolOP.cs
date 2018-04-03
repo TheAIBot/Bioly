@@ -9,9 +9,9 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
 {
     public class BoolOP : Block
     {
-        private const string OPTypeName = "OP";
-        private const string LeftBoolName = "A";
-        private const string RightBoolName = "B";
+        public const string OPTypeName = "OP";
+        public const string LeftBoolName = "A";
+        public const string RightBoolName = "B";
         public const string XmlTypeName = "logic_compare";
         public readonly BoolOPTypes OPType;
 
@@ -63,6 +63,48 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             inputs.Add(rightBoolBlock.OutputVariable);
             
             return new BoolOP(inputs, null, node);
+        }
+
+        public static BoolOPTypes StringToBoolOPType(string boolOPAsString)
+        {
+            switch (boolOPAsString)
+            {
+                case "EQ":
+                    return BoolOPTypes.EQ;
+                case "NEQ":
+                    return BoolOPTypes.NEQ;
+                case "LT":
+                    return BoolOPTypes.LT;
+                case "LTE":
+                    return BoolOPTypes.LTE;
+                case "GT":
+                    return BoolOPTypes.GT;
+                case "GTE":
+                    return BoolOPTypes.GTE;
+                default:
+                    throw new Exception("Failed to parse the boolean operator type.");
+            }
+        }
+
+        public static string BoolOpTypeToString(BoolOPTypes type)
+        {
+            switch (type)
+            {
+                case BoolOPTypes.EQ:
+                    return "EQ";
+                case BoolOPTypes.NEQ:
+                    return "NEQ";
+                case BoolOPTypes.LT:
+                    return "LT";
+                case BoolOPTypes.LTE:
+                    return "LTE";
+                case BoolOPTypes.GT:
+                    return "GT";
+                case BoolOPTypes.GTE:
+                    return "GTE";
+                default:
+                    throw new Exception("Failed to parse the boolean operator type.");
+            }
         }
 
         public override string ToString()
