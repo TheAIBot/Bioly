@@ -72,34 +72,42 @@ namespace BiolyCompiler.Scheduling
             //Continue until all operations have been scheduled:
             while(assay.hasUnfinishedOperations() && canExecuteMoreOperations(readyOperations))
             {
-                Block topPriorityOperation = removeOperation(readyOperations);
-                Module operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
-                topPriorityOperation.Bind(operationExecutingModule);
-                allUsedModules.Add(operationExecutingModule);
-
-                Debug.WriteLine(board.print(allUsedModules));
-
-                //If the module can't be placed, one must wait until there is enough space for it:
-                if (operationExecutingModule == null)
+                Block nextOperation = removeOperation(readyOperations);
+                if (nextOperation is VariableBlock)
                 {
-                    throw new Exception("Not enough space for a module: this is not handeled yet");
-                    waitForAFinishedOperation();
-                    if (runningOperations.Count == 0) throw new Exception("The scheduling can't be made: there aren't enough space for module: " + operationExecutingModule.ToString());
+
                 }
+                else
+                {
+                    FluidBlock topPriorityOperation = nextOperation as FluidBlock;
+                    Module operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
+                    topPriorityOperation.Bind(operationExecutingModule);
+                    allUsedModules.Add(operationExecutingModule);
 
-                //Now all the droplet that the module should operate on, needs to be delivered to it.
-                //By construction, there will be a route from the droplets to the module, 
-                //and so it will always be possible for this routing to be done:
-                startTime = RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
-                Debug.WriteLine(board.print(allUsedModules));
+                    Debug.WriteLine(board.print(allUsedModules));
 
-                runningOperations.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
+                    //If the module can't be placed, one must wait until there is enough space for it:
+                    if (operationExecutingModule == null)
+                    {
+                        throw new Exception("Not enough space for a module: this is not handeled yet");
+                        waitForAFinishedOperation();
+                        if (runningOperations.Count == 0) throw new Exception("The scheduling can't be made: there aren't enough space for module: " + operationExecutingModule.ToString());
+                    }
 
-                //Note that it will also wait for operations to finish, 
-                //in the case that there are no more operations that can be executed, before this happen:
-                (startTime, board) = handleFinishingOperations(startTime, assay, board);
-                readyOperations = assay.getReadyOperations();
-                Debug.WriteLine(board.print(allUsedModules));
+                    //Now all the droplet that the module should operate on, needs to be delivered to it.
+                    //By construction, there will be a route from the droplets to the module, 
+                    //and so it will always be possible for this routing to be done:
+                    startTime = RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
+                    Debug.WriteLine(board.print(allUsedModules));
+
+                    runningOperations.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
+
+                    //Note that it will also wait for operations to finish, 
+                    //in the case that there are no more operations that can be executed, before this happen:
+                    (startTime, board) = handleFinishingOperations(startTime, assay, board);
+                    readyOperations = assay.getReadyOperations();
+                    Debug.WriteLine(board.print(allUsedModules));
+                }
             }
             if (assay.hasUnfinishedOperations()) throw new Exception("There were operations that couldn't be scheduled.");
             ScheduledOperations.Sort((x,y) => (x.startTime < y.startTime || (x.startTime == y.startTime && x.endTime <= y.endTime)) ? 0: 1);
@@ -157,16 +165,16 @@ namespace BiolyCompiler.Scheduling
             return runningOperations.Count > 0 && (readyOperations.Count == 0  || startTime >= runningOperations.First().endTime);
         }
 
-        private int RouteDropletsToModule(Module operationExecutingModule, Board board, int startTime, Block topPriorityOperation)
+        private int RouteDropletsToModule(Module operationExecutingModule, Board board, int startTime, FluidBlock topPriorityOperation)
         {
             foreach (var Input in topPriorityOperation.InputVariables)
             {
                 Droplet InputDroplet;
-                bool doSourceExist = FluidVariableLocations.TryGetValue(Input, out InputDroplet);
+                bool doSourceExist = FluidVariableLocations.TryGetValue(Input.FluidName, out InputDroplet);
                 if (!doSourceExist) throw new Exception("The source \"" + Input + "\" for the operation \"" + topPriorityOperation.ToString() + "\" do not exist.");
                 Route route = determineRouteToModule(InputDroplet, operationExecutingModule, board, startTime); //Will be included as part of a later step.
                 if (route == null) throw new Exception("No route found. This should not be possible.");
-                operationExecutingModule.InputRoutes.Add(Input, route);
+                operationExecutingModule.InputRoutes.Add(Input.FluidName, route);
                 //One could move this (with some code change) up to before the module is placed.
                 board.FastTemplateRemove(InputDroplet);
                 //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.

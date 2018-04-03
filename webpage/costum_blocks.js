@@ -51,23 +51,6 @@ Blockly.Blocks["input"] = {
 		});
 	}
 };
-Blockly.Blocks["getInput"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "input %1",
-			"args0": [
-				{
-					"type": "field_variable",
-					"name": "inputName",
-					"variable": "input_fluid_name"
-				}
-			],
-			"output": "InputType",
-			"colour": 40,
-			"tooltip": ""
-		});
-	}
-};
 
 Blockly.Blocks["fluid"] = {
 	init: function() {
@@ -106,6 +89,22 @@ Blockly.Blocks["getFluid"] = {
 					"variable": "fluid_name"
 				}
 			],
+			"message1": "amount %1 ml",
+			"args1": [
+				{
+					"type": "field_number",
+					"name": "fluidAmount",
+					"check": "Number"
+				}
+			],
+			"message2": "use all fluid %1",
+			"args2": [
+				{
+					"type": "field_checkbox",
+					"name": "useAllFluid",
+					"checked": false
+				}
+			],
 			"output": "FluidType",
 			"colour": 80,
 			"tooltip": ""
@@ -138,36 +137,6 @@ Blockly.Blocks["mixer"] = {
 			"output": "FluidOperator",
 			"colour": 120,
 			"tooltip": ""
-		});
-	}
-};
-
-Blockly.Blocks["splitter"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "split",
-			"args0": [
-			],
-			"message1": "fluid %1",
-			"args1": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],
-			"message2": "amount %1",
-			"args2": [
-				{
-					"type": "field_number",
-					"name": "fluidAmount",
-					"check": "Number"
-				}
-			],
-			"output": "FluidOperator",
-			"colour": 160,
-			"tooltip": "",
-			"inputsInline": false
 		});
 	}
 };

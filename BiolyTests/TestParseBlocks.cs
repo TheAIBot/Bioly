@@ -100,17 +100,15 @@ namespace BiolyTests
         public void ParseBoolOPBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddBlock("a", "math_number");
-            program.AddBlock("b", "math_number");
-            program.AddBlock("c", "logic_compare");
-            program.AddConnection("c", "A", "a");
-            program.AddConnection("c", "B", "b");
+            string a = program.AddConstantBlock(20);
+            string b = program.AddConstantBlock(12);
+            program.AddBoolOPBlock(BoolOPTypes.EQ, a, b);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
+            BoolOP boolOP = (BoolOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
 
-            Assert.IsTrue(input is BoolOP);
+            Assert.AreEqual(BoolOPTypes.EQ, boolOP.OPType);
         }
 
         [TestMethod]

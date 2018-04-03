@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
-    public class Input : Block
+    public class Input : FluidBlock
     {
         public const string InputFluidFieldName = "inputName";
         public const string InputAmountFieldName = "inputAmount";

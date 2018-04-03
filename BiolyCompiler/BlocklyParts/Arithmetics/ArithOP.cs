@@ -7,7 +7,7 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
-    public class ArithOP : Block
+    public class ArithOP : VariableBlock
     {
         public const string OPTypeFieldName = "OP";
         public const string LeftArithFieldName = "A";

@@ -6,18 +6,18 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
-    public class Output : Block
+    public class Output : FluidBlock
     {
         public const string XmlTypeName = "output";
 
-        public Output(List<string> input, string output, XmlNode node) : base(false, input, output)
+        public Output(List<FluidAsInput> input, string output, XmlNode node) : base(false, input, output)
         {
 
         }
 
         public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            List<string> inputs = new List<string>();
+            List<FluidAsInput> inputs = new List<FluidAsInput>();
             inputs.Add(XmlParser.GetVariablesCorrectedName(node, mostRecentRef));
 
             return new Output(inputs, null, node);

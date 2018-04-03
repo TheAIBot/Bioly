@@ -68,7 +68,7 @@ namespace BiolyCompiler.Modules
             }
         }
 
-        public bool Implements(Block operation)
+        public bool Implements(FluidBlock operation)
         {
             return  numberOfInputs  == operation.InputVariables.Count && 
                     //numberOfOutputs == operation.OutputVariable.Count &&

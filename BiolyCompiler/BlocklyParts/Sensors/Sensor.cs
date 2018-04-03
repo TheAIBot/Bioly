@@ -7,7 +7,7 @@ using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.BlocklyParts.Sensors
 {
-    public class Sensor : Block
+    public class Sensor : VariableBlock
     {
         public const string XmlTypeName = "sensor";
 

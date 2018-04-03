@@ -70,8 +70,8 @@ namespace BiolyTests
             AddBlock(c, FluidAsInput.XmlTypeName);
             AddBlock(d, FluidAsInput.XmlTypeName);
             SetField(a, Fluid.OutputFluidFieldName, outputName);
-            SetField(c, FluidAsInput.InputFluidFieldName, inputNameA);
-            SetField(d, FluidAsInput.InputFluidFieldName, inputNameB);
+            SetField(c, FluidAsInput.FluidNameFieldName, inputNameA);
+            SetField(d, FluidAsInput.FluidNameFieldName, inputNameB);
             AddConnection(a, Fluid.InputFluidFieldName, b);
             AddConnection(b, Mixer.FirstInputFieldName , c);
             AddConnection(b, Mixer.SecondInputFieldName, d);
@@ -103,6 +103,11 @@ namespace BiolyTests
         {
             string a = GetRandomName();
             AddBlock(a, BoolOP.XmlTypeName);
+            SetField(a, BoolOP.OPTypeFieldName, BoolOP.BoolOpTypeToString(type));
+            AddConnection(a, BoolOP.LeftBoolFieldName, leftBlock);
+            AddConnection(a, BoolOP.RightBoolFieldName, rightBlock);
+
+            return a;
         }
 
         public string GetRandomName()

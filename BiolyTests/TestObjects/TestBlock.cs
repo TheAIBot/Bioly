@@ -16,7 +16,7 @@ using System.Xml;
 namespace BiolyTests.TestObjects
 {
 
-    public class TestBlock : BiolyCompiler.BlocklyParts.Block
+    public class TestBlock : BiolyCompiler.BlocklyParts.VariableBlock
     {
         public readonly Module associatedModule;
 

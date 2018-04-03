@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
-    public class Constant : Block
+    public class Constant : VariableBlock
     {
         public const string NumberFieldName = "NUM";
         public const string XmlTypeName = "math_number";
