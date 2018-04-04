@@ -27,7 +27,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public override string ToString()
         {
             return "Output" + Environment.NewLine +
-                   "Fluid: " + InputVariables[0];
+                   "Fluid: " + InputVariables[0].FluidName;
         }
     }
 }

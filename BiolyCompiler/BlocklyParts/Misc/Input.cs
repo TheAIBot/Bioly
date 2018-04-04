@@ -20,11 +20,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             this.Amount = node.GetNodeWithAttributeValue(InputAmountFieldName).TextToInt();
             switch (node.GetNodeWithAttributeValue(FluidUnitFieldName).InnerText)
             {
-                case "ml":
-                    this.Unit = FluidUnit.ml;
-                    break;
-                case "drops":
+                case "0":
                     this.Unit = FluidUnit.drops;
+                    break;
+                case "1":
+                    this.Unit = FluidUnit.ml;
                     break;
                 default:
                     throw new Exception("Unknown fluid unit");
