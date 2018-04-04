@@ -141,10 +141,10 @@ namespace BiolyTests.ParseBlockTests
         public void ParseRandomDFG()
         {
             Random random = new Random(1280);
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 30; i++)
             {
                 JSProgram program = new JSProgram();
-                program.Render = true;
+                program.Render = false;
                 program.CreateRandomDFG(30, random);
                 TestTools.ExecuteJS(program);
 
