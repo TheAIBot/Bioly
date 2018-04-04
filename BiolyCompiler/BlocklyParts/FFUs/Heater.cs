@@ -25,7 +25,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public static Block CreateHeater(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<FluidAsInput> inputs = new List<FluidAsInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidFieldName), mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild, mostRecentRef));
 
             return new Heater(inputs, output, node);
         }

@@ -8,6 +8,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 {
     public class Output : FluidBlock
     {
+        public const string InputFluidFieldName = "inputFluid";
         public const string XmlTypeName = "output";
 
         public Output(List<FluidAsInput> input, string output, XmlNode node) : base(false, input, output)
@@ -18,7 +19,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<FluidAsInput> inputs = new List<FluidAsInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node, mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild, mostRecentRef));
 
             return new Output(inputs, null, node);
         }

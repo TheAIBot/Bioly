@@ -116,7 +116,7 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.AddBlock("a", "waste");
-            program.AddBlock("b", "getInput");
+            program.AddBlock("b", "getFluid");
             program.AddConnection("a", "inputFluid", "b");
             TestTools.ExecuteJS(program);
 
@@ -131,7 +131,7 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.AddBlock("a", "output");
-            program.AddBlock("b", "getInput");
+            program.AddBlock("b", "getFluid");
             program.AddConnection("a", "inputFluid", "b");
             TestTools.ExecuteJS(program);
 

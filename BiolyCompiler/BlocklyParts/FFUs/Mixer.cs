@@ -23,8 +23,8 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public static Block CreateMixer(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
             List<FluidAsInput> inputs = new List<FluidAsInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(FirstInputFieldName), mostRecentRef));
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputFieldName), mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(FirstInputFieldName).FirstChild, mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputFieldName).FirstChild, mostRecentRef));
 
             return new Mixer(inputs, output, node);
         }
