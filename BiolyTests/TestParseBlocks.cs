@@ -44,7 +44,7 @@ namespace BiolyTests.ParseBlockTests
         public void ParseHeaterBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddHeaterSegment("a", 173, 39);
+            program.AddHeaterSegment("a", 173, 39, "b", 29, false);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
@@ -59,7 +59,7 @@ namespace BiolyTests.ParseBlockTests
         public void ParseMixerBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddMixerSegment("a", "b", "c");
+            program.AddMixerSegment("a", "b", 10, false, "c", 0, true);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
@@ -115,9 +115,7 @@ namespace BiolyTests.ParseBlockTests
         public void ParseWasteBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddBlock("a", "waste");
-            program.AddBlock("b", "getFluid");
-            program.AddConnection("a", "inputFluid", "b");
+            program.AddWasteSegment("a", 329, false);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
@@ -130,15 +128,31 @@ namespace BiolyTests.ParseBlockTests
         public void ParseOutputBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddBlock("a", "output");
-            program.AddBlock("b", "getFluid");
-            program.AddConnection("a", "inputFluid", "b");
+            program.AddOutputSegment("a", 1249, false);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
 
             Assert.IsTrue(input is Output);
+        }
+
+        [TestMethod]
+        public void ParseRandomDFG()
+        {
+            Random random = new Random(1280);
+            for (int i = 0; i < 100; i++)
+            {
+                JSProgram program = new JSProgram();
+                program.Render = true;
+                program.CreateRandomDFG(30, random);
+                TestTools.ExecuteJS(program);
+
+                string xml = TestTools.GetWorkspaceString();
+                XmlParser.Parse(xml);
+
+                TestTools.ClearWorkspace();
+            }
         }
     }
 }

@@ -56,7 +56,14 @@ namespace BiolyViewer_Windows
 
                 foreach (Node<Block> edgeNode in node.getOutgoingEdges())
                 {
-                    edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
+                    if (edgeNode.value is VariableBlock)
+                    {
+                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
+                    }
+                    else if (edgeNode.value is FluidBlock fluidBlock)
+                    {
+                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable, null, fluidBlock.InputVariables.Single(x => x.FluidName == node.value.OutputVariable).ToString());
+                    }
                 }
             }
 
@@ -138,21 +145,26 @@ namespace BiolyViewer_Windows
             return sBuilder.ToString();
         }
 
-        private static string CreateEdge(string source, string target, string classTarget = null)
+        private static string CreateEdge(string source, string target, string classTarget = null, string edgeText = null)
         {
             StringBuilder sBuilder = new StringBuilder();
             sBuilder.Append("{ data: { source: '");
             sBuilder.Append(source);
             sBuilder.Append("', target: '");
             sBuilder.Append(target);
+            if (edgeText != null)
+            {
+                sBuilder.Append("', label: '");
+                sBuilder.Append(edgeText);
+            }
+            sBuilder.Append("' }");
             if (classTarget != null)
             {
-                sBuilder.Append("'}, classes: '");
+                sBuilder.Append(", classes: '");
                 sBuilder.Append(classTarget);
-                sBuilder.Append("' },");
-                return sBuilder.ToString();
+                sBuilder.Append("'");
             }
-            sBuilder.Append("' } },");
+            sBuilder.Append(" },");
             return sBuilder.ToString();
         }
     }

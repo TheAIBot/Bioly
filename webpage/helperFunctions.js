@@ -37,11 +37,12 @@ function setGraph(nodes, edges)
 				selector: 'edge',
 				style: 
 				{
+					'content': 'data(label)',
 					'curve-style': 'bezier',
 					'width': 4,
 					'target-arrow-shape': 'triangle',
-					'line-color': '#000000',
-					'target-arrow-color': '#000000'
+					'line-color': '#ffffff',
+					'target-arrow-color': '#ffffff'
 				}
 			},
 			{
