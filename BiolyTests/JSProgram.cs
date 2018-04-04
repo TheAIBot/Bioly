@@ -37,9 +37,17 @@ namespace BiolyTests
             AddBlock(a, Input.XmlTypeName);
             SetField(a, Input.InputFluidFieldName, fluidName);
             SetField(a, Input.InputAmountFieldName, fluidAmount);
-            SetField(a, Input.FluidUnitFieldName, unit);
+            SetField(a, Input.FluidUnitFieldName, Input.FluidUnitToString(unit));
 
             return a;
+        }
+
+        public void AddFluidInputBlock(string blockName, string fluidName, int amount, bool useAll)
+        {
+            AddBlock(blockName, FluidAsInput.XmlTypeName);
+            SetField(blockName, FluidAsInput.FluidNameFieldName, fluidName);
+            SetField(blockName, FluidAsInput.FluidAmountFieldName, amount);
+            SetField(blockName, FluidAsInput.UseAllFluidFieldName, FluidAsInput.BoolToString(useAll));
         }
 
         public string AddHeaterSegment(string outputName, int temperature, int time)
@@ -49,7 +57,8 @@ namespace BiolyTests
             string c = GetRandomName();
             AddBlock(a, Fluid.XmlTypeName);
             AddBlock(b, Heater.XmlTypeName);
-            AddBlock(c, FluidAsInput.XmlTypeName);
+            //AddBlock(c, FluidAsInput.XmlTypeName);
+            AddFluidInputBlock(c, "something", 10, false);
             SetField(a, Fluid.OutputFluidFieldName, outputName);
             SetField(b, Heater.TemperatureFieldName, temperature);
             SetField(b, Heater.TimeFieldName, time);
@@ -67,8 +76,10 @@ namespace BiolyTests
             string d = GetRandomName();
             AddBlock(a, Fluid.XmlTypeName);
             AddBlock(b, Mixer.XmlTypeName);
-            AddBlock(c, FluidAsInput.XmlTypeName);
-            AddBlock(d, FluidAsInput.XmlTypeName);
+            //AddBlock(c, FluidAsInput.XmlTypeName);
+            //AddBlock(d, FluidAsInput.XmlTypeName);
+            AddFluidInputBlock(c, "fish", 10, false);
+            AddFluidInputBlock(d, "cake", 0, true);
             SetField(a, Fluid.OutputFluidFieldName, outputName);
             SetField(c, FluidAsInput.FluidNameFieldName, inputNameA);
             SetField(d, FluidAsInput.FluidNameFieldName, inputNameB);
