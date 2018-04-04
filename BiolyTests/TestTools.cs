@@ -23,7 +23,7 @@ namespace BiolyTests
         public static void AssemblyInit(TestContext context)
         {
             ChromeOptions options = new ChromeOptions();
-            options.AddArgument("--headless");
+            //options.AddArgument("--headless");
 
             IWebDriver browser = new ChromeDriver(options);
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -67,10 +67,15 @@ namespace BiolyTests
             ExecuteJS("Blockly.mainWorkspace.clear();");
         }
 
-        public static XmlNode GetWorkspace()
+        public static string GetWorkspaceString()
         {
             string js = @"return getWorkspaceAsXml();";
-            string xml = ExecuteJS(js);
+            return ExecuteJS(js);
+        }
+
+        public static XmlNode GetWorkspace()
+        {
+            string xml = GetWorkspaceString();
             return StringToXmlBlock(xml);
         }
 
