@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Graphs;
+﻿using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -7,45 +8,23 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.BoolLogic
 {
-    public class BoolOP : Block
+    public class BoolOP : VariableBlock
     {
-        private const string OPTypeName = "OP";
-        private const string LeftBoolName = "A";
-        private const string RightBoolName = "B";
+        public const string OPTypeFieldName = "OP";
+        public const string LeftBoolFieldName = "A";
+        public const string RightBoolFieldName = "B";
         public const string XmlTypeName = "logic_compare";
         public readonly BoolOPTypes OPType;
 
         public BoolOP(List<string> input, string output, XmlNode node) : base(false, input, output)
         {
-            switch (node.GetNodeWithAttributeValue(OPTypeName).InnerText)
-            {
-                case "EQ":
-                    this.OPType = BoolOPTypes.EQ;
-                    break;
-                case "NEQ":
-                    this.OPType = BoolOPTypes.NEQ;
-                    break;
-                case "LT":
-                    this.OPType = BoolOPTypes.LT;
-                    break;
-                case "LTE":
-                    this.OPType = BoolOPTypes.LTE;
-                    break;
-                case "GT":
-                    this.OPType = BoolOPTypes.GT;
-                    break;
-                case "GTE":
-                    this.OPType = BoolOPTypes.GTE;
-                    break;
-                default:
-                    throw new Exception("Failed to parse the operator type.");
-            }
+            this.OPType = BoolOP.StringToBoolOPType(node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
         }
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
-            XmlNode leftNode = node.GetNodeWithAttributeValue(LeftBoolName).FirstChild;
-            XmlNode rightNode = node.GetNodeWithAttributeValue(RightBoolName).FirstChild;
+            XmlNode leftNode = node.GetNodeWithAttributeValue(LeftBoolFieldName).FirstChild;
+            XmlNode rightNode = node.GetNodeWithAttributeValue(RightBoolFieldName).FirstChild;
 
             Block leftBoolBlock = XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
             Block rightBoolBlock = XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
@@ -63,6 +42,48 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             inputs.Add(rightBoolBlock.OutputVariable);
             
             return new BoolOP(inputs, null, node);
+        }
+
+        public static BoolOPTypes StringToBoolOPType(string boolOPAsString)
+        {
+            switch (boolOPAsString)
+            {
+                case "EQ":
+                    return BoolOPTypes.EQ;
+                case "NEQ":
+                    return BoolOPTypes.NEQ;
+                case "LT":
+                    return BoolOPTypes.LT;
+                case "LTE":
+                    return BoolOPTypes.LTE;
+                case "GT":
+                    return BoolOPTypes.GT;
+                case "GTE":
+                    return BoolOPTypes.GTE;
+                default:
+                    throw new Exception("Failed to parse the boolean operator type.");
+            }
+        }
+
+        public static string BoolOpTypeToString(BoolOPTypes type)
+        {
+            switch (type)
+            {
+                case BoolOPTypes.EQ:
+                    return "EQ";
+                case BoolOPTypes.NEQ:
+                    return "NEQ";
+                case BoolOPTypes.LT:
+                    return "LT";
+                case BoolOPTypes.LTE:
+                    return "LTE";
+                case BoolOPTypes.GT:
+                    return "GT";
+                case BoolOPTypes.GTE:
+                    return "GTE";
+                default:
+                    throw new Exception("Failed to parse the boolean operator type.");
+            }
         }
 
         public override string ToString()

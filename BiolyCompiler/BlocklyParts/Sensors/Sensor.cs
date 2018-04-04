@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.BlocklyParts.Sensors
 {
-    public class Sensor : Block
+    public class Sensor : FluidBlock
     {
         public const string XmlTypeName = "sensor";
 
-        public Sensor(List<string> input, string output, XmlNode node) : base(true, input, output)
+        public Sensor(List<FluidInput> input, string output, XmlNode node) : base(true, input, output)
         {
 
         }

@@ -7,19 +7,19 @@ using BiolyCompiler.BlocklyParts.FFUs;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
-    public class Fluid : Block
+    public class Fluid : FluidBlock
     {
-        private const string InputFluidName = "inputFluid";
-        private const string OutputFluidName = "fluidName";
+        public const string InputFluidFieldName = "inputFluid";
+        public const string OutputFluidFieldName = "fluidName";
         public const string XmlTypeName = "fluid";
 
-        public Fluid(List<string> input, string output, XmlNode node) : base(true, input, output)
+        public Fluid(List<FluidInput> input, string output, XmlNode node) : base(true, input, output)
         {
         }
 
         private static Block CreateFluid(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            List<string> inputs = new List<string>();
+            List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(XmlParser.GetVariablesCorrectedName(node, mostRecentRef));
 
             return new Fluid(inputs, output, node);
@@ -27,16 +27,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            string output = node.GetNodeWithAttributeValue(OutputFluidName).InnerText;
-            XmlNode innerNode = node.GetNodeWithAttributeValue(InputFluidName).FirstChild;
+            string output = node.GetNodeWithAttributeValue(OutputFluidFieldName).InnerText;
+            XmlNode innerNode = node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild;
             switch (innerNode.Attributes["type"].Value)
             {
                 case Heater.XmlTypeName:
                     return Heater.CreateHeater(output, innerNode, mostRecentRef);
                 case Mixer.XmlTypeName:
                     return Mixer.CreateMixer(output, innerNode, mostRecentRef);
-                case Splitter.XmlTypeName:
-                    return Splitter.CreateSplitter(output, innerNode, mostRecentRef);
                 default:
                     return CreateFluid(output, innerNode, mostRecentRef);
             }

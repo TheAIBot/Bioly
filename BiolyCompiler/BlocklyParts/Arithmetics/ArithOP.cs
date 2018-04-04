@@ -7,39 +7,23 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
-    public class ArithOP : Block
+    public class ArithOP : VariableBlock
     {
-        private const string OPTypeName = "OP";
-        private const string LeftArithName = "A";
-        private const string RightArithName = "B";
+        public const string OPTypeFieldName = "OP";
+        public const string LeftArithFieldName = "A";
+        public const string RightArithFieldName = "B";
         public const string XmlTypeName = "math_arithmetic";
         public readonly ArithOPTypes OPType;
 
         public ArithOP(List<string> input, string output, XmlNode node) : base(false, input, output)
         {
-            switch (node.GetNodeWithAttributeValue(OPTypeName).InnerText)
-            {
-                case "ADD":
-                    this.OPType = ArithOPTypes.ADD;
-                    break;
-                case "SUB":
-                    this.OPType = ArithOPTypes.SUB;
-                    break;
-                case "MUL":
-                    this.OPType = ArithOPTypes.MUL;
-                    break;
-                case "DIV":
-                    this.OPType = ArithOPTypes.DIV;
-                    break;
-                default:
-                    throw new Exception("Failed to parse the operator type.");
-            }
+            this.OPType = ArithOP.StringToArithOPType(node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
         }
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
-            XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithName).FirstChild;
-            XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithName).FirstChild;
+            XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithFieldName).FirstChild;
+            XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithFieldName).FirstChild;
 
             Block leftArithBlock = XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
             Block rightArithBlock = XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
@@ -57,6 +41,44 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             inputs.Add(rightArithBlock.OutputVariable);
 
             return new ArithOP(inputs, null, node);
+        }
+
+        public static ArithOPTypes StringToArithOPType(string arithOPTypeAsString)
+        {
+            switch (arithOPTypeAsString)
+            {
+                case "ADD":
+                    return ArithOPTypes.ADD;
+                case "MINUS":
+                    return ArithOPTypes.SUB;
+                case "MULTIPLY":
+                    return ArithOPTypes.MUL;
+                case "DIVIDE":
+                    return ArithOPTypes.DIV;
+                case "POWER":
+                    return ArithOPTypes.POW;
+                default:
+                    throw new Exception("Failed to parse the arithmetic operator type.");
+            }
+        }
+
+        public static string ArithOpTypeToString(ArithOPTypes type)
+        {
+            switch (type)
+            {
+                case ArithOPTypes.ADD:
+                    return "ADD";
+                case ArithOPTypes.SUB:
+                    return "MINUS";
+                case ArithOPTypes.MUL:
+                    return "MULTIPLY";
+                case ArithOPTypes.DIV:
+                    return "DIVIDE";
+                case ArithOPTypes.POW:
+                    return "POWER";
+                default:
+                    throw new Exception("Failed to parse the arithmetic operator type.");
+            }
         }
 
         public override string ToString()

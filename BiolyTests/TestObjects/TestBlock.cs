@@ -12,17 +12,22 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyCompiler.Modules.OperationTypes;
 using System.Xml;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyTests.TestObjects
 {
 
-    public class TestBlock : BiolyCompiler.BlocklyParts.Block
+    public class TestBlock : BiolyCompiler.BlocklyParts.FluidBlock
     {
         public readonly Module associatedModule;
 
-        public TestBlock(List<string> input, string output, XmlNode node, Module associatedModule) : base(true, input, output)
+        public TestBlock(List<FluidInput> inputs, string output, Module associatedModule) : base(true, inputs, output)
         {
             this.associatedModule = associatedModule;
+        }
+
+        public TestBlock(List<string> inputs, string output, Module associatedModule) : this(inputs.Select(input => new FluidInput(input, 1, true)).ToList(), output, associatedModule)
+        {
         }
         public override OperationType getOperationType()
         {

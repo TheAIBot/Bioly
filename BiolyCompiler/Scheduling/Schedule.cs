@@ -22,7 +22,7 @@ namespace BiolyCompiler.Scheduling
         // For debuging. Used when printing the board to the console, for visulization purposes.
         public List<Module> allUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
-        public SimplePriorityQueue<Block> CurrentlyRunningOpertions = new SimplePriorityQueue<Block>();
+        public SimplePriorityQueue<FluidBlock> CurrentlyRunningOpertions = new SimplePriorityQueue<FluidBlock>();
         public List<Block> ScheduledOperations = new List<Block>();
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move over one electrode.
         public const int IGNORED_TIME_DIFFERENCE = 100; 
@@ -36,13 +36,17 @@ namespace BiolyCompiler.Scheduling
             throw new NotImplementedException();
         }
 
-        private int updateSchedule(Block operation, int startTime)
+        private void updateSchedule(Block operation, int startTime)
         {
-            operation.startTime = startTime;
-            operation.endTime   = operation.startTime + operation.boundModule.OperationTime;
-            CurrentlyRunningOpertions.Enqueue(operation, operation.endTime);
             ScheduledOperations.Add(operation);
-            return operation.startTime;
+            operation.startTime = startTime;
+            if (operation is VariableBlock) return;
+            else
+            {
+                FluidBlock fluidOperation = operation as FluidBlock;
+                fluidOperation.endTime = fluidOperation.startTime + fluidOperation.boundModule.OperationTime;
+                CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.endTime);
+            }
         }
 
         private static void waitForAFinishedOperation()
@@ -71,34 +75,39 @@ namespace BiolyCompiler.Scheduling
             //Continue until all operations have been scheduled:
             while (assay.hasUnfinishedOperations() && canExecuteMoreOperations(readyOperations))
             {
-                Block topPriorityOperation = removeOperation(readyOperations);
-                Module operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
-                topPriorityOperation.Bind(operationExecutingModule);
-                allUsedModules.Add(operationExecutingModule);
-
-                Debug.WriteLine(board.print(allUsedModules));
-
-                //If the module can't be placed, one must wait until there is enough space for it:
-                if (operationExecutingModule == null)
+                Block nextOperation = removeOperation(readyOperations);
+                if (nextOperation is VariableBlock)
                 {
-                    throw new Exception("Not enough space for a module: this is not handeled yet");
-                    waitForAFinishedOperation();
-                    if (CurrentlyRunningOpertions.Count == 0) throw new Exception("The scheduling can't be made: there aren't enough space for module: " + operationExecutingModule.ToString());
+                    //This is a mathematical operation, and it should be scheduled to run as soon as possible
+                    updateSchedule(nextOperation, startTime);
+                    assay.updateReadyOperations(nextOperation);
                 }
+                else // nextOperation is FluidBlock
+                {
+                    FluidBlock topPriorityOperation = nextOperation as FluidBlock;
+                    Module operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
+                    topPriorityOperation.Bind(operationExecutingModule);
+                    allUsedModules.Add(operationExecutingModule);
 
-                //Now all the droplet that the module should operate on, needs to be delivered to it.
-                //By construction, there will be a route from the droplets to the module, 
-                //and so it will always be possible for this routing to be done:
-                startTime = RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
-                Debug.WriteLine(board.print(allUsedModules));
+                    Debug.WriteLine(board.print(allUsedModules));
 
-                CurrentlyRunningOpertions.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
+                    //If the module can't be placed, one must wait until there is enough space for it:
+                    if (operationExecutingModule == null) throw new Exception("Not enough space for a module: this is not handeled yet");
+                    
+                    CurrentlyRunningOpertions.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
 
-                //Note that it will also wait for operations to finish, 
-                //in the case that there are no more operations that can be executed, before this happen:
-                (startTime, board) = handleFinishingOperations(startTime, assay, board);
-                readyOperations = assay.getReadyOperations();
-                Debug.WriteLine(board.print(allUsedModules));
+                    //Now all the droplet that the module should operate on, needs to be delivered to it.
+                    //By construction, there will be a route from the droplets to the module, 
+                    //and so it will always be possible for this routing to be done:
+                    startTime = RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
+                    Debug.WriteLine(board.print(allUsedModules));
+
+                    //Note that handleFinishingOperations will also wait for operations to finish, 
+                    //in the case that there are no more operations that can be executed, before this happen:
+                    (startTime, board) = handleFinishingOperations(startTime, assay, board);
+                    readyOperations = assay.getReadyOperations();
+                    Debug.WriteLine(board.print(allUsedModules));
+                }
             }
             if (assay.hasUnfinishedOperations()) throw new Exception("There were operations that couldn't be scheduled.");
             ScheduledOperations.Sort((x, y) => (x.startTime < y.startTime || (x.startTime == y.startTime && x.endTime <= y.endTime)) ? 0 : 1);
@@ -137,7 +146,7 @@ namespace BiolyCompiler.Scheduling
             //and operations that now might be able to run, needs to be marked as such:
             while (areOperationsFinishing(startTime, readyOperations))
             {
-                List<Block> nextBatchOfFinishedOperations = getNextBatchOfFinishedOperations();
+                List<FluidBlock> nextBatchOfFinishedOperations = getNextBatchOfFinishedOperations();
                 startTime = nextBatchOfFinishedOperations.Last().endTime + 1;
                 foreach (var finishedOperation in nextBatchOfFinishedOperations)
                 {
@@ -174,32 +183,44 @@ namespace BiolyCompiler.Scheduling
             return CurrentlyRunningOpertions.Count > 0 && (readyOperations.Count == 0  || startTime >= CurrentlyRunningOpertions.First().endTime);
         }
 
-        private int RouteDropletsToModule(Module operationExecutingModule, Board board, int startTime, Block topPriorityOperation)
+        public int RouteDropletsToModule(Module operationExecutingModule, Board board, int startTime, FluidBlock topPriorityOperation)
         {
-            foreach (var InputFluidName in topPriorityOperation.InputVariables)
+            foreach (var InputFluid in topPriorityOperation.InputVariables)
             {
-                BoardFluid InputFluid;
-                bool doSourceExist = FluidVariableLocations.TryGetValue(InputFluidName, out InputFluid);
-                if (!doSourceExist) throw new Exception("The source \"" + InputFluidName + "\" for the operation \"" + topPriorityOperation.ToString() + "\" do not exist.");
+                BoardFluid InputFluidType;
+                bool doSourceExist = FluidVariableLocations.TryGetValue(InputFluid.FluidName, out InputFluidType);
+                if (!doSourceExist) throw new Exception("The source \"" + InputFluid + "\" for the operation \"" + topPriorityOperation.ToString() + "\" do not exist.");
+                if (InputFluidType.droplets.Count < InputFluid.GetAmountInDroplets()) throw new Exception("The module requires " + InputFluid.GetAmountInDroplets() + " droplets, of type " + InputFluid.FluidName +
+                                                                                                          ", but only " + InputFluidType.droplets.Count + " is available. The module is: " + operationExecutingModule.ToString());
+                startTime = RouteGivenNumberOfDropletsOfGivenType(operationExecutingModule, board, startTime, InputFluidType, InputFluid.GetAmountInDroplets());
+            }
+            updateSchedule(topPriorityOperation, startTime);
+            return startTime;
+        }
+
+        private static int RouteGivenNumberOfDropletsOfGivenType(Module operationExecutingModule, Board board, int startTime, BoardFluid inputFluidType, int numberOfDropletsToRoute)
+        {
+            List<Route> inputRoutes = new List<Route>();
+            for (int i = 0; i < numberOfDropletsToRoute; i++)
+            {
                 //Routes a droplet of type InputFluid to the module.
-                Route route = determineRouteToModule(InputFluid, operationExecutingModule, board, startTime); //Will be included as part of a later step.
+                Route route = DetermineRouteToModule(inputFluidType, operationExecutingModule, board, startTime); //Will be included as part of a later step.
                 if (route == null) throw new Exception("No route found. This should not be possible.");
-                operationExecutingModule.InputRoutes.Add(InputFluidName, route);
-                //One could move this (with some code change) up to before the module is placed.
+                inputRoutes.Add(route);
+                //The droplet routed is used by the module, and as such it can be removed from the board:
                 board.FastTemplateRemove(route.routedDroplet);
                 //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
                 //This will give an overhead of +1 for the operation starting time, for each droplet routed:
                 startTime = route.getEndTime() + 1;
             }
-            updateSchedule(topPriorityOperation, startTime);
-
+            operationExecutingModule.InputRoutes.Add(inputFluidType.FluidName, inputRoutes);
             return startTime;
         }
 
-        private List<Block> getNextBatchOfFinishedOperations()
+        private List<FluidBlock> getNextBatchOfFinishedOperations()
         {
-            List<Block> batch = new List<Block>();
-            Block nextFinishedOperation = CurrentlyRunningOpertions.Dequeue();
+            List<FluidBlock> batch = new List<FluidBlock>();
+            FluidBlock nextFinishedOperation = CurrentlyRunningOpertions.Dequeue();
             batch.Add(nextFinishedOperation);
             //Need to dequeue all operations that has finishes at the same time as nextFinishedOperation.
             //Differences under "IGNORED_TIME_DIFFERENCE" are ignored.
@@ -215,7 +236,7 @@ namespace BiolyCompiler.Scheduling
             return ScheduledOperations.Max(operation => operation.endTime);
         }
 
-        public static Route determineRouteToModule(BoardFluid targetFluidType, Module sourceModule, Board board, int startTime){
+        public static Route DetermineRouteToModule(BoardFluid targetFluidType, Module sourceModule, Board board, int startTime){
 
             //Dijkstras algorithm, based on the one seen on wikipedia.
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,

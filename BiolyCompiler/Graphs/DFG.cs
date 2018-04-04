@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyCompiler.Graphs
 {
@@ -39,12 +40,26 @@ namespace BiolyCompiler.Graphs
                         Output.Add(node);
                     }
 
-                    foreach (string nodeName in block.InputVariables)
+                    if (block is VariableBlock varBlock)
                     {
-                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
-                        if (inputNode != null)
+                        foreach (string nodeName in varBlock.InputVariables)
                         {
-                            AddEdge(inputNode, node);
+                            Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
+                            if (inputNode != null)
+                            {
+                                AddEdge(inputNode, node);
+                            }
+                        }
+                    }
+                    else if (block is FluidBlock fluidBlock)
+                    {
+                        foreach (FluidInput nodeName in fluidBlock.InputVariables)
+                        {
+                            Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName.FluidName);
+                            if (inputNode != null)
+                            {
+                                AddEdge(inputNode, node);
+                            }
                         }
                     }
                 }

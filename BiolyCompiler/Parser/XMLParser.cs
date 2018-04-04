@@ -145,14 +145,9 @@ namespace BiolyCompiler.Parser
             }
         }
 
-        internal static string GetVariablesCorrectedName(XmlNode node, Dictionary<string, string> mostRecentRef)
+        internal static FluidInput GetVariablesCorrectedName(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            string variableName = node.InnerText;
-            if (!mostRecentRef.ContainsKey(variableName))
-            {
-                return "ERROR_FINDING_NODE";
-            }
-            return mostRecentRef[variableName];
+            return new FluidInput(node, mostRecentRef);
         }
     }
 }

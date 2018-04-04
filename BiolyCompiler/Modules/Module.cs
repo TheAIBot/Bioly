@@ -14,7 +14,7 @@ namespace BiolyCompiler.Modules
         public Block BindingOperation;
         public readonly int NumberOfInputs, NumberOfOutputs;
         //The key is the input fluid name, see the operation/block which the module is bound to.
-        public Dictionary<string, Route> InputRoutes = new Dictionary<string, Route>();
+        public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
         protected ModuleLayout Layout;
         
 
@@ -125,7 +125,7 @@ namespace BiolyCompiler.Modules
         }
         
 
-        public bool Implements(Block operation)
+        public bool Implements(FluidBlock operation)
         {
             return  NumberOfInputs  == operation.InputVariables.Count && 
                     //numberOfOutputs == operation.OutputVariable.Count &&

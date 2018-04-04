@@ -152,7 +152,7 @@ namespace BiolyCompiler.Architechtures
             return dijkstraGraph[sourceModule.Shape.x, sourceModule.Shape.y];
         }
 
-        public List<Droplet> replaceWithDroplets(Block finishedOperation, BoardFluid fluidType)
+        public List<Droplet> replaceWithDroplets(FluidBlock finishedOperation, BoardFluid fluidType)
         {
             Module operationExecutingModule = finishedOperation.boundModule;
             //Checks for each pair of adjacent rectangle to the module on the board, and the rectangles in the modules layout,

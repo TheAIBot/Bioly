@@ -20,7 +20,7 @@ namespace BiolyCompiler.Modules
             allocatedModules.Sort((x,y) => (x.OperationTime < y.OperationTime)? 0: 1);
         }
 
-        public Module GetFirstPlaceableModule(Block operation, Architechture archetichture){
+        public Module GetFirstPlaceableModule(FluidBlock operation, Architechture archetichture){
             for (int i = 0; i < allocatedModules.Count; i++)
             {
                 Module module = allocatedModules[i];
@@ -38,7 +38,7 @@ namespace BiolyCompiler.Modules
             HashSet<Module> associatedModules = new HashSet<Module>();
             foreach (var node in assay.dfg.Nodes)
             {
-                Block operation = node.value;
+                FluidBlock operation = node.value as FluidBlock;
                 if (!associatedModules.Contains(operation.getAssociatedModule()))
                 {
                     associatedModules.Add(operation.getAssociatedModule());
@@ -47,7 +47,7 @@ namespace BiolyCompiler.Modules
             }
         }
 
-        public Module getOptimalModule(Block operation)
+        public Module getOptimalModule(FluidBlock operation)
         {
             Module module = null;
             for (int i = 0; i < allocatedModules.Count; i++)
@@ -69,7 +69,7 @@ namespace BiolyCompiler.Modules
             return module;
         }
 
-        public Module getAndPlaceFirstPlaceableModule(Block operation, Board board){
+        public Module getAndPlaceFirstPlaceableModule(FluidBlock operation, Board board){
             Module optimalModuleTemplate = getOptimalModule(operation);
             if (optimalModuleTemplate.GetModuleLayout() == null) throw new Exception("The layout of the module have never been set. The module is: " + optimalModuleTemplate.ToString());
             Module module = optimalModuleTemplate.GetCopyOf();

@@ -5,25 +5,26 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.Modules;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
-    public class Mixer : Block
+    public class Mixer : FluidBlock
     {
-        private const string FirstInputName = "inputFluidA";
-        private const string SecondInputName = "inputFluidB";
+        public const string FirstInputFieldName = "inputFluidA";
+        public const string SecondInputFieldName = "inputFluidB";
         public const string XmlTypeName = "mixer";
 
-        public Mixer(List<string> input, string output, XmlNode node) : base(true, input, output)
+        public Mixer(List<FluidInput> input, string output, XmlNode node) : base(true, input, output)
         {
 
         }
 
         public static Block CreateMixer(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            List<string> inputs = new List<string>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(FirstInputName), mostRecentRef));
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputName), mostRecentRef));
+            List<FluidInput> inputs = new List<FluidInput>();
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(FirstInputFieldName).FirstChild, mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputFieldName).FirstChild, mostRecentRef));
 
             return new Mixer(inputs, output, node);
         }

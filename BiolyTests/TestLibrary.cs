@@ -6,6 +6,7 @@ using BiolyCompiler.Scheduling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using BiolyCompiler.Modules.OperationTypes;
+using BiolyCompiler.BlocklyParts;
 
 namespace BiolyTests.ModuleLibraryTests
 {
@@ -18,8 +19,8 @@ namespace BiolyTests.ModuleLibraryTests
             ModuleLibrary library = new ModuleLibrary();
             Assay assay = new Assay(TestAssay.GetSemiParallelDFG());
             library.allocateModules(assay);
-            List<OperationType> usedOperationTypes = assay.dfg.Nodes.DistinctBy(node => node.value.getOperationType())
-                                                                    .Select(node => node.value.getOperationType())
+            List<OperationType> usedOperationTypes = assay.dfg.Nodes.DistinctBy(node => (node.value as FluidBlock).getOperationType())
+                                                                    .Select(node => (node.value as FluidBlock).getOperationType())
                                                                     .ToList();
             
             List<OperationType> allocatedOperationTypes = library.allocatedModules.DistinctBy(module => module.getOperationType())

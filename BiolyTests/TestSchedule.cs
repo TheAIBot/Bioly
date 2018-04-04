@@ -53,8 +53,8 @@ namespace BiolyTests.ScheduleTests
             DFG<Block> dfg = new DFG<Block>();
 
             TestModule module = new TestModule();
-            TestBlock operation1 = new TestBlock(new List<string>() {inputFluid1}, null, null, module);
-            TestBlock operation2 = new TestBlock(new List<string>() {inputFluid2}, null, null, module);
+            TestBlock operation1 = new TestBlock(new List<string>() {inputFluid1}, null, module);
+            TestBlock operation2 = new TestBlock(new List<string>() {inputFluid2}, null, module);
 
             Node<Block> operation1Node = new Node<Block>(operation1);
             Node<Block> operation2Node = new Node<Block>(operation2);
@@ -103,9 +103,9 @@ namespace BiolyTests.ScheduleTests
             DFG<Block> dfg = new DFG<Block>();
 
             TestModule module = new TestModule();
-            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid }, null, null, module);
-            TestBlock operation2 = new TestBlock(new List<string>() { operation1.OutputVariable }, null, null, module);
-            TestBlock operation3 = new TestBlock(new List<string>() { operation2.OutputVariable }, null, null, module);
+            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid }, null, module);
+            TestBlock operation2 = new TestBlock(new List<string>() { operation1.OutputVariable }, null, module);
+            TestBlock operation3 = new TestBlock(new List<string>() { operation2.OutputVariable }, null, module);
 
             Node<Block> operation1Node = new Node<Block>(operation1);
             Node<Block> operation2Node = new Node<Block>(operation2);
@@ -171,12 +171,12 @@ namespace BiolyTests.ScheduleTests
             DFG<Block> dfg = new DFG<Block>();
 
             TestModule module = new TestModule();
-            TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, null, module);
-            TestBlock operation21 = new TestBlock(new List<string>() { operation11.OutputVariable }, null, null, module);
-            TestBlock operation31 = new TestBlock(new List<string>() { operation21.OutputVariable }, null, null, module);
-            TestBlock operation12 = new TestBlock(new List<string>() { inputFluid2 }, null, null, module);
-            TestBlock operation22 = new TestBlock(new List<string>() { operation12.OutputVariable }, null, null, module);
-            TestBlock operation32 = new TestBlock(new List<string>() { operation22.OutputVariable }, null, null, module);
+            TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, module);
+            TestBlock operation21 = new TestBlock(new List<string>() { operation11.OutputVariable }, null, module);
+            TestBlock operation31 = new TestBlock(new List<string>() { operation21.OutputVariable }, null, module);
+            TestBlock operation12 = new TestBlock(new List<string>() { inputFluid2 }, null, module);
+            TestBlock operation22 = new TestBlock(new List<string>() { operation12.OutputVariable }, null, module);
+            TestBlock operation32 = new TestBlock(new List<string>() { operation22.OutputVariable }, null, module);
 
             Node<Block> operation11Node = new Node<Block>(operation11);
             Node<Block> operation21Node = new Node<Block>(operation21);
@@ -259,7 +259,7 @@ namespace BiolyTests.ScheduleTests
             DFG<Block> dfg = new DFG<Block>();
             TestModule module = new TestModule(2, 1);
             module.SetLayout(Module.GetDefaultSingleOutputLayout(module.Shape));
-            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1, inputFluid2 }, null, null, module);
+            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1, inputFluid2 }, null, module);
 
             Node<Block> operation1Node = new Node<Block>(operation1);
 
@@ -313,15 +313,15 @@ namespace BiolyTests.ScheduleTests
             TestModule sequentialModule2 = new TestModule(4, 4, 1500); //Different operation time, to check if it the schedule takes the max of the two input operation times.
             TestModule multiInputModule = new TestModule(1, 2);
             multiInputModule.SetLayout(Module.GetDefaultSingleOutputLayout(multiInputModule.Shape));
-            TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, null, sequentialModule2);
-            TestBlock operation21 = new TestBlock(new List<string>() { inputFluid3 }, null, null, sequentialModule1);
-            TestBlock operation31 = new TestBlock(new List<string>() { operation11.OutputVariable, operation21.OutputVariable }, null, null, multiInputModule);
+            TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, sequentialModule2);
+            TestBlock operation21 = new TestBlock(new List<string>() { inputFluid3 }, null, sequentialModule1);
+            TestBlock operation31 = new TestBlock(new List<string>() { operation11.OutputVariable, operation21.OutputVariable }, null, multiInputModule);
 
-            TestBlock operation12 = new TestBlock(new List<string>() { inputFluid2 }, null, null, sequentialModule1);
-            TestBlock operation22 = new TestBlock(new List<string>() { operation12.OutputVariable }, null, null, sequentialModule1);
-            TestBlock operation32 = new TestBlock(new List<string>() { operation22.OutputVariable }, null, null, sequentialModule2);
+            TestBlock operation12 = new TestBlock(new List<string>() { inputFluid2 }, null, sequentialModule1);
+            TestBlock operation22 = new TestBlock(new List<string>() { operation12.OutputVariable }, null, sequentialModule1);
+            TestBlock operation32 = new TestBlock(new List<string>() { operation22.OutputVariable }, null, sequentialModule2);
 
-            TestBlock operationLast = new TestBlock(new List<string>() { operation31.OutputVariable, operation32.OutputVariable }, null, null, multiInputModule);
+            TestBlock operationLast = new TestBlock(new List<string>() { operation31.OutputVariable, operation32.OutputVariable }, null, multiInputModule);
 
 
             Node<Block> operation11Node = new Node<Block>(operation11);

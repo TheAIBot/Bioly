@@ -3,6 +3,7 @@ using CefSharp;
 using CefSharp.SchemeHandler;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -66,7 +67,7 @@ namespace BiolyViewer_Windows
                     string js = "setGraph(" + nodes + ", " + edges + ");";
                     Browser.ExecuteScriptAsync(js);
                 }
-                catch (Exception ee) { }
+                catch (Exception ee) { Debug.WriteLine(ee.Message); }
             }
         }
 

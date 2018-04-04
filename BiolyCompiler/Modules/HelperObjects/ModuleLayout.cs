@@ -107,10 +107,10 @@ namespace BiolyCompiler.Modules
             foreach (var droplet in OutputDroplets)
             {
                 BoardFluid fluidType;
-                differentFluidTypes.TryGetValue(droplet.fluidType.fluidName, out fluidType);
+                differentFluidTypes.TryGetValue(droplet.fluidType.FluidName, out fluidType);
                 if (fluidType == null) {
-                    fluidType = new BoardFluid(droplet.fluidType.fluidName);
-                    differentFluidTypes.Add(fluidType.fluidName, fluidType);
+                    fluidType = new BoardFluid(droplet.fluidType.FluidName);
+                    differentFluidTypes.Add(fluidType.FluidName, fluidType);
                 }
                 Droplet CopyDroplet = new Droplet(fluidType);
                 CopyOutputDroplets.Add(CopyDroplet);
