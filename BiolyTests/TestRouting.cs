@@ -35,7 +35,7 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet, droplet.Shape);
             
             int startTime = 55;
-            Route route = Schedule.determineRouteToModule(fluidType, droplet, board, startTime);
+            Route route = Schedule.determineRouteToModule(fluidType, sourceModule, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule), "Has detected collision while this shouldn't be possible");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, droplet));
@@ -75,7 +75,13 @@ namespace BiolyTests.RoutingTests
 
 
         [TestMethod]
-        public void TestMultipleDropsToOneModuleRouting()
+        public void TestMultipleDropsSameTypeToOneModuleRouting()
+        {
+            Assert.Fail("Not implemented yet.");
+        }
+
+        [TestMethod]
+        public void TestMultipleDropsDifferentTypeToOneModuleRouting()
         {
             Assert.Fail("Not implemented yet.");
         }

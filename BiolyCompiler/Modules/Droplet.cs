@@ -12,6 +12,7 @@ namespace BiolyCompiler.Modules
         public Droplet(BoardFluid fluidType) : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, 0, 0)
         {
             this.fluidType = fluidType;
+            fluidType.droplets.Add(this);
         }
 
 
@@ -26,6 +27,7 @@ namespace BiolyCompiler.Modules
 
         public void SetFluidType(BoardFluid fluidType)
         {
+            this.fluidType.droplets.Remove(this);
             this.fluidType = fluidType;
             fluidType.droplets.Add(this);
         }

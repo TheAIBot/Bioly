@@ -13,6 +13,7 @@ using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.Architechtures;
 using BiolyTests.TestObjects;
+using System.Diagnostics;
 
 namespace BiolyTests.ScheduleTests
 {
@@ -150,6 +151,14 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(operation2, schedule.ScheduledOperations[1]);
             Assert.AreEqual(operation3, schedule.ScheduledOperations[2]);
 
+            List<KeyValuePair<int, Board>> boardsAtDifferentTimes = schedule.boardAtDifferentTimes.ToList();
+            boardsAtDifferentTimes.Sort((x, y) => x.Key <= y.Key? 0 : 1);
+            for (int i = 0; i < boardsAtDifferentTimes.Count; i++)
+            {
+                Debug.WriteLine("Time: "+ boardsAtDifferentTimes[i].Key);
+                Debug.WriteLine(boardsAtDifferentTimes[i].Value.print(schedule.allUsedModules));
+            }
+
             Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 1));
             
         }
@@ -249,6 +258,7 @@ namespace BiolyTests.ScheduleTests
             String inputFluid2 = "Kage";
             DFG<Block> dfg = new DFG<Block>();
             TestModule module = new TestModule(2, 1);
+            module.SetLayout(Module.GetDefaultSingleOutputLayout(module.Shape));
             TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1, inputFluid2 }, null, null, module);
 
             Node<Block> operation1Node = new Node<Block>(operation1);
@@ -302,6 +312,7 @@ namespace BiolyTests.ScheduleTests
             TestModule sequentialModule1 = new TestModule();
             TestModule sequentialModule2 = new TestModule(4, 4, 1500); //Different operation time, to check if it the schedule takes the max of the two input operation times.
             TestModule multiInputModule = new TestModule(1, 2);
+            multiInputModule.SetLayout(Module.GetDefaultSingleOutputLayout(multiInputModule.Shape));
             TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, null, sequentialModule2);
             TestBlock operation21 = new TestBlock(new List<string>() { inputFluid3 }, null, null, sequentialModule1);
             TestBlock operation31 = new TestBlock(new List<string>() { operation11.OutputVariable, operation21.OutputVariable }, null, null, multiInputModule);

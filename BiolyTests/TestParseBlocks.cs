@@ -16,7 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace BiolyTests
+namespace BiolyTests.ParseBlockTests
 {
     [TestClass]
     public class TestParseBlocks

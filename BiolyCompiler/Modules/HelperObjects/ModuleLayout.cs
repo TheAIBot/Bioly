@@ -69,5 +69,54 @@ namespace BiolyCompiler.Modules
         {
             OutputDroplets.ForEach(droplet => droplet.SetFluidType(fluidType));
         }
+
+        public void Reposition(int x, int y)
+        {
+            //Changing the position of the rectangles and droplets changes their hashcodes, which are used for adjacencies.
+            //Therefore it is "necessary" to recalculate them again. It can be made more efficient, if so desired, so that it runs in O(|E|) time.
+            foreach (var rectangle in EmptyRectangles)
+            {
+                rectangle.x += x;
+                rectangle.y += y;
+                rectangle.AdjacentRectangles.Clear();
+            }
+            foreach (var droplet in OutputDroplets)
+            {
+                droplet.Shape.x += x;
+                droplet.Shape.y += y;
+                droplet.Shape.AdjacentRectangles.Clear();
+            }
+
+            ConnectAdjacentRectangles(EmptyRectangles, OutputDroplets);
+        }
+
+        /// <summary>
+        /// Creates a copy of the ModuleLayout. Note that it works by copying the rectangles and droplets that the layout is made of,
+        /// and creating a new layout based on this, so if any modifications have been made to the layout,
+        /// where the creation of the layout does not handle this, it will not be taken into account when creating the copy.
+        /// 
+        /// This can include things like changing the adjacencies of the empty rectangles.
+        /// </summary>
+        /// <returns></returns>
+        public ModuleLayout GetCopy()
+        {
+            List<Rectangle> CopyEmptyRectangles = new List<Rectangle>();
+            List<Droplet> CopyOutputDroplets = new List<Droplet>();
+            EmptyRectangles.ForEach(rectangle => CopyEmptyRectangles.Add(new Rectangle(rectangle)));
+            Dictionary<String, BoardFluid> differentFluidTypes = new Dictionary<string, BoardFluid>();
+            foreach (var droplet in OutputDroplets)
+            {
+                BoardFluid fluidType;
+                differentFluidTypes.TryGetValue(droplet.fluidType.fluidName, out fluidType);
+                if (fluidType == null) {
+                    fluidType = new BoardFluid(droplet.fluidType.fluidName);
+                    differentFluidTypes.Add(fluidType.fluidName, fluidType);
+                }
+                Droplet CopyDroplet = new Droplet(fluidType);
+                CopyOutputDroplets.Add(CopyDroplet);
+            }
+
+            return new ModuleLayout(width, height, CopyEmptyRectangles, CopyOutputDroplets);
+        }
     }
 }

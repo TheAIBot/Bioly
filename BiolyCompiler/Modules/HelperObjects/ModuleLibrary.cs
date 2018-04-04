@@ -70,11 +70,15 @@ namespace BiolyCompiler.Modules
         }
 
         public Module getAndPlaceFirstPlaceableModule(Block operation, Board board){
-            Module module = getOptimalModule(operation).GetCopyOf();
+            Module optimalModuleTemplate = getOptimalModule(operation);
+            if (optimalModuleTemplate.GetModuleLayout() == null) throw new Exception("The layout of the module have never been set. The module is: " + optimalModuleTemplate.ToString());
+            Module module = optimalModuleTemplate.GetCopyOf();
             if (module == null) return null;
 
             bool canBePlaced = board.FastTemplatePlace(module);
             if(!canBePlaced) throw new Exception("Module can't be placed");
+            //Now that the module has been placed, the internal rectangles in the module layout can be modified, such that they are placed correctly.
+            module.RepositionLayout();
             return module;
         }
     }

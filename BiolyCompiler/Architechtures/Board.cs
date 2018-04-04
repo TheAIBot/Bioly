@@ -104,15 +104,17 @@ namespace BiolyCompiler.Architechtures
         public void UpdateGridWithModulePlacement(Module module, Rectangle rectangleToPlaceAt)
         {
             module.Shape.PlaceAt(rectangleToPlaceAt.x, rectangleToPlaceAt.y);
-            for (int i = 0; i < module.Shape.width; i++)
+            Rectangle Shape = module.Shape;
+            for (int i = 0; i < Shape.width; i++)
             {
-                for (int j = 0; j < module.Shape.height; j++)
+                for (int j = 0; j < Shape.height; j++)
                 {
-                    grid[i + module.Shape.x, j + module.Shape.y] = module;
+                    grid[i + Shape.x, j + Shape.y] = module;
                 }
             }
             placedModules.Add(module);
         }
+        
 
         private int RectangleCost(Rectangle rectangle, Module module)
         {
@@ -157,7 +159,6 @@ namespace BiolyCompiler.Architechtures
             //if they are adjacent -> if so, it makes them adjacent.
             List<Rectangle> AllRectangles = new List<Rectangle>(operationExecutingModule.GetModuleLayout().EmptyRectangles);
             operationExecutingModule.GetModuleLayout().OutputDroplets.ForEach(droplet => AllRectangles.Add(droplet.Shape));
-
             foreach (var moduleAdjacentRectangle in operationExecutingModule.Shape.AdjacentRectangles)
             {
                 foreach (var moduleLayoutRectangle in AllRectangles)
@@ -168,16 +169,23 @@ namespace BiolyCompiler.Architechtures
                         moduleLayoutRectangle.AdjacentRectangles.Add(moduleAdjacentRectangle);
                     }
                 }
-                //The rectangle is replaced, and so it is no longer adjacent to anything:
-                moduleAdjacentRectangle.AdjacentRectangles.Remove(operationExecutingModule.Shape);
-                operationExecutingModule.Shape.AdjacentRectangles.Remove(moduleAdjacentRectangle); 
             }
 
+            foreach (var moduleAdjacentRectangle in operationExecutingModule.Shape.AdjacentRectangles)
+            {
+                //The original module rectangle is replaced, and so it is no longer adjacent to anything:
+                moduleAdjacentRectangle.AdjacentRectangles.Remove(operationExecutingModule.Shape);
+            }
+            operationExecutingModule.Shape.AdjacentRectangles.Clear();
 
             //The droplets in the module layout, have now had their associated rectangles placed on the board. 
             //Thus it is only neccessary to change their fluidtype, to get the correct output.
 
             operationExecutingModule.GetModuleLayout().ChangeOutputType(fluidType);
+            operationExecutingModule.GetModuleLayout().EmptyRectangles.ForEach(rectangle => EmptyRectangles.Add(rectangle));
+            ClearBoard(operationExecutingModule.Shape);
+            operationExecutingModule.GetModuleLayout().OutputDroplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet, droplet.Shape));
+            placedModules.Remove(operationExecutingModule);
 
             return operationExecutingModule.GetModuleLayout().OutputDroplets;
             /*

@@ -20,7 +20,7 @@ namespace BiolyCompiler.Scheduling
         //This is primarily for testing and visulization purposes.
         public Dictionary<int, Board> boardAtDifferentTimes = new Dictionary<int, Board>();
         // For debuging. Used when printing the board to the console, for visulization purposes.
-        private List<Module> allUsedModules = new List<Module>(); 
+        public List<Module> allUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
         public SimplePriorityQueue<Block> CurrentlyRunningOpertions = new SimplePriorityQueue<Block>();
         public List<Block> ScheduledOperations = new List<Block>();
@@ -280,6 +280,7 @@ namespace BiolyCompiler.Scheduling
                 currentNode = currentNode.value.previous;
             }
             routeNodes.Add(currentNode);
+            routeNodes.Reverse();
             Route route = new Route(routeNodes, routedDroplet, startTime);
             return route;
         }

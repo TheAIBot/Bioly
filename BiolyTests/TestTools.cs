@@ -22,6 +22,7 @@ namespace BiolyTests
         [AssemblyInitialize()]
         public static void AssemblyInit(TestContext context)
         {
+            /*
             ChromeOptions options = new ChromeOptions();
             options.AddArgument("--headless");
 
@@ -33,6 +34,7 @@ namespace BiolyTests
             browser.Navigate().GoToUrl(path);
 
             Browser = browser;
+            */
         }
 
         [AssemblyCleanup()]

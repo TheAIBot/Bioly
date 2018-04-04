@@ -19,11 +19,11 @@ namespace BiolyTests.TestObjects
     class TestModule : BiolyCompiler.Modules.Module
     {
 
-        public TestModule() : base(4, 4, 3000, 1, 1)
+        public TestModule() : base(4, 4, 3000)
         {
         }
 
-        public TestModule(int width, int height, int operationTime) : base(width, height, operationTime, 1, 1)
+        public TestModule(int width, int height, int operationTime) : base(width, height, operationTime)
         {
 
         }
@@ -38,6 +38,11 @@ namespace BiolyTests.TestObjects
 
         }
 
+        public void SetLayout(ModuleLayout Layout)
+        {
+            this.Layout = Layout;
+        }
+
         public override OperationType getOperationType()
         {
             return OperationType.Test;
@@ -47,8 +52,10 @@ namespace BiolyTests.TestObjects
         {
             TestModule module = new TestModule(Shape.width, Shape.height, OperationTime, NumberOfInputs, NumberOfOutputs);
             module.Shape = new Rectangle(Shape);
+            module.Layout = this.Layout.GetCopy();
             return module;
         }
+        
 
     }
 }

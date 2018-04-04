@@ -25,11 +25,14 @@ namespace BiolyCompiler.Modules
             NumberOfInputs = 1;
             NumberOfOutputs = 1;
             //At default, the output is placed in the left corner of the module.
-            Layout = GetDefaultLayout(Shape);
+            Layout = GetDefaultSingleOutputLayout(Shape);
         }
 
-        public Module(int Width, int Height, int OperationTime, int NumberOfInputs, int NumberOfOutputs) : this(Width, Height, OperationTime)
+        public Module(int Width, int Height, int OperationTime, int NumberOfInputs, int NumberOfOutputs)
         {
+            Shape = new Rectangle(Width, Height);
+            this.OperationTime = OperationTime;
+            Shape.isEmpty = false;
             this.NumberOfInputs = NumberOfInputs;
             this.NumberOfOutputs = NumberOfOutputs;
         }
@@ -48,7 +51,7 @@ namespace BiolyCompiler.Modules
         }
 
 
-        private ModuleLayout GetDefaultLayout(Rectangle rectangle)
+        public static ModuleLayout GetDefaultSingleOutputLayout(Rectangle rectangle)
         {
             Droplet droplet = new Droplet(new BoardFluid("Test"));
             (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(droplet);
@@ -56,6 +59,11 @@ namespace BiolyCompiler.Modules
             if (TopRectangle != null) emptyRectangles.Add(TopRectangle);
             if (RightRectangle != null) emptyRectangles.Add(RightRectangle);
             return new ModuleLayout(rectangle.width, rectangle.height, emptyRectangles, new List<Droplet>() {droplet});
+        }
+
+        public void RepositionLayout()
+        {
+            Layout.Reposition(Shape.x, Shape.y);
         }
 
         public virtual ModuleLayout GetModuleLayout() {
@@ -80,7 +88,7 @@ namespace BiolyCompiler.Modules
 
         public override String ToString()
         {
-            return this.GetType().ToString() + ", dimensions = " + Shape.ToString() + ", operation time = " + OperationTime;
+            return this.GetType().ToString() + ", input/output = (" + NumberOfInputs + ", " + NumberOfOutputs + "), dimensions = " + Shape.ToString() + ", operation time = " + OperationTime;
         }
         
         //Returns a copy of the module (not taking adjacencies into account). 
