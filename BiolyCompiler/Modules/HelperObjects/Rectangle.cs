@@ -68,19 +68,16 @@ namespace BiolyCompiler.Modules
             //based on which segments extending from the rectangle (see FTP algorithm papier) that are shortest:
             Rectangle TopRectangle;
             Rectangle RightRectangle;
-            int VerticalSegmentLenght   = this.height - module.Shape.height;
-            int HorizontalSegmentLenght = this.width  - module.Shape.width;
-            if (HorizontalSegmentLenght <= VerticalSegmentLenght)
-            {
-                //Split at the horizontal line segment:
-                TopRectangle   = new Rectangle(this.width, VerticalSegmentLenght);
+            int VerticalSegmentLenght = this.height - module.Shape.height;
+            int HorizontalSegmentLenght = this.width - module.Shape.width;
+            if (ShouldSplitAtHorizontalLineSegment(VerticalSegmentLenght, HorizontalSegmentLenght)){ //Split at the horizontal line segment:
+                TopRectangle = new Rectangle(this.width, VerticalSegmentLenght);
                 RightRectangle = new Rectangle(HorizontalSegmentLenght, module.Shape.height);
-            } else
-            {
-                //Split at the vertical line segment:
-                TopRectangle   = new Rectangle(module.Shape.width, VerticalSegmentLenght);
+            }else { //Split at the vertical line segment:
+                TopRectangle = new Rectangle(module.Shape.width, VerticalSegmentLenght);
                 RightRectangle = new Rectangle(HorizontalSegmentLenght, this.height);
             }
+
             module.Shape.PlaceAt(this.x, this.y);
             TopRectangle.PlaceAt(this.x, module.Shape.getTopmostYPosition() + 1);
             RightRectangle.PlaceAt(module.Shape.getRightmostXPosition() + 1, this.y);
@@ -95,7 +92,8 @@ namespace BiolyCompiler.Modules
                 module.Shape.AdjacentRectangles.Add(TopRectangle);
             }
             if (HorizontalSegmentLenght == 0) RightRectangle = null;
-            else {
+            else
+            {
                 ComputeAdjacencyList(RightRectangle);
                 RightRectangle.AdjacentRectangles.Add(module.Shape);
                 module.Shape.AdjacentRectangles.Add(RightRectangle);
@@ -105,24 +103,31 @@ namespace BiolyCompiler.Modules
             {
                 TopRectangle.AdjacentRectangles.Add(RightRectangle);
                 RightRectangle.AdjacentRectangles.Add(TopRectangle);
-            }            
+            }
+            RemoveAdjacencies(); //This line must be before the next line, curtesy of the adjacencies of rectangles being hashsets. 
             ComputeAdjacencyList(module.Shape);
-            RemoveAdjacencies();
             return (TopRectangle, RightRectangle);
+        }
+
+        private static bool ShouldSplitAtHorizontalLineSegment(int VerticalSegmentLenght, int HorizontalSegmentLenght)
+        {
+            return HorizontalSegmentLenght <= VerticalSegmentLenght;
         }
 
         private void RemoveAdjacencies()
         {
-            foreach (var AdjacentRectangle in AdjacentRectangles)
+            foreach (var adjacentRectangle in AdjacentRectangles)
             {
-                AdjacentRectangle.AdjacentRectangles.Remove(this);
+                adjacentRectangle.AdjacentRectangles.Remove(this);
             }
+            //Should not be necessary:
+            //AdjacentRectangles.Clear();
         }
 
 
         public void MergeWithOtherRectangles(Board board)
         {
-            //Recursive
+            //Recursivly merge with neighboring rectangles, which sides lines up perfectly with the current rectangle:
             foreach (var AdjacentRectangle in AdjacentRectangles)
             {
                 if (!AdjacentRectangle.isEmpty) continue;

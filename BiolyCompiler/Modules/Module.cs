@@ -18,16 +18,6 @@ namespace BiolyCompiler.Modules
         protected ModuleLayout Layout;
         
 
-        public Module(int width, int height, int operationTime){
-            Shape = new Rectangle(width, height);
-            this.OperationTime = operationTime;
-            Shape.isEmpty = false;
-            NumberOfInputs = 1;
-            NumberOfOutputs = 1;
-            //At default, the output is placed in the left corner of the module.
-            Layout = GetDefaultSingleOutputLayout(Shape);
-        }
-
         public Module(int Width, int Height, int OperationTime, int NumberOfInputs, int NumberOfOutputs)
         {
             Shape = new Rectangle(Width, Height);
@@ -37,9 +27,14 @@ namespace BiolyCompiler.Modules
             this.NumberOfOutputs = NumberOfOutputs;
         }
 
+        public Module(int width, int height, int operationTime) : this(width, height, operationTime, 1, 1){
+            //At default, the output is placed in the left corner of the module.
+            Layout = GetDefaultSingleOutputLayout(Shape);
+        }
+
+
         public Module(int width, int height, int operationTime, int numberOfInputs, int numberOfOutputs, ModuleLayout Layout) : this(width, height, operationTime, numberOfInputs, numberOfOutputs)
         {
-            this.NumberOfOutputs = numberOfOutputs;
             this.Layout = Layout;
             /*
             if (DropletOutputLocations.Count != numberOfOutputs) throw new Exception("The modules droplet output locations have not been set correctly. " +
@@ -88,8 +83,9 @@ namespace BiolyCompiler.Modules
 
         public override String ToString()
         {
-            return this.GetType().ToString() + ", input/output = (" + NumberOfInputs + ", " + NumberOfOutputs + "), dimensions = " + Shape.ToString() + ", operation time = " + OperationTime;
+            return this.GetType().ToString() + ", input/output = (" + NumberOfInputs + ", " + NumberOfOutputs + "), dimensions = {" + Shape.ToString() + "}, operation time = " + OperationTime;
         }
+
         
         //Returns a copy of the module (not taking adjacencies into account). 
         //It is used for creating unique modules, for the binding process in the scheduling

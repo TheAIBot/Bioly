@@ -16,6 +16,13 @@ namespace BiolyCompiler.Modules
         }
 
 
+
+        public override bool Equals(object obj)
+        {
+            if (!base.Equals(obj)) return false;
+            else return (obj as Droplet).fluidType.Equals(this.fluidType);
+        }
+
         public override OperationType getOperationType(){
             return OperationType.DropletStorage;
         }

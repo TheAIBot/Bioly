@@ -20,6 +20,7 @@ namespace BiolyCompiler.Modules
             allocatedModules.Sort((x,y) => (x.OperationTime < y.OperationTime)? 0: 1);
         }
 
+        /*
         public Module GetFirstPlaceableModule(FluidBlock operation, Architechture archetichture){
             for (int i = 0; i < allocatedModules.Count; i++)
             {
@@ -31,7 +32,7 @@ namespace BiolyCompiler.Modules
                 }
             }
             throw new Exception("No module can execute the operation and also be placed on the board");
-        }
+        } */
 
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
@@ -74,9 +75,9 @@ namespace BiolyCompiler.Modules
             if (optimalModuleTemplate.GetModuleLayout() == null) throw new Exception("The layout of the module have never been set. The module is: " + optimalModuleTemplate.ToString());
             Module module = optimalModuleTemplate.GetCopyOf();
             if (module == null) return null;
-
+            
             bool canBePlaced = board.FastTemplatePlace(module);
-            if(!canBePlaced) throw new Exception("Module can't be placed");
+            if(!canBePlaced) throw new Exception("Module \"" + module.ToString() +  "\" can't be placed");
             //Now that the module has been placed, the internal rectangles in the module layout can be modified, such that they are placed correctly.
             module.RepositionLayout();
             return module;

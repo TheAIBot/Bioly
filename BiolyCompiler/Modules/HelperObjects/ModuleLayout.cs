@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BiolyCompiler.Modules
 {
@@ -68,6 +69,13 @@ namespace BiolyCompiler.Modules
         public void ChangeOutputType(BoardFluid fluidType)
         {
             OutputDroplets.ForEach(droplet => droplet.SetFluidType(fluidType));
+        }
+
+        public List<Rectangle> getAllRectanglesIncludingDroplets()
+        {
+            List<Rectangle> allRectangles = new List<Rectangle>(EmptyRectangles);
+            allRectangles.AddRange(OutputDroplets.Select(droplet => droplet.Shape));
+            return allRectangles;
         }
 
         public void Reposition(int x, int y)

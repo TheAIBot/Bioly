@@ -76,6 +76,7 @@ namespace BiolyCompiler.Scheduling
             while (assay.hasUnfinishedOperations() && canExecuteMoreOperations(readyOperations))
             {
                 Block nextOperation = removeOperation(readyOperations);
+                
                 if (nextOperation is VariableBlock)
                 {
                     //This is a mathematical operation, and it should be scheduled to run as soon as possible
@@ -95,13 +96,14 @@ namespace BiolyCompiler.Scheduling
                     if (operationExecutingModule == null) throw new Exception("Not enough space for a module: this is not handeled yet");
                     
                     CurrentlyRunningOpertions.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
+                    
 
                     //Now all the droplet that the module should operate on, needs to be delivered to it.
                     //By construction, there will be a route from the droplets to the module, 
                     //and so it will always be possible for this routing to be done:
                     startTime = RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
                     Debug.WriteLine(board.print(allUsedModules));
-
+                    
                     //Note that handleFinishingOperations will also wait for operations to finish, 
                     //in the case that there are no more operations that can be executed, before this happen:
                     (startTime, board) = handleFinishingOperations(startTime, assay, board);
