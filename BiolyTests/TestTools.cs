@@ -40,7 +40,7 @@ namespace BiolyTests
             Browser = browser;
         }
 
-        private static void KillProcessAndChildren(int processID)
+        private static void KillProcessTree(int processID)
         {
             //can't close system idle process
             if (processID == 0)
@@ -51,7 +51,7 @@ namespace BiolyTests
             var searchQuery = new ManagementObjectSearcher($"Select * From Win32_Process Where ParentProcessID={processID}");
             foreach (ManagementObject mo in searchQuery.Get())
             {
-                KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
+                KillProcessTree(Convert.ToInt32(mo["ProcessID"]));
             }
 
             try
