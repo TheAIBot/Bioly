@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Graphs;
+﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using System;
@@ -43,7 +44,20 @@ namespace BiolyCompiler.Routing
 
             builder.Append("]");
             return builder.ToString();
+        }
 
+        public Command[] ToCommands()
+        {
+            Command[] commands = new Command[(route.Count - 1) * 2 + 1];
+            for (int i = 1; i < commands.Length; i++)
+            {
+                RoutingInformation prevRouteInfo = route[i - 1];
+                RoutingInformation currentrouteInfo = route[i];
+                commands[i - 1] = new Command(prevRouteInfo.x   , prevRouteInfo.y   , ElectrodeStatus.OFF, startTime + i - 1);
+                commands[i]     = new Command(currentrouteInfo.x, currentrouteInfo.y, ElectrodeStatus.ON , startTime + i);
+            }
+
+            return commands;
         }
     }
 }
