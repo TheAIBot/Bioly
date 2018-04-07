@@ -25,7 +25,7 @@ namespace BiolyTests
         public static void AssemblyInit(TestContext context)
         {
             Process[] processes = Process.GetProcessesByName("chromedriver"); 
-            processes.ToList().ForEach(x => KillProcessAndChildren(x.Id));
+            processes.ToList().ForEach(x => KillProcessTree(x.Id));
 
             ChromeOptions options = new ChromeOptions();
             options.AddArgument("--headless");

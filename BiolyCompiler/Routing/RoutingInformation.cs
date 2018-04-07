@@ -11,7 +11,8 @@ namespace BiolyCompiler.Routing
     public class RoutingInformation
     {
         public int distanceFromSource = Int32.MaxValue;
-        public Node<RoutingInformation> previous = null;
-        public int x, y;
+        public RoutingInformation previous = null;
+        public int x;
+        public int y;
     }
 }

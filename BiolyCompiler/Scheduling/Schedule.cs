@@ -94,7 +94,9 @@ namespace BiolyCompiler.Scheduling
                     //If the module can't be placed, one must wait until there is enough space for it:
                     if (operationExecutingModule == null) throw new Exception("Not enough space for a module: this is not handeled yet");
                     
-                    CurrentlyRunningOpertions.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
+                    CurrentlyRunningOpertions.ToList()
+                                             .OrderBy(element => element.startTime)
+                                             .ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
 
                     //Now all the droplet that the module should operate on, needs to be delivered to it.
                     //By construction, there will be a route from the droplets to the module, 
@@ -255,9 +257,16 @@ namespace BiolyCompiler.Scheduling
                 Module moduleAtCurrentNode = board.grid[currentNode.value.x, currentNode.value.y];
 
                 if (isUnreachableNode(currentNode)) throw new Exception("No route to the desired component could be found");
-                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode)) return GetRouteFromSourceToTarget(currentNode, (Droplet) moduleAtCurrentNode, startTime); //Have reached the desired module
+                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode))
+                {
+                    //Have reached the desired module
+                    return GetRouteFromSourceToTarget(currentNode.value, (Droplet)moduleAtCurrentNode, startTime); 
+                }
                 //No collisions with other modules are allowed (except the starting module):
-                else if (hasNoCollisionWithOtherModules(sourceModule, moduleAtCurrentNode)) continue;
+                else if (hasNoCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
+                {
+                    continue;
+                }
 
                 foreach (var neighbor in currentNode.getOutgoingEdges())
                 {
@@ -266,7 +275,7 @@ namespace BiolyCompiler.Scheduling
                     if (distanceToNeighborFromCurrent < neighbor.value.distanceFromSource)
                     {
                         neighbor.value.distanceFromSource = distanceToNeighborFromCurrent;
-                        neighbor.value.previous = currentNode;
+                        neighbor.value.previous = currentNode.value;
                         priorityQueue.UpdatePriority(neighbor, distanceToNeighborFromCurrent);
                     }
                 }
@@ -292,15 +301,15 @@ namespace BiolyCompiler.Scheduling
             return droplet != null && droplet.fluidType.Equals(targetFluidType);
         }
 
-        private static Route GetRouteFromSourceToTarget(Node<RoutingInformation> currentNode, Droplet routedDroplet, int startTime)
+        private static Route GetRouteFromSourceToTarget(RoutingInformation routeInfo, Droplet routedDroplet, int startTime)
         {
-            List<Node<RoutingInformation>> routeNodes = new List<Node<RoutingInformation>>();
-            while(currentNode.value.previous != null)
+            List<RoutingInformation> routeNodes = new List<RoutingInformation>();
+            while(routeInfo.previous != null)
             {
-                routeNodes.Add(currentNode);
-                currentNode = currentNode.value.previous;
+                routeNodes.Add(routeInfo);
+                routeInfo = routeInfo.previous;
             }
-            routeNodes.Add(currentNode);
+            routeNodes.Add(routeInfo);
             routeNodes.Reverse();
             Route route = new Route(routeNodes, routedDroplet, startTime);
             return route;
@@ -334,38 +343,5 @@ namespace BiolyCompiler.Scheduling
             return topPrioriyOperation;
         }
                 
-    }
-
-
-    public class Route{
-        public List<Node<RoutingInformation>> route;
-        public readonly Droplet routedDroplet;
-        public int startTime;
-
-        public Route(List<Node<RoutingInformation>> route, Droplet routedDroplet, int startTime)
-        {
-            this.route = route;
-            this.routedDroplet = routedDroplet;
-            this.startTime = startTime;
-        }
-
-        public int getEndTime(){
-            //Minus 1 to route.Count, as the initial position of the drop is included in the route.
-            return startTime + (route.Count - 1) * Schedule.DROP_MOVEMENT_TIME;
-        }
-
-        public override String ToString()
-        {
-            String routeString = "StartTime = " + startTime + ", EndTime = " + getEndTime() + ". Route = [";
-            for (int i = 0; i < route.Count; i++)
-            {
-                routeString += "(" + route[i].value.x + ", " + route[i].value.y + ")";
-                if (i != route.Count - 1) routeString += ", ";
-            }
-
-            routeString += "]";
-            return routeString;
-            
-        }
     }
 }
