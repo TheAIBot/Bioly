@@ -10,9 +10,9 @@ namespace BiolyCompiler.Routing
 {
     public class Route
     {
-        public List<RoutingInformation> route;
+        public readonly List<RoutingInformation> route;
         public readonly Droplet routedDroplet;
-        public int startTime;
+        public readonly int startTime;
 
         public Route(List<RoutingInformation> route, Droplet routedDroplet, int startTime)
         {
@@ -27,17 +27,22 @@ namespace BiolyCompiler.Routing
             return startTime + (route.Count - 1) * Schedule.DROP_MOVEMENT_TIME;
         }
 
-        public override String ToString()
+        public override string ToString()
         {
-            String routeString = "StartTime = " + startTime + ", EndTime = " + getEndTime() + ". Route = [";
+            StringBuilder builder = new StringBuilder();
+            builder.Append($"StartTime = {startTime}, EndTime = {getEndTime()}. Route = [");
+
             for (int i = 0; i < route.Count; i++)
             {
-                routeString += "(" + route[i].x + ", " + route[i].y + ")";
-                if (i != route.Count - 1) routeString += ", ";
+                builder.Append($"({route[i].x}, {route[i].y})");
+                if (i != route.Count - 1)
+                {
+                    builder.Append(", ");
+                }
             }
 
-            routeString += "]";
-            return routeString;
+            builder.Append("]");
+            return builder.ToString();
 
         }
     }
