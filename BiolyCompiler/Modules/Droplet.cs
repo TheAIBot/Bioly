@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Modules.OperationTypes;
 
 
@@ -30,6 +32,11 @@ namespace BiolyCompiler.Modules
             this.fluidType.droplets.Remove(this);
             this.fluidType = fluidType;
             fluidType.droplets.Add(this);
+        }
+
+        protected override List<Command> GetModuleCommands()
+        {
+            throw new Exception("Droplet can't be converted into commands");
         }
     }
 }
