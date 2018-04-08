@@ -147,11 +147,6 @@ namespace BiolyCompiler.Architechtures
             return printedBoard.ToString();
         }
 
-        public Node<RoutingInformation> getSourceNodeForSourceModule(Module sourceModule, Node<RoutingInformation>[,] dijkstraGraph)
-        {
-            return dijkstraGraph[sourceModule.Shape.x, sourceModule.Shape.y];
-        }
-
         public List<Droplet> replaceWithDroplets(FluidBlock finishedOperation, BoardFluid fluidType)
         {
             Module operationExecutingModule = finishedOperation.boundModule;

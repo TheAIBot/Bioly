@@ -12,7 +12,13 @@ namespace BiolyCompiler.Routing
     {
         public int distanceFromSource = Int32.MaxValue;
         public RoutingInformation previous = null;
-        public int x;
-        public int y;
+        public readonly int x;
+        public readonly int y;
+
+        public RoutingInformation(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
     }
 }
