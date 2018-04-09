@@ -4,9 +4,9 @@ using System.Text;
 
 namespace BiolyCompiler.Commands
 {
-    public enum ElectrodeStatus : byte
+    public enum CommandType : byte
     {
-        ON,
-        OFF
+        ELECTRODE_ON,
+        ELECTRODE_OFF
     }
 }

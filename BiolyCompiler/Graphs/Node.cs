@@ -8,12 +8,7 @@ namespace BiolyCompiler.Graphs
     {
         private List<Node<N>> OutgoingEdges = new List<Node<N>>();
         private List<Node<N>> IngoingEdges = new List<Node<N>>();
-        public N value;
-
-
-        public Node()
-        {
-        }
+        public readonly N value;
 
         public Node(N value)
         {

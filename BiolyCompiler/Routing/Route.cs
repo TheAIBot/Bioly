@@ -53,8 +53,8 @@ namespace BiolyCompiler.Routing
             {
                 RoutingInformation prevRouteInfo = route[i - 1];
                 RoutingInformation currentrouteInfo = route[i];
-                commands[i - 1] = new Command(prevRouteInfo.x   , prevRouteInfo.y   , ElectrodeStatus.OFF, startTime + i - 1);
-                commands[i]     = new Command(currentrouteInfo.x, currentrouteInfo.y, ElectrodeStatus.ON , startTime + i);
+                commands[i - 1] = new Command(prevRouteInfo.x   , prevRouteInfo.y   , CommandType.ELECTRODE_OFF, i - 1);
+                commands[i]     = new Command(currentrouteInfo.x, currentrouteInfo.y, CommandType.ELECTRODE_ON , i);
             }
 
             return commands;

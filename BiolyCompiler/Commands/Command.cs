@@ -9,13 +9,13 @@ namespace BiolyCompiler.Commands
         public readonly int x;
         public readonly int y;
         public readonly int time;
-        public readonly ElectrodeStatus status;
+        public readonly CommandType type;
 
-        public Command(int x, int y, ElectrodeStatus status, int time)
+        public Command(int x, int y, CommandType type, int time)
         {
             this.x = x;
             this.y = y;
-            this.status = status;
+            this.type = type;
             this.time = time;
         }
     }

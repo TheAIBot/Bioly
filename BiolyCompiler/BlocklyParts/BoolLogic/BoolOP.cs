@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
@@ -15,10 +16,14 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         public const string RightBoolFieldName = "B";
         public const string XmlTypeName = "logic_compare";
         public readonly BoolOPTypes OPType;
+        private readonly VariableBlock LeftBlock;
+        private readonly VariableBlock RightBlock;
 
-        public BoolOP(List<string> input, string output, XmlNode node) : base(false, input, output)
+        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node) : base(false, input, output)
         {
             this.OPType = BoolOP.StringToBoolOPType(node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
+            this.LeftBlock = leftBlock;
+            this.RightBlock = rightBlock;
         }
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
@@ -26,13 +31,11 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             XmlNode leftNode = node.GetNodeWithAttributeValue(LeftBoolFieldName).FirstChild;
             XmlNode rightNode = node.GetNodeWithAttributeValue(RightBoolFieldName).FirstChild;
 
-            Block leftBoolBlock = XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
-            Block rightBoolBlock = XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
+            VariableBlock leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
+            VariableBlock rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
 
-            Node<Block> leftBoolNode = new Node<Block>();
-            Node<Block> rightBoolNode = new Node<Block>();
-            leftBoolNode.value = leftBoolBlock;
-            rightBoolNode.value = rightBoolBlock;
+            Node<Block> leftBoolNode = new Node<Block>(leftBoolBlock);
+            Node<Block> rightBoolNode = new Node<Block>(rightBoolBlock);
 
             dfg.AddNode(leftBoolNode);
             dfg.AddNode(rightBoolNode);
@@ -41,7 +44,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             inputs.Add(leftBoolBlock.OutputVariable);
             inputs.Add(rightBoolBlock.OutputVariable);
             
-            return new BoolOP(inputs, null, node);
+            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node);
         }
 
         public static BoolOPTypes StringToBoolOPType(string boolOPAsString)
@@ -83,6 +86,30 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                     return "GTE";
                 default:
                     throw new Exception("Failed to parse the boolean operator type.");
+            }
+        }
+
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        {
+            float leftResult = LeftBlock.Run(variables, executor);
+            float rightResult = RightBlock.Run(variables, executor);
+
+            switch (OPType)
+            {
+                case BoolOPTypes.EQ:
+                    return leftResult == rightResult ? 1 : 0;
+                case BoolOPTypes.NEQ:
+                    return leftResult != rightResult ? 1 : 0;
+                case BoolOPTypes.LT:
+                    return leftResult <  rightResult ? 1 : 0;
+                case BoolOPTypes.LTE:
+                    return leftResult <= rightResult ? 1 : 0;
+                case BoolOPTypes.GT:
+                    return leftResult >  rightResult ? 1 : 0;
+                case BoolOPTypes.GTE:
+                    return leftResult >= rightResult ? 1 : 0;
+                default:
+                    throw new Exception("Failed to parse the operator type.");
             }
         }
 
