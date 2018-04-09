@@ -35,7 +35,6 @@ namespace BiolyCompiler
             Stack<List<string>> varScopeStack = new Stack<List<string>>();
             Stack<Conditional> controlStack = new Stack<Conditional>();
             Stack<int> repeatStack = new Stack<int>();
-            int loopCounter = 0;
 
 
             while (runningGraph == null)
@@ -65,7 +64,7 @@ namespace BiolyCompiler
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
-                runningGraph = GetNextGraph(ref loopCounter, graph, runningGraph, variables, varScopeStack, controlStack);
+                runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack);
             }
         }
 
@@ -87,7 +86,7 @@ namespace BiolyCompiler
             commands.ForEach(x => Executor.SendCommand(x));
         }
 
-        private DFG<Block> GetNextGraph(ref int loopCounter, CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<int> repeatStack)
+        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<int> repeatStack)
         {
             IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
             if (control is If ifControl)
@@ -97,25 +96,31 @@ namespace BiolyCompiler
                     //if result is 1 then take the if block
                     if (1f == conditional.DecidingBlock.Run(variables, Executor))
                     {
-
+                        controlStack.Push(conditional);
+                        varScopeStack.Push(new List<string>());
+                        repeatStack.Push(0);
+                        return conditional.GuardedDFG;
                     }
                 }
             }
             else if (control is Repeat repeatControl)
             {
-                loopCounter = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor);
+                int loopCount = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor);
                 controlStack.Push(repeatControl.Cond);
                 varScopeStack.Push(new List<string>());
-                repeatStack.
+                repeatStack.Push(--loopCount);
                 return repeatControl.Cond.GuardedDFG;
             }
 
-            //if inside repeat block and still
-            //need to repeat
-            if (loopCounter > 0)
+            while (repeatStack.Count > 0)
             {
-                loopCounter--;
-                return currentDFG;
+                //if inside repeat block and still
+                //need to repeat
+                if (repeatStack.Count > 0 && repeatStack.Peek() > 0)
+                {
+                    repeatStack.Push(repeatStack.Pop() - 1);
+                    return currentDFG;
+                }
             }
         }
     }
