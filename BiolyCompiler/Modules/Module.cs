@@ -143,7 +143,7 @@ namespace BiolyCompiler.Modules
             List<Command> commands = new List<Command>();
 
             //i need a way to get this in the correct order
-            foreach (List<Route> route in InputRoutes.Values)
+            foreach (List<Route> route in InputRoutes.Values.OrderBy(x => x.First().startTime))
             {
                 route.ForEach(x => commands.AddRange(x.ToCommands()));
             }
