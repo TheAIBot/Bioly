@@ -9,11 +9,11 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 {
     public class Conditional
     {
-        public readonly Block DecidingBlock;
+        public readonly VariableBlock DecidingBlock;
         public readonly DFG<Block> GuardedDFG;
         public readonly DFG<Block> NextDFG;
 
-        public Conditional(Block decidingBlock, DFG<Block> guardedDFG, DFG<Block> nextDFG)
+        public Conditional(VariableBlock decidingBlock, DFG<Block> guardedDFG, DFG<Block> nextDFG)
         {
             this.DecidingBlock = decidingBlock;
             this.GuardedDFG = guardedDFG;

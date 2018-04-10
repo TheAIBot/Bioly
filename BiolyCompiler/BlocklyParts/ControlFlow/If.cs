@@ -21,7 +21,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             while (ifNode != null)
             {
                 XmlNode decidingNode = ifNode.FirstChild;
-                Block decidingBlock = XmlParser.ParseAndAddNodeToDFG(decidingNode, dfg, mostRecentRef);
+                VariableBlock decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(decidingNode, dfg, mostRecentRef);
                 XmlNode guardedDFGNode = node.GetNodeWithAttributeValue($"DO{ifCounter}").FirstChild;
                 DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg);
                 DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg);

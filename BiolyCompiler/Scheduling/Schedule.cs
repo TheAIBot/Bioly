@@ -94,7 +94,9 @@ namespace BiolyCompiler.Scheduling
                     //If the module can't be placed, one must wait until there is enough space for it:
                     if (operationExecutingModule == null) throw new Exception("Not enough space for a module: this is not handeled yet");
                     
-                    CurrentlyRunningOpertions.ToList().OrderBy(element => element.startTime).ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
+                    CurrentlyRunningOpertions.ToList()
+                                             .OrderBy(element => element.startTime)
+                                             .ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
 
                     //Now all the droplet that the module should operate on, needs to be delivered to it.
                     //By construction, there will be a route from the droplets to the module, 
@@ -241,39 +243,70 @@ namespace BiolyCompiler.Scheduling
             //Dijkstras algorithm, based on the one seen on wikipedia.
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
             //and then inverts the route.
-            Node<RoutingInformation>[,] dijkstraGraph = createDijkstraGraph(board);
-            Node<RoutingInformation> source = board.getSourceNodeForSourceModule(sourceModule, dijkstraGraph);
-            source.value.distanceFromSource = 0;
-            SimplePriorityQueue<Node<RoutingInformation>, int> priorityQueue = new SimplePriorityQueue<Node<RoutingInformation>, int>();
-            foreach (var node in dijkstraGraph) priorityQueue.Enqueue(node, node.value.distanceFromSource);
+            RoutingInformation[,] dijkstraGraph = createDijkstraGraph(board);
+            RoutingInformation source = dijkstraGraph[sourceModule.Shape.x, sourceModule.Shape.y];
+            source.distanceFromSource = 0;
+
+            SimplePriorityQueue<RoutingInformation, int> priorityQueue = new SimplePriorityQueue<RoutingInformation, int>();
+            foreach (var node in dijkstraGraph)
+            {
+                priorityQueue.Enqueue(node, node.distanceFromSource);
+            }
 
 
             while (priorityQueue.Count > 0)
             {
+                RoutingInformation currentNode = priorityQueue.Dequeue();
+                Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
 
-                Node<RoutingInformation> currentNode = priorityQueue.Dequeue();
-                Module moduleAtCurrentNode = board.grid[currentNode.value.x, currentNode.value.y];
-
-                if (isUnreachableNode(currentNode)) throw new Exception("No route to the desired component could be found");
-                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode)) return GetRouteFromSourceToTarget(currentNode, (Droplet) moduleAtCurrentNode, startTime); //Have reached the desired module
-                //No collisions with other modules are allowed (except the starting module):
-                else if (hasNoCollisionWithOtherModules(sourceModule, moduleAtCurrentNode)) continue;
-
-                foreach (var neighbor in currentNode.getOutgoingEdges())
+                if (isUnreachableNode(currentNode))
                 {
-                    //Unit lenght distances, and thus the distance is with a +1.
-                    int distanceToNeighborFromCurrent = currentNode.value.distanceFromSource + 1;
-                    if (distanceToNeighborFromCurrent < neighbor.value.distanceFromSource)
-                    {
-                        neighbor.value.distanceFromSource = distanceToNeighborFromCurrent;
-                        neighbor.value.previous = currentNode;
-                        priorityQueue.UpdatePriority(neighbor, distanceToNeighborFromCurrent);
-                    }
+                    throw new Exception("No route to the desired component could be found");
+                }
+                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode))
+                {
+                    //Have reached the desired module
+                    return GetRouteFromSourceToTarget(currentNode, (Droplet)moduleAtCurrentNode, startTime);
+                }
+                //No collisions with other modules are allowed (except the starting module):
+                else if (hasNoCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
+                {
+                    continue;
+                }
+
+                //go through all neighbors
+                if (0 < currentNode.x)
+                {
+                    AddNeighborIfGoodEnough(priorityQueue, currentNode, dijkstraGraph[currentNode.x - 1, currentNode.y]);
+                }
+                if (0 < currentNode.y)
+                {
+                    AddNeighborIfGoodEnough(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y - 1]);
+                }
+                if (currentNode.x < board.width - 1)
+                {
+                    AddNeighborIfGoodEnough(priorityQueue, currentNode, dijkstraGraph[currentNode.x + 1, currentNode.y]);
+                }
+                if (currentNode.y < board.heigth - 1)
+                {
+                    AddNeighborIfGoodEnough(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y + 1]);
                 }
 
             }
             //If no route was found:
-            return null;
+            throw new Exception("No route to the desired component could be found");
+        }
+
+        private static void AddNeighborIfGoodEnough(SimplePriorityQueue<RoutingInformation, int> priorityQueue, RoutingInformation currentNode, RoutingInformation neighbor)
+        {
+            //Unit lenght distances, and thus the distance is with a +1.
+            int distanceToNeighborFromCurrent = currentNode.distanceFromSource + 1;
+            if (distanceToNeighborFromCurrent < neighbor.distanceFromSource)
+            {
+                neighbor.distanceFromSource = distanceToNeighborFromCurrent;
+                neighbor.previous = currentNode;
+                priorityQueue.UpdatePriority(neighbor, neighbor.distanceFromSource);
+            }
         }
 
         private static bool hasNoCollisionWithOtherModules(Module sourceModule, Module moduleAtCurrentNode)
@@ -281,9 +314,9 @@ namespace BiolyCompiler.Scheduling
             return moduleAtCurrentNode != null && moduleAtCurrentNode != sourceModule;
         }
 
-        private static bool isUnreachableNode(Node<RoutingInformation> currentNode)
+        private static bool isUnreachableNode(RoutingInformation currentNode)
         {
-            return currentNode.value.distanceFromSource == Int32.MaxValue;
+            return currentNode.distanceFromSource == Int32.MaxValue;
         }
 
         private static bool haveReachedDropletOfTargetType(BoardFluid targetFluidType, Module moduleAtCurrentNode)
@@ -292,39 +325,32 @@ namespace BiolyCompiler.Scheduling
             return droplet != null && droplet.fluidType.Equals(targetFluidType);
         }
 
-        private static Route GetRouteFromSourceToTarget(Node<RoutingInformation> currentNode, Droplet routedDroplet, int startTime)
+        private static Route GetRouteFromSourceToTarget(RoutingInformation routeInfo, Droplet routedDroplet, int startTime)
         {
-            List<Node<RoutingInformation>> routeNodes = new List<Node<RoutingInformation>>();
-            while(currentNode.value.previous != null)
+            List<RoutingInformation> routeNodes = new List<RoutingInformation>();
+            while(routeInfo.previous != null)
             {
-                routeNodes.Add(currentNode);
-                currentNode = currentNode.value.previous;
+                routeNodes.Add(routeInfo);
+                routeInfo = routeInfo.previous;
             }
-            routeNodes.Add(currentNode);
+            routeNodes.Add(routeInfo);
             routeNodes.Reverse();
             Route route = new Route(routeNodes, routedDroplet, startTime);
             return route;
         }
 
-        private static Node<RoutingInformation>[,] createDijkstraGraph(Board board)
+        private static RoutingInformation[,] createDijkstraGraph(Board board)
         {
-            Node<RoutingInformation>[,] dijkstraGraph = new Node<RoutingInformation>[board.width, board.heigth];
-            for (int i = 0; i < dijkstraGraph.GetLength(0); i++) { 
-                for (int j = 0; j < dijkstraGraph.GetLength(1); j++) {
-                    dijkstraGraph[i, j] = new Node<RoutingInformation>(new RoutingInformation());
-                    dijkstraGraph[i, j].value.x = i;
-                    dijkstraGraph[i, j].value.y = j;
+            RoutingInformation[,] dijkstraGraph = new RoutingInformation[board.width, board.heigth];
+
+            for (int x = 0; x < dijkstraGraph.GetLength(0); x++)
+            {
+                for (int y = 0; y < dijkstraGraph.GetLength(1); y++)
+                {
+                    dijkstraGraph[x, y] = new RoutingInformation(x, y);
                 }
             }
-            //Adding edges:
-            for (int i = 0; i < dijkstraGraph.GetLength(0); i++) {
-                for (int j = 0; j < dijkstraGraph.GetLength(1); j++) {
-                    if (0 < i) dijkstraGraph[i, j].AddOutgoingEdge(dijkstraGraph[i - 1, j]);
-                    if (0 < j) dijkstraGraph[i, j].AddOutgoingEdge(dijkstraGraph[i, j - 1]);
-                    if (i < board.width - 1 ) dijkstraGraph[i, j].AddOutgoingEdge(dijkstraGraph[i + 1, j]);
-                    if (j < board.heigth - 1) dijkstraGraph[i, j].AddOutgoingEdge(dijkstraGraph[i, j + 1]);
-                }
-            }
+
             return dijkstraGraph;
         }
 
@@ -334,38 +360,5 @@ namespace BiolyCompiler.Scheduling
             return topPrioriyOperation;
         }
                 
-    }
-
-
-    public class Route{
-        public List<Node<RoutingInformation>> route;
-        public readonly Droplet routedDroplet;
-        public int startTime;
-
-        public Route(List<Node<RoutingInformation>> route, Droplet routedDroplet, int startTime)
-        {
-            this.route = route;
-            this.routedDroplet = routedDroplet;
-            this.startTime = startTime;
-        }
-
-        public int getEndTime(){
-            //Minus 1 to route.Count, as the initial position of the drop is included in the route.
-            return startTime + (route.Count - 1) * Schedule.DROP_MOVEMENT_TIME;
-        }
-
-        public override String ToString()
-        {
-            String routeString = "StartTime = " + startTime + ", EndTime = " + getEndTime() + ". Route = [";
-            for (int i = 0; i < route.Count; i++)
-            {
-                routeString += "(" + route[i].value.x + ", " + route[i].value.y + ")";
-                if (i != route.Count - 1) routeString += ", ";
-            }
-
-            routeString += "]";
-            return routeString;
-            
-        }
     }
 }

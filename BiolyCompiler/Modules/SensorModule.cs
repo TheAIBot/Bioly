@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
@@ -20,6 +22,11 @@ namespace BiolyCompiler.Modules
             SensorModule sensor = new SensorModule();
             sensor.Shape = new Rectangle(Shape);
             return sensor;
+        }
+
+        protected override List<Command> GetModuleCommands()
+        {
+            return new List<Command>();
         }
     }
 }

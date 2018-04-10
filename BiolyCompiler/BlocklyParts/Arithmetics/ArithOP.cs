@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Graphs;
+﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,14 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string RightArithFieldName = "B";
         public const string XmlTypeName = "math_arithmetic";
         public readonly ArithOPTypes OPType;
+        private readonly VariableBlock LeftBlock;
+        private readonly VariableBlock RightBlock;
 
-        public ArithOP(List<string> input, string output, XmlNode node) : base(false, input, output)
+        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node) : base(false, input, output)
         {
             this.OPType = ArithOP.StringToArithOPType(node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
+            this.LeftBlock = leftBlock;
+            this.RightBlock = rightBlock;
         }
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
@@ -25,13 +30,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithFieldName).FirstChild;
             XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithFieldName).FirstChild;
 
-            Block leftArithBlock = XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
-            Block rightArithBlock = XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
+            VariableBlock leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
+            VariableBlock rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
 
-            Node<Block> leftArithNode = new Node<Block>();
-            Node<Block> rightArithNode = new Node<Block>();
-            leftArithNode.value = leftArithBlock;
-            rightArithNode.value = rightArithBlock;
+            Node<Block> leftArithNode = new Node<Block>(leftArithBlock);
+            Node<Block> rightArithNode = new Node<Block>(rightArithBlock);
 
             dfg.AddNode(leftArithNode);
             dfg.AddNode(rightArithNode);
@@ -40,7 +43,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             inputs.Add(leftArithBlock.OutputVariable);
             inputs.Add(rightArithBlock.OutputVariable);
 
-            return new ArithOP(inputs, null, node);
+            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, node);
         }
 
         public static ArithOPTypes StringToArithOPType(string arithOPTypeAsString)
@@ -76,6 +79,28 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                     return "DIVIDE";
                 case ArithOPTypes.POW:
                     return "POWER";
+                default:
+                    throw new Exception("Failed to parse the arithmetic operator type.");
+            }
+        }
+
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        {
+            float leftResult = LeftBlock.Run(variables, executor);
+            float rightResult = RightBlock.Run(variables, executor);
+
+            switch (OPType)
+            {
+                case ArithOPTypes.ADD:
+                    return leftResult + rightResult;
+                case ArithOPTypes.SUB:
+                    return leftResult + rightResult;
+                case ArithOPTypes.MUL:
+                    return leftResult + rightResult;
+                case ArithOPTypes.DIV:
+                    return leftResult + rightResult;
+                case ArithOPTypes.POW:
+                    return (float)Math.Pow(leftResult, rightResult);
                 default:
                     throw new Exception("Failed to parse the arithmetic operator type.");
             }

@@ -64,8 +64,7 @@ namespace BiolyCompiler.Parser
         internal static Block ParseAndAddNodeToDFG(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
             Block block = ParseBlock(node, dfg, mostRecentRef);
-            Node<Block> dfgNode = new Node<Block>();
-            dfgNode.value = block;
+            Node<Block> dfgNode = new Node<Block>(block);
             
             dfg.AddNode(dfgNode);
 

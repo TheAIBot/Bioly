@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
@@ -15,6 +17,11 @@ namespace BiolyCompiler.Modules
         }
 
         public override Module GetCopyOf()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override List<Command> GetModuleCommands()
         {
             throw new NotImplementedException();
         }

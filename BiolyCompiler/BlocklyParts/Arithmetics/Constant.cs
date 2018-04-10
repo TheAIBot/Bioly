@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Parser;
+﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,6 +21,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public static Block Parse(XmlNode node)
         {
             return new Constant(null, node);
+        }
+
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        {
+            return Value;
         }
 
         public override string ToString()
