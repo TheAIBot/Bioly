@@ -64,7 +64,7 @@ namespace BiolyCompiler
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
-                runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack);
+                runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack, repeatStack);
             }
         }
 
@@ -116,12 +116,28 @@ namespace BiolyCompiler
             {
                 //if inside repeat block and still
                 //need to repeat
-                if (repeatStack.Count > 0 && repeatStack.Peek() > 0)
+                if (repeatStack.Peek() > 0)
                 {
                     repeatStack.Push(repeatStack.Pop() - 1);
                     return currentDFG;
                 }
+
+                if (controlStack.Peek().NextDFG != null)
+                {
+                    DFG<Block> nextDFG = controlStack.Peek().NextDFG;
+                    controlStack.Pop();
+                    varScopeStack.Pop();
+                    repeatStack.Pop();
+
+                    return nextDFG;
+                }
+
+                controlStack.Pop();
+                varScopeStack.Pop();
+                repeatStack.Pop();
             }
+
+            return null;
         }
     }
 }
