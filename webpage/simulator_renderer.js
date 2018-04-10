@@ -151,7 +151,7 @@ function createElectrodeSizes(width, height)
 	
 	for(var x = 0; x < width * height; x++)
 	{
-		sizes.push(1);
+		sizes.push(vec2(1, 1));
 	}
 	
 	return sizes;
@@ -212,7 +212,7 @@ function renderBuffers(drawMode, buffers, shapesCount)
 	gl.vertexAttribDivisor(glData.positionPointer, 1);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.sizeBuffer);
-	gl.vertexAttribPointer(glData.sizePointer, 1, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(glData.sizePointer, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(glData.sizePointer);
 	gl.vertexAttribDivisor(glData.sizePointer, 1);
 
@@ -239,7 +239,7 @@ function drawElectrodeOff(electrodeNumber)
 function updateDropData(drops)
 {
 	var dropPositions = new Float32Array(drops.length * 2);
-	var dropSizes     = new Float32Array(drops.length * 1);
+	var dropSizes     = new Float32Array(drops.length * 2);
 	var dropColors    = new Float32Array(drops.length * 4);
 	
 	for(var i = 0; i < drops.length; i++)
@@ -250,6 +250,7 @@ function updateDropData(drops)
 		dropPositions[i * 2 + 1] = drop.position[1];
 		
 		dropSizes[i * 1 + 0] = drop.size;
+		dropSizes[i * 1 + 1] = drop.size;
 		
 		dropColors[i * 4 + 0] = drop.color[0];
 		dropColors[i * 4 + 1] = drop.color[1];
@@ -289,7 +290,7 @@ function offsetCurrentViewPosition(x, y)
 function changeZoom(zoom)
 {
 	currentZoom += zoom;
-	
+	currentZoom = Math.max(0.1, currentZoom);
     gl.uniform1f(glData.zoomPointer, currentZoom);
 }
 
