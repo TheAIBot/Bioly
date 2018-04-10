@@ -17,8 +17,9 @@ namespace BiolyCompiler.Modules
 
         public Rectangle(int width, int height)
         {
+            if (width < 0 || height < 0) throw new Exception("A rectangle must have a non-negative height and width: (width, height)=(" + width + ", " + height + ") is not allowed.");
             this.height = height;
-            this.width  = width; 
+            this.width = width;
         }
 
         public Rectangle(int width, int height, int x, int y) : this(width, height)
@@ -34,15 +35,16 @@ namespace BiolyCompiler.Modules
             this.y = y;
         }
 
-        public bool DoesFit(Module module)
+        public bool DoesRectangleFitInside(Rectangle rectangle)
         {
-            return module.Shape.height <= this.height && module.Shape.width <= this.width;
+            return rectangle.height <= this.height && rectangle.width <= this.width;
         }
 
         public int GetArea()
         {
             return height * width;
         }
+
 
         /// <summary>
         /// Given a module, the rectangle is split up into three rectangles, 
@@ -59,7 +61,7 @@ namespace BiolyCompiler.Modules
         /// </summary>
         /// <param name="module">The module to be placed in the rectangle.</param>
         /// <returns>(TopRectangle, RightRectangle) from the split. They are null if they have either width = 0 or height = 0.</returns>
-        public (Rectangle, Rectangle) SplitIntoSmallerRectangles(Module module)
+        public (Rectangle, Rectangle) SplitIntoSmallerRectangles(Rectangle rectangle)
         {
             //The module is placed in the lower left corner of the rectangle.
 
@@ -68,19 +70,19 @@ namespace BiolyCompiler.Modules
             //based on which segments extending from the rectangle (see FTP algorithm papier) that are shortest:
             Rectangle TopRectangle;
             Rectangle RightRectangle;
-            int VerticalSegmentLenght = this.height - module.Shape.height;
-            int HorizontalSegmentLenght = this.width - module.Shape.width;
+            int VerticalSegmentLenght = this.height - rectangle.height;
+            int HorizontalSegmentLenght = this.width - rectangle.width;
             if (ShouldSplitAtHorizontalLineSegment(VerticalSegmentLenght, HorizontalSegmentLenght)){ //Split at the horizontal line segment:
                 TopRectangle = new Rectangle(this.width, VerticalSegmentLenght);
-                RightRectangle = new Rectangle(HorizontalSegmentLenght, module.Shape.height);
+                RightRectangle = new Rectangle(HorizontalSegmentLenght, rectangle.height);
             }else { //Split at the vertical line segment:
-                TopRectangle = new Rectangle(module.Shape.width, VerticalSegmentLenght);
+                TopRectangle = new Rectangle(rectangle.width, VerticalSegmentLenght);
                 RightRectangle = new Rectangle(HorizontalSegmentLenght, this.height);
             }
 
-            module.Shape.PlaceAt(this.x, this.y);
-            TopRectangle.PlaceAt(this.x, module.Shape.getTopmostYPosition() + 1);
-            RightRectangle.PlaceAt(module.Shape.getRightmostXPosition() + 1, this.y);
+            rectangle.PlaceAt(this.x, this.y);
+            TopRectangle.PlaceAt(this.x, rectangle.getTopmostYPosition() + 1);
+            RightRectangle.PlaceAt(rectangle.getRightmostXPosition() + 1, this.y);
 
             //If the line segments has size = 0, the rectangles has an area of 0, 
             //and as such they can be discarded:
@@ -88,15 +90,15 @@ namespace BiolyCompiler.Modules
             if (VerticalSegmentLenght == 0) TopRectangle = null;
             else {
                 ComputeAdjacencyList(TopRectangle);
-                TopRectangle.AdjacentRectangles.Add(module.Shape);
-                module.Shape.AdjacentRectangles.Add(TopRectangle);
+                TopRectangle.AdjacentRectangles.Add(rectangle);
+                rectangle.AdjacentRectangles.Add(TopRectangle);
             }
             if (HorizontalSegmentLenght == 0) RightRectangle = null;
             else
             {
                 ComputeAdjacencyList(RightRectangle);
-                RightRectangle.AdjacentRectangles.Add(module.Shape);
-                module.Shape.AdjacentRectangles.Add(RightRectangle);
+                RightRectangle.AdjacentRectangles.Add(rectangle);
+                rectangle.AdjacentRectangles.Add(RightRectangle);
             }
 
             if (TopRectangle != null && RightRectangle != null)
@@ -105,8 +107,60 @@ namespace BiolyCompiler.Modules
                 RightRectangle.AdjacentRectangles.Add(TopRectangle);
             }
             RemoveAdjacencies(); //This line must be before the next line, curtesy of the adjacencies of rectangles being hashsets. 
-            ComputeAdjacencyList(module.Shape);
+            ComputeAdjacencyList(rectangle);
             return (TopRectangle, RightRectangle);
+        }
+
+        public void splitRectangleInTwo(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
+        {
+            CheckThatTheRectanglesDividesTheRectanglePerfectly(splittingRectangle1, splittingRectangle2);
+            RemoveAdjacencies();
+            splittingRectangle1.AdjacentRectangles.Add(splittingRectangle2);
+            splittingRectangle2.AdjacentRectangles.Add(splittingRectangle1);
+            ComputeAdjacencyList(splittingRectangle1);
+            ComputeAdjacencyList(splittingRectangle2);
+        }
+
+        private void CheckThatTheRectanglesDividesTheRectanglePerfectly(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
+        {
+            if (splittingRectangle1.getArea() + splittingRectangle2.GetArea() != this.getArea())
+                throw new Exception("The sum of the area of the two rectangles that are supposed to split the rectangle into two, " +
+                                    "do not equal the area of the split rectangle.");
+            else if (splittingRectangle1.width == 0 || splittingRectangle1.height == 0 ||
+                     splittingRectangle2.width == 0 || splittingRectangle2.height == 0)
+                throw new Exception("The two rectangles that are supposed to split the rectangle, must both have a non-zero size.");
+            //else if (splittingRectangle1.isOverlappingWith(splittingRectangle2))
+            //    throw new Exception("The two rectangles that are supposed to split the rectangle into two are overlapping");
+            else if (!(splittingRectangle1.isCompletlyInside(this) && splittingRectangle2.isCompletlyInside(this)))
+                throw new Exception("At least one of the two rectangles that are supposed to split the rectangle into two, are not competly contained in the rectangle.");
+        }
+
+        private bool isOverlappingWith(Rectangle splittingRectangle)
+        {
+            //Based on https://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
+            bool xOverlap = valueInRange(x, splittingRectangle.x, splittingRectangle.x + splittingRectangle.width) ||
+                            valueInRange(splittingRectangle.x, x, x + width);
+
+            bool yOverlap = valueInRange(y, splittingRectangle.y, splittingRectangle.y + splittingRectangle.height) ||
+                            valueInRange(splittingRectangle.y, y, y + height);
+
+            return xOverlap && yOverlap;
+        }
+
+        private bool valueInRange(int value, int min, int max)
+        {
+            return min <= value && value <= max;
+        }
+
+        private bool isCompletlyInside(Rectangle rectangle)
+        {
+            return (rectangle.x <= x && x + width  <= rectangle.x + rectangle.width  && 
+                    rectangle.y <= y && y + height <= rectangle.y + rectangle.height);
+        }
+
+        private int getArea()
+        {
+            return width * height;
         }
 
         private static bool ShouldSplitAtHorizontalLineSegment(int VerticalSegmentLenght, int HorizontalSegmentLenght)
@@ -239,7 +293,7 @@ namespace BiolyCompiler.Modules
         
         public bool IsAdjacent(Rectangle rectangle)
         {
-            //Adjaceny depends on which side that the rectangles are closest - left, right top or bottom.
+            //Adjacency depends on which side that the rectangles are closest - left, right top or bottom.
             Boolean isAdjacentToTheLeft  = (rectangle.getRightmostXPosition() + 1 == this.x   && isOverlappingInterval(y, getTopmostYPosition()  , rectangle.y, rectangle.getTopmostYPosition()));
             Boolean isAdjacentBelow      = (rectangle.getTopmostYPosition()   + 1 == this.y   && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
             Boolean isAdjacentToTheRight = (rectangle.x == this.getRightmostXPosition() + 1   && isOverlappingInterval(y, getTopmostYPosition()  , rectangle.y, rectangle.getTopmostYPosition()));

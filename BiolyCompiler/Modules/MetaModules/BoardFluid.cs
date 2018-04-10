@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace BiolyCompiler.Modules
 {
     public class BoardFluid
     {
         public readonly string FluidName;
-        public List<Droplet> droplets = new List<Droplet>();
+        public List<IDropletSource> droplets = new List<IDropletSource>();
 
         public BoardFluid(string fluidName)
         {
@@ -22,6 +23,11 @@ namespace BiolyCompiler.Modules
             BoardFluid fluidObj = obj as BoardFluid;
             if (fluidObj == null) return false;
             else return FluidName.Equals(fluidObj.FluidName);
+        }
+
+        public int GetNumberOfDropletsAvailable()
+        {
+            return droplets.Count;
         }
     }
 }

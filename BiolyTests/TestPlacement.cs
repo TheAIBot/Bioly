@@ -70,6 +70,53 @@ namespace BiolyTests.PlacementTests
             Assert.Fail("Not implemented yet");
         }
 
+
+        [TestMethod]
+        public void TestPlaceModuleWithBufferEmptyBoard()
+        {
+            int boardHeight = 20, boardWidth = 20;
+            Board board = new Board(boardWidth, boardHeight);
+            int width = 4, heigth = 4;
+            Module module = new TestModule(width, heigth, 2000);
+            board.PlaceBufferedModule(module, new List<Rectangle>(board.EmptyRectangles));
+
+            //The division of the empty rectangles should be very specific:
+
+            Assert.AreEqual(4+2, board.EmptyRectangles.Count);
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(width + 2, 1, 0, 0)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(1, heigth + 1, 0, 1)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(width + 1, 1, 1, heigth + 1)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(1, heigth, width + 1, 1)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth, boardHeight - heigth - 2, 0, heigth + 2)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth - width - 2, heigth + 2, width + 2, 0)));
+
+            for (int x = module.Shape.x; x <= module.Shape.getRightmostXPosition(); x++)
+            {
+                for (int y = module.Shape.y; y <= module.Shape.getTopmostYPosition(); y++)
+                {
+                    Assert.AreEqual(module, board.grid[x, y]);
+                }
+            }
+            foreach (var rectangle in board.EmptyRectangles)
+            {
+                foreach (var rectangle2 in board.EmptyRectangles)
+                {
+                    if (rectangle.IsAdjacent(rectangle2)) {
+                        Assert.IsTrue(rectangle.AdjacentRectangles.Contains(rectangle2));
+                        Assert.IsTrue(rectangle2.AdjacentRectangles.Contains(rectangle));
+                    } else {
+
+                        Assert.IsFalse(rectangle.AdjacentRectangles.Contains(rectangle2));
+                        Assert.IsFalse(rectangle2.AdjacentRectangles.Contains(rectangle));
+                    }
+                }
+            }
+            //When it has been deleted, everything should return to the state before:
+            board.FastTemplateRemove(module);
+            Assert.AreEqual(1, board.EmptyRectangles.Count);
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth, boardHeight, 0, 0)));
+        }
+
         [TestMethod]
         public void TestFastTemplateRemoveAddAndBacktrack()
         {
@@ -108,6 +155,8 @@ namespace BiolyTests.PlacementTests
             
             Assert.Fail("Not implemented yet");
         }
+
+
 
         [TestMethod]
         public void TestMergeWithRectangleLeftSide()

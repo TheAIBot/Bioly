@@ -4,9 +4,9 @@ using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
 {
-    public class Droplet : Module
+    public class Droplet : Module, IDropletSource
     {
-        public BoardFluid fluidType;
+        private BoardFluid fluidType;
         public const int DROPLET_WIDTH = 3, DROPLET_HEIGHT = 3;
 
         public Droplet(BoardFluid fluidType) : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, 0, 0)
@@ -15,7 +15,17 @@ namespace BiolyCompiler.Modules
             fluidType.droplets.Add(this);
         }
 
+        public BoardFluid getFluidType()
+        {
+            return fluidType;
+        }
 
+        public void SetFluidType(BoardFluid fluidType)
+        {
+            this.fluidType.droplets.Remove(this);
+            this.fluidType = fluidType;
+            fluidType.droplets.Add(this);
+        }
 
         public override bool Equals(object obj)
         {
@@ -32,11 +42,5 @@ namespace BiolyCompiler.Modules
             throw new NotImplementedException();
         }
 
-        public void SetFluidType(BoardFluid fluidType)
-        {
-            this.fluidType.droplets.Remove(this);
-            this.fluidType = fluidType;
-            fluidType.droplets.Add(this);
-        }
     }
 }

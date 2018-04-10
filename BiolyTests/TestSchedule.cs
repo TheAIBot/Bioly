@@ -292,6 +292,8 @@ namespace BiolyTests.ScheduleTests
                 Assert.AreEqual(1, boards[i].placedModules.Count);
             }
 
+
+
             //The second last board should be where the module implementing the operation should be placed.
             Assert.AreEqual(module.GetType(), boards[boards.Count - 2].placedModules.Select(placedModule => placedModule.GetType()).First());
             Assert.AreEqual(1, schedule.ScheduledOperations.Count);

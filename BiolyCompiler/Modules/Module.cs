@@ -49,7 +49,7 @@ namespace BiolyCompiler.Modules
         public static ModuleLayout GetDefaultSingleOutputLayout(Rectangle rectangle)
         {
             Droplet droplet = new Droplet(new BoardFluid("Test"));
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(droplet);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(droplet.Shape);
             List<Rectangle> emptyRectangles = new List<Rectangle>();
             if (TopRectangle != null) emptyRectangles.Add(TopRectangle);
             if (RightRectangle != null) emptyRectangles.Add(RightRectangle);

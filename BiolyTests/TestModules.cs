@@ -20,7 +20,7 @@ namespace BiolyTests.ModuleTests
             rectangle.PlaceAt(x, y);
             
             Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
             
             Assert.AreEqual(x, TopRectangle.x);
             Assert.AreEqual(x + moduleWidth, RightRectangle.x);
@@ -46,7 +46,7 @@ namespace BiolyTests.ModuleTests
             rectangle.PlaceAt(x, y);
 
             Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
 
             Assert.AreEqual(x, TopRectangle.x);
             Assert.AreEqual(x + moduleWidth, RightRectangle.x);
@@ -71,7 +71,7 @@ namespace BiolyTests.ModuleTests
             rectangle.PlaceAt(x, y);
 
             Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
 
             Assert.AreEqual(null, RightRectangle);
 
@@ -92,7 +92,7 @@ namespace BiolyTests.ModuleTests
             rectangle.PlaceAt(x, y);
 
             Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module);
+            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
 
             Assert.AreEqual(null, TopRectangle);
 
@@ -176,7 +176,7 @@ namespace BiolyTests.ModuleTests
 
                 }
                 //It is a horizontal split.
-                (Rectangle TopRectangle, Rectangle RightRectangle) = emptyRectangle.SplitIntoSmallerRectangles(module);
+                (Rectangle TopRectangle, Rectangle RightRectangle) = emptyRectangle.SplitIntoSmallerRectangles(module.Shape);
                 Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(emptyRectangle));
                 Assert.IsTrue(module.Shape.AdjacentRectangles.Contains(TopRectangle));
                 Assert.IsTrue(module.Shape.AdjacentRectangles.Contains(RightRectangle));
