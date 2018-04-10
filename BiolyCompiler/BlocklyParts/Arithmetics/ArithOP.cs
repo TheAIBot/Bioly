@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Graphs;
+﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -29,8 +30,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithFieldName).FirstChild;
             XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithFieldName).FirstChild;
 
-            Block leftArithBlock = XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
-            Block rightArithBlock = XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
+            VariableBlock leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
+            VariableBlock rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
 
             Node<Block> leftArithNode = new Node<Block>(leftArithBlock);
             Node<Block> rightArithNode = new Node<Block>(rightArithBlock);
@@ -42,7 +43,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             inputs.Add(leftArithBlock.OutputVariable);
             inputs.Add(rightArithBlock.OutputVariable);
 
-            return new ArithOP(inputs, null, node);
+            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, node);
         }
 
         public static ArithOPTypes StringToArithOPType(string arithOPTypeAsString)
@@ -83,7 +84,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             }
         }
 
-        public override float Run(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
         {
             float leftResult = LeftBlock.Run(variables, executor);
             float rightResult = RightBlock.Run(variables, executor);
