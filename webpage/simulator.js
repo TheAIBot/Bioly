@@ -12,6 +12,7 @@ var dropInputs;
 var dropOutputs;
 var boardWidth;
 var boardHeight;
+var areas;
 
 const LEFT_NEIGHBOR_INDEX  = 0;
 const RIGHT_NEIGHBOR_INDEX = 1;
@@ -21,6 +22,13 @@ const BELOW_NEIGHBOR_INDEX = 3;
 const ELECTRODE_SIZE_IN_CM = 1;
 const DROP_DISTANCE_PER_SEC_IN_CM = 5;
 const UPDATES_PER_SECOND = 60;
+
+//setel 1 2 3 4 5 6 7  8 9 10
+//clrel 1 2 3 4 5  6 7 8 9 10
+//clra
+//--[[unique simulator commands]]--
+//show_area (string)id (int)x (int)y (int)width (int)height (float)r (float)g (float)b
+//remove_area (string)id
 
 function startSimulator(width, height, inputs, outputs)
 {
@@ -36,6 +44,7 @@ function startSimulator(width, height, inputs, outputs)
 	prepareInputs();
 	
 	drops = [];
+	areas = [];
 	
 	render(drops.length);
 	updateLoop()
@@ -111,27 +120,25 @@ function updateLoop()
 	if(newCommand != null)
 	{
 		executeCommand(newCommand);
+		newCommand = null;
 	}
 	
 	spawnInputDrops();
-	
 	splitDrops();
-	
 	removeDrops();
-	
 	updateDropPositions();
-	
 	mergeDrops();
 	
 	updateDropData(drops);
-	render(drops.length);
+	updateAreaData(areas);
+	render(drops.length, areas.length);
 	
 	window.requestAnimFrame(updateLoop);
 }
 
 function executeCommand(command)
 {
-	const splittedCommand = newCommand.split(" ");
+	const splittedCommand = command.split(" ");
 	const commandType = splittedCommand[0];
 	if(commandType == "setel")
 	{
@@ -155,6 +162,23 @@ function executeCommand(command)
 		{
 			turnElectrodeOff(i);
 		}
+	}
+	else if(commandType == "show_area")
+	{
+		const id = splittedCommand[1];
+		const x      = parseInt(splittedCommand[2]);
+		const y      = parseInt(splittedCommand[3]);
+		const width  = parseInt(splittedCommand[4]);
+		const height = parseInt(splittedCommand[5]);
+		const r      = parseFloat(splittedCommand[6]);
+		const g      = parseFloat(splittedCommand[7]);
+		const b      = parseFloat(splittedCommand[8]);
+		addArea(id, x, y, width, height, r, b, g);
+	}
+	else if(commandType == "remove_area")
+	{
+		const id = splittedCommand[1];
+		removeArea(id);
 	}
 	else
 	{
@@ -185,6 +209,30 @@ function electrodeIndexCheck(number)
 	else if (number < 1 || number > electrodes.length)
 	{
 		throw "Electrode index was outside the bounds 1.." + electrodes.length + ". Number was: " + number;
+	}
+}
+
+function addArea(id, x, y, width, height, r, g, b)
+{
+	const newArea = {};
+	newArea.id = id;
+	newArea.position = electrodes[(y + Math.floor(height / 2)) * boardWidth + (x + Math.floor(width / 2))].position;
+	const widthSize  = (width  * electrodeSize + (width  - 1) * electrodeSize * ratioForSpace + ((electrodeSize * ratioForSpace * 2) / 3)) / electrodeSize;
+	const heightSize = (height * electrodeSize + (height - 1) * electrodeSize * ratioForSpace + ((electrodeSize * ratioForSpace * 2) / 3)) / electrodeSize;
+	newArea.size = vec2(widthSize, heightSize);
+	newArea.color = vec3(r, g, b);
+	
+	areas.push(newArea);
+}
+
+function removeArea(id)
+{
+	for(var i = 0; i < areas.length; i++)
+	{
+		if(id == areas[i].id)
+		{
+			areas.splice(i, 1);
+		}
 	}
 }
 

@@ -17,7 +17,7 @@
 			void main() 
 			{         
 				fColor = vColor;
-				gl_Position.xy = (vShape.xy + (vPosition.xy * size)) * zoom + viewOffset.xy;
+				gl_Position.xy = ((vShape.xy * size) + vPosition.xy) * zoom + viewOffset.xy;
 				gl_Position.w = 1.0;
 			}
 		</script>
