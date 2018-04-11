@@ -19,8 +19,8 @@ namespace BiolyCompiler.BlocklyParts
 
         //For the scheduling:
         public bool hasBeenScheduled = false;
-        public int startTime;
-        public int endTime;
+        public int startTime = -1;
+        public int endTime = -1;
         public int priority = Int32.MaxValue;
 
         public Block(bool canBeOutput, string output)
@@ -30,7 +30,18 @@ namespace BiolyCompiler.BlocklyParts
             nameID++;
             this.OriginalOutputVariable = output ?? DEFAULT_NAME;
         }
-        
+
+        protected abstract void ResetBlock();
+
+        public void Reset()
+        {
+            ResetBlock();
+            this.hasBeenScheduled = false;
+            this.startTime = -1;
+            this.endTime = -1;
+            this.priority = Int32.MaxValue;
+    }
+
         public override int GetHashCode()
         {
             return OutputVariable.GetHashCode();
@@ -38,10 +49,11 @@ namespace BiolyCompiler.BlocklyParts
 
         public override bool Equals(object obj)
         {
-            Block blockObj = obj as Block;
-            if (blockObj == null) return false;
-            else if (blockObj.GetType() != this.GetType()) return false;
-            else return (OutputVariable.Equals(blockObj.OutputVariable));
+            if (obj is Block blockObj)
+            {
+                return blockObj.GetType() == this.GetType() && blockObj.OutputVariable == this.OutputVariable;
+            }
+            return false;
         }
     }
 }

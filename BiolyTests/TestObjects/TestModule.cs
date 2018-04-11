@@ -12,6 +12,7 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyCompiler.Modules.OperationTypes;
 using System.Xml;
+using BiolyCompiler.Commands;
 //using MoreLinq;
 
 namespace BiolyTests.TestObjects
@@ -55,7 +56,10 @@ namespace BiolyTests.TestObjects
             module.Layout = this.Layout.GetCopy();
             return module;
         }
-        
 
+        protected override List<Command> GetModuleCommands()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

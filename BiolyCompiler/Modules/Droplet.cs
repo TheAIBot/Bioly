@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Modules.OperationTypes;
 
 
@@ -41,6 +43,11 @@ namespace BiolyCompiler.Modules
         {
             throw new NotImplementedException();
         }
+        
 
+        protected override List<Command> GetModuleCommands()
+        {
+            throw new Exception("Droplet can't be converted into commands");
+        }
     }
 }

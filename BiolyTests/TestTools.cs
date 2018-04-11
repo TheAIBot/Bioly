@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Diagnostics;
+using System.Management;
 
 namespace BiolyTests
 {
@@ -22,7 +24,9 @@ namespace BiolyTests
         [AssemblyInitialize()]
         public static void AssemblyInit(TestContext context)
         {
-            /*
+            Process[] processes = Process.GetProcessesByName("chromedriver"); 
+            processes.ToList().ForEach(x => KillProcessTree(x.Id));
+
             ChromeOptions options = new ChromeOptions();
             options.AddArgument("--headless");
 
@@ -34,7 +38,27 @@ namespace BiolyTests
             browser.Navigate().GoToUrl(path);
 
             Browser = browser;
-            */
+        }
+
+        private static void KillProcessTree(int processID)
+        {
+            //can't close system idle process
+            if (processID == 0)
+            {
+                return;
+            }
+
+            var searchQuery = new ManagementObjectSearcher($"Select * From Win32_Process Where ParentProcessID={processID}");
+            foreach (ManagementObject mo in searchQuery.Get())
+            {
+                KillProcessTree(Convert.ToInt32(mo["ProcessID"]));
+            }
+
+            try
+            {
+                Process.GetProcessById(processID).Kill();
+            }
+            catch (Exception) { }
         }
 
         [AssemblyCleanup()]
@@ -69,10 +93,15 @@ namespace BiolyTests
             ExecuteJS("Blockly.mainWorkspace.clear();");
         }
 
-        public static XmlNode GetWorkspace()
+        public static string GetWorkspaceString()
         {
             string js = @"return getWorkspaceAsXml();";
-            string xml = ExecuteJS(js);
+            return ExecuteJS(js);
+        }
+
+        public static XmlNode GetWorkspace()
+        {
+            string xml = GetWorkspaceString();
             return StringToXmlBlock(xml);
         }
 

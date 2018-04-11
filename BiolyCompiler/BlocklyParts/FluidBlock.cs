@@ -13,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts
 
         private static readonly List<FluidInput> EmptyList = new List<FluidInput>();
         //For the scheduling.
-        public Module boundModule;
+        public Module boundModule = null;
 
         public FluidBlock(bool canBeOutput, string output) : base(canBeOutput, output)
         {
@@ -44,6 +44,11 @@ namespace BiolyCompiler.BlocklyParts
         internal void Unbind(Module module)
         {
             throw new NotImplementedException();
+        }
+
+        protected override void ResetBlock()
+        {
+            this.boundModule = null;
         }
     }
 }

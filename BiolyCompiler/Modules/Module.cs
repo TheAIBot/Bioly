@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Modules.OperationTypes;
+using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
+using System.Linq;
 
 namespace BiolyCompiler.Modules
 {
@@ -12,7 +15,8 @@ namespace BiolyCompiler.Modules
         public Rectangle Shape;
         public int OperationTime;
         public Block BindingOperation;
-        public readonly int NumberOfInputs, NumberOfOutputs;
+        public readonly int NumberOfInputs;
+        public readonly int NumberOfOutputs;
         //The key is the input fluid name, see the operation/block which the module is bound to.
         public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
         protected ModuleLayout Layout;
@@ -126,6 +130,27 @@ namespace BiolyCompiler.Modules
             return  NumberOfInputs  == operation.InputVariables.Count && 
                     //numberOfOutputs == operation.OutputVariable.Count &&
                     this.GetType().Equals(operation.getAssociatedModule().GetType());
+        }
+
+        protected abstract List<Command> GetModuleCommands();
+
+        public List<Command> ToCommands()
+        {
+            List<Command> commands = new List<Command>();
+            //show module on simulator
+            commands.Add(new AreaCommand(Shape.x, Shape.y, 0, Shape.ToString(), Shape.width, Shape.height));
+
+            //i need a way to get this in the correct order
+            foreach (List<Route> route in InputRoutes.Values.OrderBy(x => x.First().startTime))
+            {
+                route.ForEach(x => commands.AddRange(x.ToCommands()));
+            }
+
+            commands.AddRange(GetModuleCommands());
+            //remove module from simulator
+            commands.Add(new AreaCommand(0, Shape.ToString()));
+
+            return commands;
         }
     }
 }

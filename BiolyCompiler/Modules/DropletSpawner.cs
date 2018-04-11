@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Modules.OperationTypes;
 
 
@@ -37,6 +39,11 @@ namespace BiolyCompiler.Modules
         public BoardFluid getFluidType()
         {
             return FluidType;
+        }
+
+        protected override List<Command> GetModuleCommands()
+        {
+            throw new Exception("A droplet spawner does not execute any commands.");
         }
     }
 }

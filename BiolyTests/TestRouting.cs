@@ -23,7 +23,7 @@ namespace BiolyTests.RoutingTests
         public void TestDetermineRouteToModuleNoObstacles()
         {
             FluidBlock operation = new TestBlock(new List<string>(), null, new TestModule());
-            Module  sourceModule = new TestModule();
+            Module sourceModule = new TestModule();
             BoardFluid fluidType = new BoardFluid("test");
             Droplet droplet = new Droplet(fluidType);
             sourceModule.Shape.x = 0;
@@ -31,16 +31,16 @@ namespace BiolyTests.RoutingTests
             droplet.Shape.x = 10;
             droplet.Shape.y = 10;
             operation.Bind(sourceModule);
-            Board board = new Board(20,20);
+            Board board = new Board(20, 20);
             board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
             board.UpdateGridWithModulePlacement(droplet, droplet.Shape);
-            
+
             int startTime = 55;
             Route route = Schedule.DetermineRouteToModule(fluidType, sourceModule, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule), "Has detected collision while this shouldn't be possible");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, sourceModule, droplet));
-            Assert.AreEqual(route.getEndTime(), startTime + droplet.Shape.x + droplet.Shape.y);            
+            Assert.AreEqual(route.getEndTime(), startTime + droplet.Shape.x + droplet.Shape.y);
         }
 
 
@@ -51,7 +51,7 @@ namespace BiolyTests.RoutingTests
             Module sourceModule = new TestModule();
             BoardFluid fluidType = new BoardFluid("test");
             Module droplet = new Droplet(fluidType);
-            Module blockingModule = new TestModule(3,15,2000);
+            Module blockingModule = new TestModule(3, 15, 2000);
             sourceModule.Shape.x = 0;
             sourceModule.Shape.y = 0;
             droplet.Shape.x = 10;
@@ -89,10 +89,10 @@ namespace BiolyTests.RoutingTests
             sourceModule.Shape.y = 0;
             droplet1.Shape.x = 10;
             droplet1.Shape.y = 10;
-            droplet2.Shape.x =  0;
+            droplet2.Shape.x = 0;
             droplet2.Shape.y = 10;
             droplet3.Shape.x = 10;
-            droplet3.Shape.y =  0;
+            droplet3.Shape.y = 0;
             Board board = new Board(20, 20);
             Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
             kage.Add("test1", fluidType1);
@@ -103,13 +103,13 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
             TestBlock testBlock = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, 2, false) }, null, null);
             testBlock.Bind(sourceModule);
-            
+
             int startTime = 55;
             int endtime = schedule.RouteDropletsToModule(sourceModule, board, startTime, testBlock);
             Assert.AreEqual(1, sourceModule.InputRoutes.Count);
             Assert.IsTrue(sourceModule.InputRoutes.TryGetValue(fluidType1.FluidName, out List<Route> routes));
             Assert.AreEqual(2, routes.Count);
-            //Droplet 2 and 3 should have been routed to the module, as droplet 1 is further away.
+            //Droplet 2 and 3 should have been routed to the module, as droplet 1 is further away
             Assert.IsFalse(routes.Select(route => route.routedDroplet).Contains(droplet1 as Droplet));
             Assert.IsTrue( routes.Select(route => route.routedDroplet).Contains(droplet2 as Droplet));
             Assert.IsTrue( routes.Select(route => route.routedDroplet).Contains(droplet3 as Droplet));
@@ -236,8 +236,8 @@ namespace BiolyTests.RoutingTests
             //The last node is not counted, as it should hopefully be at a target module.
             for (int i = 0; i < route.route.Count - 1; i++)
             {
-                Node<RoutingInformation> node = route.route[i];
-                if (board.grid[node.value.x, node.value.y] != null && board.grid[node.value.x, node.value.y] != sourceModule)
+                RoutingInformation node = route.route[i];
+                if (board.grid[node.x, node.y] != null && board.grid[node.x, node.y] != sourceModule)
                 {
                     return false;
                 }
@@ -247,19 +247,19 @@ namespace BiolyTests.RoutingTests
 
         private bool hasCorrectStartAndEnding(Route route, Board board, Module sourceModule, Module targetModule)
         {
-            RoutingInformation startOfPath = route.route[0].value;
-            return  sourceModule.Shape.x == startOfPath.x &&
+            RoutingInformation startOfPath = route.route[0];
+            return sourceModule.Shape.x == startOfPath.x &&
                     sourceModule.Shape.y == startOfPath.y &&
-                    targetModule == board.grid[route.route.Last().value.x, route.route.Last().value.y];
+                    targetModule == board.grid[route.route.Last().x, route.route.Last().y];
         }
 
         private bool isAnActualRoute(Route route, Board board)
         {
-            if (!isPlacedOnTheBoard(route.route[0].value.x, route.route[0].value.y, board)) return false;
+            if (!isPlacedOnTheBoard(route.route[0].x, route.route[0].y, board)) return false;
             for (int i = 1; i < route.route.Count; i++)
             {
-                RoutingInformation priorPlacement = route.route[i-1].value;
-                RoutingInformation currentPlacement = route.route[i].value;
+                RoutingInformation priorPlacement = route.route[i - 1];
+                RoutingInformation currentPlacement = route.route[i];
                 if (!isPlacedOnTheBoard(currentPlacement.x, currentPlacement.y, board))
                 {
                     return false;

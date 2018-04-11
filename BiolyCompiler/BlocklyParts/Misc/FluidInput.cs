@@ -74,5 +74,17 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //tempoary until ratio is added
             return numberOfDroplets * ML_PER_DROPLET;
         }
+
+        public override string ToString()
+        {
+            if (UseAllFluid)
+            {
+                return "all of it";
+            }
+            else
+            {
+                return AmountInML.ToString() + " ml";
+            }
+        }
     }
 }
