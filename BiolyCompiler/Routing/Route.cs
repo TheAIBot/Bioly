@@ -49,13 +49,17 @@ namespace BiolyCompiler.Routing
         public Command[] ToCommands()
         {
             Command[] commands = new Command[(route.Count - 1) * 2 + 1];
-            for (int i = 1; i < commands.Length; i++)
+            int index = 1;
+            for (int i = 1; i < commands.Length; i+= 2)
             {
-                RoutingInformation prevRouteInfo = route[i - 1];
-                RoutingInformation currentrouteInfo = route[i];
-                commands[i - 1] = new Command(prevRouteInfo.x   , prevRouteInfo.y   , CommandType.ELECTRODE_OFF, i - 1);
-                commands[i]     = new Command(currentrouteInfo.x, currentrouteInfo.y, CommandType.ELECTRODE_ON , i);
+                RoutingInformation prevRouteInfo = route[index - 1];
+                RoutingInformation currentrouteInfo = route[index];
+                commands[i - 1] = new Command(prevRouteInfo.x   , prevRouteInfo.y   , CommandType.ELECTRODE_OFF, index);
+                commands[i]     = new Command(currentrouteInfo.x, currentrouteInfo.y, CommandType.ELECTRODE_ON , index);
+                index++;
             }
+
+            commands[commands.Length - 1] = new Command(commands[commands.Length - 2].X, commands[commands.Length - 2].Y, CommandType.ELECTRODE_OFF, route.Count);
 
             return commands;
         }

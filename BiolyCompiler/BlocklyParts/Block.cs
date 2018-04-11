@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
-using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using BiolyCompiler.BlocklyParts.Misc;

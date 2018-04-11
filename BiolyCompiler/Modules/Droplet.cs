@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
-using BiolyCompiler.Modules.OperationTypes;
 
 
 namespace BiolyCompiler.Modules
@@ -33,10 +32,6 @@ namespace BiolyCompiler.Modules
         {
             if (!base.Equals(obj)) return false;
             else return (obj as Droplet).fluidType.Equals(this.fluidType);
-        }
-
-        public override OperationType getOperationType(){
-            return OperationType.DropletStorage;
         }
 
         public override Module GetCopyOf()

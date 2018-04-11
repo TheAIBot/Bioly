@@ -1,21 +1,19 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using BiolyCompiler.Commands;
 
 namespace BiolyCompiler.Modules
 {
-    public class SensorModule : Module
+    public class OutputModule : Module
     {
-
-        public SensorModule() : base(3, 3, 3000){
-
+        public OutputModule() : base(3, 3, 1)
+        {
         }
 
         public override Module GetCopyOf()
         {
-            SensorModule sensor = new SensorModule();
-            sensor.Shape = new Rectangle(Shape);
-            return sensor;
+            return new OutputModule();
         }
 
         protected override List<Command> GetModuleCommands()

@@ -8,8 +8,6 @@ namespace BiolyCompiler.Graphs
     {
         public readonly List<Node<N>> nodes = new List<Node<N>>();
         private readonly List<Node<N>> input = new List<Node<N>>();
-        //private readonly List<Node<N>> output = new List<Node<N>>();
-        private readonly Dictionary<string, Node<N>> output;
 
         public void AddNode(Node<N> node)
         {

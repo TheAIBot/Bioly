@@ -7,7 +7,6 @@ using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyCompiler.BlocklyParts.FFUs;

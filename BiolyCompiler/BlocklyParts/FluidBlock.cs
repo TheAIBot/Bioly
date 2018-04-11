@@ -1,6 +1,5 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Modules;
-using BiolyCompiler.Modules.OperationTypes;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,11 +22,6 @@ namespace BiolyCompiler.BlocklyParts
         public FluidBlock(bool canBeOutput, List<FluidInput> input, string output) : base(canBeOutput, output)
         {
             InputVariables = input;
-        }
-
-        public virtual OperationType getOperationType()
-        {
-            return OperationType.Unknown;
         }
 
         public virtual Module getAssociatedModule()

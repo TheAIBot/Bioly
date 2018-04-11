@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Commands;
-using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
 using System.Linq;
@@ -83,8 +82,6 @@ namespace BiolyCompiler.Modules
             return true;
         }
 
-        public abstract OperationType getOperationType();
-
         public override String ToString()
         {
             return this.GetType().ToString() + ", input/output = (" + NumberOfInputs + ", " + NumberOfOutputs + "), dimensions = {" + Shape.ToString() + "}, operation time = " + OperationTime;
@@ -137,8 +134,12 @@ namespace BiolyCompiler.Modules
         public List<Command> ToCommands()
         {
             List<Command> commands = new List<Command>();
-            //show module on simulator
-            commands.Add(new AreaCommand(Shape.x, Shape.y, 0, Shape.ToString(), Shape.width, Shape.height));
+            List<Command> moduleCommands = GetModuleCommands();
+            if (moduleCommands.Count > 0)
+            {
+                //show module on simulator
+                commands.Add(new AreaCommand(Shape, CommandType.SHOW_AREA));
+            }
 
             //i need a way to get this in the correct order
             foreach (List<Route> route in InputRoutes.Values.OrderBy(x => x.First().startTime))
@@ -146,9 +147,12 @@ namespace BiolyCompiler.Modules
                 route.ForEach(x => commands.AddRange(x.ToCommands()));
             }
 
-            commands.AddRange(GetModuleCommands());
-            //remove module from simulator
-            commands.Add(new AreaCommand(0, Shape.ToString()));
+            commands.AddRange(moduleCommands);
+            if (moduleCommands.Count > 0)
+            {
+                //remove module from simulator
+                commands.Add(new AreaCommand(Shape, CommandType.REMOVE_AREA));
+            }
 
             return commands;
         }

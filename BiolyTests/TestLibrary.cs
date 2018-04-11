@@ -5,7 +5,6 @@ using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.BlocklyParts;
 
 namespace BiolyTests.ModuleLibraryTests
@@ -19,18 +18,20 @@ namespace BiolyTests.ModuleLibraryTests
             ModuleLibrary library = new ModuleLibrary();
             Assay assay = new Assay(TestAssay.GetSemiParallelDFG());
             library.allocateModules(assay);
-            List<OperationType> usedOperationTypes = assay.dfg.Nodes.DistinctBy(node => (node.value as FluidBlock).getOperationType())
-                                                                    .Select(node => (node.value as FluidBlock).getOperationType())
-                                                                    .ToList();
+
+            Assert.Fail();
+            //List<OperationType> usedOperationTypes = assay.dfg.Nodes.DistinctBy(node => (node.value as FluidBlock).getOperationType())
+            //                                                        .Select(node => (node.value as FluidBlock).getOperationType())
+            //                                                        .ToList();
             
-            List<OperationType> allocatedOperationTypes = library.allocatedModules.DistinctBy(module => module.getOperationType())
-                                                                                  .Select(module => module.getOperationType())
-                                                                                  .ToList();
-            Assert.AreEqual(usedOperationTypes.Count, allocatedOperationTypes.Count);
-            foreach(var operationType in usedOperationTypes)
-            {
-                Assert.IsTrue(allocatedOperationTypes.Contains(operationType));
-            }
+            //List<OperationType> allocatedOperationTypes = library.allocatedModules.DistinctBy(module => module.getOperationType())
+            //                                                                      .Select(module => module.getOperationType())
+            //                                                                      .ToList();
+            //Assert.AreEqual(usedOperationTypes.Count, allocatedOperationTypes.Count);
+            //foreach(var operationType in usedOperationTypes)
+            //{
+            //    Assert.IsTrue(allocatedOperationTypes.Contains(operationType));
+            //}
         }
         
         [TestMethod]

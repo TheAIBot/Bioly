@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
-using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
 {
@@ -27,10 +26,6 @@ namespace BiolyCompiler.Modules
             output1.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0);
             output2.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, Droplet.DROPLET_WIDTH, 0);
             return new ModuleLayout(2* Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, EmptyRectangles, OutputLocations);
-        }
-
-        public override OperationType getOperationType(){
-            return OperationType.Mixer;
         }
         
 

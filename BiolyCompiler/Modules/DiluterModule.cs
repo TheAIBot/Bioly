@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
-using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
 {
@@ -10,10 +9,6 @@ namespace BiolyCompiler.Modules
 
         public DiluterModule(int height, int width, int operationTime) : base(height, width, operationTime){
             
-        }
-
-        public override OperationType getOperationType(){
-            return OperationType.Diluter;
         }
 
         public override Module GetCopyOf()
