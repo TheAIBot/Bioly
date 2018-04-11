@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CefSharp.Wpf;
 using CefSharp;
+using BiolyCompiler.Modules;
 
 namespace BiolyViewer_Windows
 {
@@ -14,12 +15,20 @@ namespace BiolyViewer_Windows
         private readonly ChromiumWebBrowser Browser;
         private readonly int Width;
         private readonly int Height;
+        private readonly Random Rando = new Random(237842);
 
         public SimulatorConnector(ChromiumWebBrowser browser, int width, int height)
         {
             Browser = browser;
             Width = width;
             Height = height;
+        }
+
+        protected override void StartExecutor(List<DropletSpawner> spawners)
+        {
+            StringBuilder builder = new StringBuilder();
+            spawners.ForEach(x => builder.Append($"{{index: {x.Shape.y * Width + x.Shape.x}, color: vec4({Rando.NextDouble()}, {Rando.NextDouble()}, {Rando.NextDouble()}, 0.5)}},"));
+            ExecuteJs($"startSimulator({Width}, {Height}, [{builder.ToString()}], []);");
         }
 
         public override void SendCommand(Command command)

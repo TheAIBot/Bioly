@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Graphs;
 using CefSharp;
 using CefSharp.SchemeHandler;
@@ -54,8 +55,8 @@ namespace BiolyViewer_Windows
             timer.Elapsed += UpdateGraph;
             timer.Start();
 
-            //CommandExecutor<string> executor = new Simu
-            //ProgramExecutor programExecutor = new ProgramExecutor();
+            CommandExecutor<string> executor = new SimulatorConnector(Browser, 10, 10);
+            ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
         }
 
         private void UpdateGraph(object sender, System.Timers.ElapsedEventArgs e)
