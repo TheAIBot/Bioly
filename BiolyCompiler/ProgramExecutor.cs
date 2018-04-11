@@ -36,6 +36,10 @@ namespace BiolyCompiler
             Stack<Conditional> controlStack = new Stack<Conditional>();
             Stack<int> repeatStack = new Stack<int>();
 
+            varScopeStack.Push(new List<string>());
+            //controlStack.Push(null);
+            repeatStack.Push(0);
+
 
             while (runningGraph == null)
             {

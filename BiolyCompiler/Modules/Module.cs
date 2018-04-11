@@ -141,6 +141,8 @@ namespace BiolyCompiler.Modules
         public List<Command> ToCommands()
         {
             List<Command> commands = new List<Command>();
+            //show module on simulator
+            commands.Add(new AreaCommand(Shape.x, Shape.y, 0, Shape.ToString(), Shape.width, Shape.height));
 
             //i need a way to get this in the correct order
             foreach (List<Route> route in InputRoutes.Values.OrderBy(x => x.First().startTime))
@@ -149,6 +151,8 @@ namespace BiolyCompiler.Modules
             }
 
             commands.AddRange(GetModuleCommands());
+            //remove module from simulator
+            commands.Add(new AreaCommand(0, Shape.ToString()));
 
             return commands;
         }

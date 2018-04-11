@@ -2,7 +2,7 @@
 
 //everything is 0 indexed except for the commands
 
-var newCommand = null;
+var newCommands = [];
 var errorMessages = [];
 
 var electrodeSize;
@@ -115,12 +115,17 @@ function prepareInputs()
 	}
 }
 
+function addCommand(command)
+{
+	newCommands.push(command);
+}
+
 function updateLoop()
 {
-	if(newCommand != null)
+	if(newCommands.length > 0)
 	{
-		executeCommand(newCommand);
-		newCommand = null;
+		executeCommand(newCommands[0]);
+		newCommands.splice(0, 1);
 	}
 	
 	spawnInputDrops();

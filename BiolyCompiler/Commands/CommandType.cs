@@ -7,6 +7,8 @@ namespace BiolyCompiler.Commands
     public enum CommandType : byte
     {
         ELECTRODE_ON,
-        ELECTRODE_OFF
+        ELECTRODE_OFF,
+        SHOW_AREA,
+        REMOVE_AREA
     }
 }
