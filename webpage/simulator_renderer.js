@@ -5,7 +5,8 @@ var glData =
 {
 	electrode: {},
 	drop: {},
-	area: {}
+	area: {},
+	areaBorder: {}
 };
 
 const ELECTRODE_OFF_COLOR = vec4(0.8, 0.8, 0.8, 1.0);
@@ -44,6 +45,7 @@ window.onload = function init()
 	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
 	
 	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
+	newCommand = "show_area 'asd' 0 0 3 3 0 1 0.1";
 }
 
 function setupBuffers(width, height)
@@ -62,6 +64,7 @@ function setupBuffers(width, height)
 	const electrodeData = setupElectrodeBuffers(width, height);
 	setupDropBuffers(electrodeData.electrodeSize / 2);
 	setupAreaBuffers(electrodeData.electrodeSize);
+	setupAreaBorderBuffers(electrodeData.electrodeSize);
 	
 	return electrodeData;
 }
@@ -173,7 +176,7 @@ function createElectrodeColors(width, height)
 
 function setupDropBuffers(dropRadius)
 {	
-	let dropVerticies = createDropVerticies(dropRadius);
+	const dropVerticies = createDropVerticies(dropRadius);
 	
     glData.drop.shapeBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, glData.drop.shapeBuffer);
@@ -215,6 +218,67 @@ function setupAreaBuffers(electrodeSize)
 	glData.area.colorBuffer = gl.createBuffer();
 	
 	glData.area.shapeVerticiesCount = electrodeVerticies.length;
+}
+
+function setupAreaBorderBuffers(electrodeSize)
+{
+	const borderVerticies = createAreaBorder(electrodeSize);
+	
+	glData.areaBorder.shapeBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, glData.areaBorder.shapeBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(borderVerticies), gl.STATIC_DRAW);
+	
+	glData.areaBorder.positionBuffer = glData.area.positionBuffer;
+	glData.areaBorder.sizeBuffer = glData.area.sizeBuffer;
+	glData.areaBorder.colorBuffer = gl.createBuffer();
+	
+	glData.areaBorder.shapeVerticiesCount = borderVerticies.length;
+	
+}
+
+function createAreaBorder(electrodeSize)
+{
+	const borderPos = electrodeSize / 2;
+	const borderSize = (electrodeSize * ratioForSpace) / 64;
+	
+	const verticies = [];
+	//left 1
+	verticies.push(vec2( borderPos - borderSize,  borderPos - borderSize));
+	verticies.push(vec2( borderPos + borderSize,  borderPos - borderSize));
+	verticies.push(vec2( borderPos + borderSize, -borderPos - borderSize));
+	//left 2
+	verticies.push(vec2( borderPos - borderSize, -borderPos - borderSize));
+	verticies.push(vec2( borderPos + borderSize, -borderPos - borderSize));
+	verticies.push(vec2( borderPos - borderSize,  borderPos - borderSize));
+	
+	//right 1
+	verticies.push(vec2(-borderPos - borderSize,  borderPos - borderSize));
+	verticies.push(vec2(-borderPos + borderSize,  borderPos - borderSize));
+	verticies.push(vec2(-borderPos + borderSize, -borderPos + borderSize));
+	//right 2
+	verticies.push(vec2(-borderPos - borderSize, -borderPos + borderSize));
+	verticies.push(vec2(-borderPos + borderSize, -borderPos + borderSize));
+	verticies.push(vec2(-borderPos - borderSize,  borderPos - borderSize));
+	
+	//top 1
+	verticies.push(vec2( borderPos + borderSize,  borderPos - borderSize));
+	verticies.push(vec2( borderPos + borderSize,  borderPos + borderSize));
+	verticies.push(vec2(-borderPos - borderSize,  borderPos - borderSize));
+	//top 2
+	verticies.push(vec2(-borderPos - borderSize,  borderPos - borderSize));
+	verticies.push(vec2(-borderPos - borderSize,  borderPos + borderSize));
+	verticies.push(vec2( borderPos + borderSize,  borderPos + borderSize));
+	
+	//bottom 1
+	verticies.push(vec2( borderPos - borderSize, -borderPos - borderSize));
+	verticies.push(vec2( borderPos - borderSize, -borderPos + borderSize));
+	verticies.push(vec2(-borderPos - borderSize, -borderPos - borderSize));
+	//bottom 2
+	verticies.push(vec2(-borderPos - borderSize, -borderPos - borderSize));
+	verticies.push(vec2(-borderPos - borderSize, -borderPos + borderSize));
+	verticies.push(vec2( borderPos - borderSize, -borderPos + borderSize));
+	
+	return verticies;
 }
 
 function renderBuffers(drawMode, buffers, shapesCount)
@@ -266,8 +330,8 @@ function updateDropData(drops)
 		dropPositions[i * 2 + 0] = drop.position[0];
 		dropPositions[i * 2 + 1] = drop.position[1];
 		
-		dropSizes[i * 1 + 0] = drop.size;
-		dropSizes[i * 1 + 1] = drop.size;
+		dropSizes[i * 2 + 0] = drop.size;
+		dropSizes[i * 2 + 1] = drop.size;
 		
 		dropColors[i * 4 + 0] = drop.color[0];
 		dropColors[i * 4 + 1] = drop.color[1];
@@ -287,9 +351,10 @@ function updateDropData(drops)
 
 function updateAreaData(areas)
 {
-	var areaPositions = new Float32Array(areas.length * 2);
-	var areaSizes     = new Float32Array(areas.length * 2);
-	var areaColors    = new Float32Array(areas.length * 4);
+	var areaPositions    = new Float32Array(areas.length * 2);
+	var areaSizes        = new Float32Array(areas.length * 2);
+	var areaColors       = new Float32Array(areas.length * 4);
+	var areaBordorColors = new Float32Array(areas.length * 4);
 	
 	for(var i = 0; i < areas.length; i++)
 	{
@@ -298,13 +363,18 @@ function updateAreaData(areas)
 		areaPositions[i * 2 + 0] = area.position[0];
 		areaPositions[i * 2 + 1] = area.position[1];
 		
-		areaSizes[i * 1 + 0] = area.size[0];
-		areaSizes[i * 1 + 1] = area.size[1];
+		areaSizes[i * 2 + 0] = area.size[0];
+		areaSizes[i * 2 + 1] = area.size[1];
 		
 		areaColors[i * 4 + 0] = area.color[0];
 		areaColors[i * 4 + 1] = area.color[1];
 		areaColors[i * 4 + 2] = area.color[2];
 		areaColors[i * 4 + 3] = 0.3;
+		
+		areaBordorColors[i * 4 + 0] = area.color[0];
+		areaBordorColors[i * 4 + 1] = area.color[1];
+		areaBordorColors[i * 4 + 2] = area.color[2];
+		areaBordorColors[i * 4 + 3] = 0.7;
 	}
 	
     gl.bindBuffer(gl.ARRAY_BUFFER, glData.area.positionBuffer);
@@ -315,6 +385,9 @@ function updateAreaData(areas)
 	
     gl.bindBuffer(gl.ARRAY_BUFFER, glData.area.colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, areaColors, gl.DYNAMIC_DRAW);
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, glData.areaBorder.colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, areaBordorColors, gl.DYNAMIC_DRAW);
 }
 
 function render(dropCount, areasCount)
@@ -324,7 +397,7 @@ function render(dropCount, areasCount)
 	renderBuffers(gl.TRIANGLES, glData.electrode, glData.electrode.electrodesCount);
 	renderBuffers(gl.TRIANGLE_FAN, glData.drop, dropCount);
 	renderBuffers(gl.TRIANGLES, glData.area, areasCount);
-	renderBuffers(gl.LINE_STRIP, glData.area, areasCount);
+	//renderBuffers(gl.TRIANGLES, glData.areaBorder, areasCount);
 }
 
 function offsetCurrentViewPosition(x, y)

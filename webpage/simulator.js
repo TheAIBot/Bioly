@@ -217,8 +217,8 @@ function addArea(id, x, y, width, height, r, g, b)
 	const newArea = {};
 	newArea.id = id;
 	newArea.position = electrodes[(y + Math.floor(height / 2)) * boardWidth + (x + Math.floor(width / 2))].position;
-	const widthSize  = (width  * electrodeSize + (width  - 1) * electrodeSize * ratioForSpace + ((electrodeSize * ratioForSpace * 2) / 3)) / electrodeSize;
-	const heightSize = (height * electrodeSize + (height - 1) * electrodeSize * ratioForSpace + ((electrodeSize * ratioForSpace * 2) / 3)) / electrodeSize;
+	const widthSize  = (width  * electrodeSize + (width  - 1) * electrodeSize * ratioForSpace + ((electrodeSize * ratioForSpace) / 2)) / electrodeSize;
+	const heightSize = (height * electrodeSize + (height - 1) * electrodeSize * ratioForSpace + ((electrodeSize * ratioForSpace) / 2)) / electrodeSize;
 	newArea.size = vec2(widthSize, heightSize);
 	newArea.color = vec3(r, g, b);
 	
