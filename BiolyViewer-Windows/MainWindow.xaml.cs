@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Graphs;
+﻿using BiolyCompiler;
+using BiolyCompiler.Graphs;
 using CefSharp;
 using CefSharp.SchemeHandler;
 using System;
@@ -47,11 +48,14 @@ namespace BiolyViewer_Windows
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Browser.Load("costum://index.html");
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
             System.Timers.Timer timer = new System.Timers.Timer();
             timer.Interval = 500;
             timer.Elapsed += UpdateGraph;
             timer.Start();
+
+            //CommandExecutor<string> executor = new Simu
+            //ProgramExecutor programExecutor = new ProgramExecutor();
         }
 
         private void UpdateGraph(object sender, System.Timers.ElapsedEventArgs e)

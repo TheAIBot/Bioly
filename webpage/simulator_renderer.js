@@ -45,7 +45,7 @@ window.onload = function init()
 	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
 	
 	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
-	newCommand = "show_area 'asd' 0 0 3 3 0 1 0.1";
+	addCommand("show_area 'asd' 0 0 3 3 0 1 0.1");
 }
 
 function setupBuffers(width, height)
