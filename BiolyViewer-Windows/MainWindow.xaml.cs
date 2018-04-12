@@ -38,7 +38,6 @@ namespace BiolyViewer_Windows
                 SchemeHandlerFactory = new FolderSchemeHandlerFactory(@"../../../../webpage"),
                 IsSecure = true
             });
-
             Cef.Initialize(settings);
 
             InitializeComponent();
@@ -46,19 +45,23 @@ namespace BiolyViewer_Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            
             Browser.Load("costum://index.html");
-            Thread.Sleep(2000);
-            System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = 500;
-            timer.Elapsed += UpdateGraph;
-            timer.Start();
-
-            //CommandExecutor<string> executor = new SimulatorConnector(Browser, 10, 10);
-            //ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-            //programExecutor.Run(10, 10, "<xml xmlns=\"http://www.w3.org/1999/xhtml\"><variables><variable type=\"\" id=\"lAcD0b.~0C~UNK3H^T0{\">input_fluid_name</variable><variable type=\"\" id=\"2_mj/236;ixh})],K-mv\">fluid_name</variable></variables><block type=\"start\" id=\"65V|.~MwPSnQW!y.nW7(\" x=\"96\" y=\"58\"><statement name=\"program\"><block type=\"input\" id=\"A(9ZEBMC0qs|5)WIZ#Rw\"><field name=\"inputName\" id=\"lAcD0b.~0C~UNK3H^T0{\" variabletype=\"\">input_fluid_name</field><field name=\"inputAmount\">10</field><field name=\"inputUnit\">1</field><next><block type=\"output\" id=\"-ZgZ,OVUcF2ezDoRx2w6\"><value name=\"inputFluid\"><block type=\"getFluid\" id=\"|mK#s!*6%y6mpL,cwA_e\"><field name=\"fluidName\" id=\"lAcD0b.~0C~UNK3H^T0{\" variabletype=\"\">input_fluid_name</field><field name=\"fluidAmount\">5</field><field name=\"useAllFluid\">FALSE</field></block></value></block></next></block></statement></block></xml>");
+            Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
+            Browser.FrameLoadEnd += (_, ee) =>
+            {
+                //Wait for the webpage to finish loading
+                if (ee.Frame.IsMain)
+                {
+                    System.Timers.Timer timer = new System.Timers.Timer();
+                    timer.Interval = 500;
+                    timer.Elapsed += (s, __) => UpdateGraph();
+                    timer.Start();
+                }
+            };
         }
 
-        private void UpdateGraph(object sender, System.Timers.ElapsedEventArgs e)
+        private void UpdateGraph()
         {
             bool didWorkspaceChange = ExecuteJs<bool>("getIfWorkspaceChanged();");
             if (didWorkspaceChange)
@@ -68,14 +71,14 @@ namespace BiolyViewer_Windows
                 {
                     CDFG cdfg = XmlParser.Parse(xml);
                     (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
-                    string js = "setGraph(" + nodes + ", " + edges + ");";
+                    string js = $"setGraph({nodes}, {edges});";
                     Browser.ExecuteScriptAsync(js);
 
-                    runSimulator(xml);
+                    RunSimulator(xml);
                 }
-                catch (Exception ee)
+                catch (Exception e)
                 {
-                    Debug.WriteLine(ee.Message + Environment.NewLine + ee.StackTrace);
+                    Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
                 }
             }
         }
@@ -83,7 +86,7 @@ namespace BiolyViewer_Windows
         Thread simulatorThread = null;
         object simulatorLocker = new object();
 
-        private void runSimulator(string xml)
+        private void RunSimulator(string xml)
         {
             lock (simulatorLocker)
             {

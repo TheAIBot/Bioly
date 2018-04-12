@@ -33,6 +33,9 @@ const UPDATES_PER_SECOND = 60;
 
 function startSimulator(width, height, inputs, outputs)
 {
+	newCommands = [];
+	errorMessages = [];
+	
 	boardWidth = width;
 	boardHeight = height;
 	dropInputs = inputs;

@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 
 namespace BiolyViewer_Windows
 {
-    internal class Saver
+    public class Saver
     {
         private readonly ChromiumWebBrowser Browser;
+        private const string DEFAULT_FILE_EXTENSION = ".txt";
+        private const string TEMP_FILE_NAME = "temp" + DEFAULT_FILE_EXTENSION;
 
         public Saver(ChromiumWebBrowser browser)
         {
@@ -20,27 +22,46 @@ namespace BiolyViewer_Windows
         }
 
 
-        internal void Save()
+        public void QuickSave(string xml)
         {
-
+            if (xml != "<xml xmlns=\"http://www.w3.org/1999/xhtml\"><variables></variables></xml>")
+            {
+                File.WriteAllText(TEMP_FILE_NAME, xml);
+            }
         }
 
-        internal void SaveAs()
+        public void SaveAs(string xml)
         {
             SaveFileDialog dialog = new SaveFileDialog();
-            //dialog.
-            //dialog.DefaultExt = "";
+            dialog.DefaultExt = DEFAULT_FILE_EXTENSION;
+            if (dialog.ShowDialog() == true)
+            {
+                File.WriteAllText(dialog.FileName, xml);
+            }
         }
 
-        internal void Load()
+        public void QuickLoad()
+        {
+            if (File.Exists(TEMP_FILE_NAME))
+            {
+                LoadFileToBrowser(File.ReadAllText(TEMP_FILE_NAME));
+            }
+        }
+
+        public void LoadFile()
         {
             OpenFileDialog dialog = new OpenFileDialog();
-            bool? dialogResult = dialog.ShowDialog();
-            if (dialogResult == true)
+            dialog.DefaultExt = DEFAULT_FILE_EXTENSION;
+            if (dialog.ShowDialog() == true)
             {
-                string fileData = File.ReadAllText(dialog.FileName);
-                Browser.ExecuteScriptAsync($"loadWorkspace({fileData});");
+                LoadFileToBrowser(File.ReadAllText(dialog.FileName));
             }
+        }
+
+        private void LoadFileToBrowser(string xml)
+        {
+            string js = $"loadWorkspace('{xml}');";
+            Browser.ExecuteScriptAsync(js);
         }
     }
 }
