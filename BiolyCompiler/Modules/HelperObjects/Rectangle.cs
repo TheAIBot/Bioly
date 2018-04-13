@@ -317,6 +317,11 @@ namespace BiolyCompiler.Modules
             return x + width - 1;
         }
 
+        public (int, int) getCenterPosition()
+        {
+            return (x + width / 2, y + height / 2);
+        }
+
         public override string ToString()
         {
             return "Rectangle. Width = " + width + ", Height = " + height + ", x = " + x + ", y = " + y; 
