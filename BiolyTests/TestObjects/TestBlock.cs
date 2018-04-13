@@ -10,7 +10,6 @@ using System.Linq;
 using BiolyCompiler.Routing;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
-using BiolyCompiler.Modules.OperationTypes;
 using System.Xml;
 using BiolyCompiler.BlocklyParts.Misc;
 
@@ -29,10 +28,7 @@ namespace BiolyTests.TestObjects
         public TestBlock(List<string> inputs, string output, Module associatedModule) : this(inputs.Select(input => new FluidInput(input, 1, true)).ToList(), output, associatedModule)
         {
         }
-        public override OperationType getOperationType()
-        {
-            return OperationType.Test;
-        }
+
         public override Module getAssociatedModule()
         {
             return associatedModule;

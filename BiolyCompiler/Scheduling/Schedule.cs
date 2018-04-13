@@ -9,6 +9,7 @@ using Priority_Queue;
 using BiolyCompiler.BlocklyParts;
 using System.Linq;
 using System.Diagnostics;
+using BiolyCompiler.BlocklyParts.Misc;
 //using BiolyCompiler.Modules.ModuleLibrary;
 
 namespace BiolyCompiler.Scheduling
@@ -86,6 +87,13 @@ namespace BiolyCompiler.Scheduling
                 else // nextOperation is FluidBlock
                 {
                     FluidBlock topPriorityOperation = nextOperation as FluidBlock;
+                    if (topPriorityOperation is Input)
+                    {
+                        board.FastTemplatePlace(topPriorityOperation.getAssociatedModule());
+                        assay.updateReadyOperations(topPriorityOperation);
+                        continue;
+                    }
+
                     Module operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
                     topPriorityOperation.Bind(operationExecutingModule);
                     allUsedModules.Add(operationExecutingModule);
@@ -203,7 +211,6 @@ namespace BiolyCompiler.Scheduling
 
         public int RouteDropletsToModule(Module operationExecutingModule, Board board, int startTime, FluidBlock topPriorityOperation)
         {
-
             foreach (var dropletInput in operationExecutingModule.GetInputLayout().Droplets)
             {
                 BoardFluid InputFluidType = dropletInput.getFluidType();
@@ -230,18 +237,20 @@ namespace BiolyCompiler.Scheduling
                     case Droplet dropletSource:
                         board.FastTemplateRemove(dropletSource);
                         break;
-                    case DropletSpawner dropletSource:
+                    case InputModule dropletSource:
                         if (1 < dropletSource.DropletCount) dropletSource.DecrementDropletCount();
                         else if (dropletSource.DropletCount == 1)
                         {
                             dropletSource.DecrementDropletCount();
                             //board.FastTemplateRemove(dropletSource); 
                         }
-                        else throw new Exception("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
+                        else
+                        {
+                            throw new Exception("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
+                        }
                         break;
                     default:
                         throw new Exception("Unhandled droplet source: " + route.routedDroplet.ToString());
-                        break;
                 }
 
                 //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.

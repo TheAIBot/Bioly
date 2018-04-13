@@ -11,6 +11,9 @@ using MoreLinq;
 using BiolyCompiler.Commands;
 using System.Linq;
 using BiolyCompiler.BlocklyParts.ControlFlow;
+using BiolyCompiler.BlocklyParts.Misc;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace BiolyCompiler
 {
@@ -23,27 +26,49 @@ namespace BiolyCompiler
             this.Executor = executor;
         }
 
-        public void Run(string xmlText)
+        public void Run(int width, int height, string xmlText)
         {
             CDFG graph = XmlParser.Parse(xmlText);
-
             DFG<Block> runningGraph = graph.StartDFG;
-            Board board = new Board(10, 10);
+
+            Board board = new Board(width, height);
             ModuleLibrary library = new ModuleLibrary();
             Dictionary<string, BoardFluid> dropPositions = new Dictionary<string, BoardFluid>();
             Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<List<string>> varScopeStack = new Stack<List<string>>();
             Stack<Conditional> controlStack = new Stack<Conditional>();
             Stack<int> repeatStack = new Stack<int>();
+            bool firstRun = true;
 
             varScopeStack.Push(new List<string>());
-            //controlStack.Push(null);
+            controlStack.Push(new Conditional(null, null, null));
             repeatStack.Push(0);
 
+            foreach (Input input in runningGraph.Nodes.Select(x => x.value).OfType<Input>())
+            {
+                BoardFluid fluid = new BoardFluid(input.OutputVariable);
+                fluid.droplets.Add((InputModule)input.getAssociatedModule());
+                dropPositions.Add(input.OutputVariable, fluid);
+            }      
 
-            while (runningGraph == null)
+            while (runningGraph != null)
             {
                 List<Block> scheduledOperations = MakeSchedule(runningGraph, ref board, library, ref dropPositions);
+                if (firstRun)
+                {
+                    List<Module> inputs = runningGraph.Nodes.Where(x => x.value is Input)
+                                                            .Select(x => x.value)
+                                                            .Cast<FluidBlock>()
+                                                            .Select(x => x.getAssociatedModule())
+                                                            .ToList();
+                    List<Module> outputs = runningGraph.Nodes.Where(x => x.value is Output || x.value is Waste)
+                                                             .Select(x => x.value)
+                                                             .Cast<FluidBlock>()
+                                                             .Select(x => x.getAssociatedModule())
+                                                             .ToList();
+                    Executor.StartExecutor(inputs, outputs);
+                    firstRun = false;
+                }
                 foreach (var operation in scheduledOperations)
                 {
                     if (operation is FluidBlock fluidBLock)
@@ -87,7 +112,20 @@ namespace BiolyCompiler
 
         private void ExecuteCommands(List<Command> commands)
         {
-            commands.ForEach(x => Executor.SendCommand(x));
+            for (int i = 0; i < commands.Count; i++)
+            {
+                Command command = commands[i];
+                Executor.SendCommand(command);
+
+                if (i + 1 < commands.Count)
+                {
+                    Command nextCommand = commands[i + 1];
+                    if (nextCommand.Time != command.Time)
+                    {
+                        Thread.Sleep(500);
+                    }
+                }
+            }
         }
 
         private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<int> repeatStack)

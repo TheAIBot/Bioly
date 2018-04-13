@@ -200,7 +200,7 @@ namespace BiolyTests.RoutingTests
             BoardFluid fluidType = new BoardFluid("test");
             Module sourceModule = new TestModule(capacity - 2,0);
             sourceModule.GetInputLayout().ChangeFluidType(fluidType);
-            DropletSpawner dropletSpawner = new DropletSpawner(fluidType, capacity);
+            InputModule dropletSpawner = new InputModule(fluidType, capacity);
             board.FastTemplatePlace(dropletSpawner);
             Assert.AreEqual(0, dropletSpawner.Shape.x);
             Assert.AreEqual(0, dropletSpawner.Shape.y);

@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Parser;
+﻿using BiolyCompiler.Modules;
+using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,6 +23,15 @@ namespace BiolyCompiler.BlocklyParts.Misc
             inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild, mostRecentRef));
 
             return new Output(inputs, null, node);
+        }
+
+        public override Module getAssociatedModule()
+        {
+            if (boundModule == null)
+            {
+                boundModule = new OutputModule();
+            }
+            return boundModule;
         }
 
         public override string ToString()

@@ -44,12 +44,14 @@
 		<script src="cytoscape.min.js"></script>
 		<script src="dagre.min.js"></script>
 		<script src="cytoscape-dagre.js"></script>
+		<script src="save_functions.js"></script>
 	</head>
 	<body>
 		<div  class="side" id="leftSide">
-			<button class="tab" id="loadButton"   onclick="saver.load();">Load</button>
-			<button class="tab" id="saveButton"   onclick="saver.save();">Save</button>
-			<button class="tab" id="saveAsButton" onclick="saver.saveAs();">Save as...</button>
+			<button class="tab" id="quickSaveButton" onclick="saver.quickSave(getWorkspaceAsXml());">Quick Save</button>
+			<button class="tab" id="saveAsButton"    onclick="saver.saveAs(getWorkspaceAsXml());">Save as...</button>
+			<button class="tab" id="quickLoadButton" onclick="saver.quickLoad();">Quick Load</button>
+			<button class="tab" id="loadButton"      onclick="saver.loadFile();">Load File</button>
 			<div class="tabContent">
 				<div id="blocklyDiv"></div>
 			</div>

@@ -1,6 +1,7 @@
 ﻿using BiolyCompiler;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.Parser;
 using CefSharp;
 using CefSharp.SchemeHandler;
 using System;
@@ -37,29 +38,30 @@ namespace BiolyViewer_Windows
                 SchemeHandlerFactory = new FolderSchemeHandlerFactory(@"../../../../webpage"),
                 IsSecure = true
             });
-
             Cef.Initialize(settings);
 
             InitializeComponent();
-            //Browser.RegisterJsObject("saver", new Saver());
-            //BiolyCompiler.Compiler fisk = new BiolyCompiler.Compiler();
-            //fisk.DoStuff();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            
             Browser.Load("costum://index.html");
-            Thread.Sleep(2000);
-            System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = 500;
-            timer.Elapsed += UpdateGraph;
-            timer.Start();
-
-            CommandExecutor<string> executor = new SimulatorConnector(Browser, 10, 10);
-            ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
+            Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
+            Browser.FrameLoadEnd += (_, ee) =>
+            {
+                //Wait for the webpage to finish loading
+                if (ee.Frame.IsMain)
+                {
+                    System.Timers.Timer timer = new System.Timers.Timer();
+                    timer.Interval = 500;
+                    timer.Elapsed += (s, __) => UpdateGraph();
+                    timer.Start();
+                }
+            };
         }
 
-        private void UpdateGraph(object sender, System.Timers.ElapsedEventArgs e)
+        private void UpdateGraph()
         {
             bool didWorkspaceChange = ExecuteJs<bool>("getIfWorkspaceChanged();");
             if (didWorkspaceChange)
@@ -67,12 +69,43 @@ namespace BiolyViewer_Windows
                 string xml = ExecuteJs<string>("getWorkspaceAsXml();");
                 try
                 {
-                    CDFG cdfg = BiolyCompiler.Parser.XmlParser.Parse(xml);
+                    CDFG cdfg = XmlParser.Parse(xml);
                     (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
-                    string js = "setGraph(" + nodes + ", " + edges + ");";
+                    string js = $"setGraph({nodes}, {edges});";
                     Browser.ExecuteScriptAsync(js);
+
+                    RunSimulator(xml);
                 }
-                catch (Exception ee) { Debug.WriteLine(ee.Message); }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
+                }
+            }
+        }
+
+        Thread simulatorThread = null;
+        object simulatorLocker = new object();
+
+        private void RunSimulator(string xml)
+        {
+            lock (simulatorLocker)
+            {
+                simulatorThread?.Interrupt();
+                simulatorThread?.Join();
+                simulatorThread = new Thread(() =>
+                {
+                    try
+                    {
+                        CommandExecutor<string> executor = new SimulatorConnector(Browser, 10, 10);
+                        ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
+                        programExecutor.Run(10, 10, xml);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
+                    }
+                });
+                simulatorThread.Start();
             }
         }
 

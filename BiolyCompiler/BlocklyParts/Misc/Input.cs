@@ -3,6 +3,7 @@ using BiolyCompiler.Parser;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using BiolyCompiler.Modules;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -51,6 +52,15 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 default:
                     throw new Exception("Unknown fluid unit");
             }
+        }
+
+        public override Module getAssociatedModule()
+        {
+            if (boundModule == null)
+            {
+                boundModule = new InputModule(new BoardFluid(OutputVariable), Amount); ;
+            }
+            return boundModule;
         }
 
         public override string ToString()

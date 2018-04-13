@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BiolyCompiler.Modules;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,24 +16,19 @@ namespace BiolyCompiler.Commands
 
         private static readonly Random Rando = new Random(12);
 
-        public AreaCommand(int x, int y, int time, string id, int width, int height) : base(x, y, CommandType.SHOW_AREA, time)
+        public AreaCommand(Rectangle shape, CommandType type) : base(shape.x, shape.y, type, 0)
         {
-            this.ID = id;
-            this.Width = width;
-            this.Height = height;
+            this.ID = shape.ToString().Replace(' ', '-');
+            this.Width = shape.width;
+            this.Height = shape.height;
             this.R = (float)Rando.NextDouble();
             this.G = (float)Rando.NextDouble();
             this.B = (float)Rando.NextDouble();
         }
 
-        public AreaCommand(int time, string id) : base(0, 0, CommandType.REMOVE_AREA, time)
+        public override string ToString()
         {
-            this.ID = id;
-            this.Width = 0;
-            this.Height = 0;
-            this.R = 0;
-            this.G = 0;
-            this.B = 0;
+            return $"x: {X}, y: {Y}, w: {Width}, h: {Height}, T: {Time}";
         }
     }
 }

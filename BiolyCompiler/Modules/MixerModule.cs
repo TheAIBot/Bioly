@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
-using BiolyCompiler.Modules.OperationTypes;
 
 namespace BiolyCompiler.Modules
 {
@@ -30,10 +29,6 @@ namespace BiolyCompiler.Modules
             OutputLocations.Add(output1);
             OutputLocations.Add(output2);
             return new ModuleLayout(Shape, EmptyRectangles, OutputLocations);
-        }
-
-        public override OperationType getOperationType(){
-            return OperationType.Mixer;
         }
         
 

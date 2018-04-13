@@ -18,19 +18,25 @@ body
 	left: 0%;	
 }
 
-#loadButton
+#quickSaveButton
 {
 	left: 0%;
-	width: 50%;
+	width: 25%;
 }
 
-#saveButton
+#saveAsButton
+{
+	left: 25%;
+	width: 25%;
+}
+
+#quickLoadButton
 {
 	left: 50%;
 	width: 25%;
 }
 
-#saveAsButton
+#loadButton
 {
 	left: 75%;
 	width: 25%;

@@ -18,5 +18,10 @@ namespace BiolyCompiler.Commands
             this.Type = type;
             this.Time = time;
         }
+
+        public override string ToString()
+        {
+            return $"x: {X}, y: {Y}, T: {Time}";
+        }
     }
 }

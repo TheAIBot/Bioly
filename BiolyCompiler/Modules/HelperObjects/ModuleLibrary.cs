@@ -64,7 +64,7 @@ namespace BiolyCompiler.Modules
 
             if (module == null)
             {
-                throw new Exception("No allocated modules implements operations of type \" " + operation.getOperationType().ToString() + "\"");
+                throw new Exception("No allocated modules implements operations of type \" " + operation.ToString() + "\"");
             }
 
             return module;

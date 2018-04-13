@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
-using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.Modules
 {
-    public class DropletSpawner : Module, IDropletSource
+    public class InputModule : Module, IDropletSource
     {
         private BoardFluid FluidType;
         public readonly int Capacity;
         public int DropletCount { get; private set; }
 
-        public DropletSpawner(BoardFluid fluidType, int capacity) : base(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, false)
+        public InputModule(BoardFluid fluidType, int capacity) : base(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0, 1, null)
         {
             this.FluidType = fluidType;
             fluidType.droplets.Add(this);
@@ -30,7 +29,7 @@ namespace BiolyCompiler.Modules
         {
             throw new NotImplementedException();
         }
-
+        
         public override int getNumberOfInputs()
         {
             return 0;
@@ -49,11 +48,6 @@ namespace BiolyCompiler.Modules
 
         public (int, int) getMiddleOfSource() {
             return (Shape.x + Droplet.DROPLET_WIDTH / 2, Shape.y + Droplet.DROPLET_HEIGHT / 2);
-        }
-
-        public override OperationType getOperationType()
-        {
-            throw new NotImplementedException();
         }
 
         public BoardFluid getFluidType()

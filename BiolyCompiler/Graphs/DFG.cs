@@ -28,40 +28,43 @@ namespace BiolyCompiler.Graphs
         {
             foreach (Node<N> node in Nodes)
             {
+                Block block = node.value as Block;
+
+                if (block is VariableBlock varBlock)
+                {
+                    foreach (string nodeName in varBlock.InputVariables)
+                    {
+                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
+                        if (inputNode != null)
+                        {
+                            AddEdge(inputNode, node);
+                        }
+                    }
+                }
+                else if (block is FluidBlock fluidBlock)
+                {
+                    foreach (FluidInput nodeName in fluidBlock.InputVariables)
+                    {
+                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName.FluidName);
+                        if (inputNode != null)
+                        {
+                            AddEdge(inputNode, node);
+                        }
+                    }
+                }
+            }
+
+            foreach (Node<N> node in Nodes)
+            {
+                Block block = node.value as Block;
+
+                if (node.getOutgoingEdges().Count == 0 && block.CanBeOutput)
+                {
+                    Output.Add(node);
+                }
                 if (node.getIngoingEdges().Count == 0)
                 {
                     Input.Add(node);
-                }
-                if (node.value is Block)
-                {
-                    Block block = node.value as Block;
-                    if (node.getOutgoingEdges().Count == 0 && block.CanBeOutput)
-                    {
-                        Output.Add(node);
-                    }
-
-                    if (block is VariableBlock varBlock)
-                    {
-                        foreach (string nodeName in varBlock.InputVariables)
-                        {
-                            Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
-                            if (inputNode != null)
-                            {
-                                AddEdge(inputNode, node);
-                            }
-                        }
-                    }
-                    else if (block is FluidBlock fluidBlock)
-                    {
-                        foreach (FluidInput nodeName in fluidBlock.InputVariables)
-                        {
-                            Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName.FluidName);
-                            if (inputNode != null)
-                            {
-                                AddEdge(inputNode, node);
-                            }
-                        }
-                    }
                 }
             }
         }

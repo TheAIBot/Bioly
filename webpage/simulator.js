@@ -13,6 +13,7 @@ var dropOutputs;
 var boardWidth;
 var boardHeight;
 var areas;
+var newestVersion = 0;
 
 const LEFT_NEIGHBOR_INDEX  = 0;
 const RIGHT_NEIGHBOR_INDEX = 1;
@@ -32,6 +33,9 @@ const UPDATES_PER_SECOND = 60;
 
 function startSimulator(width, height, inputs, outputs)
 {
+	newCommands = [];
+	errorMessages = [];
+	
 	boardWidth = width;
 	boardHeight = height;
 	dropInputs = inputs;
@@ -46,8 +50,8 @@ function startSimulator(width, height, inputs, outputs)
 	drops = [];
 	areas = [];
 	
-	render(drops.length);
-	updateLoop()
+	newestVersion = newestVersion + 1;
+	updateLoop(newestVersion);
 }
 
 function prepareElectrodes(width, height, electrodePositions)
@@ -120,8 +124,13 @@ function addCommand(command)
 	newCommands.push(command);
 }
 
-function updateLoop()
+function updateLoop(version)
 {
+	if(newestVersion != version)
+	{
+		return;
+	}
+	
 	if(newCommands.length > 0)
 	{
 		executeCommand(newCommands[0]);
@@ -138,7 +147,10 @@ function updateLoop()
 	updateAreaData(areas);
 	render(drops.length, areas.length);
 	
-	window.requestAnimFrame(updateLoop);
+	window.requestAnimFrame(function()
+	{
+		updateLoop(version);
+	});
 }
 
 function executeCommand(command)

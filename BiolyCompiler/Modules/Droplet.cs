@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
-using BiolyCompiler.Modules.OperationTypes;
 using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.Modules
@@ -47,10 +46,6 @@ namespace BiolyCompiler.Modules
         public override int getNumberOfOutputs()
         {
             return 0;
-        }
-
-        public override OperationType getOperationType(){
-            return OperationType.DropletStorage;
         }
 
         public override Module GetCopyOf()

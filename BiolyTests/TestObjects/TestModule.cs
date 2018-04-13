@@ -10,7 +10,6 @@ using System.Linq;
 using BiolyCompiler.Routing;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
-using BiolyCompiler.Modules.OperationTypes;
 using System.Xml;
 using BiolyCompiler.Commands;
 //using MoreLinq;
@@ -56,11 +55,6 @@ namespace BiolyTests.TestObjects
         public void SetLayout(ModuleLayout Layout)
         {
             this.OutputLayout = Layout;
-        }
-
-        public override OperationType getOperationType()
-        {
-            return OperationType.Test;
         }
 
         public override Module GetCopyOf()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BiolyCompiler.Modules
 {
@@ -29,7 +30,7 @@ namespace BiolyCompiler.Modules
 
         public int GetNumberOfDropletsAvailable()
         {
-            return droplets.Count;
+            return droplets.Sum(x => x is Droplet ? 1 : (x as InputModule).DropletCount);
         }
     }
 }
