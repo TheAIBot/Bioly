@@ -271,8 +271,8 @@ namespace BiolyCompiler.Scheduling
             return ScheduledOperations.Max(operation => operation.endTime);
         }
 
-        public static Route DetermineRouteToModule(BoardFluid targetFluidType, Module sourceModule, Droplet targetInputDroplet, Board board, int startTime){
-
+        public static Route DetermineRouteToModule(BoardFluid targetFluidType, Module sourceModule, Droplet targetInputDroplet, Board board, int startTime)
+        {
             //Dijkstras algorithm, based on the one seen on wikipedia.
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
             //and then inverts the route.
@@ -295,7 +295,7 @@ namespace BiolyCompiler.Scheduling
                 if (isUnreachableNode(currentNode))
                     throw new Exception("No route to the desired component could be found. Desired droplet type: " + targetFluidType.FluidName);
                 else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode, sourceModule, currentNode)) //Have reached the desired module
-                    return GetRouteFromSourceToTarget(currentNode, moduleAtCurrentNode as IDropletSource, startTime); 
+                    return GetRouteFromSourceToTarget(currentNode, (IDropletSource)moduleAtCurrentNode, startTime); 
                 //No collisions with other modules are allowed (except the starting module):
                 else if (hasCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
                     continue;
