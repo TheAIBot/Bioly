@@ -22,6 +22,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
             this.Unit = StringToFluidUnit(node.GetNodeWithAttributeValue(FluidUnitFieldName).InnerText);
         }
 
+        public Input(string output, int amount) : base(true, output)
+        {
+            this.Amount = amount;
+            this.Unit = FluidUnit.drops;
+        }
+
         public static Block Parse(XmlNode node)
         {
             string output = node.GetNodeWithAttributeValue(InputFluidFieldName).InnerText;

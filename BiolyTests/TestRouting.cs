@@ -192,7 +192,7 @@ namespace BiolyTests.RoutingTests
 
 
         [TestMethod]
-        public void TestRoutingFromDropletSpawner()
+        public  void TestRoutingFromDropletSpawner()
         {
             Board board = new Board(20, 20);
             FluidBlock operation = new TestBlock(new List<string>(), null, new TestModule());
@@ -225,7 +225,7 @@ namespace BiolyTests.RoutingTests
             }
         }
 
-        private bool hasNoCollisions(Route route, Board board, Module sourceModule, IDropletSource targetDroplet)
+        public static bool hasNoCollisions(Route route, Board board, Module sourceModule, IDropletSource targetDroplet)
         {
             for (int i = 0; i < route.route.Count; i++)
             {
@@ -238,7 +238,7 @@ namespace BiolyTests.RoutingTests
             return true;
         }
 
-        private bool hasCorrectStartAndEnding(Route route, Board board, IDropletSource source, IDropletSource inputLocation)
+        public static bool hasCorrectStartAndEnding(Route route, Board board, IDropletSource source, IDropletSource inputLocation)
         {
             RoutingInformation startOfPath = route.route[0];
             (int sourceX, int sourceY) = source.getMiddleOfSource();
@@ -249,7 +249,7 @@ namespace BiolyTests.RoutingTests
                     route.route.Last().y == inputY;
         }
 
-        private bool isAnActualRoute(Route route, Board board)
+        public static bool isAnActualRoute(Route route, Board board)
         {
             if (!isPlacedOnTheBoard(route.route[0].x, route.route[0].y, board)) return false;
             for (int i = 1; i < route.route.Count; i++)
@@ -269,7 +269,7 @@ namespace BiolyTests.RoutingTests
             return true;
         }
 
-        private bool isPlacedOnTheBoard(int x, int y, Board board)
+        public static bool isPlacedOnTheBoard(int x, int y, Board board)
         {
             return (0 <= x && x < board.width &&
                     0 <= y && y < board.heigth);

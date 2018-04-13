@@ -90,8 +90,12 @@ namespace BiolyCompiler.Scheduling
                     FluidBlock topPriorityOperation = nextOperation as FluidBlock;
                     if (topPriorityOperation is Input)
                     {
-                        board.FastTemplatePlace(topPriorityOperation.getAssociatedModule());
+                        Module inputModule = topPriorityOperation.getAssociatedModule().GetCopyOf();
+                        board.FastTemplatePlace(inputModule);
+                        inputModule.RepositionLayout();
+                        allUsedModules.Add(inputModule);
                         assay.updateReadyOperations(topPriorityOperation);
+                        Debug.WriteLine(board.print(allUsedModules));
                         continue;
                     }
 
@@ -290,7 +294,7 @@ namespace BiolyCompiler.Scheduling
 
                 if (isUnreachableNode(currentNode))
                     throw new Exception("No route to the desired component could be found. Desired droplet type: " + targetFluidType.FluidName);
-                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode, currentNode)) //Have reached the desired module
+                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode, sourceModule, currentNode)) //Have reached the desired module
                     return GetRouteFromSourceToTarget(currentNode, moduleAtCurrentNode as IDropletSource, startTime); 
                 //No collisions with other modules are allowed (except the starting module):
                 else if (hasCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
@@ -333,7 +337,7 @@ namespace BiolyCompiler.Scheduling
             return currentNode.distanceFromSource == Int32.MaxValue;
         }
 
-        private static bool haveReachedDropletOfTargetType(BoardFluid targetFluidType, Module moduleAtCurrentNode, RoutingInformation location)
+        private static bool haveReachedDropletOfTargetType(BoardFluid targetFluidType, Module moduleAtCurrentNode, Module sourceModule, RoutingInformation location)
         {
             return moduleAtCurrentNode is IDropletSource dropletSource  && 
                    dropletSource.getFluidType().Equals(targetFluidType);
