@@ -8,7 +8,7 @@ namespace BiolyCompiler.Modules
     public class OutputModule : Module
     {
         
-        public OutputModule() : base(3, 3, 1, false)
+        public OutputModule() : base(3, 3, 1, true)
         {
         }
         
