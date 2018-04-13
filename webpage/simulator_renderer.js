@@ -1,6 +1,7 @@
 'use strict';
 
 var gl;
+var ext;
 var glData = 
 {
 	electrode: {},
@@ -30,6 +31,7 @@ window.onload = function init()
 	canvas.height = canvasSize;
     
     gl = WebGLUtils.setupWebGL(canvas);
+	ext = gl.getExtension('ANGLE_instanced_arrays');
     if (!gl) 
     {
         alert("failed to load webgl2");
@@ -290,19 +292,19 @@ function renderBuffers(drawMode, buffers, shapesCount)
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positionBuffer);
 	gl.vertexAttribPointer(glData.positionPointer, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(glData.positionPointer);
-	gl.vertexAttribDivisor(glData.positionPointer, 1);
+	ext.vertexAttribDivisorANGLE(glData.positionPointer, 1);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.sizeBuffer);
 	gl.vertexAttribPointer(glData.sizePointer, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(glData.sizePointer);
-	gl.vertexAttribDivisor(glData.sizePointer, 1);
+	ext.vertexAttribDivisorANGLE(glData.sizePointer, 1);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.colorBuffer);
 	gl.vertexAttribPointer(glData.colorPointer, 4, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(glData.colorPointer);
-	gl.vertexAttribDivisor(glData.colorPointer, 1);
+	ext.vertexAttribDivisorANGLE(glData.colorPointer, 1);
 	
-	gl.drawArraysInstanced(drawMode, 0, buffers.shapeVerticiesCount, shapesCount);
+	ext.drawArraysInstancedANGLE(drawMode, 0, buffers.shapeVerticiesCount, shapesCount);
 }
 
 function drawElectrodeOn(electrodeNumber)
