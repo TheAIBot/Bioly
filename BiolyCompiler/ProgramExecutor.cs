@@ -53,19 +53,14 @@ namespace BiolyCompiler
 
             while (runningGraph != null)
             {
-                List<Block> scheduledOperations = MakeSchedule(runningGraph, ref board, library, ref dropPositions);
+                List<Module> usedModules;
+                List<Block> scheduledOperations = MakeSchedule(runningGraph, ref board, library, ref dropPositions, out usedModules);
                 if (firstRun)
                 {
-                    List<Module> inputs = runningGraph.Nodes.Where(x => x.value is Input)
-                                                            .Select(x => x.value)
-                                                            .Cast<FluidBlock>()
-                                                            .Select(x => x.getAssociatedModule())
-                                                            .ToList();
-                    List<Module> outputs = runningGraph.Nodes.Where(x => x.value is Output || x.value is Waste)
-                                                             .Select(x => x.value)
-                                                             .Cast<FluidBlock>()
-                                                             .Select(x => x.getAssociatedModule())
-                                                             .ToList();
+                    List<Module> inputs = usedModules.Where(x => x is InputModule)
+                                                     .ToList();
+                    List<Module> outputs = usedModules.Where(x => x is OutputModule/* || x is Waste*/)
+                                                      .ToList();
                     Executor.StartExecutor(inputs, outputs);
                     firstRun = false;
                 }
@@ -97,7 +92,7 @@ namespace BiolyCompiler
             }
         }
 
-        private List<Block> MakeSchedule(DFG<Block> runningGraph, ref Board board, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions)
+        private List<Block> MakeSchedule(DFG<Block> runningGraph, ref Board board, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, out List<Module> usedModules)
         {
             Assay assay = new Assay(runningGraph);
             Schedule scheduler = new Schedule();
@@ -107,6 +102,7 @@ namespace BiolyCompiler
             board = scheduler.boardAtDifferentTimes.MaxBy(x => x.Key).Value;
             dropPositions = scheduler.FluidVariableLocations;
 
+            usedModules = scheduler.allUsedModules;
             return scheduler.ScheduledOperations;
         }
 

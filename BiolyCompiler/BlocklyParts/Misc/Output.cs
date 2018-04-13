@@ -29,7 +29,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             if (boundModule == null)
             {
-                boundModule = new OutputModule();
+                boundModule = new OutputModule(InputVariables[0].GetAmountInDroplets()); //The shouldn't be more than 1 input source
             }
             return boundModule;
         }

@@ -5,10 +5,10 @@ using BiolyCompiler.Scheduling;
 using BiolyTests.TestObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BiolyTests.ModuleTests
+namespace BiolyTests.RectanglesWithModulesTests
 {
     [TestClass]
-    public class TestModules
+    public class TestRectangles
     {
         [TestMethod]
         public void TestSplitIntoSmallerRectanglesSmallVerticalSegment()

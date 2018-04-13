@@ -96,6 +96,7 @@
     <Compile Include="TestObjects\TestModule.cs" />
     <Compile Include="TestParseBlocks.cs" />
     <Compile Include="TestPlacement.cs" />
+    <Compile Include="TestSimpleAssays.cs" />
     <Compile Include="TestRouting.cs" />
     <Compile Include="TestSchedule.cs" />
     <Compile Include="TestTools.cs" />

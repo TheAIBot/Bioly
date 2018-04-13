@@ -58,7 +58,8 @@ namespace BiolyCompiler.Modules
 
         public void RepositionLayout()
         {
-            OutputLayout.Reposition(Shape.x, Shape.y);
+            InputLayout?.Reposition(Shape.x, Shape.y);
+            OutputLayout?.Reposition(Shape.x, Shape.y);
         }
 
         public virtual int getNumberOfInputs() {
