@@ -386,7 +386,7 @@ function removeDrops()
 		let dropsRemovedCount = 0;
 		while (dropIndex--) {
 			const drop = drops[dropIndex];
-			const dropPoisition = electrodes[drop.index].position;
+			const dropPoisition = drop.position;
 			
 			if (distanceAB(outputPosition, dropPoisition) <= electrodeSize * 0.1)
 			{

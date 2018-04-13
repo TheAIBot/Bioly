@@ -66,7 +66,7 @@ namespace BiolyCompiler.Modules
         }
 
         public (int, int) getMiddleOfSource() {
-            return (Shape.x + DROPLET_WIDTH / 2, Shape.y + DROPLET_HEIGHT / 2);
+            return Shape.getCenterPosition();
         }
     }
 }

@@ -8,6 +8,7 @@ using CefSharp.Wpf;
 using CefSharp;
 using BiolyCompiler.Modules;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace BiolyViewer_Windows
 {
@@ -28,11 +29,25 @@ namespace BiolyViewer_Windows
         public override void StartExecutor(List<Module> inputs, List<Module> outputs)
         {
             StringBuilder inputBuilder = new StringBuilder();
-            inputs.ForEach(x => inputBuilder.Append($"{{index: {x.Shape.y * Width + x.Shape.x}, color: vec4({Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture)}, {Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture)}, {Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture)}, 0.5)}},"));
+            foreach (Module input in inputs)
+            {
+                (int centerX, int centerY) = input.Shape.getCenterPosition();
+                int electrodeIndex = centerY * Width + centerX;
+                string r = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
+                string g = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
+                string b = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
+                inputBuilder.Append($"{{index: {electrodeIndex}, color: vec4({r}, {g}, {b}, 0.5)}},");
+
+            }
             string inputString = inputBuilder.ToString();
 
             StringBuilder outputBuilder = new StringBuilder();
-            outputs.ForEach(x => outputBuilder.Append($"{{index: {x.Shape.y * Width + x.Shape.x}}},"));
+            foreach (Module output in outputs)
+            {
+                (int centerX, int centerY) = output.Shape.getCenterPosition();
+                int electrodeIndex = centerY * Width + centerX;
+                outputBuilder.Append($"{{index: {electrodeIndex}}},");
+            }
             string outputString = outputBuilder.ToString();
 
             ExecuteJs($"startSimulator({Width}, {Height}, [{inputString}], [{outputString}]);");
@@ -56,6 +71,7 @@ namespace BiolyViewer_Windows
 
         private async void ExecuteJs(string js)
         {
+            Debug.WriteLine(js);
             await Browser.GetMainFrame().EvaluateScriptAsync(js, null);
         }
 
