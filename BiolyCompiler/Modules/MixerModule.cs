@@ -34,12 +34,26 @@ namespace BiolyCompiler.Modules
 
         public override Module GetCopyOf()
         {
-            throw new NotImplementedException();
+            MixerModule mixer  = new MixerModule(OperationTime);
+            mixer.Shape = new Rectangle(this.Shape);
+            mixer.InputLayout  = this.InputLayout? .GetCopy();
+            mixer.OutputLayout = this.OutputLayout?.GetCopy();
+            return mixer;
         }
 
         protected override List<Command> GetModuleCommands()
         {
-            throw new NotImplementedException();
+            List<Command> commands = new List<Command>();
+            //Moving the two droplets together:
+            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH - 1, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_ON, 0));
+            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH - 1, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_OFF, 0));
+
+            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_ON, 0));
+            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_OFF, 0));
+
+            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH + 1, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_ON, 0));
+            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH + 1, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_OFF, 0));
+            return commands;
         }
     }
 }
