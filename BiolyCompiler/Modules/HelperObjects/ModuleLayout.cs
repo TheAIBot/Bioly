@@ -9,18 +9,23 @@ namespace BiolyCompiler.Modules
         //The empty rectangles and the output locations should partition the whole module, with no overlap.
         //It should also be done in such a way that the fast template placement merges everything correctly.
         public List<Rectangle> EmptyRectangles;
-        public List<Droplet> OutputDroplets;
+        public List<Droplet> Droplets;
         public readonly int width, height;
 
-        public ModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations)
+        private ModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations)
         {
-            this.width = width;
+            this.width  = width;
             this.height = height;
             CheckIsValidModuleDivision(EmptyRectangles, OutputLocations);
             ConnectAdjacentRectangles(EmptyRectangles, OutputLocations);
             this.EmptyRectangles = EmptyRectangles;
-            this.OutputDroplets = OutputLocations;
+            this.Droplets = OutputLocations;
         }
+
+        public ModuleLayout(Rectangle moduleShape, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : this(moduleShape.width, moduleShape.height, EmptyRectangles, OutputLocations)
+        {
+        }
+
 
         private void ConnectAdjacentRectangles(List<Rectangle> emptyRectangles, List<Droplet> outputLocations)
         {
@@ -66,15 +71,15 @@ namespace BiolyCompiler.Modules
             }
         }
 
-        public void ChangeOutputType(BoardFluid fluidType)
+        public void ChangeFluidType(BoardFluid fluidType)
         {
-            OutputDroplets.ForEach(droplet => droplet.SetFluidType(fluidType));
+            Droplets.ForEach(droplet => droplet.SetFluidType(fluidType));
         }
 
         public List<Rectangle> getAllRectanglesIncludingDroplets()
         {
             List<Rectangle> allRectangles = new List<Rectangle>(EmptyRectangles);
-            allRectangles.AddRange(OutputDroplets.Select(droplet => droplet.Shape));
+            allRectangles.AddRange(Droplets.Select(droplet => droplet.Shape));
             return allRectangles;
         }
 
@@ -88,14 +93,14 @@ namespace BiolyCompiler.Modules
                 rectangle.y += y;
                 rectangle.AdjacentRectangles.Clear();
             }
-            foreach (var droplet in OutputDroplets)
+            foreach (var droplet in Droplets)
             {
                 droplet.Shape.x += x;
                 droplet.Shape.y += y;
                 droplet.Shape.AdjacentRectangles.Clear();
             }
 
-            ConnectAdjacentRectangles(EmptyRectangles, OutputDroplets);
+            ConnectAdjacentRectangles(EmptyRectangles, Droplets);
         }
 
         /// <summary>
@@ -112,19 +117,25 @@ namespace BiolyCompiler.Modules
             List<Droplet> CopyOutputDroplets = new List<Droplet>();
             EmptyRectangles.ForEach(rectangle => CopyEmptyRectangles.Add(new Rectangle(rectangle)));
             Dictionary<String, BoardFluid> differentFluidTypes = new Dictionary<string, BoardFluid>();
-            foreach (var droplet in OutputDroplets)
+            foreach (var droplet in Droplets)
             {
-                BoardFluid fluidType;
-                differentFluidTypes.TryGetValue(droplet.getFluidType().FluidName, out fluidType);
-                if (fluidType == null) {
-                    fluidType = new BoardFluid(droplet.getFluidType().FluidName);
-                    differentFluidTypes.Add(fluidType.FluidName, fluidType);
-                }
-                Droplet CopyDroplet = new Droplet(fluidType);
+                Droplet CopyDroplet;
+                if (droplet.getFluidType() != null)
+                {
+                    BoardFluid fluidType;
+                    differentFluidTypes.TryGetValue(droplet.getFluidType().FluidName, out fluidType);
+                    if (fluidType == null)
+                    {
+                        fluidType = new BoardFluid(droplet.getFluidType().FluidName);
+                        differentFluidTypes.Add(fluidType.FluidName, fluidType);
+                    }
+                    CopyDroplet = new Droplet(fluidType);
+                } else CopyDroplet = new Droplet();
+                CopyDroplet.Shape.PlaceAt(droplet.Shape.x, droplet.Shape.y);
                 CopyOutputDroplets.Add(CopyDroplet);
             }
 
-            return new ModuleLayout(width, height, CopyEmptyRectangles, CopyOutputDroplets);
+            return new ModuleLayout(new Rectangle(width, height), CopyEmptyRectangles, CopyOutputDroplets);
         }
     }
 }

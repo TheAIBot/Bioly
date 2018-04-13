@@ -20,28 +20,42 @@ namespace BiolyTests.TestObjects
     class TestModule : BiolyCompiler.Modules.Module
     {
 
-        public TestModule() : base(4, 4, 3000)
+        public TestModule() : base(4, 4, 3000, true)
         {
         }
 
-        public TestModule(int width, int height, int operationTime) : base(width, height, operationTime)
+        public TestModule(int width, int height, int operationTime) : base(width, height, operationTime, true)
         {
 
         }
-
-        public TestModule(int width, int height, int operationTime, int numberOfInputs, int numberOfOutputs) : base(width, height, operationTime, numberOfInputs, numberOfOutputs)
+        
+        public TestModule(int numberOfInputs, int numberOfOutputs) : base(Math.Max(numberOfInputs, numberOfOutputs)*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 3000, false)
         {
-
+            InputLayout  = getDefaultLayout(numberOfInputs, Math.Max(numberOfInputs, numberOfOutputs));
+            OutputLayout = getDefaultLayout(numberOfOutputs, Math.Max(numberOfInputs, numberOfOutputs));
         }
 
-        public TestModule(int numberOfInputs, int numberOfOutputs) : base(4, 4, 3000, numberOfInputs, numberOfOutputs)
+        private ModuleLayout getDefaultLayout(int dropletCount, int dropletsContained)
         {
-
+            //It will place the droplets horizontaly in a row.
+            List<Rectangle> EmptyRectangles = new List<Rectangle>();
+            List<Droplet> OutputLocations = new List<Droplet>();
+            for (int i = 0; i < dropletCount; i++)
+            {
+                Droplet droplet = new Droplet();
+                droplet.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, i * Droplet.DROPLET_WIDTH, 0);
+                OutputLocations.Add(droplet);
+            }
+            if (dropletCount < dropletsContained)
+            {
+                EmptyRectangles.Add(new Rectangle((dropletsContained - dropletCount) * Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, dropletCount * Droplet.DROPLET_WIDTH, 0));
+            }
+            return new ModuleLayout(Shape, EmptyRectangles, OutputLocations);
         }
 
         public void SetLayout(ModuleLayout Layout)
         {
-            this.Layout = Layout;
+            this.OutputLayout = Layout;
         }
 
         public override OperationType getOperationType()
@@ -51,9 +65,10 @@ namespace BiolyTests.TestObjects
 
         public override Module GetCopyOf()
         {
-            TestModule module = new TestModule(Shape.width, Shape.height, OperationTime, NumberOfInputs, NumberOfOutputs);
+            TestModule module = new TestModule(Shape.width, Shape.height, OperationTime);
             module.Shape = new Rectangle(Shape);
-            module.Layout = this.Layout.GetCopy();
+            module.InputLayout = this.InputLayout.GetCopy();
+            module.OutputLayout = this.OutputLayout.GetCopy();
             return module;
         }
 

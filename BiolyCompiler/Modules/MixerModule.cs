@@ -7,9 +7,10 @@ namespace BiolyCompiler.Modules
 {
     public class MixerModule : Module
     {
-        public MixerModule(int operationTime) : base(2*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, operationTime, 2, 2)
+        public MixerModule(int operationTime) : base(2*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, operationTime, false)
         {
-            Layout = GetDefaultLayout();
+            InputLayout  = GetDefaultLayout();
+            OutputLayout = GetDefaultLayout();
         }
 
         /*
@@ -22,11 +23,13 @@ namespace BiolyCompiler.Modules
         {
             List<Rectangle> EmptyRectangles = new List<Rectangle>();
             List<Droplet> OutputLocations  = new List<Droplet>();
-            Droplet output1 = new Droplet(new BoardFluid(""));
-            Droplet output2 = new Droplet(new BoardFluid(""));
+            Droplet output1 = new Droplet();
+            Droplet output2 = new Droplet();
             output1.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0);
             output2.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, Droplet.DROPLET_WIDTH, 0);
-            return new ModuleLayout(2* Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, EmptyRectangles, OutputLocations);
+            OutputLocations.Add(output1);
+            OutputLocations.Add(output2);
+            return new ModuleLayout(Shape, EmptyRectangles, OutputLocations);
         }
 
         public override OperationType getOperationType(){

@@ -303,7 +303,7 @@ namespace BiolyCompiler.Architechtures
             Module operationExecutingModule = finishedOperation.boundModule;
             //Checks for each pair of adjacent rectangle to the module on the board, and the rectangles in the modules layout,
             //if they are adjacent -> if so, it makes them adjacent.
-            List<Rectangle> allRectangles = operationExecutingModule.GetModuleLayout().getAllRectanglesIncludingDroplets();
+            List<Rectangle> allRectangles = operationExecutingModule.GetOutputLayout().getAllRectanglesIncludingDroplets();
 
             foreach (var moduleAdjacentRectangle in operationExecutingModule.Shape.AdjacentRectangles)
             {
@@ -329,11 +329,11 @@ namespace BiolyCompiler.Architechtures
 
             placedModules.Remove(operationExecutingModule);
             ClearBoard(operationExecutingModule.Shape);
-            operationExecutingModule.GetModuleLayout().ChangeOutputType(fluidType);
-            operationExecutingModule.GetModuleLayout().EmptyRectangles.ForEach(rectangle => EmptyRectangles.Add(rectangle));
-            operationExecutingModule.GetModuleLayout().OutputDroplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet, droplet.Shape));
+            operationExecutingModule.GetOutputLayout().ChangeFluidType(fluidType);
+            operationExecutingModule.GetOutputLayout().EmptyRectangles.ForEach(rectangle => EmptyRectangles.Add(rectangle));
+            operationExecutingModule.GetOutputLayout().Droplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet, droplet.Shape));
 
-            return operationExecutingModule.GetModuleLayout().OutputDroplets;
+            return operationExecutingModule.GetOutputLayout().Droplets;
             /*
             Droplet droplet = new Droplet(fluidType);
             Rectangle moduleRectangle = finishedOperation.boundModule.Shape;

@@ -121,7 +121,7 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            BoardFluid fluidType = new BoardFluid("TestFluid");
+            BoardFluid fluidType = new BoardFluid(inputFluid);
             Droplet droplet1 = new Droplet(fluidType);
             board.FastTemplatePlace(droplet1);
             
@@ -203,8 +203,8 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            BoardFluid fluidType1 = new BoardFluid("TestFluid1");
-            BoardFluid fluidType2 = new BoardFluid("TestFluid2");
+            BoardFluid fluidType1 = new BoardFluid(inputFluid1);
+            BoardFluid fluidType2 = new BoardFluid(inputFluid2);
             Droplet droplet1 = new Droplet(fluidType1);
             Droplet droplet2 = new Droplet(fluidType2);
             board.FastTemplatePlace(droplet1);
@@ -259,7 +259,6 @@ namespace BiolyTests.ScheduleTests
             String inputFluid2 = "Kage";
             DFG<Block> dfg = new DFG<Block>();
             TestModule module = new TestModule(2, 1);
-            module.SetLayout(Module.GetDefaultSingleOutputLayout(module.Shape));
             TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1, inputFluid2 }, null, module);
 
             Node<Block> operation1Node = new Node<Block>(operation1);
@@ -269,8 +268,8 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            BoardFluid fluidType1 = new BoardFluid("TestFluid1");
-            BoardFluid fluidType2 = new BoardFluid("TestFluid2");
+            BoardFluid fluidType1 = new BoardFluid(inputFluid1);
+            BoardFluid fluidType2 = new BoardFluid(inputFluid2);
             Droplet droplet1 = new Droplet(fluidType1);
             Droplet droplet2 = new Droplet(fluidType2);
             board.FastTemplatePlace(droplet1);
@@ -314,8 +313,7 @@ namespace BiolyTests.ScheduleTests
 
             TestModule sequentialModule1 = new TestModule();
             TestModule sequentialModule2 = new TestModule(4, 4, 1500); //Different operation time, to check if it the schedule takes the max of the two input operation times.
-            TestModule multiInputModule = new TestModule(1, 2);
-            multiInputModule.SetLayout(Module.GetDefaultSingleOutputLayout(multiInputModule.Shape));
+            TestModule multiInputModule = new TestModule(2,1);
             TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, sequentialModule2);
             TestBlock operation21 = new TestBlock(new List<string>() { inputFluid3 }, null, sequentialModule1);
             TestBlock operation31 = new TestBlock(new List<string>() { operation11.OutputVariable, operation21.OutputVariable }, null, multiInputModule);
@@ -358,9 +356,9 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            BoardFluid fluidType1 = new BoardFluid("TestFluid1");
-            BoardFluid fluidType2 = new BoardFluid("TestFluid2");
-            BoardFluid fluidType3 = new BoardFluid("TestFluid3");
+            BoardFluid fluidType1 = new BoardFluid(inputFluid1);
+            BoardFluid fluidType2 = new BoardFluid(inputFluid2);
+            BoardFluid fluidType3 = new BoardFluid(inputFluid3);
             Droplet droplet1 = new Droplet(fluidType1);
             Droplet droplet2 = new Droplet(fluidType2);
             Droplet droplet3 = new Droplet(fluidType3);

@@ -15,60 +15,72 @@ namespace BiolyCompiler.Modules
         public Rectangle Shape;
         public int OperationTime;
         public Block BindingOperation;
-        public readonly int NumberOfInputs;
-        public readonly int NumberOfOutputs;
         //The key is the input fluid name, see the operation/block which the module is bound to.
         public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
-        protected ModuleLayout Layout;
+        protected ModuleLayout InputLayout, OutputLayout;
         
 
-        public Module(int Width, int Height, int OperationTime, int NumberOfInputs, int NumberOfOutputs)
-        {
-            Shape = new Rectangle(Width, Height);
-            this.OperationTime = OperationTime;
+
+        public Module(int width, int height, int operationTime, bool useDefaultLayout){
+            Shape = new Rectangle(width, height);
+            this.OperationTime = operationTime;
             Shape.isEmpty = false;
-            this.NumberOfInputs = NumberOfInputs;
-            this.NumberOfOutputs = NumberOfOutputs;
+            if (useDefaultLayout)
+            {
+                //At default, the output is placed in the left corner of the module.
+                InputLayout  = GetDefaultSingleOutputOrInputLayout(Shape);
+                OutputLayout = GetDefaultSingleOutputOrInputLayout(Shape);
+            }
         }
 
-        public Module(int width, int height, int operationTime) : this(width, height, operationTime, 1, 1){
-            //At default, the output is placed in the left corner of the module.
-            Layout = GetDefaultSingleOutputLayout(Shape);
-        }
 
-
-        public Module(int width, int height, int operationTime, int numberOfInputs, int numberOfOutputs, ModuleLayout Layout) : this(width, height, operationTime, numberOfInputs, numberOfOutputs)
+        public Module(int width, int height, int operationTime, int numberOfInputs, int numberOfOutputs, ModuleLayout outputLayout) : this(width, height, operationTime, false)
         {
-            this.Layout = Layout;
-            /*
-            if (DropletOutputLocations.Count != numberOfOutputs) throw new Exception("The modules droplet output locations have not been set correctly. " +
-                                                                                     numberOfOutputs + " outputs where expected, but there are " + DropletOutputLocations.Count + ".");
-            else if (!canContainPoints(DropletOutputLocations))  throw new Exception("The given droplet output points cannot be contained in the module. The module has dimensions (width,height) = (" +
-                                                                                     width + ", " + height + "), and the output locations are : [" + String.Join(", ", DropletOutputLocations) + "].");
-            else this.DropletOutputLocations = DropletOutputLocations;
-            */
+            this.InputLayout  = GetDefaultSingleOutputOrInputLayout(Shape);
+            this.OutputLayout = outputLayout;
+        }
+
+        public Module(int width, int height, int operationTime, int numberOfInputs, int numberOfOutputs, ModuleLayout outputLayout, ModuleLayout inputLayout) : this(width, height, operationTime, false)
+        {
+            this.InputLayout  = inputLayout;
+            this.OutputLayout = outputLayout;
         }
 
 
-        public static ModuleLayout GetDefaultSingleOutputLayout(Rectangle rectangle)
+        public static ModuleLayout GetDefaultSingleOutputOrInputLayout(Rectangle rectangle)
         {
-            Droplet droplet = new Droplet(new BoardFluid("Test"));
+            Droplet droplet = new Droplet();
             (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(droplet.Shape);
             List<Rectangle> emptyRectangles = new List<Rectangle>();
             if (TopRectangle != null) emptyRectangles.Add(TopRectangle);
             if (RightRectangle != null) emptyRectangles.Add(RightRectangle);
-            return new ModuleLayout(rectangle.width, rectangle.height, emptyRectangles, new List<Droplet>() {droplet});
+            return new ModuleLayout(rectangle, emptyRectangles, new List<Droplet>() {droplet});
         }
 
         public void RepositionLayout()
         {
-            Layout.Reposition(Shape.x, Shape.y);
+            OutputLayout.Reposition(Shape.x, Shape.y);
         }
 
-        public virtual ModuleLayout GetModuleLayout() {
-            if (Layout == null) {
+        public virtual int getNumberOfInputs() {
+            return InputLayout.Droplets.Count;
+        }
+
+        public virtual int getNumberOfOutputs()
+        {
+            return OutputLayout.Droplets.Count;
+        }
+
+        public virtual ModuleLayout GetOutputLayout() {
+            if (OutputLayout == null) {
+                throw new Exception("The output layout for the module \"" + this.ToString() + "\" have not been set/is null");
+            } else return OutputLayout;
+        }
+
+        public virtual ModuleLayout GetInputLayout() {
+            if (InputLayout == null) {
                 throw new Exception("The layout for the module \"" + this.ToString() + "\" have not been set/is null");
-            } else return Layout;
+            } else return InputLayout;
         }
 
         private bool canContainPoints(List<Point> DropletOutputLocations)
@@ -87,7 +99,7 @@ namespace BiolyCompiler.Modules
 
         public override String ToString()
         {
-            return this.GetType().ToString() + ", input/output = (" + NumberOfInputs + ", " + NumberOfOutputs + "), dimensions = {" + Shape.ToString() + "}, operation time = " + OperationTime;
+            return this.GetType().ToString() + ", input/output = (" + getNumberOfInputs() + ", " + getNumberOfOutputs() + "), dimensions = {" + Shape.ToString() + "}, operation time = " + OperationTime;
         }
 
         
@@ -118,8 +130,8 @@ namespace BiolyCompiler.Modules
                                             (BindingOperation == null && moduleObj.BindingOperation == null);
                 return Shape.Equals(moduleObj.Shape) &&
                         OperationTime == moduleObj.OperationTime &&
-                        NumberOfInputs == moduleObj.NumberOfInputs &&
-                        NumberOfOutputs == moduleObj.NumberOfOutputs &&
+                        getNumberOfInputs()  == moduleObj.getNumberOfInputs() &&
+                        getNumberOfOutputs() == moduleObj.getNumberOfOutputs() &&
                         sameBindingOperation;
             }
         }
@@ -127,7 +139,7 @@ namespace BiolyCompiler.Modules
 
         public bool Implements(FluidBlock operation)
         {
-            return  NumberOfInputs  == operation.InputVariables.Count && 
+            return  getNumberOfOutputs() == operation.InputVariables.Count && 
                     //numberOfOutputs == operation.OutputVariable.Count &&
                     this.GetType().Equals(operation.getAssociatedModule().GetType());
         }
