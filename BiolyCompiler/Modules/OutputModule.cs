@@ -7,13 +7,20 @@ namespace BiolyCompiler.Modules
 {
     public class OutputModule : Module
     {
+        
         public OutputModule() : base(3, 3, 1, false)
         {
         }
-
+        
         public override Module GetCopyOf()
         {
             return new OutputModule();
+        }
+
+
+        public override bool isStaticModule()
+        {
+            return true;
         }
 
         protected override List<Command> GetModuleCommands()

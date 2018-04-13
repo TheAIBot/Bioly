@@ -86,6 +86,7 @@ namespace BiolyCompiler.Scheduling
                 }
                 else // nextOperation is FluidBlock
                 {
+
                     FluidBlock topPriorityOperation = nextOperation as FluidBlock;
                     if (topPriorityOperation is Input)
                     {

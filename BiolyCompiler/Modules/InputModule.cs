@@ -15,10 +15,11 @@ namespace BiolyCompiler.Modules
         {
             this.FluidType = fluidType;
             fluidType.droplets.Add(this);
-            if (capacity < 1) throw new Exception("A droplet source/spawner needs to be non-empty. The droplet source has fluid type = " + fluidType.ToString());
+            if (capacity < 1) throw new Exception("A droplet source/spawner needs to be initally non-empty. The droplet source has fluid type = " + fluidType.ToString());
             this.Capacity = capacity;
             this.DropletCount = capacity;
         }
+        
 
         public void DecrementDropletCount()
         {
