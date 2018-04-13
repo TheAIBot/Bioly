@@ -72,7 +72,7 @@ namespace BiolyCompiler.Modules
 
         public Module getAndPlaceFirstPlaceableModule(FluidBlock operation, Board board){
             Module optimalModuleTemplate = getOptimalModule(operation);
-            if (optimalModuleTemplate.GetModuleLayout() == null) throw new Exception("The layout of the module have never been set. The module is: " + optimalModuleTemplate.ToString());
+            if (optimalModuleTemplate.GetInputLayout() == null) throw new Exception("The layout of the module have never been set. The module is: " + optimalModuleTemplate.ToString());
             Module module = optimalModuleTemplate.GetCopyOf();
             if (module == null) return null;
             

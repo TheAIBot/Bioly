@@ -8,7 +8,7 @@ namespace BiolyCompiler.Modules
     public class SensorModule : Module
     {
 
-        public SensorModule() : base(3, 3, 3000){
+        public SensorModule() : base(3, 3, 3000,true){
 
         }
 

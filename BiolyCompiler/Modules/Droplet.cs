@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Modules.OperationTypes;
-
+using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.Modules
 {
@@ -11,7 +11,11 @@ namespace BiolyCompiler.Modules
         private BoardFluid fluidType;
         public const int DROPLET_WIDTH = 3, DROPLET_HEIGHT = 3;
 
-        public Droplet(BoardFluid fluidType) : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, 0, 0)
+        public Droplet() : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, false)
+        {
+        }
+
+        public Droplet(BoardFluid fluidType) : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, false)
         {
             this.fluidType = fluidType;
             fluidType.droplets.Add(this);
@@ -24,7 +28,7 @@ namespace BiolyCompiler.Modules
 
         public void SetFluidType(BoardFluid fluidType)
         {
-            this.fluidType.droplets.Remove(this);
+            if (this.fluidType != null) this.fluidType.droplets.Remove(this);
             this.fluidType = fluidType;
             fluidType.droplets.Add(this);
         }
@@ -33,6 +37,16 @@ namespace BiolyCompiler.Modules
         {
             if (!base.Equals(obj)) return false;
             else return (obj as Droplet).fluidType.Equals(this.fluidType);
+        }
+
+        public override int getNumberOfInputs()
+        {
+            return 0;
+        }
+
+        public override int getNumberOfOutputs()
+        {
+            return 0;
         }
 
         public override OperationType getOperationType(){
@@ -48,6 +62,16 @@ namespace BiolyCompiler.Modules
         protected override List<Command> GetModuleCommands()
         {
             throw new Exception("Droplet can't be converted into commands");
+        }
+
+        public bool isInMiddleOfSource(RoutingInformation location)
+        {
+            return location.x == Shape.x + DROPLET_WIDTH / 2 &&
+                   location.y == Shape.y + DROPLET_HEIGHT / 2;
+        }
+
+        public (int, int) getMiddleOfSource() {
+            return (Shape.x + DROPLET_WIDTH / 2, Shape.y + DROPLET_HEIGHT / 2);
         }
     }
 }

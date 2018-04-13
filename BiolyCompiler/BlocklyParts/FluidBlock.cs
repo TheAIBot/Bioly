@@ -39,6 +39,24 @@ namespace BiolyCompiler.BlocklyParts
         {
             boundModule = module;
             module.BindingOperation = this;
+
+            //The fluid types of the module layout, is changedto fit with the operation:
+            int currentDroplet = 0;
+            foreach (var fluid in InputVariables)
+            {
+                BoardFluid fluidType = new BoardFluid(fluid.FluidName);
+                for (int i = 0; i < fluid.GetAmountInDroplets(); i++)
+                {
+                    module.GetInputLayout().Droplets[currentDroplet].SetFluidType(fluidType);
+                    currentDroplet++;
+                }
+            }
+            BoardFluid outputFluidType = new BoardFluid(OutputVariable);
+            foreach (var droplet in module.GetOutputLayout().Droplets)
+            {
+                droplet.SetFluidType(outputFluidType);
+            }
+
         }
 
         internal void Unbind(Module module)

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Modules.OperationTypes;
-
+using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.Modules
 {
@@ -12,7 +12,7 @@ namespace BiolyCompiler.Modules
         public readonly int Capacity;
         public int DropletCount { get; private set; }
 
-        public DropletSpawner(BoardFluid fluidType, int capacity) : base(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0, 0)
+        public DropletSpawner(BoardFluid fluidType, int capacity) : base(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, false)
         {
             this.FluidType = fluidType;
             fluidType.droplets.Add(this);
@@ -29,6 +29,26 @@ namespace BiolyCompiler.Modules
         public override Module GetCopyOf()
         {
             throw new NotImplementedException();
+        }
+
+        public override int getNumberOfInputs()
+        {
+            return 0;
+        }
+        
+        public override int getNumberOfOutputs()
+        {
+            return 0;
+        }
+
+        public bool isInMiddleOfSource(RoutingInformation information)
+        {
+            (int xMiddle, int yMiddle) = getMiddleOfSource();
+            return xMiddle == information.x && yMiddle == information.y;
+        }
+
+        public (int, int) getMiddleOfSource() {
+            return (Shape.x + Droplet.DROPLET_WIDTH / 2, Shape.y + Droplet.DROPLET_HEIGHT / 2);
         }
 
         public override OperationType getOperationType()
