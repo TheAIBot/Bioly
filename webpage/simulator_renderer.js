@@ -9,8 +9,8 @@ var glData =
 	areaBorder: {}
 };
 
-const ELECTRODE_OFF_COLOR = vec4(0.8, 0.8, 0.8, 1.0);
-const ELECTRODE_ON_COLOR  = vec4(0.4, 0.4, 0.4, 1.0);
+const ELECTRODE_OFF_COLOR = vec4(0.85, 0.85, 0.85, 1.0);
+const ELECTRODE_ON_COLOR  = vec4(0.7, 0.7, 0.7, 1.0);
 const DROP_POINT_COUNT = 100;
 //ratio between electrode size and electrode spacing
 const ratioForSpace = 0.1;
