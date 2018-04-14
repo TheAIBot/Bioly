@@ -44,15 +44,58 @@ namespace BiolyCompiler.Modules
         protected override List<Command> GetModuleCommands()
         {
             List<Command> commands = new List<Command>();
-            //Moving the two droplets together:
-            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH - 1, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_ON, 0));
-            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH - 1, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_OFF, 0));
+            int middleOfComponentYValue = Shape.y + Droplet.DROPLET_HEIGHT /2;
+            int leftDropletInitialXPosition = Shape.x + 1;
+            int rightDropletInitialXPosition = Shape.x + Droplet.DROPLET_WIDTH + 1;
 
-            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_ON, 0));
-            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_OFF, 0));
+            //Moving the two droplets together to the right:
+            commands.AddRange(moveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
+            
+            //The merged droplet is now at the right side. It needs to be moved back and forth:
+            int numberOfCommandsToMergeDroplet = 6;
+            int numberOfCommandsToMoveBackAndForth = 8;
+            int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
+            for (int i = 0; i < numberOfForwardBackwardMovements; i++)
+            {
+                commands.AddRange(moveDropletsToTheLeft(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
+                commands.AddRange(moveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
+            }
 
-            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH + 1, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_ON, 0));
-            commands.Add(new Command(Shape.x + Droplet.DROPLET_WIDTH + 1, Shape.y + Droplet.DROPLET_HEIGHT - 2, CommandType.ELECTRODE_OFF, 0));
+            //Splitting the droplets:
+            commands.Add(new Command(rightDropletInitialXPosition - 1, middleOfComponentYValue, CommandType.ELECTRODE_ON, 0));
+            commands.Add(new Command(rightDropletInitialXPosition - 1, middleOfComponentYValue, CommandType.ELECTRODE_OFF, 0));
+
+            commands.Add(new Command(rightDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_ON, 0));
+            commands.Add(new Command(rightDropletInitialXPosition - 2, middleOfComponentYValue, CommandType.ELECTRODE_ON, 0));
+
+            commands.Add(new Command(rightDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_OFF, 0));
+            commands.Add(new Command(rightDropletInitialXPosition - 2, middleOfComponentYValue, CommandType.ELECTRODE_OFF, 0));
+
+            commands.Add(new Command(leftDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_ON, 0));
+            commands.Add(new Command(leftDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_OFF, 0));
+
+            return commands;
+        }
+
+        private List<Command> moveDropletsToTheRight(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition)
+        {
+            List<Command> commands = new List<Command>();
+            for (int i = 1; i <= (rightDropletInitialXPosition - leftDropletInitialXPosition); i++)
+            {
+                commands.Add(new Command(leftDropletInitialXPosition + i, middleOfComponentYValue, CommandType.ELECTRODE_ON, 0));
+                commands.Add(new Command(leftDropletInitialXPosition + i, middleOfComponentYValue, CommandType.ELECTRODE_OFF, 0));
+            }
+            return commands;
+        }
+
+        private List<Command> moveDropletsToTheLeft(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition)
+        {
+            List<Command> commands = new List<Command>();
+            for (int i = 1; i <= (rightDropletInitialXPosition - leftDropletInitialXPosition); i++)
+            {
+                commands.Add(new Command(rightDropletInitialXPosition - i, middleOfComponentYValue, CommandType.ELECTRODE_ON, 0));
+                commands.Add(new Command(rightDropletInitialXPosition - i, middleOfComponentYValue, CommandType.ELECTRODE_OFF, 0));
+            }
             return commands;
         }
     }
