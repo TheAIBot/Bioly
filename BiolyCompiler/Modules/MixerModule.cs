@@ -66,7 +66,7 @@ namespace BiolyCompiler.Modules
             //Splitting the droplets:
             commands.Add(new Command(rightDropletInitialXPosition - 1, middleOfComponentYValue, CommandType.ELECTRODE_ON , time));
             time++;
-            commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
+            commands.Add(new Command(rightDropletInitialXPosition - 1, middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
             time++;
 
             commands.Add(new Command(rightDropletInitialXPosition    , middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
@@ -77,7 +77,7 @@ namespace BiolyCompiler.Modules
             commands.Add(new Command(rightDropletInitialXPosition - 2, middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
             time++;
 
-            commands.Add(new Command(leftDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_ON , time));
+            commands.Add(new Command(leftDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
             time++;
             commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
 
@@ -93,10 +93,7 @@ namespace BiolyCompiler.Modules
                 xPos++;
                 commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
                 time++;
-                if (commands.Count > 0)
-                {
-                    commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
-                }
+                commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
             } while (xPos != rightDropletInitialXPosition);
             return commands;
         }
@@ -110,10 +107,7 @@ namespace BiolyCompiler.Modules
                 xPos--;
                 commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
                 time++;
-                if (commands.Count > 0)
-                {
-                    commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
-                }
+                commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
             } while (xPos != leftDropletInitialXPosition);
             return commands;
         }

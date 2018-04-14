@@ -46,20 +46,16 @@ namespace BiolyCompiler.Routing
             return builder.ToString();
         }
 
-        public Command[] ToCommands()
+        public List<Command> ToCommands()
         {
-            Command[] commands = new Command[(route.Count - 1) * 2 + 1];
-            int index = 1;
-            for (int i = 1; i < commands.Length; i+= 2)
+            List<Command> commands = new List<Command>();
+            int time = 0;
+            for (int i = 1; i < route.Count; i++)
             {
-                RoutingInformation prevRouteInfo = route[index - 1];
-                RoutingInformation currentrouteInfo = route[index];
-                commands[i - 1] = new Command(prevRouteInfo.x   , prevRouteInfo.y   , CommandType.ELECTRODE_OFF, index);
-                commands[i]     = new Command(currentrouteInfo.x, currentrouteInfo.y, CommandType.ELECTRODE_ON , index);
-                index++;
+                commands.Add(new Command(route[i].x, route[i].y, CommandType.ELECTRODE_ON, time));
+                time++;
+                commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
             }
-
-            commands[commands.Length - 1] = new Command(commands[commands.Length - 2].X, commands[commands.Length - 2].Y, CommandType.ELECTRODE_OFF, route.Count);
 
             return commands;
         }
