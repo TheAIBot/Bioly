@@ -49,7 +49,7 @@ namespace BiolyCompiler.Modules
             int rightDropletInitialXPosition = Shape.x + Droplet.DROPLET_WIDTH + 1;
 
             //Moving the two droplets together to the right:
-            commands.AddRange(moveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
+            commands.AddRange(MoveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
             
             //The merged droplet is now at the right side. It needs to be moved back and forth:
             int numberOfCommandsToMergeDroplet = 6;
@@ -57,8 +57,8 @@ namespace BiolyCompiler.Modules
             int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
             for (int i = 0; i < numberOfForwardBackwardMovements; i++)
             {
-                commands.AddRange(moveDropletsToTheLeft(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
-                commands.AddRange(moveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
+                commands.AddRange(MoveDropletsToTheLeft(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
+                commands.AddRange(MoveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition));
             }
 
             //Splitting the droplets:
@@ -77,7 +77,7 @@ namespace BiolyCompiler.Modules
             return commands;
         }
 
-        private List<Command> moveDropletsToTheRight(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition)
+        private List<Command> MoveDropletsToTheRight(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition)
         {
             List<Command> commands = new List<Command>();
             for (int i = 1; i <= (rightDropletInitialXPosition - leftDropletInitialXPosition); i++)
@@ -88,7 +88,7 @@ namespace BiolyCompiler.Modules
             return commands;
         }
 
-        private List<Command> moveDropletsToTheLeft(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition)
+        private List<Command> MoveDropletsToTheLeft(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition)
         {
             List<Command> commands = new List<Command>();
             for (int i = 1; i <= (rightDropletInitialXPosition - leftDropletInitialXPosition); i++)
