@@ -473,29 +473,32 @@ function mergeDrops()
 	{
 		const drop = drops[i];
 		const dropRadius = (electrodeSize / 2) * drop.size;
-		if (drop)
+		if(drop)
 		{
 			for(var k = i + 1; k < dropCount; k++)
 			{
 				const otherDrop = drops[k];
-				const otherDropRadius = (electrodeSize / 2) * otherDrop.size;
 				if(otherDrop)
 				{
-					const distance = distanceAB(drop.position, otherDrop.position);
-					if (distance - dropRadius - otherDropRadius < electrodeSize / 2)
+					const otherDropRadius = (electrodeSize / 2) * otherDrop.size;
+					if(otherDrop)
 					{
-						const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
-												(drop.position[1] + otherDrop.position[1]) / 2);
-						const newDropColor = vec4((drop.color[0] + otherDrop.color[0]) / 2, 
-												  (drop.color[1] + otherDrop.color[1]) / 2, 
-												  (drop.color[2] + otherDrop.color[2]) / 2, 
-												  (drop.color[3] + otherDrop.color[3]) / 2);
-						spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropColor);
-						
-						drops[i] = null;
-						drops[k] = null;
-						break;
-					}
+						const distance = distanceAB(drop.position, otherDrop.position);
+						if (distance - dropRadius - otherDropRadius < electrodeSize / 2)
+						{
+							const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
+													(drop.position[1] + otherDrop.position[1]) / 2);
+							const newDropColor = vec4((drop.color[0] + otherDrop.color[0]) / 2, 
+													  (drop.color[1] + otherDrop.color[1]) / 2, 
+													  (drop.color[2] + otherDrop.color[2]) / 2, 
+													  (drop.color[3] + otherDrop.color[3]) / 2);
+							spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropColor);
+							
+							drops[i] = null;
+							drops[k] = null;
+							break;
+						}
+					}	
 				}
 			}
 		}
