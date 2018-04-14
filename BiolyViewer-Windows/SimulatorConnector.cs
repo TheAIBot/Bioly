@@ -18,6 +18,7 @@ namespace BiolyViewer_Windows
         private readonly int Width;
         private readonly int Height;
         private readonly Random Rando = new Random(237842);
+        private bool REALLY_SLOW_COMPUTER = true;
 
         public SimulatorConnector(ChromiumWebBrowser browser, int width, int height)
         {
@@ -50,6 +51,12 @@ namespace BiolyViewer_Windows
             }
             string outputString = outputBuilder.ToString();
 
+            if (REALLY_SLOW_COMPUTER)
+            {
+                Debug.WriteLine("function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms));}");
+                Debug.WriteLine("(async function() {");
+            }
+
             ExecuteJs($"startSimulator({Width}, {Height}, [{inputString}], [{outputString}]);");
 
             for (int i = 0; i < inputs.Count; i++)
@@ -60,6 +67,11 @@ namespace BiolyViewer_Windows
             for (int i = 0; i < outputs.Count; i++)
             {
                 SendCommand(new AreaCommand(outputs[i].Shape, CommandType.SHOW_AREA));
+            }
+
+            if (REALLY_SLOW_COMPUTER)
+            {
+                Debug.WriteLine("})();");
             }
         }
 
@@ -72,6 +84,11 @@ namespace BiolyViewer_Windows
         private async void ExecuteJs(string js)
         {
             Debug.WriteLine(js);
+            
+            if (REALLY_SLOW_COMPUTER)
+            {
+                //Debug.WriteLine("await sleep(500);");
+            }
             await Browser.GetMainFrame().EvaluateScriptAsync(js, null);
         }
 
