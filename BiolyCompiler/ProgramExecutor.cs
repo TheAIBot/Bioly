@@ -108,18 +108,41 @@ namespace BiolyCompiler
 
         private void ExecuteCommands(List<Command> commands)
         {
+            int prevTime = commands.First().Time;
             for (int i = 0; i < commands.Count; i++)
             {
+                List<Command> similarCommands = new List<Command>();
+                Command prevCommand = null;
                 Command command = commands[i];
-                Executor.SendCommand(command);
-
-                if (i + 1 < commands.Count)
+                if (command.Time < prevTime)
                 {
-                    Command nextCommand = commands[i + 1];
-                    if (nextCommand.Time != command.Time)
+                    prevTime = command.Time;
+                }
+                do
+                {
+                    if (prevCommand != null)
                     {
-                        Thread.Sleep(500);
+                        i++;
                     }
+                    similarCommands.Add(command);
+                    if (i + 1 < commands.Count)
+                    {
+                        prevCommand = command;
+                        command = commands[i + 1];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                } while (prevCommand.GetType() == command.GetType() &&
+                         prevCommand.Time == command.Time &&
+                         prevCommand.Type == command.Type);
+                Executor.SendCommands(similarCommands);
+
+                if (prevTime < command.Time)
+                {
+                    Thread.Sleep(500);
+                    prevTime = command.Time;
                 }
             }
         }

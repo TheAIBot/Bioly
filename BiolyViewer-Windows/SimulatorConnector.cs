@@ -18,7 +18,7 @@ namespace BiolyViewer_Windows
         private readonly int Width;
         private readonly int Height;
         private readonly Random Rando = new Random(237842);
-        private bool REALLY_SLOW_COMPUTER = true;
+        private bool REALLY_SLOW_COMPUTER = false;
 
         public SimulatorConnector(ChromiumWebBrowser browser, int width, int height)
         {
@@ -75,9 +75,11 @@ namespace BiolyViewer_Windows
             }
         }
 
-        public override void SendCommand(Command command)
+        private void SendCommand(Command command) => SendCommands(new List<Command>() { command });
+
+        public override void SendCommands(List<Command> commands)
         {
-            string commandScript = $"addCommand(\"{ConvertCommand(command)}\");";
+            string commandScript = $"addCommand(\"{ConvertCommand(commands)}\");";
             ExecuteJs(commandScript);
         }
 
@@ -97,21 +99,21 @@ namespace BiolyViewer_Windows
             throw new NotImplementedException();
         }
 
-        protected override string ConvertCommand(Command command)
+        protected override string ConvertCommand(List<Command> commands)
         {
-            AreaCommand areaCommand = command as AreaCommand;
-            switch (command.Type)
+            AreaCommand areaCommand = commands.First() as AreaCommand;
+            switch (commands.First().Type)
             {
                 case CommandType.ELECTRODE_ON:
-                    return $"setel {command.Y * Width + command.X + 1}";
+                    return $"setel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
                 case CommandType.ELECTRODE_OFF:
-                    return $"clrel {command.Y * Width + command.X + 1}";
+                    return $"clrel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
                 case CommandType.SHOW_AREA:
                     return $"show_area {areaCommand.ID} {areaCommand.X} {areaCommand.Y} {areaCommand.Width} {areaCommand.Height} {areaCommand.R.ToString("N3", CultureInfo.InvariantCulture)} {areaCommand.G.ToString("N3", CultureInfo.InvariantCulture)} {areaCommand.B.ToString("N3", CultureInfo.InvariantCulture)}";
                 case CommandType.REMOVE_AREA:
                     return $"remove_area {areaCommand.ID}";
                 default:
-                    throw new Exception($"Can't convert command type {command.Type.ToString()}");
+                    throw new Exception($"Can't convert command type {commands.First().Type.ToString()}");
             }
         }
     }

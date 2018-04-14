@@ -56,7 +56,8 @@ namespace BiolyCompiler.Modules
             //The merged droplet is now at the right side. It needs to be moved back and forth:
             int numberOfCommandsToMergeDroplet = 6;
             int numberOfCommandsToMoveBackAndForth = 8;
-            int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
+            //int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
+            int numberOfForwardBackwardMovements = 1;
             for (int i = 0; i < numberOfForwardBackwardMovements; i++)
             {
                 commands.AddRange(MoveDropletsToTheLeft(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition, ref time));
