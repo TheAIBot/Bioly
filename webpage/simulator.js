@@ -233,7 +233,8 @@ function addArea(id, x, y, width, height, r, g, b)
 {
 	const newArea = {};
 	newArea.id = id;
-	newArea.position = electrodes[(y + Math.floor(height / 2)) * boardWidth + (x + Math.floor(width / 2))].position;
+	newArea.position = vec2(electrodes[0].position[0] + (x + (width  / 2)) * electrodeSize + (x + (width  / 2) - 1) * electrodeSize * ratioForSpace - electrodeSize / 2 + electrodeSize * ratioForSpace / 2,
+							electrodes[0].position[1] - (y + (height / 2)) * electrodeSize - (y + (height / 2) - 1) * electrodeSize * ratioForSpace + electrodeSize / 2 - electrodeSize * ratioForSpace / 2);
 	const widthSize  = (width  * electrodeSize + (width  - 1) * electrodeSize * ratioForSpace + ((electrodeSize * ratioForSpace) / 2)) / electrodeSize;
 	const heightSize = (height * electrodeSize + (height - 1) * electrodeSize * ratioForSpace + ((electrodeSize * ratioForSpace) / 2)) / electrodeSize;
 	newArea.size = vec2(widthSize, heightSize);
