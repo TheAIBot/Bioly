@@ -118,7 +118,7 @@ namespace BiolyCompiler
                     Command nextCommand = commands[i + 1];
                     if (nextCommand.Time != command.Time)
                     {
-                        Thread.Sleep(500);
+                        Thread.Sleep(1000);
                     }
                 }
             }
