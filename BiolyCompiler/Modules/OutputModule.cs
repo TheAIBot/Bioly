@@ -31,7 +31,7 @@ namespace BiolyCompiler.Modules
             return true;
         }
 
-        protected override List<Command> GetModuleCommands()
+        protected override List<Command> GetModuleCommands(ref int time)
         {
             return new List<Command>();
         }

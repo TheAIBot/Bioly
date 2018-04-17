@@ -16,7 +16,9 @@ namespace BiolyCompiler.Modules
         public Block BindingOperation;
         //The key is the input fluid name, see the operation/block which the module is bound to.
         public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
-        protected ModuleLayout InputLayout, OutputLayout;
+        protected ModuleLayout InputLayout;
+        protected ModuleLayout OutputLayout;
+        public int StartTime = int.MinValue;
         
 
 
@@ -142,29 +144,30 @@ namespace BiolyCompiler.Modules
                     this.GetType().Equals(operation.getAssociatedModule().GetType());
         }
 
-        protected abstract List<Command> GetModuleCommands();
+        protected abstract List<Command> GetModuleCommands(ref int time);
 
         public List<Command> ToCommands()
         {
             List<Command> commands = new List<Command>();
-            List<Command> moduleCommands = GetModuleCommands();
+            int time = 0;
+            List<Command> routeCommands = new List<Command>();
+            foreach (List<Route> route in InputRoutes.Values.OrderBy(x => x.First().startTime))
+            {
+                route.ForEach(x => routeCommands.AddRange(x.ToCommands(ref time)));
+            }
+            List<Command> moduleCommands = GetModuleCommands(ref time);
             if (moduleCommands.Count > 0)
             {
                 //show module on simulator
-                commands.Add(new AreaCommand(Shape, CommandType.SHOW_AREA));
+                commands.Add(new AreaCommand(Shape, CommandType.SHOW_AREA, 0));
             }
-
-            //i need a way to get this in the correct order
-            foreach (List<Route> route in InputRoutes.Values.OrderBy(x => x.First().startTime))
-            {
-                route.ForEach(x => commands.AddRange(x.ToCommands()));
-            }
-
+            commands.AddRange(routeCommands);
             commands.AddRange(moduleCommands);
+
             if (moduleCommands.Count > 0)
             {
                 //remove module from simulator
-                commands.Add(new AreaCommand(Shape, CommandType.REMOVE_AREA));
+                commands.Add(new AreaCommand(Shape, CommandType.REMOVE_AREA, time));
             }
 
             return commands;

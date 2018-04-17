@@ -16,7 +16,7 @@ namespace BiolyCompiler.Commands
 
         private static readonly Random Rando = new Random(12);
 
-        public AreaCommand(Rectangle shape, CommandType type) : base(shape.x, shape.y, type, 0)
+        public AreaCommand(Rectangle shape, CommandType type, int time) : base(shape.x, shape.y, type, time)
         {
             this.ID = shape.ToString().Replace(' ', '-');
             this.Width = shape.width;

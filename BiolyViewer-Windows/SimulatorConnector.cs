@@ -61,12 +61,12 @@ namespace BiolyViewer_Windows
 
             for (int i = 0; i < inputs.Count; i++)
             {
-                SendCommand(new AreaCommand(inputs[i].Shape, CommandType.SHOW_AREA));
+                SendCommand(new AreaCommand(inputs[i].Shape, CommandType.SHOW_AREA, 0));
             }
 
             for (int i = 0; i < outputs.Count; i++)
             {
-                SendCommand(new AreaCommand(outputs[i].Shape, CommandType.SHOW_AREA));
+                SendCommand(new AreaCommand(outputs[i].Shape, CommandType.SHOW_AREA, 0));
             }
 
             if (REALLY_SLOW_COMPUTER)
@@ -75,7 +75,7 @@ namespace BiolyViewer_Windows
             }
         }
 
-        private void SendCommand(Command command) => SendCommands(new List<Command>() { command });
+        public override void SendCommand(Command command) => SendCommands(new List<Command>() { command });
 
         public override void SendCommands(List<Command> commands)
         {

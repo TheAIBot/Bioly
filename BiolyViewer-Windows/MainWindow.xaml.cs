@@ -91,6 +91,9 @@ namespace BiolyViewer_Windows
         {
             lock (simulatorLocker)
             {
+                //CommandExecutor<string> executor = new SimulatorConnector(Browser, BOARD_WIDTH, BOARD_HEIGHT);
+                //ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
+                //programExecutor.Run(BOARD_WIDTH, BOARD_HEIGHT, xml);
                 simulatorThread?.Interrupt();
                 simulatorThread?.Join();
                 simulatorThread = new Thread(() =>

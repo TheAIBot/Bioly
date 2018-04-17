@@ -42,13 +42,13 @@ namespace BiolyCompiler.Modules
             return mixer;
         }
 
-        protected override List<Command> GetModuleCommands()
+        protected override List<Command> GetModuleCommands(ref int time)
         {
+            int startTime = time;
             List<Command> commands = new List<Command>();
             int middleOfComponentYValue = Shape.y + Droplet.DROPLET_HEIGHT / 2;
             int leftDropletInitialXPosition = Shape.x + 1;
             int rightDropletInitialXPosition = Shape.x + Shape.width - 2;
-            int time = 0;
 
             //Moving the two droplets together to the right:
             commands.AddRange(MoveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition, ref time));
@@ -56,8 +56,8 @@ namespace BiolyCompiler.Modules
             //The merged droplet is now at the right side. It needs to be moved back and forth:
             int numberOfCommandsToMergeDroplet = 6;
             int numberOfCommandsToMoveBackAndForth = 8;
-            //int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
-            int numberOfForwardBackwardMovements = 1;
+            int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
+            //int numberOfForwardBackwardMovements = 1;
             for (int i = 0; i < numberOfForwardBackwardMovements; i++)
             {
                 commands.AddRange(MoveDropletsToTheLeft(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition, ref time));
@@ -80,7 +80,14 @@ namespace BiolyCompiler.Modules
 
             commands.Add(new Command(leftDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
             time++;
+            int restTime = OperationTime - (time - startTime);
+            time += restTime;
             commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
+
+            if (commands.Last().Time - startTime != OperationTime)
+            {
+                throw new Exception("WAAAAA");
+            }
 
             return commands;
         }
