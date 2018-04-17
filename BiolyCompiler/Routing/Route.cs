@@ -46,10 +46,9 @@ namespace BiolyCompiler.Routing
             return builder.ToString();
         }
 
-        public List<Command> ToCommands()
+        public List<Command> ToCommands(ref int time)
         {
             List<Command> commands = new List<Command>();
-            int time = 0;
             for (int i = 1; i < route.Count; i++)
             {
                 commands.Add(new Command(route[i].x, route[i].y, CommandType.ELECTRODE_ON, time));

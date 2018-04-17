@@ -66,7 +66,7 @@ namespace BiolyTests.TestObjects
             return module;
         }
 
-        protected override List<Command> GetModuleCommands()
+        protected override List<Command> GetModuleCommands(ref int time)
         {
             throw new NotImplementedException();
         }

@@ -13,15 +13,9 @@ namespace BiolyCompiler.Graphs
         public readonly List<Node<N>> Input = new List<Node<N>>();
         public readonly List<Node<N>> Output = new List<Node<N>>();
 
-        public void AddNode(Node<N> node)
+        public void AddNode(N nodeValue)
         {
-            Nodes.Add(node);
-        }
-
-        public void AddEdge(Node<N> source, Node<N> target)
-        {
-            source.AddOutgoingEdge(target);
-            target.AddIngoingEdge(source);
+            Nodes.Add(new Node<N>(nodeValue));
         }
 
         public void FinishDFG()
@@ -69,6 +63,10 @@ namespace BiolyCompiler.Graphs
             }
         }
 
+        private void AddEdge(Node<N> source, Node<N> target)
+        {
+            source.AddOutgoingEdge(target);
+            target.AddIngoingEdge(source);
+        }
     }
-
 }

@@ -16,7 +16,7 @@ namespace BiolyCompiler.Modules
             throw new NotImplementedException();
         }
 
-        protected override List<Command> GetModuleCommands()
+        protected override List<Command> GetModuleCommands(ref int time)
         {
             throw new NotImplementedException();
         }

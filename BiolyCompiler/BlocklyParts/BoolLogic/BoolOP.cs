@@ -34,11 +34,8 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             VariableBlock leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
             VariableBlock rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
 
-            Node<Block> leftBoolNode = new Node<Block>(leftBoolBlock);
-            Node<Block> rightBoolNode = new Node<Block>(rightBoolBlock);
-
-            dfg.AddNode(leftBoolNode);
-            dfg.AddNode(rightBoolNode);
+            dfg.AddNode(leftBoolBlock);
+            dfg.AddNode(rightBoolBlock);
 
             List<string> inputs = new List<string>();
             inputs.Add(leftBoolBlock.OutputVariable);

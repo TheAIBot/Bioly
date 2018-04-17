@@ -29,7 +29,7 @@ namespace BiolyViewer_Windows
     /// </summary>
     public partial class MainWindow : Window
     {
-        int BOARD_HEIGHT = 15, BOARD_WIDTH = 15;
+        int BOARD_WIDTH = 20, BOARD_HEIGHT = 50;
         public MainWindow()
         {
             var settings = new CefSettings();
@@ -91,6 +91,9 @@ namespace BiolyViewer_Windows
         {
             lock (simulatorLocker)
             {
+                //CommandExecutor<string> executor = new SimulatorConnector(Browser, BOARD_WIDTH, BOARD_HEIGHT);
+                //ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
+                //programExecutor.Run(BOARD_WIDTH, BOARD_HEIGHT, xml);
                 simulatorThread?.Interrupt();
                 simulatorThread?.Join();
                 simulatorThread = new Thread(() =>

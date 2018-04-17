@@ -28,11 +28,9 @@ namespace BiolyTests.SimpleAssayTests
             int numberOfInputs = 5;
             FluidBlock inputOperation = new Input("Test", 10);
             FluidBlock outputOperation = new Output(new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null);
-            Node<Block> nodeInput = new Node<Block>(inputOperation);
-            Node<Block> nodeOutput = new Node<Block>(outputOperation);
-            dfg.AddNode(nodeInput);
-            dfg.AddNode(nodeOutput);
-            dfg.AddEdge(nodeInput, nodeOutput);
+            dfg.AddNode(inputOperation);
+            dfg.AddNode(outputOperation);
+            dfg.FinishDFG();
             Assay assay = new Assay(dfg);
             Schedule schedule = new Schedule();
             Board board = new Board(10, 10);

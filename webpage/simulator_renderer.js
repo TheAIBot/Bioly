@@ -396,9 +396,11 @@ function render(dropCount, areasCount)
 {
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	
+	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
 	renderBuffers(gl.TRIANGLES, glData.electrode, glData.electrode.electrodesCount);
-	renderBuffers(gl.TRIANGLE_FAN, glData.drop, dropCount);
 	renderBuffers(gl.TRIANGLES, glData.area, areasCount);
+	gl.blendFunc(gl.ONE, gl.ZERO);
+	renderBuffers(gl.TRIANGLE_FAN, glData.drop, dropCount);
 	//renderBuffers(gl.TRIANGLES, glData.areaBorder, areasCount);
 }
 

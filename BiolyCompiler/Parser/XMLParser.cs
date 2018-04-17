@@ -47,7 +47,7 @@ namespace BiolyCompiler.Parser
                 ParseAndAddNodeToDFG(node, dfg, mostRecentRef);
 
                 //move on to the next node or exit if none
-                node = XmlTools.GetNodeWithName(node, "next");
+                node = Extensions.GetNodeWithName(node, "next");
                 if (node == null)
                 {
                     break;
@@ -64,20 +64,19 @@ namespace BiolyCompiler.Parser
         internal static Block ParseAndAddNodeToDFG(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
             Block block = ParseBlock(node, dfg, mostRecentRef);
-            Node<Block> dfgNode = new Node<Block>(block);
             
-            dfg.AddNode(dfgNode);
+            dfg.AddNode(block);
 
             //update map of most recent nodes that outputs the variable
             //so other nodes that get their value from the node that
             //just updated the value
             if (mostRecentRef.ContainsKey(block.OriginalOutputVariable))
             {
-                mostRecentRef[block.OriginalOutputVariable] = dfgNode.value.OutputVariable;
+                mostRecentRef[block.OriginalOutputVariable] = block.OutputVariable;
             }
             else
             {
-                mostRecentRef.Add(block.OriginalOutputVariable, dfgNode.value.OutputVariable);
+                mostRecentRef.Add(block.OriginalOutputVariable, block.OutputVariable);
             }
 
             return block;
@@ -99,7 +98,7 @@ namespace BiolyCompiler.Parser
 
         internal static DFG<Block> ParseNextDFG(XmlNode node, CDFG cdfg)
         {
-            node = XmlTools.GetNodeWithName(node, "next");
+            node = Extensions.GetNodeWithName(node, "next");
             if (node == null)
             {
                 return null;

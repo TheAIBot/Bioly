@@ -21,7 +21,7 @@ const ABOVE_NEIGHBOR_INDEX = 2;
 const BELOW_NEIGHBOR_INDEX = 3;
 
 const ELECTRODE_SIZE_IN_CM = 1;
-const DROP_DISTANCE_PER_SEC_IN_CM = 50;
+const DROP_DISTANCE_PER_SEC_IN_CM = 600;
 const UPDATES_PER_SECOND = 60;
 
 //setel 1 2 3 4 5 6 7  8 9 10
@@ -472,9 +472,9 @@ function mergeDrops()
 	for(var i = 0; i < dropCount / 2; i++)
 	{
 		const drop = drops[i];
-		const dropRadius = (electrodeSize / 2) * drop.size;
 		if(drop)
 		{
+			const dropRadius = (electrodeSize / 2) * drop.size;
 			for(var k = i + 1; k < dropCount; k++)
 			{
 				const otherDrop = drops[k];

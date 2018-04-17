@@ -54,7 +54,7 @@ namespace BiolyCompiler.Modules
         }
         
 
-        protected override List<Command> GetModuleCommands()
+        protected override List<Command> GetModuleCommands(ref int time)
         {
             throw new Exception("Droplet can't be converted into commands");
         }

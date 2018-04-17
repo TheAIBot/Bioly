@@ -54,7 +54,7 @@ namespace BiolyCompiler
             while (runningGraph != null)
             {
                 List<Module> usedModules;
-                List<Block> scheduledOperations = MakeSchedule(runningGraph, ref board, library, ref dropPositions, out usedModules);
+                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, out usedModules);
                 if (firstRun)
                 {
                     List<Module> inputs = usedModules.Where(x => x is InputModule)
@@ -65,11 +65,27 @@ namespace BiolyCompiler
                     Executor.StartExecutor(inputs, outputs);
                     firstRun = false;
                 }
-                foreach (var operation in scheduledOperations)
+
+                List<Command>[] commandTimeline = new List<Command>[time + 1];
+                foreach (Block operation in scheduledOperations)
                 {
                     if (operation is FluidBlock fluidBLock)
                     {
-                        ExecuteCommands(fluidBLock.boundModule.ToCommands());
+                        List<Command> commands = fluidBLock.boundModule.ToCommands();
+                        foreach (Command command in commands)
+                        {
+                            int index = fluidBLock.startTime + command.Time;
+                            try
+                            {
+                                commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
+                                commandTimeline[index].Add(command);
+                            }
+                            catch (Exception)
+                            {
+
+                                throw;
+                            }
+                        }
                     }
                     else if (operation is VariableBlock varBlock)
                     {
@@ -86,6 +102,30 @@ namespace BiolyCompiler
                     }
                 }
 
+                foreach (List<Command> commands in commandTimeline)
+                {
+                    if (commands != null)
+                    {
+                        List<Command> onCommands = commands.Where(x => x.Type == CommandType.ELECTRODE_ON).ToList();
+                        List<Command> offCommands = commands.Where(x => x.Type == CommandType.ELECTRODE_OFF).ToList();
+                        List<Command> showAreaCommands = commands.Where(x => x.Type == CommandType.SHOW_AREA).ToList();
+                        List<Command> removeAreaCommands = commands.Where(x => x.Type == CommandType.REMOVE_AREA).ToList();
+
+                        if (offCommands.Count > 0)
+                        {
+                            Executor.SendCommands(offCommands);
+                        }
+                        if (onCommands.Count > 0)
+                        {
+                            Executor.SendCommands(onCommands);
+                        }
+
+                        showAreaCommands.ForEach(x => Executor.SendCommand(x));
+                        removeAreaCommands.ForEach(x => Executor.SendCommand(x));
+                    }
+
+                    Thread.Sleep(50);
+                }
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
@@ -93,59 +133,18 @@ namespace BiolyCompiler
             }
         }
 
-        private List<Block> MakeSchedule(DFG<Block> runningGraph, ref Board board, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, out List<Module> usedModules)
+        private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, out List<Module> usedModules)
         {
             Assay assay = new Assay(runningGraph);
             Schedule scheduler = new Schedule();
             scheduler.TransferFluidVariableLocationInformation(dropPositions);
-            scheduler.ListScheduling(assay, board, library);
+            int time = scheduler.ListScheduling(assay, board, library);
 
             board = scheduler.boardAtDifferentTimes.MaxBy(x => x.Key).Value;
             dropPositions = scheduler.FluidVariableLocations;
 
             usedModules = scheduler.allUsedModules;
-            return scheduler.ScheduledOperations;
-        }
-
-        private void ExecuteCommands(List<Command> commands)
-        {
-            int prevTime = commands.First().Time;
-            for (int i = 0; i < commands.Count; i++)
-            {
-                List<Command> similarCommands = new List<Command>();
-                Command prevCommand = null;
-                Command command = commands[i];
-                if (command.Time < prevTime)
-                {
-                    prevTime = command.Time;
-                }
-                do
-                {
-                    if (prevCommand != null)
-                    {
-                        i++;
-                    }
-                    similarCommands.Add(command);
-                    if (i + 1 < commands.Count)
-                    {
-                        prevCommand = command;
-                        command = commands[i + 1];
-                    }
-                    else
-                    {
-                        break;
-                    }
-                } while (prevCommand.GetType() == command.GetType() &&
-                         prevCommand.Time == command.Time &&
-                         prevCommand.Type == command.Type);
-                Executor.SendCommands(similarCommands);
-
-                if (prevTime < command.Time)
-                {
-                    Thread.Sleep(500);
-                    prevTime = command.Time;
-                }
-            }
+            return (scheduler.ScheduledOperations, time);
         }
 
         private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<int> repeatStack)

@@ -10,16 +10,14 @@ namespace BiolyCompiler.Scheduling
     public class Assay
     {
         public DFG<Block> dfg;
-        Dictionary<Block, Node<Block>> operationToNode = new Dictionary<Block, Node<Block>>();
+        private Dictionary<Block, Node<Block>> operationToNode = new Dictionary<Block, Node<Block>>();
         public List<Block> readyOperations;
 
         public Assay(DFG<Block> dfg){
             this.dfg = dfg;
             //Set ready nodes
             dfg.Nodes.ForEach(node => operationToNode.Add(node.value, node));
-            readyOperations = dfg.Nodes.Where(node => node.getIngoingEdges().Count == 0)
-                                       .Select(node => node.value)
-                                       .ToList();
+            readyOperations = dfg.Input.Select(x => x.value).ToList();
         }
 
         public void calculateCriticalPath(){
@@ -33,17 +31,13 @@ namespace BiolyCompiler.Scheduling
         public void updateReadyOperations(Block operation)
         {
             operation.hasBeenScheduled = true;
-            readyOperations.Remove(operation); //TODO(*) make equals method for blocks.
-                                               //An operation has been finished: there might be operation that can now be executed.
+            readyOperations.Remove(operation);
 
-            Node<Block> operationNode;
-            operationToNode.TryGetValue(operation, out operationNode);
-            List<Node<Block>> outgoingEdges = operationNode.getOutgoingEdges();
+            operationToNode.TryGetValue(operation, out Node<Block> operationNode);
 
             foreach (var successorOperationNode in operationNode.getOutgoingEdges())
             {
-
-                if (successorOperationNode.getIngoingEdges().All(node => node.value.hasBeenScheduled == true))
+                if (successorOperationNode.getIngoingEdges().All(node => node.value.hasBeenScheduled))
                 {
                     readyOperations.Add(successorOperationNode.value);
                     //This will not happen multiple times, as once an operation list has been added to the readyOperaition list,

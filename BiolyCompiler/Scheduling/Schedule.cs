@@ -37,7 +37,7 @@ namespace BiolyCompiler.Scheduling
             throw new NotImplementedException();
         }
 
-        private void updateSchedule(Block operation, int startTime)
+        private void updateSchedule(Block operation, int currentTime, int startTime)
         {
             ScheduledOperations.Add(operation);
             operation.startTime = startTime;
@@ -45,7 +45,8 @@ namespace BiolyCompiler.Scheduling
             else
             {
                 FluidBlock fluidOperation = operation as FluidBlock;
-                fluidOperation.endTime = fluidOperation.startTime + fluidOperation.boundModule.OperationTime;
+                fluidOperation.boundModule.StartTime = startTime;
+                fluidOperation.endTime = fluidOperation.boundModule.StartTime + fluidOperation.boundModule.ToCommands().Last().Time;// currentTime + fluidOperation.boundModule.OperationTime;
                 CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.endTime);
             }
         }
@@ -81,7 +82,7 @@ namespace BiolyCompiler.Scheduling
                 if (nextOperation is VariableBlock)
                 {
                     //This is a mathematical operation, and it should be scheduled to run as soon as possible
-                    updateSchedule(nextOperation, startTime);
+                    updateSchedule(nextOperation, startTime, startTime);
                     assay.updateReadyOperations(nextOperation);
                 }
                 else // nextOperation is FluidBlock
@@ -216,15 +217,16 @@ namespace BiolyCompiler.Scheduling
             return CurrentlyRunningOpertions.Count > 0 && (readyOperations.Count == 0  || startTime >= CurrentlyRunningOpertions.First().endTime);
         }
 
-        public int RouteDropletsToModule(Module operationExecutingModule, Board board, int startTime, FluidBlock topPriorityOperation)
+        public int RouteDropletsToModule(Module operationExecutingModule, Board board, int currentTime, FluidBlock topPriorityOperation)
         {
+            int originalStartTime = currentTime;
             foreach (var dropletInput in operationExecutingModule.GetInputLayout().Droplets)
             {
                 BoardFluid InputFluidType = dropletInput.getFluidType();
                 if (InputFluidType.GetNumberOfDropletsAvailable() < 1) throw new Exception("There isn't enough droplets of type " + InputFluidType.FluidName + 
                                                                                            " avaiable, to satisfy the requirement of the module: " + operationExecutingModule.ToString());
                 //Routes a droplet of type InputFluid to the module.
-                Route route = DetermineRouteToModule(InputFluidType, operationExecutingModule, dropletInput, board, startTime); //Will be included as part of a later step.
+                Route route = DetermineRouteToModule(InputFluidType, operationExecutingModule, dropletInput, board, currentTime); //Will be included as part of a later step.
                 if (route == null) throw new Exception("No route found. This should not be possible.");
 
                 //The route is added to the module's routes:
@@ -262,10 +264,10 @@ namespace BiolyCompiler.Scheduling
 
                 //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
                 //This will give an overhead of +1 for the operation starting time, for each droplet routed:
-                startTime = route.getEndTime() + 1;
+                currentTime = route.getEndTime() + 1;
             }
-            updateSchedule(topPriorityOperation, startTime);
-            return startTime;
+            updateSchedule(topPriorityOperation, currentTime, originalStartTime);
+            return currentTime;
         }
                 
         public int getCompletionTime(){
