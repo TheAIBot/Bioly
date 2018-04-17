@@ -5,6 +5,7 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Routing;
+using BiolyCompiler.Scheduling;
 using MoreLinq;
 
 namespace BiolyCompiler.Architechtures
@@ -114,18 +115,24 @@ namespace BiolyCompiler.Architechtures
         private bool DoesNotBlockRouteToAnyModuleOrEmptyRectangle(Rectangle rectangle, Module module)
         {
             //If the board is empty, the placement is legal iff it leaves at least 1 empty rectangle:
-            if (EmptyRectangles.Count == 1) return (module.Shape.width != rectangle.width || module.Shape.height != rectangle.height);
-            //Now it can be assumed that the rectangle has at least 1 empty neighbor.
-
-            //The source empty rectangle for the search does not matter, as paths are symmetric:
-            Rectangle randomEmptyRectangle = getEmptyAdjacentRectangle(rectangle);
-            if (randomEmptyRectangle == null) throw new Exception("Logic error: the rectangle which a module is considered to be placed in, does not have an empty neightboring rectangle, " + 
-                                                                  "despite it not being the only rectangle on the board.");
+            if (EmptyRectangles.Count == 1 && placedModules.Count == 0) return (module.Shape.width != rectangle.width || module.Shape.height != rectangle.height);
+            
 
             //The module is temporarily "placed" (but not really), to get the adjacency graph corresponding to the module being placed.
             //It is not really placed, as it would change EmptyRectangles, which is itterated over.
             (Rectangle emptyTopRectangle, Rectangle emptyRightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
             int extraEmptyRectangles = ((emptyTopRectangle == null) ? 0 : 1) + ((emptyRightRectangle == null) ? 0 : 1) - 1; //-1 as the initial rectangle is removed.
+
+            //The source empty rectangle for the search does not matter, as paths are symmetric:
+            Rectangle randomEmptyRectangle = getEmptyAdjacentRectangle(module.Shape);
+            if (randomEmptyRectangle == null) {
+                //There were only one empty rectangle initally, and placing the module in it, filled the rectangle:
+
+                //The placed module is the removed, leaving the original board.
+                MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
+                return false;
+            }
+
 
             HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>() { randomEmptyRectangle };
             HashSet<Rectangle> connectedModuleRectangles = new HashSet<Rectangle>();
@@ -147,6 +154,8 @@ namespace BiolyCompiler.Architechtures
 
             //The placed module is the removed, leaving the original board.
             MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
+
+            Schedule.checkAdjacencyMatrixCorrectness(this);
             
             return VisitsAllModulesAndEmptyRectangles(extraEmptyRectangles, 1, visitedEmptyRectangles, connectedModuleRectangles);
         }
@@ -156,7 +165,7 @@ namespace BiolyCompiler.Architechtures
             Rectangle randomEmptyRectangle = null;
             foreach (var adjacentRectangle in rectangle.AdjacentRectangles)
             {
-                if (EmptyRectangles.Contains(adjacentRectangle))
+                if (adjacentRectangle.isEmpty)
                 {
                     randomEmptyRectangle = adjacentRectangle;
                     break;
@@ -172,10 +181,29 @@ namespace BiolyCompiler.Architechtures
             //which happens iff it contains the correct number of rectangles. 
             //Also all empty rectangles must be visited.
 
-            if (connectedModuleRectangles.Count > placedModules.Count + extraPlacedModules || 
-                visitedEmptyRectangles.Count > EmptyRectangles.Count + extraEmptyRectangles)
-                    throw new Exception("Logic error: more rectangles have been found in the adjacency graph, than there exists on the board.");
+            //For testing purposes. It will throw an error if anything is wrong
+            HashSet<Rectangle> differenceEmptyRectangles = GetSetDifference(visitedEmptyRectangles, EmptyRectangles);
+
+            if (connectedModuleRectangles.Count > placedModules.Count + extraPlacedModules ||
+                differenceEmptyRectangles.Count > extraEmptyRectangles + 2)
+            {
+
+                throw new Exception("Logic error: more rectangles have been found in the adjacency graph, than there exists on the board.");
+
+            }
             else return (connectedModuleRectangles.Count == placedModules.Count + extraPlacedModules && visitedEmptyRectangles.Count == EmptyRectangles.Count + extraEmptyRectangles);
+        }
+
+        private HashSet<Rectangle> GetSetDifference(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
+        {
+            HashSet<Rectangle> differenceSet = new HashSet<Rectangle>();
+            foreach (var rectangle in set1)
+                if (!set2.Contains(rectangle))
+                    differenceSet.Add(rectangle);
+            foreach (var rectangle in set2)
+                if (!set1.Contains(rectangle))
+                    differenceSet.Add(rectangle);
+            return differenceSet;
         }
 
         private void MergeToGetOriginalRectangle(Module module, Rectangle originalRectangle, Rectangle emptyTopRectangle, Rectangle emptyRightRectangle)
@@ -305,8 +333,13 @@ namespace BiolyCompiler.Architechtures
             //if they are adjacent -> if so, it makes them adjacent.
             List<Rectangle> allRectangles = operationExecutingModule.GetOutputLayout().getAllRectanglesIncludingDroplets();
 
-            foreach (var moduleAdjacentRectangle in operationExecutingModule.Shape.AdjacentRectangles)
+            //Copied, as sets work in mysterious ways,
+            HashSet<Rectangle> adjacentRectangles = new HashSet<Rectangle>(operationExecutingModule.Shape.AdjacentRectangles);
+
+            foreach (var moduleAdjacentRectangle in adjacentRectangles)
             {
+                //They are no longer adjacent.
+                moduleAdjacentRectangle.AdjacentRectangles.Remove(operationExecutingModule.Shape); 
                 foreach (var moduleLayoutRectangle in allRectangles)
                 {
                     if (moduleAdjacentRectangle.IsAdjacent(moduleLayoutRectangle))
@@ -315,12 +348,6 @@ namespace BiolyCompiler.Architechtures
                         moduleLayoutRectangle.AdjacentRectangles.Add(moduleAdjacentRectangle);
                     }
                 }
-            }
-
-            foreach (var moduleAdjacentRectangle in operationExecutingModule.Shape.AdjacentRectangles)
-            {
-                //The original module rectangle is replaced, and so it is no longer adjacent to anything:
-                moduleAdjacentRectangle.AdjacentRectangles.Remove(operationExecutingModule.Shape);
             }
             operationExecutingModule.Shape.AdjacentRectangles.Clear();
 
@@ -334,14 +361,6 @@ namespace BiolyCompiler.Architechtures
             operationExecutingModule.GetOutputLayout().Droplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet, droplet.Shape));
 
             return operationExecutingModule.GetOutputLayout().Droplets;
-            /*
-            Droplet droplet = new Droplet(fluidType);
-            Rectangle moduleRectangle = finishedOperation.boundModule.Shape;
-            UpdateGridWithModulePlacement(droplet, moduleRectangle);
-            FastTemplateReplace(moduleRectangle, droplet);
-            placedModules.Remove(finishedOperation.boundModule);
-            return droplet;
-            */
         }
 
         /*
