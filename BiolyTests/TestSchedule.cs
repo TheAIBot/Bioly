@@ -60,6 +60,7 @@ namespace BiolyTests.ScheduleTests
 
             dfg.AddNode(operation1Node);
             dfg.AddNode(operation2Node);
+            dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
 
