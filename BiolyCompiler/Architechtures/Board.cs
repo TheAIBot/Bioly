@@ -156,8 +156,8 @@ namespace BiolyCompiler.Architechtures
             MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
 
             Schedule.checkAdjacencyMatrixCorrectness(this);
-            
-            return VisitsAllModulesAndEmptyRectangles(extraEmptyRectangles, 1, visitedEmptyRectangles, connectedModuleRectangles);
+            bool visitsEverything = VisitsAllModulesAndEmptyRectangles(extraEmptyRectangles, 1, visitedEmptyRectangles, connectedModuleRectangles);
+            return visitsEverything;
         }
 
         private Rectangle getEmptyAdjacentRectangle(Rectangle rectangle)
@@ -181,17 +181,18 @@ namespace BiolyCompiler.Architechtures
             //which happens iff it contains the correct number of rectangles. 
             //Also all empty rectangles must be visited.
 
-            //For testing purposes. It will throw an error if anything is wrong
+            ////For testing purposes. It will throw an error if anything is wrong
             HashSet<Rectangle> differenceEmptyRectangles = GetSetDifference(visitedEmptyRectangles, EmptyRectangles);
 
-            if (connectedModuleRectangles.Count > placedModules.Count + extraPlacedModules ||
-                differenceEmptyRectangles.Count > extraEmptyRectangles + 2)
-            {
+            //if (connectedModuleRectangles.Count > placedModules.Count + extraPlacedModules ||
+            //    differenceEmptyRectangles.Count > extraEmptyRectangles + 2)
+            //{
 
-                throw new Exception("Logic error: more rectangles have been found in the adjacency graph, than there exists on the board.");
+            //    Schedule.checkAdjacencyMatrixCorrectness(this);
+            //    throw new Exception("Logic error: more rectangles have been found in the adjacency graph, than there exists on the board.");
 
-            }
-            else return (connectedModuleRectangles.Count == placedModules.Count + extraPlacedModules && visitedEmptyRectangles.Count == EmptyRectangles.Count + extraEmptyRectangles);
+            //}
+            return (connectedModuleRectangles.Count == placedModules.Count + extraPlacedModules && visitedEmptyRectangles.Count == EmptyRectangles.Count + extraEmptyRectangles);
         }
 
         private HashSet<Rectangle> GetSetDifference(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
