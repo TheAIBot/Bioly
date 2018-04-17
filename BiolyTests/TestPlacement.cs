@@ -27,7 +27,8 @@ namespace BiolyTests.PlacementTests
             Assert.AreEqual(2, testModule.Shape.AdjacentRectangles.Count);
             foreach (var rectangle in board.EmptyRectangles) {
                 testModule.Shape.AdjacentRectangles.Contains(rectangle);
-            }            
+            }
+            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
         }
 
         [TestMethod]
@@ -54,6 +55,7 @@ namespace BiolyTests.PlacementTests
             Assert.AreEqual(3, board.EmptyRectangles.Count); //No new right empty rectangle
             Assert.AreEqual(0, module3.Shape.x);
             Assert.AreEqual(module1.Shape.getTopmostYPosition() + 1, module3.Shape.y);
+            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
 
         }
 
@@ -111,10 +113,50 @@ namespace BiolyTests.PlacementTests
                     }
                 }
             }
+            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
             //When it has been deleted, everything should return to the state before:
             board.FastTemplateRemove(module);
             Assert.AreEqual(1, board.EmptyRectangles.Count);
             Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth, boardHeight, 0, 0)));
+            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
+        }
+
+        [TestMethod]
+        public void TestPlaceModuleWithBufferNonEmptyBoard()
+        {
+            int boardHeight = 20, boardWidth = 20;
+            Board board = new Board(boardWidth, boardHeight);
+            board.FastTemplatePlace(new Droplet(new BoardFluid("test1")));
+            board.FastTemplatePlace(new Droplet(new BoardFluid("test2")));
+            int width = 4, heigth = 4;
+            Module module = new TestModule(width, heigth, 2000);
+            board.PlaceBufferedModule(module, new List<Rectangle>(board.EmptyRectangles));
+
+            //The division of the empty rectangles should be very specific:
+
+            Assert.AreEqual((4 + 2) + 1, board.EmptyRectangles.Count);
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(width + 2, 1, 0, 3)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(1, heigth + 1, 0, 4)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(width + 1, 1, 1, heigth + 1 + 3)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(1, heigth, width + 1, 4)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth - width - 2, boardHeight - Droplet.DROPLET_HEIGHT, width + 2, Droplet.DROPLET_HEIGHT)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth - 2*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 2 * Droplet.DROPLET_WIDTH, 0)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(width + 2, boardHeight - Droplet.DROPLET_HEIGHT - heigth - 2, 0, Droplet.DROPLET_HEIGHT + heigth + 2)));
+            Assert.AreEqual(3, board.placedModules.Count);
+
+            for (int x = module.Shape.x; x <= module.Shape.getRightmostXPosition(); x++)
+            {
+                for (int y = module.Shape.y; y <= module.Shape.getTopmostYPosition(); y++)
+                {
+                    Assert.AreEqual(module, board.grid[x, y]);
+                }
+            }
+            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
+            //When it has been deleted, everything should return to the state before:
+            board.FastTemplateRemove(module);
+            Assert.AreEqual(2, board.EmptyRectangles.Count);
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth, boardHeight, 0, 0)));
+            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
         }
 
         [TestMethod]
@@ -146,6 +188,7 @@ namespace BiolyTests.PlacementTests
             board.FastTemplateRemove(module1);
             sameElements        = listEmptyRectangles[0].Where(rec => !board.EmptyRectangles.Contains(rec)).ToList().Count == 0;
             Assert.IsTrue(sameElements);
+            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
             
         }
 
@@ -200,7 +243,52 @@ namespace BiolyTests.PlacementTests
             Assert.Fail("Not implemented yet");
         }
 
+        public static bool doAdjacencyGraphContainTheCorrectNodes(Board board)
+        {
+            //It visits all the modules and rectangles in the graph, 
+            //and checks if they are in board.PlacedModules and board.EmptyRectangles respectivly.
+            HashSet<Rectangle> emptyVisitedRectangles = new HashSet<Rectangle>();
+            HashSet<Rectangle> moduleVisitedRectangles = new HashSet<Rectangle>();
+
+            Rectangle initialRectangle = GetRandomRectangle(board.EmptyRectangles);
+            emptyVisitedRectangles.Add(initialRectangle);
+            Queue<Rectangle> rectanglesToVisit = new Queue<Rectangle>();
+            rectanglesToVisit.Enqueue(initialRectangle);
+
+            while (rectanglesToVisit.Count > 0)
+            {
+                Rectangle currentRectangle = rectanglesToVisit.Dequeue();
+                foreach (var adjacentRectangle in currentRectangle.AdjacentRectangles)
+                {
+                    if (emptyVisitedRectangles.Contains(adjacentRectangle) || moduleVisitedRectangles.Contains(adjacentRectangle))
+                        continue;
+                    else {
+                        if (adjacentRectangle.isEmpty)
+                            emptyVisitedRectangles.Add(adjacentRectangle);
+                        else
+                            moduleVisitedRectangles.Add(adjacentRectangle);
+                        rectanglesToVisit.Enqueue(adjacentRectangle);
+                    }
+                }               
+            }
+
+            HashSet<Rectangle> placedModuleRectangles = new HashSet<Rectangle>(board.placedModules.Select(module => module.Shape));
 
 
+            return isSameSet(emptyVisitedRectangles, board.EmptyRectangles) && isSameSet(moduleVisitedRectangles, placedModuleRectangles);
+        }
+
+        private static bool isSameSet(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
+        {
+            return set1.Count == set2.Count && set1.All(rectangle => set2.Contains(rectangle));
+        }
+
+        private static Rectangle GetRandomRectangle(HashSet<Rectangle> set)
+        {
+            foreach (var rectangle in set)
+                return rectangle;
+            return null;
+        }
+        
     }
 }

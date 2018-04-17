@@ -103,7 +103,7 @@ namespace BiolyCompiler.Scheduling
                     topPriorityOperation.Bind(operationExecutingModule);
                     allUsedModules.Add(operationExecutingModule);
 
-                    Debug.WriteLine(board.print(allUsedModules));
+                    makeDebugCorrectnessChecks(board);
 
                     //If the module can't be placed, one must wait until there is enough space for it:
                     if (operationExecutingModule == null) throw new Exception("Not enough space for a module: this is not handeled yet");
@@ -116,13 +116,14 @@ namespace BiolyCompiler.Scheduling
                     //By construction, there will be a route from the droplets to the module, 
                     //and so it will always be possible for this routing to be done:
                     startTime = RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
-                    Debug.WriteLine(board.print(allUsedModules));
-                    
+
+                    makeDebugCorrectnessChecks(board);
+
                     //Note that handleFinishingOperations will also wait for operations to finish, 
                     //in the case that there are no more operations that can be executed, before this happen:
                     (startTime, board) = handleFinishingOperations(startTime, assay, board);
                     readyOperations = assay.getReadyOperations();
-                    Debug.WriteLine(board.print(allUsedModules));
+                    makeDebugCorrectnessChecks(board);
                 }
             }
             if (assay.hasUnfinishedOperations()) throw new Exception("There were operations that couldn't be scheduled.");
@@ -176,6 +177,7 @@ namespace BiolyCompiler.Scheduling
                             dropletOutputFluid = new BoardFluid(finishedOperation.OutputVariable);
                             FluidVariableLocations.Add(finishedOperation.OutputVariable, dropletOutputFluid);
                         }
+                        makeDebugCorrectnessChecks(board);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
                         allUsedModules.AddRange(replacingDroplets);
                     }
@@ -387,11 +389,72 @@ namespace BiolyCompiler.Scheduling
             return dijkstraGraph;
         }
 
+        private void makeDebugCorrectnessChecks(Board board)
+        {
+            Debug.WriteLine(board.print(allUsedModules));
+            checkAdjacencyMatrixCorrectness(board);
+        }
+
+        public static void checkAdjacencyMatrixCorrectness(Board board)
+        {
+            if (!doAdjacencyGraphContainTheCorrectNodes(board))
+                throw new Exception("The boards adjacency graph does not match up with the placed modules and empty rectangles.");
+        }
+
         public static Block removeOperation(List<Block> readyOperations){
             Block topPrioriyOperation = readyOperations.MaxBy(operation => operation.priority);
             readyOperations.Remove(topPrioriyOperation);
             return topPrioriyOperation;
         }
-                
+
+        public static bool doAdjacencyGraphContainTheCorrectNodes(Board board)
+        {
+            //It visits all the modules and rectangles in the graph, 
+            //and checks if they are in board.PlacedModules and board.EmptyRectangles respectivly.
+            HashSet<Rectangle> emptyVisitedRectangles = new HashSet<Rectangle>();
+            HashSet<Rectangle> moduleVisitedRectangles = new HashSet<Rectangle>();
+
+            Rectangle initialRectangle = GetRandomRectangle(board.EmptyRectangles);
+            emptyVisitedRectangles.Add(initialRectangle);
+            Queue<Rectangle> rectanglesToVisit = new Queue<Rectangle>();
+            rectanglesToVisit.Enqueue(initialRectangle);
+
+            while (rectanglesToVisit.Count > 0)
+            {
+                Rectangle currentRectangle = rectanglesToVisit.Dequeue();
+                foreach (var adjacentRectangle in currentRectangle.AdjacentRectangles)
+                {
+                    if (emptyVisitedRectangles.Contains(adjacentRectangle) || moduleVisitedRectangles.Contains(adjacentRectangle))
+                        continue;
+                    else
+                    {
+                        if (adjacentRectangle.isEmpty)
+                            emptyVisitedRectangles.Add(adjacentRectangle);
+                        else
+                            moduleVisitedRectangles.Add(adjacentRectangle);
+                        rectanglesToVisit.Enqueue(adjacentRectangle);
+                    }
+                }
+            }
+
+            HashSet<Rectangle> placedModuleRectangles = new HashSet<Rectangle>(board.placedModules.Select(module => module.Shape));
+
+
+            return isSameSet(emptyVisitedRectangles, board.EmptyRectangles) && isSameSet(moduleVisitedRectangles, placedModuleRectangles);
+        }
+
+        private static bool isSameSet(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
+        {
+            return set1.Count == set2.Count && set1.All(rectangle => set2.Contains(rectangle));
+        }
+
+        private static Rectangle GetRandomRectangle(HashSet<Rectangle> set)
+        {
+            foreach (var rectangle in set)
+                return rectangle;
+            return null;
+        }
+
+
     }
 }

@@ -91,6 +91,8 @@ namespace BiolyTests.ScheduleTests
             Assert.IsTrue(Math.Abs(schedule.ScheduledOperations[0].endTime - schedule.ScheduledOperations[1].endTime) <= Schedule.DROP_MOVEMENT_TIME * 30);
             Assert.IsTrue(schedule.ScheduledOperations.Contains(operation1));
             Assert.IsTrue(schedule.ScheduledOperations.Contains(operation2));
+            Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
+            Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
         }
 
 
@@ -160,7 +162,9 @@ namespace BiolyTests.ScheduleTests
             }
 
             Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 1));
-            
+            Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
+            Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
+
         }
 
         [TestMethod]
@@ -241,9 +245,58 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(operation32, schedule.ScheduledOperations[5]);
 
             Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 2));
-            
+            Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
+            Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
+
         }
 
+        [TestMethod]
+        public void TestListSchedulingSingleModuleSingleInputSingleOutputAssay()
+        {
+            //Construction of test assay:
+            String inputFluid1 = "Fisk";
+            DFG<Block> dfg = new DFG<Block>();
+            TestModule module = new TestModule(1,1);
+            TestBlock operation1 = new TestBlock(new List<string>() {inputFluid1}, null, module);
+
+            Node<Block> operation1Node = new Node<Block>(operation1);
+
+            dfg.AddNode(operation1Node);
+
+            Assay assay = new Assay(dfg);
+            //Scheduling the assay:
+            Board board = new Board(20, 20);
+            BoardFluid fluidType1 = new BoardFluid(inputFluid1);
+            Droplet droplet1 = new Droplet(fluidType1);
+            board.FastTemplatePlace(droplet1);
+            Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
+            kage.Add(inputFluid1, fluidType1);
+            Schedule schedule = new Schedule();
+            schedule.TransferFluidVariableLocationInformation(kage);
+            ModuleLibrary library = new ModuleLibrary();
+            Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(board));
+
+            int completionTime = schedule.ListScheduling(assay, board, library);
+
+            //Testing the results:
+
+            List<Board> boards = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList();
+
+            for (int i = 0; i < boards.Count; i++)
+            {
+                Assert.AreEqual(1, boards[i].placedModules.Count);
+            }
+            
+            //The second last board should be where the module implementing the operation should be placed.
+            Assert.AreEqual(module.GetType(), boards[boards.Count - 2].placedModules.Select(placedModule => placedModule.GetType()).First());
+            Assert.AreEqual(1, schedule.ScheduledOperations.Count);
+            Assert.AreEqual(operation1, schedule.ScheduledOperations[0]);
+            Assert.IsTrue(module.OperationTime <= completionTime);
+            //One droplets are routed, and it should for such a simple board, take at most 20 movements.
+            Assert.IsTrue(completionTime <= module.OperationTime + Schedule.DROP_MOVEMENT_TIME * 20);
+            Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
+            Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
+        }
 
         [TestMethod]
         public void TestListSchedulingSingleModuleMultiInputMultiOutputAssay()
@@ -279,6 +332,8 @@ namespace BiolyTests.ScheduleTests
             Schedule schedule = new Schedule();
             schedule.TransferFluidVariableLocationInformation(kage);
             ModuleLibrary library = new ModuleLibrary();
+            Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(board));
+
             int completionTime = schedule.ListScheduling(assay, board, library);
 
             //Testing the results:
@@ -299,6 +354,8 @@ namespace BiolyTests.ScheduleTests
             Assert.IsTrue(module.OperationTime <= completionTime);
             //Two droplets are routed, and they should for such a simple board, take at most 20 movements.
             Assert.IsTrue(completionTime <= module.OperationTime + Schedule.DROP_MOVEMENT_TIME * 20 * 2);
+            Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
+            Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
         }
 
         [TestMethod]
@@ -396,6 +453,8 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(operation22, schedule.ScheduledOperations[4]);
             Assert.AreEqual(operation32, schedule.ScheduledOperations[5]);
             Assert.AreEqual(operationLast, schedule.ScheduledOperations[6]);
+            Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
+            Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
         }
 
     }

@@ -12,6 +12,8 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyTests.TestObjects;
 using BiolyCompiler.BlocklyParts.Misc;
+using System.IO;
+using BiolyCompiler.Parser;
 //using MoreLinq;
 
 namespace BiolyTests.SimpleAssayTests
@@ -24,7 +26,7 @@ namespace BiolyTests.SimpleAssayTests
         {
             DFG<Block> dfg = new DFG<Block>();
             int numberOfInputs = 5;
-            FluidBlock inputOperation  = new Input("Test", 10);
+            FluidBlock inputOperation = new Input("Test", 10);
             FluidBlock outputOperation = new Output(new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null);
             Node<Block> nodeInput = new Node<Block>(inputOperation);
             Node<Block> nodeOutput = new Node<Block>(outputOperation);
@@ -33,7 +35,7 @@ namespace BiolyTests.SimpleAssayTests
             dfg.AddEdge(nodeInput, nodeOutput);
             Assay assay = new Assay(dfg);
             Schedule schedule = new Schedule();
-            Board board = new Board(10,10);
+            Board board = new Board(10, 10);
             schedule.ListScheduling(assay, board, new ModuleLibrary());
             Assert.AreEqual(1, outputOperation.boundModule.InputRoutes.Count);
             Assert.AreEqual(5, outputOperation.boundModule.InputRoutes[inputOperation.OutputVariable].Count);
@@ -47,6 +49,21 @@ namespace BiolyTests.SimpleAssayTests
                 Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route, board, inputOperation.boundModule.GetInputLayout().Droplets[0], outputOperation.boundModule.GetInputLayout().Droplets[0]));
                 startTime += 4;
             }
+        }
+
+        [TestMethod]
+        public void testSequentialMixer()
+        {
+            //C:\Users\Lombre\Bioly\BiolyTests\BiolyPrograms
+            String xmlAssayCode = File.ReadAllText("../../../BiolyPrograms/SequentialMixing.bc" + ".txt");
+            CDFG graph = XmlParser.Parse(xmlAssayCode);
+            DFG<Block> runningGraph = graph.StartDFG;
+            Assay assay = new Assay(runningGraph);
+            Board board = new Board(15, 15);
+            ModuleLibrary library = new ModuleLibrary();
+            Schedule schedule = new Schedule();
+            schedule.ListScheduling(assay, board, library);
+            Assert.Fail("Hasn't been implemented yet.");
         }
     }
 }
