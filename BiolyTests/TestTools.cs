@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using BiolyCompiler.Parser;
+using BiolyCompiler;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;

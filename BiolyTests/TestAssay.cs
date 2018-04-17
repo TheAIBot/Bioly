@@ -6,6 +6,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler;
+using BiolyTests.TestObjects;
+using System.Collections.Generic;
 
 namespace BiolyTests.AssayTests
 {
@@ -19,53 +23,6 @@ namespace BiolyTests.AssayTests
             return dfg;
         }
 
-        public static DFG<Block> GetTotallyParallelDFG()
-        {
-            DFG<Block> dfg = new DFG<Block>();
-
-            Sensor sensor1 = new Sensor(null, null, null);
-            Sensor sensor2 = new Sensor(null, null, null);
-            Mixer mixer1 = new Mixer(null, null, null);
-            Mixer mixer2 = new Mixer(null, null, null);
-
-            Node<Block> sensor1Node = new Node<Block>(sensor1);
-            Node<Block> sensor2Node = new Node<Block>(sensor2);
-            Node<Block> mixer1Node = new Node<Block>(mixer1);
-            Node<Block> mixer2Node = new Node<Block>(mixer2);
-
-            dfg.AddNode(sensor1Node);
-            dfg.AddNode(sensor2Node);
-            dfg.AddNode(mixer1Node);
-            dfg.AddNode(mixer2Node);
-
-            return dfg;
-        }
-
-        public static DFG<Block> GetSemiParallelDFG()
-        {
-            DFG<Block> dfg = new DFG<Block>();
-
-            Sensor sensor1  = new Sensor(null, null, null);
-            Sensor sensor2  = new Sensor(null, null, null);
-            Mixer mixer1    = new Mixer(null, null, null);
-            Mixer mixer2    = new Mixer(null, null, null);
-
-            Node<Block> sensor1Node = new Node<Block>(sensor1);
-            Node<Block> sensor2Node = new Node<Block>(sensor2);
-            Node<Block> mixer1Node = new Node<Block>(mixer1);
-            Node<Block> mixer2Node = new Node<Block>(mixer2);
-
-            dfg.AddNode(sensor1Node);
-            dfg.AddNode(sensor2Node);
-            dfg.AddNode(mixer1Node);
-            dfg.AddNode(mixer2Node);
-
-            dfg.AddEdge(sensor1Node, mixer2Node);
-            dfg.AddEdge(mixer1Node , mixer2Node);
-
-            return dfg;
-        }
-
         [TestMethod]
         public void TestCreateEmptyAssay()
         {
@@ -76,14 +33,36 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCreateNonEmptyAssay()
         {
-            DFG<Block> dfg = GetTotallyParallelDFG();
+            Sensor sensor1 = new Sensor(null, null, null);
+            Sensor sensor2 = new Sensor(null, null, null);
+            Mixer mixer1 = new Mixer(null, null, null);
+            Mixer mixer2 = new Mixer(null, null, null);
+
+            DFG<Block> dfg = new DFG<Block>();
+            dfg.AddNode(sensor1);
+            dfg.AddNode(sensor2);
+            dfg.AddNode(mixer1);
+            dfg.AddNode(mixer2);
+            dfg.FinishDFG();
+
             Assay assay = new Assay(dfg);
         }
         
         [TestMethod]
         public void TestCorrectIntialReadyOperationsParallelDFG()
         {
-            DFG<Block> dfg = GetTotallyParallelDFG();
+            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation2 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation4 = new TestBlock(new List<string> { }, null, null);
+
+            DFG<Block> dfg = new DFG<Block>();
+            dfg.AddNode(operation1);
+            dfg.AddNode(operation2);
+            dfg.AddNode(operation3);
+            dfg.AddNode(operation4);
+            dfg.FinishDFG();
+
             Assay assay = new Assay(dfg);
 
             Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count);
@@ -97,9 +76,19 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCorrectIntialReadyOperationsNonParallelDFG()
         {
-            DFG<Block> dfg = GetTotallyParallelDFG();
+            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable }, null, null);
+            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation4 = new TestBlock(new List<string> { }, null, null);
 
-            dfg.AddEdge(dfg.Nodes[0], dfg.Nodes[1]);
+            DFG<Block> dfg = new DFG<Block>();
+            dfg.AddNode(operation1);
+            dfg.AddNode(operation2);
+            dfg.AddNode(operation3);
+            dfg.AddNode(operation4);
+            dfg.FinishDFG();
+
+            //dfg.AddEdge(dfg.Nodes[0], dfg.Nodes[1]);
             //Now the operations associated with node 1,
             //should wait for the operation assocaited with node 0.
 
@@ -123,10 +112,20 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestUpdateReadyOperations1Dependecy()
         {
-            DFG<Block> dfg = GetTotallyParallelDFG();
+            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable }, null, null);
+            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation4 = new TestBlock(new List<string> { operation3.OutputVariable }, null, null);
 
-            dfg.AddEdge(dfg.Nodes[0], dfg.Nodes[1]);
-            dfg.AddEdge(dfg.Nodes[2], dfg.Nodes[3]);
+            DFG<Block> dfg = new DFG<Block>();
+            dfg.AddNode(operation1);
+            dfg.AddNode(operation2);
+            dfg.AddNode(operation3);
+            dfg.AddNode(operation4);
+            dfg.FinishDFG();
+
+            //dfg.AddEdge(dfg.Nodes[0], dfg.Nodes[1]);
+            //dfg.AddEdge(dfg.Nodes[2], dfg.Nodes[3]);
             //Now the operations associated with node 1/3,
             //should wait for the operation assocaited with node 0/2.
 
@@ -150,7 +149,17 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestUpdateReadyOperationsMultiDependecy()
         {
-            DFG<Block> dfg = GetTotallyParallelDFG();
+            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable }, null, null);
+            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation4 = new TestBlock(new List<string> { operation3.OutputVariable }, null, null);
+
+            DFG<Block> dfg = new DFG<Block>();
+            dfg.AddNode(operation1);
+            dfg.AddNode(operation2);
+            dfg.AddNode(operation3);
+            dfg.AddNode(operation4);
+            dfg.FinishDFG();
 
             dfg.AddEdge(dfg.Nodes[0], dfg.Nodes[1]);
             dfg.AddEdge(dfg.Nodes[2], dfg.Nodes[1]);

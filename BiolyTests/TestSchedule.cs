@@ -42,7 +42,7 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(OperationThatShouldBeRemoved, RemovedOperation);
         }
 
-        
+
 
         [TestMethod]
         public void TestListSchedulingFullyParallelAssay()
@@ -52,8 +52,8 @@ namespace BiolyTests.ScheduleTests
             DFG<Block> dfg = new DFG<Block>();
 
             TestModule module = new TestModule();
-            TestBlock operation1 = new TestBlock(new List<string>() {inputFluid1}, null, module);
-            TestBlock operation2 = new TestBlock(new List<string>() {inputFluid2}, null, module);
+            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1 }, null, module);
+            TestBlock operation2 = new TestBlock(new List<string>() { inputFluid2 }, null, module);
 
             Node<Block> operation1Node = new Node<Block>(operation1);
             Node<Block> operation2Node = new Node<Block>(operation2);
@@ -64,7 +64,7 @@ namespace BiolyTests.ScheduleTests
 
             Assay assay = new Assay(dfg);
 
-            Board   board    = new Board(20,20);
+            Board board = new Board(20, 20);
             BoardFluid fluidType1 = new BoardFluid(inputFluid1);
             BoardFluid fluidType2 = new BoardFluid(inputFluid2);
             Droplet droplet1 = new Droplet(fluidType1);
@@ -100,23 +100,17 @@ namespace BiolyTests.ScheduleTests
         {
             //Construction of test assay:
             String inputFluid = "Kage";
-            DFG<Block> dfg = new DFG<Block>();
 
             TestModule module = new TestModule();
             TestBlock operation1 = new TestBlock(new List<string>() { inputFluid }, null, module);
             TestBlock operation2 = new TestBlock(new List<string>() { operation1.OutputVariable }, null, module);
             TestBlock operation3 = new TestBlock(new List<string>() { operation2.OutputVariable }, null, module);
 
-            Node<Block> operation1Node = new Node<Block>(operation1);
-            Node<Block> operation2Node = new Node<Block>(operation2);
-            Node<Block> operation3Node = new Node<Block>(operation3);
-
-            dfg.AddNode(operation1Node);
-            dfg.AddNode(operation2Node);
-            dfg.AddNode(operation3Node);
-
-            dfg.AddEdge(operation1Node, operation2Node);
-            dfg.AddEdge(operation2Node, operation3Node);
+            DFG<Block> dfg = new DFG<Block>();
+            dfg.AddNode(new Node<Block>(operation1));
+            dfg.AddNode(new Node<Block>(operation2));
+            dfg.AddNode(new Node<Block>(operation3));
+            dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
@@ -124,7 +118,7 @@ namespace BiolyTests.ScheduleTests
             BoardFluid fluidType = new BoardFluid(inputFluid);
             Droplet droplet1 = new Droplet(fluidType);
             board.FastTemplatePlace(droplet1);
-            
+
             Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
             kage.Add(inputFluid, fluidType);
             Schedule schedule = new Schedule();
@@ -135,15 +129,16 @@ namespace BiolyTests.ScheduleTests
             //Testing the results:
 
             //Everything should be run sequentially, with a little overhead in the form of droplet movement
-            Assert.IsTrue(module.OperationTime*dfg.Nodes.Count < completionTime);
-            Assert.IsTrue(completionTime <= module.OperationTime* dfg.Nodes.Count + Schedule.DROP_MOVEMENT_TIME * dfg.Nodes.Count * 20);
-            
+            Assert.IsTrue(module.OperationTime * dfg.Nodes.Count < completionTime);
+            Assert.IsTrue(completionTime <= module.OperationTime * dfg.Nodes.Count + Schedule.DROP_MOVEMENT_TIME * dfg.Nodes.Count * 20);
+
             Assert.AreEqual(dfg.Nodes.Count, schedule.ScheduledOperations.Count);
             Assert.AreEqual(schedule.ScheduledOperations.Max(operation => operation.endTime), completionTime);
 
-            for (int i = 0; i < schedule.ScheduledOperations.Count - 1; i++){
+            for (int i = 0; i < schedule.ScheduledOperations.Count - 1; i++)
+            {
                 Block operation = schedule.ScheduledOperations[i];
-                Block nextOperation = schedule.ScheduledOperations[i+1];
+                Block nextOperation = schedule.ScheduledOperations[i + 1];
                 Assert.IsTrue(Math.Abs(nextOperation.startTime - operation.endTime) <= Schedule.DROP_MOVEMENT_TIME * 20);
                 Assert.IsTrue(operation.endTime < nextOperation.startTime);
             }
@@ -153,15 +148,15 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(operation3, schedule.ScheduledOperations[2]);
 
             List<KeyValuePair<int, Board>> boardsAtDifferentTimes = schedule.boardAtDifferentTimes.ToList();
-            boardsAtDifferentTimes.Sort((x, y) => x.Key <= y.Key? 0 : 1);
+            boardsAtDifferentTimes.Sort((x, y) => x.Key <= y.Key ? 0 : 1);
             for (int i = 0; i < boardsAtDifferentTimes.Count; i++)
             {
-                Debug.WriteLine("Time: "+ boardsAtDifferentTimes[i].Key);
+                Debug.WriteLine("Time: " + boardsAtDifferentTimes[i].Key);
                 Debug.WriteLine(boardsAtDifferentTimes[i].Value.print(schedule.allUsedModules));
             }
 
             Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 1));
-            
+
         }
 
         [TestMethod]
@@ -179,26 +174,13 @@ namespace BiolyTests.ScheduleTests
             TestBlock operation22 = new TestBlock(new List<string>() { operation12.OutputVariable }, null, module);
             TestBlock operation32 = new TestBlock(new List<string>() { operation22.OutputVariable }, null, module);
 
-            Node<Block> operation11Node = new Node<Block>(operation11);
-            Node<Block> operation21Node = new Node<Block>(operation21);
-            Node<Block> operation31Node = new Node<Block>(operation31);
-
-            Node<Block> operation12Node = new Node<Block>(operation12);
-            Node<Block> operation22Node = new Node<Block>(operation22);
-            Node<Block> operation32Node = new Node<Block>(operation32);
-
-            dfg.AddNode(operation11Node);
-            dfg.AddNode(operation21Node);
-            dfg.AddNode(operation31Node);
-            dfg.AddNode(operation12Node);
-            dfg.AddNode(operation22Node);
-            dfg.AddNode(operation32Node);
-
-            dfg.AddEdge(operation11Node, operation21Node);
-            dfg.AddEdge(operation21Node, operation31Node);
-
-            dfg.AddEdge(operation12Node, operation22Node);
-            dfg.AddEdge(operation22Node, operation32Node);
+            dfg.AddNode(new Node<Block>(operation11));
+            dfg.AddNode(new Node<Block>(operation21));
+            dfg.AddNode(new Node<Block>(operation31));
+            dfg.AddNode(new Node<Block>(operation12));
+            dfg.AddNode(new Node<Block>(operation22));
+            dfg.AddNode(new Node<Block>(operation32));
+            dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
@@ -219,16 +201,17 @@ namespace BiolyTests.ScheduleTests
 
             //Testing the results:
 
-            Assert.IsTrue(module.OperationTime * dfg.Nodes.Count/2 < completionTime);
-            Assert.IsTrue(completionTime <= module.OperationTime * dfg.Nodes.Count/2 + Schedule.DROP_MOVEMENT_TIME * dfg.Nodes.Count / 2 * 30);
+            Assert.IsTrue(module.OperationTime * dfg.Nodes.Count / 2 < completionTime);
+            Assert.IsTrue(completionTime <= module.OperationTime * dfg.Nodes.Count / 2 + Schedule.DROP_MOVEMENT_TIME * dfg.Nodes.Count / 2 * 30);
 
             Assert.AreEqual(dfg.Nodes.Count, schedule.ScheduledOperations.Count);
             Assert.AreEqual(schedule.ScheduledOperations.Max(operation => operation.endTime), completionTime);
 
-            for (int i = 0; i < schedule.ScheduledOperations.Count - 2; i++){
+            for (int i = 0; i < schedule.ScheduledOperations.Count - 2; i++)
+            {
                 Block operation = schedule.ScheduledOperations[i];
                 //+2 instead of +1, as there are two parallel rows of sequentiel operations running
-                Block nextOperation = schedule.ScheduledOperations[i + 2]; 
+                Block nextOperation = schedule.ScheduledOperations[i + 2];
                 Assert.IsTrue(Math.Abs(nextOperation.startTime - operation.endTime) <= Schedule.DROP_MOVEMENT_TIME * 30);
                 Assert.IsTrue(operation.endTime < nextOperation.startTime);
             }
@@ -242,7 +225,7 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(operation32, schedule.ScheduledOperations[5]);
 
             Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 2));
-            
+
         }
 
 
@@ -253,7 +236,8 @@ namespace BiolyTests.ScheduleTests
         }
 
         [TestMethod]
-        public void TestListSchedulingSingleModuleMultiInputOneOutputAssay() {
+        public void TestListSchedulingSingleModuleMultiInputOneOutputAssay()
+        {
             //Construction of test assay:
             String inputFluid1 = "Fisk";
             String inputFluid2 = "Kage";
@@ -261,10 +245,9 @@ namespace BiolyTests.ScheduleTests
             TestModule module = new TestModule(2, 1);
             TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1, inputFluid2 }, null, module);
 
-            Node<Block> operation1Node = new Node<Block>(operation1);
+            dfg.AddNode(new Node<Block>(operation1));
+            dfg.FinishDFG();
 
-            dfg.AddNode(operation1Node);
-            
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
@@ -283,7 +266,7 @@ namespace BiolyTests.ScheduleTests
             int completionTime = schedule.ListScheduling(assay, board, library);
 
             //Testing the results:
-            
+
             List<Board> boards = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList();
 
             for (int i = 1; i < boards.Count; i++)
@@ -313,7 +296,7 @@ namespace BiolyTests.ScheduleTests
 
             TestModule sequentialModule1 = new TestModule();
             TestModule sequentialModule2 = new TestModule(4, 4, 1500); //Different operation time, to check if it the schedule takes the max of the two input operation times.
-            TestModule multiInputModule = new TestModule(2,1);
+            TestModule multiInputModule = new TestModule(2, 1);
             TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, sequentialModule2);
             TestBlock operation21 = new TestBlock(new List<string>() { inputFluid3 }, null, sequentialModule1);
             TestBlock operation31 = new TestBlock(new List<string>() { operation11.OutputVariable, operation21.OutputVariable }, null, multiInputModule);
@@ -324,34 +307,15 @@ namespace BiolyTests.ScheduleTests
 
             TestBlock operationLast = new TestBlock(new List<string>() { operation31.OutputVariable, operation32.OutputVariable }, null, multiInputModule);
 
+            dfg.AddNode(new Node<Block>(operation11));
+            dfg.AddNode(new Node<Block>(operation21));
+            dfg.AddNode(new Node<Block>(operation31));
+            dfg.AddNode(new Node<Block>(operation12));
+            dfg.AddNode(new Node<Block>(operation22));
+            dfg.AddNode(new Node<Block>(operation32));
 
-            Node<Block> operation11Node = new Node<Block>(operation11);
-            Node<Block> operation21Node = new Node<Block>(operation21);
-            Node<Block> operation31Node = new Node<Block>(operation31);
-
-            Node<Block> operation12Node = new Node<Block>(operation12);
-            Node<Block> operation22Node = new Node<Block>(operation22);
-            Node<Block> operation32Node = new Node<Block>(operation32);
-
-            Node<Block> operationLastNode = new Node<Block>(operationLast);
-
-            dfg.AddNode(operation11Node);
-            dfg.AddNode(operation21Node);
-            dfg.AddNode(operation31Node);
-            dfg.AddNode(operation12Node);
-            dfg.AddNode(operation22Node);
-            dfg.AddNode(operation32Node);
-
-            dfg.AddNode(operationLastNode);
-
-            dfg.AddEdge(operation11Node, operation31Node);
-            dfg.AddEdge(operation21Node, operation31Node); 
-
-            dfg.AddEdge(operation12Node, operation22Node);
-            dfg.AddEdge(operation22Node, operation32Node);
-            
-            dfg.AddEdge(operation31Node, operationLastNode);
-            dfg.AddEdge(operation32Node, operationLastNode);
+            dfg.AddNode(new Node<Block>(operationLast));
+            dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
@@ -377,17 +341,17 @@ namespace BiolyTests.ScheduleTests
             //Testing:
 
             //Does not include droplet routing:
-            int estimatedCompletionTimeFirstRouteMixing = Math.Max(operation11.associatedModule.OperationTime, operation21.associatedModule.OperationTime) + operation31.associatedModule.OperationTime ;
+            int estimatedCompletionTimeFirstRouteMixing = Math.Max(operation11.associatedModule.OperationTime, operation21.associatedModule.OperationTime) + operation31.associatedModule.OperationTime;
             int estimatedCompletionTimeFinalMixing = Math.Max(estimatedCompletionTimeFirstRouteMixing, operation12.associatedModule.OperationTime +
                                                                                                        operation22.associatedModule.OperationTime +
                                                                                                        operation32.associatedModule.OperationTime) + operationLast.associatedModule.OperationTime;
-            Assert.IsTrue(estimatedCompletionTimeFinalMixing <= completionTime   && completionTime        <= estimatedCompletionTimeFinalMixing + Schedule.DROP_MOVEMENT_TIME*30*6);
-            Assert.IsTrue(sequentialModule2.OperationTime    <= operation11.endTime && operation11.endTime <= sequentialModule2.OperationTime + Schedule.DROP_MOVEMENT_TIME*30);
-            Assert.IsTrue(sequentialModule1.OperationTime    <= operation21.endTime && operation11.endTime <= sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME*30);
+            Assert.IsTrue(estimatedCompletionTimeFinalMixing <= completionTime && completionTime <= estimatedCompletionTimeFinalMixing + Schedule.DROP_MOVEMENT_TIME * 30 * 6);
+            Assert.IsTrue(sequentialModule2.OperationTime <= operation11.endTime && operation11.endTime <= sequentialModule2.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30);
+            Assert.IsTrue(sequentialModule1.OperationTime <= operation21.endTime && operation11.endTime <= sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30);
             Assert.IsTrue(estimatedCompletionTimeFirstRouteMixing <= operation31.endTime && operation31.endTime <= estimatedCompletionTimeFirstRouteMixing + Schedule.DROP_MOVEMENT_TIME * 30 * 3);
-            Assert.IsTrue(sequentialModule1.OperationTime    <= operation12.endTime && operation12.endTime <= 2*sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30*3);
-            Assert.IsTrue(2*sequentialModule1.OperationTime  <= operation22.endTime && operation22.endTime <= 2*sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30*4);
-            Assert.IsTrue(2*sequentialModule1.OperationTime  +  sequentialModule2.OperationTime <= operation32.endTime && operation32.endTime <= 2 * sequentialModule1.OperationTime + sequentialModule2.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30 * 5);
+            Assert.IsTrue(sequentialModule1.OperationTime <= operation12.endTime && operation12.endTime <= 2 * sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30 * 3);
+            Assert.IsTrue(2 * sequentialModule1.OperationTime <= operation22.endTime && operation22.endTime <= 2 * sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30 * 4);
+            Assert.IsTrue(2 * sequentialModule1.OperationTime + sequentialModule2.OperationTime <= operation32.endTime && operation32.endTime <= 2 * sequentialModule1.OperationTime + sequentialModule2.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30 * 5);
 
             Assert.AreEqual(dfg.Nodes.Count, schedule.ScheduledOperations.Count);
             Assert.AreEqual(operation11, schedule.ScheduledOperations[0]);

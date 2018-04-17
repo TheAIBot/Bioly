@@ -1,11 +1,12 @@
-﻿using System;
+﻿using BiolyCompiler.BlocklyParts.Misc;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.Parser
+namespace BiolyCompiler
 {
-    public static class XmlTools
+    public static class Extensions
     {
         public static XmlNode GetNodeWithName(this XmlNode xmlNode, string name)
         {
@@ -42,6 +43,11 @@ namespace BiolyCompiler.Parser
         internal static int TextToInt(this XmlNode xmlNode)
         {
             return int.Parse(xmlNode.InnerText);
+        }
+
+        public static List<FluidInput> ToList(this FluidInput fluidInput)
+        {
+            return new List<FluidInput>() { fluidInput };
         }
     }
 }

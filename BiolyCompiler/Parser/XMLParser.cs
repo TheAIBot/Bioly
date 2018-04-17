@@ -47,7 +47,7 @@ namespace BiolyCompiler.Parser
                 ParseAndAddNodeToDFG(node, dfg, mostRecentRef);
 
                 //move on to the next node or exit if none
-                node = XmlTools.GetNodeWithName(node, "next");
+                node = Extensions.GetNodeWithName(node, "next");
                 if (node == null)
                 {
                     break;
@@ -99,7 +99,7 @@ namespace BiolyCompiler.Parser
 
         internal static DFG<Block> ParseNextDFG(XmlNode node, CDFG cdfg)
         {
-            node = XmlTools.GetNodeWithName(node, "next");
+            node = Extensions.GetNodeWithName(node, "next");
             if (node == null)
             {
                 return null;

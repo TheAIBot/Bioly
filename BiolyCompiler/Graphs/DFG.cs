@@ -13,6 +13,11 @@ namespace BiolyCompiler.Graphs
         public readonly List<Node<N>> Input = new List<Node<N>>();
         public readonly List<Node<N>> Output = new List<Node<N>>();
 
+        public void AddNode(N nodeValue)
+        {
+            AddNode(new Node<N>(nodeValue));
+        }
+
         public void AddNode(Node<N> node)
         {
             Nodes.Add(node);
