@@ -130,7 +130,7 @@ namespace BiolyTests.PlacementTests
             board.FastTemplatePlace(new Droplet(new BoardFluid("test2")));
             int width = 4, heigth = 4;
             Module module = new TestModule(width, heigth, 2000);
-            board.PlaceBufferedModule(module, new List<Rectangle>(board.EmptyRectangles));
+            board.FastTemplatePlace(module); //It only fits in one rectangle, where it needs to be buffered.
 
             //The division of the empty rectangles should be very specific:
 
@@ -155,7 +155,8 @@ namespace BiolyTests.PlacementTests
             //When it has been deleted, everything should return to the state before:
             board.FastTemplateRemove(module);
             Assert.AreEqual(2, board.EmptyRectangles.Count);
-            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth, boardHeight, 0, 0)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth - 2*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 2 * Droplet.DROPLET_WIDTH, 0)));
+            Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(boardWidth, boardHeight - Droplet.DROPLET_HEIGHT, 0, Droplet.DROPLET_HEIGHT)));
             Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
         }
 

@@ -268,7 +268,6 @@ namespace BiolyCompiler.Scheduling
             return startTime;
         }
                 
-
         public int getCompletionTime(){
             return ScheduledOperations.Max(operation => operation.endTime);
         }

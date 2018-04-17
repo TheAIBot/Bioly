@@ -61,6 +61,7 @@ namespace BiolyCompiler
                                                      .ToList();
                     List<Module> outputs = usedModules.Where(x => x is OutputModule/* || x is Waste*/)
                                                       .ToList();
+
                     Executor.StartExecutor(inputs, outputs);
                     firstRun = false;
                 }
