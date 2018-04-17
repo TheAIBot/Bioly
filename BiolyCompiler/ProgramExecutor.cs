@@ -123,7 +123,7 @@ namespace BiolyCompiler
                         removeAreaCommands.ForEach(x => Executor.SendCommand(x));
                     }
 
-                    Thread.Sleep(500);
+                    Thread.Sleep(50);
                 }
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
