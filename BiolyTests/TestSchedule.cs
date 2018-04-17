@@ -55,11 +55,8 @@ namespace BiolyTests.ScheduleTests
             TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1 }, null, module);
             TestBlock operation2 = new TestBlock(new List<string>() { inputFluid2 }, null, module);
 
-            Node<Block> operation1Node = new Node<Block>(operation1);
-            Node<Block> operation2Node = new Node<Block>(operation2);
-
-            dfg.AddNode(operation1Node);
-            dfg.AddNode(operation2Node);
+            dfg.AddNode(operation1);
+            dfg.AddNode(operation2);
             dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
@@ -107,9 +104,9 @@ namespace BiolyTests.ScheduleTests
             TestBlock operation3 = new TestBlock(new List<string>() { operation2.OutputVariable }, null, module);
 
             DFG<Block> dfg = new DFG<Block>();
-            dfg.AddNode(new Node<Block>(operation1));
-            dfg.AddNode(new Node<Block>(operation2));
-            dfg.AddNode(new Node<Block>(operation3));
+            dfg.AddNode(operation1);
+            dfg.AddNode(operation2);
+            dfg.AddNode(operation3);
             dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
@@ -174,12 +171,12 @@ namespace BiolyTests.ScheduleTests
             TestBlock operation22 = new TestBlock(new List<string>() { operation12.OutputVariable }, null, module);
             TestBlock operation32 = new TestBlock(new List<string>() { operation22.OutputVariable }, null, module);
 
-            dfg.AddNode(new Node<Block>(operation11));
-            dfg.AddNode(new Node<Block>(operation21));
-            dfg.AddNode(new Node<Block>(operation31));
-            dfg.AddNode(new Node<Block>(operation12));
-            dfg.AddNode(new Node<Block>(operation22));
-            dfg.AddNode(new Node<Block>(operation32));
+            dfg.AddNode(operation11);
+            dfg.AddNode(operation21);
+            dfg.AddNode(operation31);
+            dfg.AddNode(operation12);
+            dfg.AddNode(operation22);
+            dfg.AddNode(operation32);
             dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
@@ -245,7 +242,7 @@ namespace BiolyTests.ScheduleTests
             TestModule module = new TestModule(2, 1);
             TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1, inputFluid2 }, null, module);
 
-            dfg.AddNode(new Node<Block>(operation1));
+            dfg.AddNode(operation1);
             dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
@@ -307,14 +304,14 @@ namespace BiolyTests.ScheduleTests
 
             TestBlock operationLast = new TestBlock(new List<string>() { operation31.OutputVariable, operation32.OutputVariable }, null, multiInputModule);
 
-            dfg.AddNode(new Node<Block>(operation11));
-            dfg.AddNode(new Node<Block>(operation21));
-            dfg.AddNode(new Node<Block>(operation31));
-            dfg.AddNode(new Node<Block>(operation12));
-            dfg.AddNode(new Node<Block>(operation22));
-            dfg.AddNode(new Node<Block>(operation32));
+            dfg.AddNode(operation11);
+            dfg.AddNode(operation21);
+            dfg.AddNode(operation31);
+            dfg.AddNode(operation12);
+            dfg.AddNode(operation22);
+            dfg.AddNode(operation32);
 
-            dfg.AddNode(new Node<Block>(operationLast));
+            dfg.AddNode(operationLast);
             dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
@@ -362,6 +359,5 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(operation32, schedule.ScheduledOperations[5]);
             Assert.AreEqual(operationLast, schedule.ScheduledOperations[6]);
         }
-
     }
 }

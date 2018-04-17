@@ -33,11 +33,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             VariableBlock leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
             VariableBlock rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
 
-            Node<Block> leftArithNode = new Node<Block>(leftArithBlock);
-            Node<Block> rightArithNode = new Node<Block>(rightArithBlock);
-
-            dfg.AddNode(leftArithNode);
-            dfg.AddNode(rightArithNode);
+            dfg.AddNode(leftArithBlock);
+            dfg.AddNode(rightArithBlock);
 
             List<string> inputs = new List<string>();
             inputs.Add(leftArithBlock.OutputVariable);
