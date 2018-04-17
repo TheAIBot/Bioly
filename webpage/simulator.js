@@ -472,9 +472,9 @@ function mergeDrops()
 	for(var i = 0; i < dropCount / 2; i++)
 	{
 		const drop = drops[i];
-		const dropRadius = (electrodeSize / 2) * drop.size;
 		if(drop)
 		{
+			const dropRadius = (electrodeSize / 2) * drop.size;
 			for(var k = i + 1; k < dropCount; k++)
 			{
 				const otherDrop = drops[k];
