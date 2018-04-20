@@ -53,10 +53,10 @@ namespace BiolyTests
         public void AddInputBlock(string fluidName, int fluidAmount, FluidUnit unit)
         {
             string a = GetUniqueName();
-            AddBlock(a, Input.XmlTypeName);
-            SetField(a, Input.InputFluidFieldName, fluidName);
-            SetField(a, Input.InputAmountFieldName, fluidAmount);
-            SetField(a, Input.FluidUnitFieldName, Input.FluidUnitToString(unit));
+            AddBlock(a, InputDeclaration.XML_TYPE_NAME);
+            SetField(a, InputDeclaration.INPUT_FLUID_FIELD_NAME, fluidName);
+            SetField(a, InputDeclaration.INPUT_AMOUNT_FIELD_NAME, fluidAmount);
+            SetField(a, InputDeclaration.FLUID_UNIT_FIELD_NAME, InputDeclaration.FluidUnitToString(unit));
 
             Segments.Add(a);
         }
@@ -74,7 +74,7 @@ namespace BiolyTests
             string a = GetUniqueName();
             string b = GetUniqueName();
             string c = GetUniqueName();
-            AddBlock(a, Fluid.XmlTypeName);
+            AddBlock(a, Fluid.XML_TYPE_NAME);
             AddBlock(b, Heater.XmlTypeName);
             AddFluidInputBlock(c, inputFluidName, fluidAmount, useAllFluid);
             SetField(a, Fluid.OutputFluidFieldName, outputName);
@@ -92,7 +92,7 @@ namespace BiolyTests
             string b = GetUniqueName();
             string c = GetUniqueName();
             string d = GetUniqueName();
-            AddBlock(a, Fluid.XmlTypeName);
+            AddBlock(a, Fluid.XML_TYPE_NAME);
             AddBlock(b, Mixer.XmlTypeName);
             AddFluidInputBlock(c, inputNameA, amountA, useAllFluidA);
             AddFluidInputBlock(d, inputNameB, amountB, useAllFluidB);
@@ -107,7 +107,7 @@ namespace BiolyTests
         public string AddConstantBlock(int number)
         {
             string a = GetUniqueName();
-            AddBlock(a, Constant.XmlTypeName);
+            AddBlock(a, Constant.XML_TYPE_NAME);
             SetField(a, Constant.NumberFieldName, number);
 
             return a;
@@ -116,7 +116,7 @@ namespace BiolyTests
         public string AddArithOPBlock(ArithOPTypes type, string leftBlock, string rightBlock)
         {
             string a = GetUniqueName();
-            AddBlock(a, ArithOP.XmlTypeName);
+            AddBlock(a, ArithOP.XML_TYPE_NAME);
             SetField(a, ArithOP.OPTypeFieldName, ArithOP.ArithOpTypeToString(type));
             AddConnection(a, ArithOP.LeftArithFieldName, leftBlock);
             AddConnection(a, ArithOP.RightArithFieldName, rightBlock);
@@ -127,7 +127,7 @@ namespace BiolyTests
         public string AddBoolOPBlock(BoolOPTypes type, string leftBlock, string rightBlock)
         {
             string a = GetUniqueName();
-            AddBlock(a, BoolOP.XmlTypeName);
+            AddBlock(a, BoolOP.XML_TYPE_NAME);
             SetField(a, BoolOP.OPTypeFieldName, BoolOP.BoolOpTypeToString(type));
             AddConnection(a, BoolOP.LeftBoolFieldName, leftBlock);
             AddConnection(a, BoolOP.RightBoolFieldName, rightBlock);
@@ -139,7 +139,7 @@ namespace BiolyTests
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
-            AddBlock(a, Waste.XmlTypeName);
+            AddBlock(a, Waste.XML_TYPE_NAME);
             AddFluidInputBlock(b, fluidName, amount, useAllFluid);
             AddConnection(a, Waste.InputFluidFieldName, b);
 
@@ -150,9 +150,9 @@ namespace BiolyTests
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
-            AddBlock(a, Output.XmlTypeName);
+            AddBlock(a, OutputDeclaration.XML_TYPE_NAME);
             AddFluidInputBlock(b, fluidName, amount, useAllFluid);
-            AddConnection(a, Output.InputFluidFieldName, b);
+            AddConnection(a, OutputDeclaration.INPUT_FLUID_FIELD_NAME, b);
 
             Segments.Add(a);
         }

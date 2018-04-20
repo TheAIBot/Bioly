@@ -44,7 +44,7 @@ namespace BiolyCompiler
             controlStack.Push(new Conditional(null, null, null));
             repeatStack.Push(0);
 
-            foreach (Input input in runningGraph.Nodes.Select(x => x.value).OfType<Input>())
+            foreach (InputDeclaration input in runningGraph.Nodes.Select(x => x.value).OfType<InputDeclaration>())
             {
                 BoardFluid fluid = new BoardFluid(input.OutputVariable);
                 fluid.droplets.Add((InputModule)input.getAssociatedModule());

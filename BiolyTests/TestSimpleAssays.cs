@@ -26,8 +26,8 @@ namespace BiolyTests.SimpleAssayTests
         {
             DFG<Block> dfg = new DFG<Block>();
             int numberOfInputs = 5;
-            FluidBlock inputOperation = new Input("Test", 10);
-            FluidBlock outputOperation = new Output(new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null);
+            FluidBlock inputOperation = new InputDeclaration("kage", "Test", 10);
+            FluidBlock outputOperation = new OutputUseage("også_kage",new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null);
             dfg.AddNode(inputOperation);
             dfg.AddNode(outputOperation);
             dfg.FinishDFG();

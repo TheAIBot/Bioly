@@ -177,21 +177,6 @@ namespace BiolyCompiler.Architechtures
 
         private bool VisitsAllModulesAndEmptyRectangles(int extraEmptyRectangles, int extraPlacedModules, HashSet<Rectangle> visitedEmptyRectangles, HashSet<Rectangle> connectedModuleRectangles)
         {
-            //The routes are not blocked, iff connectedModuleRectangles contains all the desired module rectangles,
-            //which happens iff it contains the correct number of rectangles. 
-            //Also all empty rectangles must be visited.
-
-            ////For testing purposes. It will throw an error if anything is wrong
-            HashSet<Rectangle> differenceEmptyRectangles = GetSetDifference(visitedEmptyRectangles, EmptyRectangles);
-
-            //if (connectedModuleRectangles.Count > placedModules.Count + extraPlacedModules ||
-            //    differenceEmptyRectangles.Count > extraEmptyRectangles + 2)
-            //{
-
-            //    Schedule.checkAdjacencyMatrixCorrectness(this);
-            //    throw new Exception("Logic error: more rectangles have been found in the adjacency graph, than there exists on the board.");
-
-            //}
             return (connectedModuleRectangles.Count == placedModules.Count + extraPlacedModules && visitedEmptyRectangles.Count == EmptyRectangles.Count + extraEmptyRectangles);
         }
 

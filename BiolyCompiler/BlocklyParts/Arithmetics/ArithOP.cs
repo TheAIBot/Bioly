@@ -13,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string OPTypeFieldName = "OP";
         public const string LeftArithFieldName = "A";
         public const string RightArithFieldName = "B";
-        public const string XmlTypeName = "math_arithmetic";
+        public const string XML_TYPE_NAME = "math_arithmetic";
         public readonly ArithOPTypes OPType;
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;

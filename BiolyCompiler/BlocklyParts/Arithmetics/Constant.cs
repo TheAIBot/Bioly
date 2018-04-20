@@ -10,7 +10,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
     public class Constant : VariableBlock
     {
         public const string NumberFieldName = "NUM";
-        public const string XmlTypeName = "math_number";
+        public const string XML_TYPE_NAME = "math_number";
         public readonly float Value;
 
         public Constant(string output, XmlNode node) : base(false, output)

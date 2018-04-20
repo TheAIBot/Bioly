@@ -14,22 +14,30 @@ Blockly.Blocks["start"] = {
 	}
 };
 
-Blockly.Blocks["input"] = {
+Blockly.Blocks["inputDeclaration"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "new input",
 			"args0": [
-			],
-			"message1": "name %1",
+			],			
+			"message1": "module name %1",
 			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"message2": "fluid name %1",
+			"args2": [
 				{
 					"type": "field_variable",
 					"name": "inputName",
 					"variable": "input_fluid_name"
 				}
 			],
-			"message2": "amount %1 %2",
-			"args2": [
+			"message3": "amount %1 %2",
+			"args3": [
 				{
 					"type": "field_number",
 					"name": "inputAmount",
@@ -48,6 +56,56 @@ Blockly.Blocks["input"] = {
 			"nextStatement": null,
 			"colour": 40,
 			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["outputDeclaration"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new output",
+			"args0": [
+			],			
+			"message1": "module name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 280,
+			"tooltip": "",
+		});
+	}
+};
+
+Blockly.Blocks["outputUseage"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "output %1",
+			"args0": [
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": ["InputType", "FluidType"]
+				}
+			],						
+			"message1": "target %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 280,
+			"tooltip": "",
+			"inputsInline": false
 		});
 	}
 };
@@ -199,25 +257,7 @@ Blockly.Blocks["waste"] = {
 	}
 };
 
-Blockly.Blocks["output"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "output %1",
-			"args0": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],
-			"previousStatement": null,
-			"nextStatement": null,
-			"colour": 280,
-			"tooltip": "",
-			"inputsInline": false
-		});
-	}
-};
+
 
 Blockly.Blocks["sensor"] = {
 	init: function() {

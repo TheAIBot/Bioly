@@ -14,7 +14,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         public const string OPTypeFieldName = "OP";
         public const string LeftBoolFieldName = "A";
         public const string RightBoolFieldName = "B";
-        public const string XmlTypeName = "logic_compare";
+        public const string XML_TYPE_NAME = "logic_compare";
         public readonly BoolOPTypes OPType;
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;

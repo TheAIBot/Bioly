@@ -23,6 +23,7 @@ namespace BiolyCompiler.Scheduling
         // For debuging. Used when printing the board to the console, for visulization purposes.
         public List<Module> allUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
+        public Dictionary<string, Module> StaticModules = new Dictionary<string, Module>();
         public SimplePriorityQueue<FluidBlock> CurrentlyRunningOpertions = new SimplePriorityQueue<FluidBlock>();
         public List<Block> ScheduledOperations = new List<Block>();
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move over one electrode.
@@ -46,7 +47,8 @@ namespace BiolyCompiler.Scheduling
             {
                 FluidBlock fluidOperation = operation as FluidBlock;
                 fluidOperation.boundModule.StartTime = startTime;
-                fluidOperation.endTime = fluidOperation.boundModule.StartTime + fluidOperation.boundModule.ToCommands().Last().Time;// currentTime + fluidOperation.boundModule.OperationTime;
+                int moduleRunningTime = fluidOperation.boundModule.ToCommands().Last().Time;
+                fluidOperation.endTime = fluidOperation.boundModule.StartTime + moduleRunningTime;// currentTime + fluidOperation.boundModule.OperationTime;
                 CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.endTime);
             }
         }
@@ -85,22 +87,20 @@ namespace BiolyCompiler.Scheduling
                     updateSchedule(nextOperation, startTime, startTime);
                     assay.updateReadyOperations(nextOperation);
                 }
+                else if (nextOperation is StaticDeclarationBlock)
+                {
+                    throw new Exception("Static module declarations must not be part of the DFG that is being scheduled." +
+                                        "The operation at fault is: " + nextOperation.ToString());
+                }
                 else // nextOperation is FluidBlock
                 {
 
                     FluidBlock topPriorityOperation = nextOperation as FluidBlock;
-                    if (topPriorityOperation is Input)
+                    Module operationExecutingModule;
+                    if (topPriorityOperation is StaticUseageBlock staticOperation)
                     {
-                        Module inputModule = topPriorityOperation.getAssociatedModule().GetCopyOf();
-                        board.FastTemplatePlace(inputModule);
-                        inputModule.RepositionLayout();
-                        allUsedModules.Add(inputModule);
-                        assay.updateReadyOperations(topPriorityOperation);
-                        Debug.WriteLine(board.print(allUsedModules));
-                        continue;
-                    }
-
-                    Module operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
+                        operationExecutingModule = StaticModules[staticOperation.ModuleName];
+                    } else operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
                     topPriorityOperation.Bind(operationExecutingModule);
                     allUsedModules.Add(operationExecutingModule);
 

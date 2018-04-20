@@ -17,7 +17,9 @@ namespace BiolyCompiler.Scheduling
             this.dfg = dfg;
             //Set ready nodes
             dfg.Nodes.ForEach(node => operationToNode.Add(node.value, node));
-            readyOperations = dfg.Input.Select(x => x.value).ToList();
+            readyOperations = dfg.Nodes.Where(node => node.getIngoingEdges().Count == 0)
+                                       .Select(node => node.value)
+                                       .ToList();
         }
 
         public void calculateCriticalPath(){

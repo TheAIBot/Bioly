@@ -39,8 +39,9 @@ namespace BiolyCompiler.Modules
             HashSet<Module> associatedModules = new HashSet<Module>();
             foreach (var node in assay.dfg.Nodes)
             {
-                FluidBlock operation = node.value as FluidBlock;
-                if (!associatedModules.Contains(operation.getAssociatedModule()))
+                if (node.value is FluidBlock operation && 
+                    !(node.value is StaticUseageBlock) &&
+                    !associatedModules.Contains(operation.getAssociatedModule()))
                 {
                     associatedModules.Add(operation.getAssociatedModule());
                     allocatedModules.Add(operation.getAssociatedModule());

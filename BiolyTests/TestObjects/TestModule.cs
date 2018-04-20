@@ -68,7 +68,10 @@ namespace BiolyTests.TestObjects
 
         protected override List<Command> GetModuleCommands(ref int time)
         {
-            throw new NotImplementedException();
+            //It is included, so that when the completion time is calculated, 
+            //the correct result is attained. This calculation uses the last command that is generated.
+            time += OperationTime;
+            return new List<Command>() { new Command(Shape.x, Shape.y, CommandType.ELECTRODE_OFF, time) };
         }
     }
 }

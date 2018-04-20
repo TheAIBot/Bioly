@@ -7,7 +7,11 @@ namespace BiolyCompiler.Modules
 {
     public class OutputModule : Module
     {
-        
+
+        public OutputModule() : base(3, 3, 1, true)
+        {
+        }
+
         public OutputModule(int numberOfInputs) : base(3, 3, 1, true)
         {
             //This is so that mutliple droplets can be routed to the same output,  at the same place in the module.

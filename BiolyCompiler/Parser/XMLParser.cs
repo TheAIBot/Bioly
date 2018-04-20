@@ -118,23 +118,25 @@ namespace BiolyCompiler.Parser
             string blockType = node.Attributes["type"].Value;
             switch (blockType)
             {
-                case ArithOP.XmlTypeName:
+                case ArithOP.XML_TYPE_NAME:
                     return ArithOP.Parse(node, dfg, mostRecentRef);
-                case Constant.XmlTypeName:
+                case Constant.XML_TYPE_NAME:
                     return Constant.Parse(node);
                 //case FluidArray.XmlTypeName:
                 //    return FluidArray.Parse(node);
                 //case SetFluidArray.XmlTypeName:
                 //    return SetFluidArray.Parse(node);
-                case Fluid.XmlTypeName:
+                case Fluid.XML_TYPE_NAME:
                     return Fluid.Parse(node, mostRecentRef);
-                case Input.XmlTypeName:
-                    return Input.Parse(node);
-                case Output.XmlTypeName:
-                    return Output.Parse(node, mostRecentRef);
-                case Waste.XmlTypeName:
+                case InputDeclaration.XML_TYPE_NAME:
+                    return InputDeclaration.Parse(node);
+                case OutputDeclaration.XML_TYPE_NAME:
+                    return OutputDeclaration.Parse(node, mostRecentRef);
+                case OutputUseage.XML_TYPE_NAME:
+                    return OutputUseage.Parse(node, mostRecentRef);
+                case Waste.XML_TYPE_NAME:
                     return Waste.Parse(node, mostRecentRef);
-                case BoolOP.XmlTypeName:
+                case BoolOP.XML_TYPE_NAME:
                     return BoolOP.Parse(node, dfg, mostRecentRef);
                 //case Sensor.XmlTypeName:
                 //    return Sensor.Parse(node);

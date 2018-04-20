@@ -11,7 +11,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
     {
         public const string InputFluidFieldName = "inputFluid";
         public const string OutputFluidFieldName = "fluidName";
-        public const string XmlTypeName = "fluid";
+        public const string XML_TYPE_NAME = "fluid";
 
         public Fluid(List<FluidInput> input, string output, XmlNode node) : base(true, input, output)
         {

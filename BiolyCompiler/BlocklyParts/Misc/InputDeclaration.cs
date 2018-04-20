@@ -7,22 +7,22 @@ using BiolyCompiler.Modules;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
-    public class Input : FluidBlock
+    public class InputDeclaration : StaticDeclarationBlock
     {
-        public const string InputFluidFieldName = "inputName";
-        public const string InputAmountFieldName = "inputAmount";
-        public const string FluidUnitFieldName = "inputUnit";
-        public const string XmlTypeName = "input";
+        public const string INPUT_FLUID_FIELD_NAME = "inputName";
+        public const string INPUT_AMOUNT_FIELD_NAME = "inputAmount";
+        public const string FLUID_UNIT_FIELD_NAME = "inputUnit";
+        public const string XML_TYPE_NAME = "inputDeclaration";
         public readonly int Amount;
         public readonly FluidUnit Unit;
 
-        public Input(string output, XmlNode node) : base(true, output)
+        public InputDeclaration(string moduleName, string output, XmlNode node) : base(moduleName, true, output)
         {
-            this.Amount = node.GetNodeWithAttributeValue(InputAmountFieldName).TextToInt();
-            this.Unit = StringToFluidUnit(node.GetNodeWithAttributeValue(FluidUnitFieldName).InnerText);
+            this.Amount = node.GetNodeWithAttributeValue(INPUT_AMOUNT_FIELD_NAME).TextToInt();
+            this.Unit = StringToFluidUnit(node.GetNodeWithAttributeValue(FLUID_UNIT_FIELD_NAME).InnerText);
         }
 
-        public Input(string output, int amount) : base(true, output)
+        public InputDeclaration(string moduleName, string output, int amount) : base(moduleName, true, output)
         {
             this.Amount = amount;
             this.Unit = FluidUnit.drops;
@@ -30,8 +30,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public static Block Parse(XmlNode node)
         {
-            string output = node.GetNodeWithAttributeValue(InputFluidFieldName).InnerText;
-            return new Input(output, node);
+            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
+            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            return new InputDeclaration(moduleName, output, node);
         }
 
         public static FluidUnit StringToFluidUnit(string value)

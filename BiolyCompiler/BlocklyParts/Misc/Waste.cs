@@ -9,7 +9,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
     public class Waste : FluidBlock
     {
         public const string InputFluidFieldName = "inputFluid";
-        public const string XmlTypeName = "waste";
+        public const string XML_TYPE_NAME = "waste";
 
         public Waste(List<FluidInput> input, string output, XmlNode node) : base(false, input, output)
         {
