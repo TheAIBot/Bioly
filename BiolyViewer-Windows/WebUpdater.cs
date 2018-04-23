@@ -4,7 +4,7 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using CefSharp;
-using CefSharp.Wpf;
+using CefSharp.WinForms;
 using MoreLinq;
 using System;
 using System.Collections.Generic;

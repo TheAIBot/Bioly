@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CefSharp.Wpf;
 using CefSharp;
 using BiolyCompiler.Modules;
 using System.Globalization;
 using System.Diagnostics;
+using CefSharp.WinForms;
 
 namespace BiolyViewer_Windows
 {
