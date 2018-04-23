@@ -14,6 +14,7 @@ using BiolyCompiler.BlocklyParts.ControlFlow;
 using BiolyCompiler.BlocklyParts.Misc;
 using System.Threading.Tasks;
 using System.Threading;
+using BiolyCompiler.Exceptions.ParserExceptions;
 
 namespace BiolyCompiler
 {
@@ -28,7 +29,7 @@ namespace BiolyCompiler
 
         public void Run(int width, int height, string xmlText)
         {
-            CDFG graph = XmlParser.Parse(xmlText);
+            (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlText);
             DFG<Block> runningGraph = graph.StartDFG;
 
             Board board = new Board(width, height);

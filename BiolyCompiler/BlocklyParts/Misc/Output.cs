@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Modules;
+﻿using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -12,17 +13,22 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string InputFluidFieldName = "inputFluid";
         public const string XmlTypeName = "output";
 
-        public Output(List<FluidInput> input, string output, XmlNode node) : base(false, input, output)
+        public Output(List<FluidInput> input, string output, XmlNode node, string id) : base(false, input, output, id)
         {
 
         }
 
         public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild, mostRecentRef));
+            string id = node.GetAttributeValue(Block.IDFieldName);
 
-            return new Output(inputs, null, node);
+            XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Output is missing input fluid block."));
+            FluidInput fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, mostRecentRef);
+
+            List<FluidInput> inputs = new List<FluidInput>();
+            inputs.Add(fluidInput);
+
+            return new Output(inputs, null, node, id);
         }
 
         public override Module getAssociatedModule()

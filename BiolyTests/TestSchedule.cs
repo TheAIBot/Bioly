@@ -26,8 +26,8 @@ namespace BiolyTests.ScheduleTests
             int OperationsToAdd = 5;
             for (int i = 0; i < OperationsToAdd; i++)
             {
-                Block Operation1 = new Sensor(null, null, null);
-                Block Operation2 = new Mixer(null, null, null);
+                Block Operation1 = new Sensor(null, null, null, String.Empty);
+                Block Operation2 = new Mixer(null, null, null, String.Empty);
                 Operation1.priority = i;
                 Operation2.priority = i;
                 Operations.Add(Operation1);

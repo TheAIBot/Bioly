@@ -104,7 +104,6 @@ function getIfWorkspaceChanged()
 	return didChange;
 }
 
-//based on 
 function openTab(e, tabName) {
 
     const tabs = document.getElementsByClassName("tabItemContent");
@@ -120,6 +119,51 @@ function openTab(e, tabName) {
     // Show the current tab, and add an "active" class to the button that opened the tab
     document.getElementById(tabName).style.display = "block";
     e.currentTarget.className += " active";
+}
+
+function ShowBlocklyErrors(errorInfo)
+{
+	//{
+	//	id,
+	//	message
+	//}
+	const allBlocks = workspace.getAllBlocks();
+	for(var i = 0; i < errorInfo.length; i++)
+	{
+		for(var k = 0; k < allBlocks.length; k++)
+		{
+			if(errorInfo[i].id == allBlocks[k].id)
+			{
+				allBlocks.splice(k, 1);
+				break;
+			}
+		}
+	}
+	for(var i = 0; i < allBlocks.length; i++)
+	{
+		allBlocks[i].setWarningText(null);
+	}
+	
+	workspace.highlightBlock(null);
+	for(var i = 0; i < errorInfo.length; i++)
+	{
+		const block = workspace.getBlockById(errorInfo[i].id);
+		if(block)
+		{
+			block.setWarningText(errorInfo[i].message);
+			workspace.highlightBlock(errorInfo[i].id, true);	
+		}
+	}
+}
+
+function ClearErrors()
+{
+	const allBlocks = workspace.getAllBlocks();
+	for(var i = 0; i < allBlocks.length; i++)
+	{
+		allBlocks[i].setWarningText(null);
+	}
+	workspace.highlightBlock(null);
 }
 
 

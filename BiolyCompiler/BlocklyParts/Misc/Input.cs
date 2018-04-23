@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Modules;
+using BiolyCompiler.Exceptions.ParserExceptions;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -13,16 +14,18 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string InputAmountFieldName = "inputAmount";
         public const string FluidUnitFieldName = "inputUnit";
         public const string XmlTypeName = "input";
-        public readonly int Amount;
+        public readonly float Amount;
         public readonly FluidUnit Unit;
 
-        public Input(string output, XmlNode node) : base(true, output)
+        public Input(string output, XmlNode node, string id) : base(true, output, id)
         {
-            this.Amount = node.GetNodeWithAttributeValue(InputAmountFieldName).TextToInt();
-            this.Unit = StringToFluidUnit(node.GetNodeWithAttributeValue(FluidUnitFieldName).InnerText);
+            this.Amount = node.GetNodeWithAttributeValue(InputAmountFieldName).TextToFloat(id);
+            Validator.ValueWithinRange(id, this.Amount, 0, int.MaxValue);
+
+            this.Unit = StringToFluidUnit(id, node.GetNodeWithAttributeValue(FluidUnitFieldName).InnerText);
         }
 
-        public Input(string output, int amount) : base(true, output)
+        public Input(string output, int amount,string id) : base(true, output, id)
         {
             this.Amount = amount;
             this.Unit = FluidUnit.drops;
@@ -31,10 +34,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public static Block Parse(XmlNode node)
         {
             string output = node.GetNodeWithAttributeValue(InputFluidFieldName).InnerText;
-            return new Input(output, node);
+            string id = node.GetAttributeValue(Block.IDFieldName);
+            return new Input(output, node, id);
         }
 
-        public static FluidUnit StringToFluidUnit(string value)
+        public static FluidUnit StringToFluidUnit(string id, string value)
         {
             switch (value)
             {
@@ -43,7 +47,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 case "1":
                     return FluidUnit.ml;
                 default:
-                    throw new Exception("Unknown fluid unit");
+                    throw new InternalParseException(id, $"Unknown fluid unit.{Environment.NewLine}Expected  either 0 or 1 but value was {value}.");
             }
         }
 
@@ -64,7 +68,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             if (boundModule == null)
             {
-                boundModule = new InputModule(new BoardFluid(OutputVariable), Amount); ;
+                boundModule = new InputModule(new BoardFluid(OutputVariable), (int)Amount);
             }
             return boundModule;
         }
@@ -72,7 +76,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public override string ToString()
         {
             return OriginalOutputVariable + Environment.NewLine +
-                   "Amount: " + Amount + Unit.ToString().ToLower();
+                   "Amount: " + Amount.ToString("N2") + Unit.ToString().ToLower();
         }
     }
 }

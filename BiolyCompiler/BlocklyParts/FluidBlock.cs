@@ -14,12 +14,12 @@ namespace BiolyCompiler.BlocklyParts
         //For the scheduling.
         public Module boundModule = null;
 
-        public FluidBlock(bool canBeOutput, string output) : base(canBeOutput, output)
+        public FluidBlock(bool canBeOutput, string output, string id) : base(canBeOutput, output, id)
         {
             InputVariables = EmptyList;
         }
 
-        public FluidBlock(bool canBeOutput, List<FluidInput> input, string output) : base(canBeOutput, output)
+        public FluidBlock(bool canBeOutput, List<FluidInput> input, string output, string id) : base(canBeOutput, output, id)
         {
             InputVariables = input;
         }

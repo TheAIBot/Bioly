@@ -11,7 +11,7 @@ namespace BiolyCompiler.BlocklyParts.Sensors
     {
         public const string XmlTypeName = "sensor";
 
-        public Sensor(List<FluidInput> input, string output, XmlNode node) : base(true, input, output)
+        public Sensor(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, output, id)
         {
 
         }

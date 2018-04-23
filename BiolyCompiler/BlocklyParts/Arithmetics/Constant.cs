@@ -13,14 +13,15 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XmlTypeName = "math_number";
         public readonly float Value;
 
-        public Constant(string output, XmlNode node) : base(false, output)
+        public Constant(string output, XmlNode node, string id) : base(false, output, id)
         {
-            Value = node.TextToInt();
+            Value = node.TextToFloat(id);
         }
 
         public static Block Parse(XmlNode node)
         {
-            return new Constant(null, node);
+            string id = node.GetAttributeValue(Block.IDFieldName);
+            return new Constant(null, node, id);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)

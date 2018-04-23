@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using CefSharp;
@@ -21,6 +22,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MoreLinq;
 
 namespace BiolyViewer_Windows
 {
@@ -29,7 +31,8 @@ namespace BiolyViewer_Windows
     /// </summary>
     public partial class MainWindow : Window
     {
-        int BOARD_WIDTH = 20, BOARD_HEIGHT = 50;
+        int BOARD_WIDTH = 20;
+        int BOARD_HEIGHT = 50;
         public MainWindow()
         {
             var settings = new CefSettings();
@@ -70,12 +73,24 @@ namespace BiolyViewer_Windows
                 string xml = ExecuteJs<string>("getWorkspaceAsXml();");
                 try
                 {
-                    CDFG cdfg = XmlParser.Parse(xml);
-                    (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
-                    string js = $"setGraph({nodes}, {edges});";
-                    Browser.ExecuteScriptAsync(js);
+                    (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(xml);
+                    if (exceptions.Count == 0)
+                    {
+                        (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
+                        string js = $"setGraph({nodes}, {edges});ClearErrors();";
+                        Browser.ExecuteScriptAsync(js);
 
-                    RunSimulator(xml);
+                        RunSimulator(xml);
+                    }
+                    else
+                    {
+                        string[] errorInfos = exceptions.DistinctBy(e => e.ID)
+                                                        .Select(e => $"{{id: \"{e.ID}\", message: \"{String.Join(@"\n", exceptions.Where(ee => e.ID == ee.ID).Select(ee => ee.Message))}\"}}")
+                                                        .ToArray();
+                        string ids = string.Join(", ", errorInfos);
+                        string js = $"ShowBlocklyErrors([{ids}]);";
+                        Browser.ExecuteScriptAsync(js);
+                    }
                 }
                 catch (Exception e)
                 {

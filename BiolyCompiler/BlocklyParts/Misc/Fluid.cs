@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.Exceptions.ParserExceptions;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -13,7 +14,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string OutputFluidFieldName = "fluidName";
         public const string XmlTypeName = "fluid";
 
-        public Fluid(List<FluidInput> input, string output, XmlNode node) : base(true, input, output)
+        public Fluid(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, output, id)
         {
         }
 
@@ -22,14 +23,16 @@ namespace BiolyCompiler.BlocklyParts.Misc
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(XmlParser.GetVariablesCorrectedName(node, mostRecentRef));
 
-            return new Fluid(inputs, output, node);
+            string id = node.GetAttributeValue(Block.IDFieldName);
+            return new Fluid(inputs, output, node, id);
         }
 
         public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
+            string id = node.GetAttributeValue(Block.IDFieldName);
             string output = node.GetNodeWithAttributeValue(OutputFluidFieldName).InnerText;
-            XmlNode innerNode = node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild;
-            switch (innerNode.Attributes["type"].Value)
+            XmlNode innerNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Fluid is missing fluid definition blocks."));
+            switch (innerNode.GetAttributeValue(Block.TypeFieldName))
             {
                 case Heater.XmlTypeName:
                     return Heater.CreateHeater(output, innerNode, mostRecentRef);
