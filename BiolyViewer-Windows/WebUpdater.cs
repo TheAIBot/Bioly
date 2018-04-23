@@ -84,10 +84,5 @@ namespace BiolyViewer_Windows
                 simulatorThread.Start();
             }
         }
-
-        private T ExecuteJs<T>(string js)
-        {
-            return (T)Browser.GetMainFrame().EvaluateScriptAsync(js, null).Result.Result;
-        }
     }
 }

@@ -86,15 +86,6 @@ namespace BiolyCompiler
             throw new NotANumberException(id, xmlNode.InnerText);
         }
 
-        internal static int TextToInt(this XmlNode xmlNode, string id)
-        {
-            if (int.TryParse(xmlNode.InnerText, out int value))
-            {
-                return value;
-            }
-            throw new NotANumberException(id, xmlNode.InnerText);
-        }
-
         internal static XmlNode GetInnerBlockNode(this XmlNode node, string nodeAttribName, ParseException exception)
         {
             XmlNode innerNode = node.TryGetNodeWithAttributeValue(nodeAttribName);
