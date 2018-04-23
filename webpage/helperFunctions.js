@@ -89,20 +89,11 @@ function getWorkspaceAsXml()
 	return Blockly.Xml.domToText(xml);
 }
 
-var didWorkspaceChange = true;
-
 function onWorkspaceChanged(event)
 {
-	didWorkspaceChange = true;
+	webUpdater.update(getWorkspaceAsXml());
 }
 workspace.addChangeListener(onWorkspaceChanged);
-
-function getIfWorkspaceChanged()
-{
-	const didChange = didWorkspaceChange;
-	didWorkspaceChange = false;
-	return didChange;
-}
 
 function openTab(e, tabName) {
 

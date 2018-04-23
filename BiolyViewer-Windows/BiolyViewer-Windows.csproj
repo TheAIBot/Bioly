@@ -102,6 +102,7 @@
     <Compile Include="Saver.cs" />
     <Compile Include="SimpleGraph.cs" />
     <Compile Include="SimulatorConnector.cs" />
+    <Compile Include="WebUpdater.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
