@@ -13,6 +13,7 @@ using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.Architechtures;
 using BiolyTests.TestObjects;
 using System.Diagnostics;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyTests.ScheduleTests
 {
@@ -101,11 +102,13 @@ namespace BiolyTests.ScheduleTests
             String inputFluid = "Kage";
 
             TestModule module = new TestModule();
-            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid }, null, module);
+            InputDeclaration input = new InputDeclaration("testModule", inputFluid, 1);
+            TestBlock operation1 = new TestBlock(new List<string>() { input.OutputVariable }, null, module);
             TestBlock operation2 = new TestBlock(new List<string>() { operation1.OutputVariable }, null, module);
             TestBlock operation3 = new TestBlock(new List<string>() { operation2.OutputVariable }, null, module);
 
             DFG<Block> dfg = new DFG<Block>();
+            dfg.AddNode(input);
             dfg.AddNode(operation1);
             dfg.AddNode(operation2);
             dfg.AddNode(operation3);
@@ -114,24 +117,25 @@ namespace BiolyTests.ScheduleTests
             Assay assay = new Assay(dfg);
             //Scheduling the assay:
             Board board = new Board(20, 20);
-            BoardFluid fluidType = new BoardFluid(inputFluid);
-            Droplet droplet1 = new Droplet(fluidType);
-            board.FastTemplatePlace(droplet1);
+            //BoardFluid fluidType = new BoardFluid(inputFluid);
+            //Droplet droplet1 = new Droplet(fluidType);
+            //board.FastTemplatePlace(droplet1);
 
             Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
-            kage.Add(inputFluid, fluidType);
+            //kage.Add(inputFluid, fluidType);
             Schedule schedule = new Schedule();
             schedule.TransferFluidVariableLocationInformation(kage);
             ModuleLibrary library = new ModuleLibrary();
+            schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { input}, board, library);
             int completionTime = schedule.ListScheduling(assay, board, library);
 
             //Testing the results:
 
             //Everything should be run sequentially, with a little overhead in the form of droplet movement
-            Assert.IsTrue(module.OperationTime * dfg.Nodes.Count < completionTime);
-            Assert.IsTrue(completionTime <= module.OperationTime * dfg.Nodes.Count + Schedule.DROP_MOVEMENT_TIME * dfg.Nodes.Count * 20);
+            Assert.IsTrue(module.OperationTime * (dfg.Nodes.Count-1) < completionTime);
+            Assert.IsTrue(completionTime <= module.OperationTime * (dfg.Nodes.Count - 1) + Schedule.DROP_MOVEMENT_TIME * (dfg.Nodes.Count - 1) * 20);
 
-            Assert.AreEqual(dfg.Nodes.Count, schedule.ScheduledOperations.Count);
+            Assert.AreEqual(dfg.Nodes.Count - 1, schedule.ScheduledOperations.Count);
             Assert.AreEqual(schedule.ScheduledOperations.Max(operation => operation.endTime), completionTime);
 
             for (int i = 0; i < schedule.ScheduledOperations.Count - 1; i++)
@@ -153,8 +157,8 @@ namespace BiolyTests.ScheduleTests
                 Debug.WriteLine("Time: " + boardsAtDifferentTimes[i].Key);
                 Debug.WriteLine(boardsAtDifferentTimes[i].Value.print(schedule.allUsedModules));
             }
-
-            Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 1));
+            //Only the first board should contain a single module, the input.
+            Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 2 || pair.Key == 0));
             Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
             Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
 
@@ -241,6 +245,7 @@ namespace BiolyTests.ScheduleTests
             TestBlock operation1 = new TestBlock(new List<string>() {inputFluid1}, null, module);
 
             dfg.AddNode(operation1);
+            dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
             //Scheduling the assay:

@@ -63,11 +63,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public override Module getAssociatedModule()
         {
-            if (boundModule == null)
-            {
-                boundModule = new InputModule(new BoardFluid(OutputVariable), Amount); ;
-            }
-            return boundModule;
+            return new InputModule(new BoardFluid(OutputVariable), Amount);
         }
 
         public override string ToString()

@@ -29,12 +29,15 @@ namespace BiolyCompiler.BlocklyParts
             throw new NotImplementedException("No modules have been associated with blocks/operations of type " + this.GetType().ToString());
         }
 
-        public void Bind(Module module)
+        public virtual void Bind(Module module)
         {
             boundModule = module;
             module.BindingOperation = this;
 
-            //The fluid types of the module layout, is changedto fit with the operation:
+            //The fluid types of the module layout, is changedto fit with the operation.
+            //Thus for example, when the module is removed when the operations have finished,
+            //the remaining droplets will have the correct type, and can be used by operations requiring the output of that module.
+
             int currentDroplet = 0;
             foreach (var fluid in InputVariables)
             {

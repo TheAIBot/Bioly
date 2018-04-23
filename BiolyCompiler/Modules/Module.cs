@@ -12,7 +12,7 @@ namespace BiolyCompiler.Modules
     public abstract class Module
     {
         public Rectangle Shape;
-        public int OperationTime;
+        public int OperationTime = 1;
         public Block BindingOperation;
         //The key is the input fluid name, see the operation/block which the module is bound to.
         public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();

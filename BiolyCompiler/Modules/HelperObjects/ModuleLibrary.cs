@@ -33,7 +33,7 @@ namespace BiolyCompiler.Modules
             }
             throw new Exception("No module can execute the operation and also be placed on the board");
         } */
-
+        
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
             HashSet<Module> associatedModules = new HashSet<Module>();
@@ -51,6 +51,9 @@ namespace BiolyCompiler.Modules
 
         public Module getOptimalModule(FluidBlock operation)
         {
+            return operation.getAssociatedModule();
+            //Currently unused. Will become important for larger programs:
+            /*
             Module module = null;
             for (int i = 0; i < allocatedModules.Count; i++)
             {
@@ -69,6 +72,7 @@ namespace BiolyCompiler.Modules
             }
 
             return module;
+            */
         }
 
         public Module getAndPlaceFirstPlaceableModule(FluidBlock operation, Board board){

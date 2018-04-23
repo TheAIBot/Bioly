@@ -10,16 +10,22 @@ namespace BiolyCompiler.Modules
         //It should also be done in such a way that the fast template placement merges everything correctly.
         public List<Rectangle> EmptyRectangles;
         public List<Droplet> Droplets;
-        public readonly int width, height;
+        public int width  { get; protected set; }
+        public int height { get; protected set; }
 
-        private ModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations)
+
+        protected ModuleLayout(List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations)
+        {
+            this.EmptyRectangles = EmptyRectangles;
+            this.Droplets = OutputLocations;
+        }
+
+        public ModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : this(EmptyRectangles, OutputLocations)
         {
             this.width  = width;
             this.height = height;
             CheckIsValidModuleDivision(EmptyRectangles, OutputLocations);
             ConnectAdjacentRectangles(EmptyRectangles, OutputLocations);
-            this.EmptyRectangles = EmptyRectangles;
-            this.Droplets = OutputLocations;
         }
 
         public ModuleLayout(Rectangle moduleShape, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : this(moduleShape.width, moduleShape.height, EmptyRectangles, OutputLocations)

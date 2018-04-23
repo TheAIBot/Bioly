@@ -24,7 +24,20 @@ namespace BiolyCompiler.BlocklyParts.Misc
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             return new OutputUseage(moduleName, inputs, null, node);
         }
-        
+
+        public override void Bind(Module module)
+        {
+            //The amount of droplets that the output module will take,
+            //needs to be changed to the amount required by this block/operation.
+            //This is neccessary for the routing to work:
+            InfiniteModuleLayout layout = (InfiniteModuleLayout) module.GetInputLayout();
+            layout.SetGivenAmountOfDroplets(InputVariables[0].GetAmountInDroplets(), module);
+
+
+
+
+            base.Bind(module);  
+        }
 
         public override string ToString()
         {

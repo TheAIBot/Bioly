@@ -34,6 +34,7 @@ namespace BiolyCompiler
             Board board = new Board(width, height);
             ModuleLibrary library = new ModuleLibrary();
             Dictionary<string, BoardFluid> dropPositions = new Dictionary<string, BoardFluid>();
+            Dictionary<string, Module> staticModules = new Dictionary<string, Module>();
             Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<List<string>> varScopeStack = new Stack<List<string>>();
             Stack<Conditional> controlStack = new Stack<Conditional>();
@@ -44,17 +45,17 @@ namespace BiolyCompiler
             controlStack.Push(new Conditional(null, null, null));
             repeatStack.Push(0);
 
-            foreach (InputDeclaration input in runningGraph.Nodes.Select(x => x.value).OfType<InputDeclaration>())
-            {
-                BoardFluid fluid = new BoardFluid(input.OutputVariable);
-                fluid.droplets.Add((InputModule)input.getAssociatedModule());
-                dropPositions.Add(input.OutputVariable, fluid);
-            }      
+            //foreach (InputDeclaration input in runningGraph.Nodes.Select(x => x.value).OfType<InputDeclaration>())
+            //{
+            //    BoardFluid fluid = new BoardFluid(input.OutputVariable);
+            //    fluid.droplets.Add((InputModule)input.getAssociatedModule());
+            //    dropPositions.Add(input.OutputVariable, fluid);
+            //}
 
             while (runningGraph != null)
             {
                 List<Module> usedModules;
-                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, out usedModules);
+                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, ref staticModules, out usedModules);
                 if (firstRun)
                 {
                     List<Module> inputs = usedModules.Where(x => x is InputModule)
@@ -132,16 +133,25 @@ namespace BiolyCompiler
                 runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack, repeatStack);
             }
         }
-
-        private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, out List<Module> usedModules)
+        
+        private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out List<Module> usedModules)
         {
-            Assay assay = new Assay(runningGraph);
             Schedule scheduler = new Schedule();
             scheduler.TransferFluidVariableLocationInformation(dropPositions);
+            scheduler.TransferStaticModulesInformation(staticModules);
+            List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
+                                                                                      .Select(node => node.value as StaticDeclarationBlock)
+                                                                                      .ToList();
+            scheduler.PlaceStaticModules(staticModuleDeclarations, board, library);
+            Assay assay = new Assay(runningGraph);
+
+
+
             int time = scheduler.ListScheduling(assay, board, library);
 
             board = scheduler.boardAtDifferentTimes.MaxBy(x => x.Key).Value;
             dropPositions = scheduler.FluidVariableLocations;
+            staticModules = scheduler.StaticModules;
 
             usedModules = scheduler.allUsedModules;
             return (scheduler.ScheduledOperations, time);
