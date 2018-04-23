@@ -18,44 +18,61 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             string id = node.GetAttributeValue(Block.IDFieldName);
             List<Conditional> conditionals = new List<Conditional>();
 
-            int ifCounter = 0;
-            XmlNode ifNode = node.TryGetNodeWithAttributeValue($"IF{ifCounter}");
-            if (ifNode == null)
+            int IfBlocksCount = 1;
+            bool hasElse = false;
+
+            XmlNode mutatorNode = node.TryGetNodeWithName("mutation");
+            if (mutatorNode != null)
             {
-                throw new MissingBlockException(id, "Missing blocks to decide if the if statement will run.");
+                string elseifAttrib = mutatorNode.TryGetAttributeValue("elseif");
+                if (elseifAttrib != null)
+                {
+                    IfBlocksCount += int.Parse(elseifAttrib);
+                }
+
+                hasElse = mutatorNode.TryGetAttributeValue("else") != null;
             }
-            while (ifNode != null)
+
+            for (int ifCounter = 0; ifCounter < IfBlocksCount; ifCounter++)
             {
-                XmlNode decidingNode = ifNode.FirstChild;
+                string exceptionStart = $"{ (ifCounter == 0 ? "If" : "Else if") } statement { (ifCounter == 0 ? String.Empty : $"Number {ifCounter}")}";
+
+                XmlNode ifNode = null;
                 VariableBlock decidingBlock = null;
                 try
                 {
-                    decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(decidingNode, dfg, mostRecentRef, parseExceptions);
+                    ifNode = node.GetInnerBlockNode($"IF{ifCounter}", new MissingBlockException(id, $"{exceptionStart} is missing its conditional block."));
+                    decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ifNode, dfg, mostRecentRef, parseExceptions);
                 }
                 catch (ParseException e)
                 {
                     parseExceptions.Add(e);
                 }
 
-                XmlNode guardedDFGNode = node.GetInnerBlockNode($"DO{ifCounter}", new MissingBlockException(id, $"{(ifCounter == 0 ? "If" : "Else if")} statement {(ifCounter == 0 ? String.Empty : $"Number {ifCounter}")} is missing blocks to execute."));
-                DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg, parseExceptions);
-                DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg, parseExceptions);
+                XmlNode guardedDFGNode = null;
+                try
+                {
+                    guardedDFGNode = node.GetInnerBlockNode($"DO{ifCounter}", new MissingBlockException(id, $"{exceptionStart} is missing blocks to execute."));
+                    DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg, parseExceptions);
+                    DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg, parseExceptions);
 
-                conditionals.Add(new Conditional(decidingBlock, guardedDFG, nextDFG));
-
-                ifCounter++;
-                ifNode = node.TryGetNodeWithAttributeValue($"IF{ifCounter}");
+                    conditionals.Add(new Conditional(decidingBlock, guardedDFG, nextDFG));
+                }
+                catch (ParseException e)
+                {
+                    parseExceptions.Add(e);
+                }
             }
 
-            XmlNode edgeNode = node.TryGetNodeWithAttributeValue("ELSE");
-            if (edgeNode != null)
+            if (hasElse)
             {
-                XmlNode guardedDFGNode = node.GetInnerBlockNode($"DO{ifCounter}", new MissingBlockException(id, "Else statement is missing blocks to execute."));
+                XmlNode guardedDFGNode = node.GetInnerBlockNode("ELSE", new MissingBlockException(id, "Else statement is missing blocks to execute"));
                 DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg, parseExceptions);
                 DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg, parseExceptions);
 
                 conditionals.Add(new Conditional(null, guardedDFG, nextDFG));
             }
+
             this.IfStatements = conditionals;
         }
     }

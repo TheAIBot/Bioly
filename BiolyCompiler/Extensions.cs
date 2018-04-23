@@ -57,6 +57,16 @@ namespace BiolyCompiler
 
         internal static string GetAttributeValue(this XmlNode xmlNode, string attributeName)
         {
+            string result = xmlNode.TryGetAttributeValue(attributeName);
+            if (result == null)
+            {
+                throw new InternalParseException($"Failed to find the attribute {attributeName}. Xml: {xmlNode.InnerXml}");
+            }
+            return result;
+        }
+
+        internal static string TryGetAttributeValue(this XmlNode xmlNode, string attributeName)
+        {
             foreach (XmlNode attribute in xmlNode.Attributes)
             {
                 if (attribute.Name == attributeName)
@@ -64,12 +74,21 @@ namespace BiolyCompiler
                     return attribute.Value;
                 }
             }
-            throw new InternalParseException($"Failed to find the attribute {attributeName}. Xml: {xmlNode.InnerXml}");
+            return null;
         }
 
         internal static float TextToFloat(this XmlNode xmlNode, string id)
         {
             if (float.TryParse(xmlNode.InnerText, out float value))
+            {
+                return value;
+            }
+            throw new NotANumberException(id, xmlNode.InnerText);
+        }
+
+        internal static int TextToInt(this XmlNode xmlNode, string id)
+        {
+            if (int.TryParse(xmlNode.InnerText, out int value))
             {
                 return value;
             }
