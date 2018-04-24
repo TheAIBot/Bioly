@@ -219,8 +219,6 @@ namespace BiolyCompiler.Modules
                     break;
                 default:
                     throw new Exception("A rectangle can only be joined on the sides left, right, top or bottom, not " + side.ToString());
-                    return null;
-                    break;
             } 
             //Updating adjacent rectangles:
             mergedRectangle.AdjacentRectangles.UnionWith(this.AdjacentRectangles);

@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
@@ -18,32 +19,49 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node) : base(false, input, output)
+        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id) : base(false, input, output, id)
         {
-            this.OPType = ArithOP.StringToArithOPType(node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
+            this.OPType = ArithOP.StringToArithOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
             this.LeftBlock = leftBlock;
             this.RightBlock = rightBlock;
         }
 
-        public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
         {
-            XmlNode leftNode = node.GetNodeWithAttributeValue(LeftArithFieldName).FirstChild;
-            XmlNode rightNode = node.GetNodeWithAttributeValue(RightArithFieldName).FirstChild;
+            string id = node.GetAttributeValue(Block.IDFieldName);
 
-            VariableBlock leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
-            VariableBlock rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
+            VariableBlock leftArithBlock = null;
+            VariableBlock rightArithBlock = null;
+            try
+            {
+                XmlNode leftNode = node.GetInnerBlockNode(LeftArithFieldName, new MissingBlockException(id, "Left side of arithmetic operator is missing a block."));
+                leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef, parseExceptions);
+            }
+            catch (ParseException e)
+            {
+                parseExceptions.Add(e);
+            }
+            try
+            {
+                XmlNode rightNode = node.GetInnerBlockNode(RightArithFieldName, new MissingBlockException(id, "Right side of Arithmetic operator is missing a block."));
+                rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef, parseExceptions);
+            }
+            catch (ParseException e)
+            {
+                parseExceptions.Add(e);
+            }
 
             dfg.AddNode(leftArithBlock);
             dfg.AddNode(rightArithBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(leftArithBlock.OutputVariable);
-            inputs.Add(rightArithBlock.OutputVariable);
+            inputs.Add(leftArithBlock?.OutputVariable);
+            inputs.Add(rightArithBlock?.OutputVariable);
 
-            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, node);
+            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, node, id);
         }
 
-        public static ArithOPTypes StringToArithOPType(string arithOPTypeAsString)
+        public static ArithOPTypes StringToArithOPType(string id, string arithOPTypeAsString)
         {
             switch (arithOPTypeAsString)
             {
@@ -58,7 +76,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case "POWER":
                     return ArithOPTypes.POW;
                 default:
-                    throw new Exception("Failed to parse the arithmetic operator type.");
+                    throw new InternalParseException(id, $"Unknown arithmetic operator.{Environment.NewLine}Expected  either ADD, MINUS, MULTIPLY, DIVIDE or POWER but operator was {arithOPTypeAsString}.");
             }
         }
 

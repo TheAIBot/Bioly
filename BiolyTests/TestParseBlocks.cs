@@ -33,7 +33,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+            InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
 
             Assert.AreEqual("a", input.OriginalOutputVariable);
             Assert.AreEqual(20, input.Amount);
@@ -48,7 +48,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Heater heater = (Heater)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+            Heater heater = (Heater)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
 
             Assert.AreEqual("a", heater.OriginalOutputVariable);
             Assert.AreEqual(173, heater.Temperature);
@@ -63,7 +63,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+            Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
             
             Assert.AreEqual("a", mixer.OriginalOutputVariable);
         }
@@ -76,7 +76,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Constant constant = (Constant)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary());
+            Constant constant = (Constant)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
 
             Assert.AreEqual(210, constant.Value);
         }
@@ -91,7 +91,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            ArithOP arithOP = (ArithOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
+            ArithOP arithOP = (ArithOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
 
             Assert.AreEqual(ArithOPTypes.ADD, arithOP.OPType);
         }
@@ -106,7 +106,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            BoolOP boolOP = (BoolOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
+            BoolOP boolOP = (BoolOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
 
             Assert.AreEqual(BoolOPTypes.EQ, boolOP.OPType);
         }
@@ -119,7 +119,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
 
             Assert.IsTrue(input is Waste);
         }
@@ -132,7 +132,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary());
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
 
             Assert.IsTrue(input is OutputDeclaration);
         }

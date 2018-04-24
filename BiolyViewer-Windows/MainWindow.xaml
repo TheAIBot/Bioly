@@ -4,8 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BiolyViewer_Windows"
-        xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+        xmlns:wf="clr-namespace:CefSharp.WinForms;assembly=CefSharp.WinForms"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525" WindowStartupLocation="CenterScreen" WindowState="Maximized" Loaded="Window_Loaded">
-    <wpf:ChromiumWebBrowser x:Name="Browser"/>
+    <!--<wpf:ChromiumWebBrowser x:Name="Browser"/>-->
+    <WindowsFormsHost>
+        <wf:ChromiumWebBrowser x:Name="Browser"/>
+    </WindowsFormsHost>
 </Window>

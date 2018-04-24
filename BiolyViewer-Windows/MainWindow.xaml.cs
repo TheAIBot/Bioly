@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using CefSharp;
@@ -21,6 +22,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MoreLinq;
 
 namespace BiolyViewer_Windows
 {
@@ -29,7 +31,6 @@ namespace BiolyViewer_Windows
     /// </summary>
     public partial class MainWindow : Window
     {
-        int BOARD_WIDTH = 20, BOARD_HEIGHT = 50;
         public MainWindow()
         {
             var settings = new CefSettings();
@@ -49,73 +50,7 @@ namespace BiolyViewer_Windows
             
             Browser.Load("costum://index.html");
             Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
-            Browser.FrameLoadEnd += (_, ee) =>
-            {
-                //Wait for the webpage to finish loading
-                if (ee.Frame.IsMain)
-                {
-                    System.Timers.Timer timer = new System.Timers.Timer();
-                    timer.Interval = 500;
-                    timer.Elapsed += (s, __) => UpdateGraph();
-                    timer.Start();
-                }
-            };
-        }
-
-        private void UpdateGraph()
-        {
-            bool didWorkspaceChange = ExecuteJs<bool>("getIfWorkspaceChanged();");
-            if (didWorkspaceChange)
-            {
-                string xml = ExecuteJs<string>("getWorkspaceAsXml();");
-                try
-                {
-                    CDFG cdfg = XmlParser.Parse(xml);
-                    (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
-                    string js = $"setGraph({nodes}, {edges});";
-                    Browser.ExecuteScriptAsync(js);
-
-                    RunSimulator(xml);
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
-                }
-            }
-        }
-
-        Thread simulatorThread = null;
-        object simulatorLocker = new object();
-
-        private void RunSimulator(string xml)
-        {
-            lock (simulatorLocker)
-            {
-                //CommandExecutor<string> executor = new SimulatorConnector(Browser, BOARD_WIDTH, BOARD_HEIGHT);
-                //ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-                //programExecutor.Run(BOARD_WIDTH, BOARD_HEIGHT, xml);
-                simulatorThread?.Interrupt();
-                simulatorThread?.Join();
-                simulatorThread = new Thread(() =>
-                {
-                    try
-                    {
-                        CommandExecutor<string> executor = new SimulatorConnector(Browser, BOARD_WIDTH, BOARD_HEIGHT);
-                        ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-                        programExecutor.Run(BOARD_WIDTH, BOARD_HEIGHT, xml);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
-                    }
-                });
-                simulatorThread.Start();
-            }
-        }
-
-        private T ExecuteJs<T>(string js)
-        {
-            return (T)Browser.GetMainFrame().EvaluateScriptAsync(js, null).Result.Result;
+            Browser.JavascriptObjectRepository.Register("webUpdater", new WebUpdater(Browser), true);
         }
     }
 }

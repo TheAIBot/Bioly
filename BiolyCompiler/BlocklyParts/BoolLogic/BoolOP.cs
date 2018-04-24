@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
@@ -19,32 +20,49 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node) : base(false, input, output)
+        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id) : base(false, input, output, id)
         {
-            this.OPType = BoolOP.StringToBoolOPType(node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
+            this.OPType = BoolOP.StringToBoolOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
             this.LeftBlock = leftBlock;
             this.RightBlock = rightBlock;
         }
 
-        public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
         {
-            XmlNode leftNode = node.GetNodeWithAttributeValue(LeftBoolFieldName).FirstChild;
-            XmlNode rightNode = node.GetNodeWithAttributeValue(RightBoolFieldName).FirstChild;
+            string id = node.GetAttributeValue(Block.IDFieldName);
 
-            VariableBlock leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef);
-            VariableBlock rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef);
+            VariableBlock leftBoolBlock = null;
+            VariableBlock rightBoolBlock = null;
+            try
+            {
+                XmlNode leftNode = node.GetInnerBlockNode(LeftBoolFieldName, new MissingBlockException(id, "Left side of boolean operator is missing a block."));
+                leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef, parseExceptions);
+            }
+            catch (ParseException e)
+            {
+                parseExceptions.Add(e);
+            }
+            try
+            {
+                XmlNode rightNode = node.GetInnerBlockNode(RightBoolFieldName, new MissingBlockException(id, "Right side of boolean operator is missing a block."));
+                rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef, parseExceptions);
+            }
+            catch (ParseException e)
+            {
+                parseExceptions.Add(e);
+            }
 
             dfg.AddNode(leftBoolBlock);
             dfg.AddNode(rightBoolBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(leftBoolBlock.OutputVariable);
-            inputs.Add(rightBoolBlock.OutputVariable);
-            
-            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node);
+            inputs.Add(leftBoolBlock?.OutputVariable);
+            inputs.Add(rightBoolBlock?.OutputVariable);
+
+            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node, id);
         }
 
-        public static BoolOPTypes StringToBoolOPType(string boolOPAsString)
+        public static BoolOPTypes StringToBoolOPType(string id, string boolOPAsString)
         {
             switch (boolOPAsString)
             {
@@ -61,7 +79,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 case "GTE":
                     return BoolOPTypes.GTE;
                 default:
-                    throw new Exception("Failed to parse the boolean operator type.");
+                    throw new InternalParseException(id, $"Unknown boolean operator.{Environment.NewLine}Expected  either EQ, NEQ, LT, LTE, GT or GTE but operator was {boolOPAsString}.");
             }
         }
 
@@ -82,7 +100,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 case BoolOPTypes.GTE:
                     return "GTE";
                 default:
-                    throw new Exception("Failed to parse the boolean operator type.");
+                    throw new InternalParseException("Failed to parse the boolean operator type.");
             }
         }
 

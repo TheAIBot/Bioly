@@ -118,11 +118,11 @@ namespace BiolyViewer_Windows
         {
             string edges = "";
             source.Nodes.Where(x => x.value is VariableBlock)
-                        .Where(x => source.Nodes.All(y => !((VariableBlock)y.value).InputVariables.Contains(x.value.OutputVariable)))
+                        .Where(x => source.Nodes.Where(k => k.value is VariableBlock).All(y => !((VariableBlock)y.value).InputVariables.Contains(x.value.OutputVariable)))
                         .ToList()
                         .ForEach(x => target.Input.ForEach(y => edges+= CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
             source.Nodes.Where(x => x.value is FluidBlock)
-                        .Where(x => source.Nodes.All(y => !((FluidBlock)y.value).InputVariables.Any(z => z.FluidName == x.value.OutputVariable)))
+                        .Where(x => source.Nodes.Where(k => k.value is FluidBlock).All(y => !((FluidBlock)y.value).InputVariables.Any(z => z.FluidName == x.value.OutputVariable)))
                         .ToList()
                         .ForEach(x => target.Input.ForEach(y => edges += CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
             return edges;
