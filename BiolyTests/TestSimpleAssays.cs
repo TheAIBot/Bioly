@@ -9,6 +9,7 @@ using BiolyCompiler.Modules.RectangleSides;
 using System.Linq;
 using BiolyCompiler.Routing;
 using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyTests.TestObjects;
 using BiolyCompiler.BlocklyParts.Misc;
@@ -55,18 +56,54 @@ namespace BiolyTests.SimpleAssayTests
         }
 
         [TestMethod]
+        public void testSimpleFluidTransfer()
+        {
+            Schedule schedule = runSelectedProgram("SimpleFluidTransfer");
+            Board initialBoard = schedule.boardAtDifferentTimes[0];
+        }
+
+        [TestMethod]
         public void testSequentialMixer()
         {
+            Schedule schedule = runSelectedProgram("SequentialMixing");
+            Board initialBoard = schedule.boardAtDifferentTimes[0];
+            Assert.AreEqual(3, initialBoard.placedModules.Count);
+            Assert.AreEqual(2, initialBoard.placedModules.Where(module => module is InputModule).ToList().Count);
+            Assert.AreEqual(1, initialBoard.placedModules.Where(module => module is OutputModule).ToList().Count);
+            Mixer mixOperation1 = (Mixer) schedule.ScheduledOperations[0];
+            Mixer mixOperation2 = (Mixer) schedule.ScheduledOperations[1];
+            OutputUseage outputOpereration = (OutputUseage) schedule.ScheduledOperations[2];
+
+            Assert.IsTrue(mixOperation1.startTime == 0);
+            Assert.IsTrue(mixOperation1.boundModule.OperationTime + mixOperation1.startTime + 10*Schedule.DROP_MOVEMENT_TIME <= mixOperation1.endTime);
+            Assert.IsTrue(mixOperation1.endTime   <= mixOperation1.startTime + mixOperation1.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+
+            Assert.IsTrue(mixOperation1.endTime + 1 == mixOperation2.startTime);
+            Assert.IsTrue(mixOperation2.boundModule.OperationTime + mixOperation2.startTime + 10 * Schedule.DROP_MOVEMENT_TIME <= mixOperation2.endTime);
+            Assert.IsTrue(mixOperation2.endTime <= mixOperation2.startTime + mixOperation2.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+
+            Assert.IsTrue(mixOperation2.endTime + 1 == outputOpereration.startTime);
+            Assert.IsTrue(outputOpereration.boundModule.OperationTime + outputOpereration.startTime + 10 * Schedule.DROP_MOVEMENT_TIME <= outputOpereration.endTime);
+            Assert.IsTrue(outputOpereration.endTime <= outputOpereration.startTime + outputOpereration.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+        }
+
+
+        public Schedule runSelectedProgram(String programName)
+        {
             //C:\Users\Lombre\Bioly\BiolyTests\BiolyPrograms
-            String xmlAssayCode = File.ReadAllText("../../../BiolyPrograms/SequentialMixing.bc" + ".txt");
+            String xmlAssayCode = File.ReadAllText("../../../BiolyPrograms/" + programName + ".bc.txt");
             (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlAssayCode);
             DFG<Block> runningGraph = graph.StartDFG;
             Assay assay = new Assay(runningGraph);
             Board board = new Board(15, 15);
             ModuleLibrary library = new ModuleLibrary();
             Schedule schedule = new Schedule();
+            List<StaticDeclarationBlock> staticDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
+                                                                          .Select(node => node.value as StaticDeclarationBlock)
+                                                                          .ToList();
+            schedule.PlaceStaticModules(staticDeclarations, board, library);
             schedule.ListScheduling(assay, board, library);
-            Assert.Fail("Hasn't been implemented yet.");
+            return schedule;
         }
     }
 }

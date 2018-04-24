@@ -114,6 +114,27 @@ namespace BiolyCompiler.Scheduling
                     //throw new Exception("Static module declarations must not be part of the DFG that is being scheduled." +
                     //                    "The operation at fault is: " + nextOperation.ToString());
                 }
+                else if (nextOperation is Fluid fluidTransfer)
+                {
+                    if(fluidTransfer.InputVariables[0].GetAmountInDroplets() == 0) {
+                        assay.updateReadyOperations(nextOperation);
+                        continue;
+                    }
+                    //Now we know that at least one droplet needs to be transfered.
+
+                    //Fluid needs to be allocated to a variable.
+                    //If the origin of the fluid is an input, a given amount of droplets needs to moved unto the board,
+                    //but if origin is simply droplets placed on the board, a simple renaiming can be done instead.
+                    BoardFluid targetFluidType;
+                    FluidVariableLocations.TryGetValue(fluidTransfer.OutputVariable, out targetFluidType);
+                    if (targetFluidType == null) targetFluidType = new BoardFluid(fluidTransfer.OutputVariable);
+
+                    BoardFluid inputFluid;
+                    FluidVariableLocations.TryGetValue(fluidTransfer.InputVariables[0].ToString(), out inputFluid);
+                    if (inputFluid == null) throw new Exception("Fluid of type \"" + fluidTransfer.InputVariables[0].ToString() + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
+                    List<Droplet> availableDroplets = inputFluid.dropletSources.Where(dropletSource => dropletSource is Droplet).Select(dropletSource => dropletSource as Droplet).ToList();
+
+                }
                 else if (nextOperation is FluidBlock topPriorityOperation)
                 {
                     Module operationExecutingModule;

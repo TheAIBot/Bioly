@@ -7,7 +7,7 @@ namespace BiolyCompiler.Modules
     public class BoardFluid
     {
         public readonly string FluidName;
-        public List<IDropletSource> droplets = new List<IDropletSource>();
+        public List<IDropletSource> dropletSources = new List<IDropletSource>();
 
         public BoardFluid(string fluidName)
         {
@@ -30,7 +30,7 @@ namespace BiolyCompiler.Modules
 
         public int GetNumberOfDropletsAvailable()
         {
-            return droplets.Sum(x => x is Droplet ? 1 : (x as InputModule).DropletCount);
+            return dropletSources.Sum(x => x is Droplet ? 1 : (x as InputModule).DropletCount);
         }
     }
 }
