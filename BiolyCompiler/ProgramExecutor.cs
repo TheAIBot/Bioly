@@ -21,6 +21,7 @@ namespace BiolyCompiler
     public class ProgramExecutor<T>
     {
         private readonly CommandExecutor<T> Executor;
+        public const int TIME_BETWEEN_COMMANDS = 50;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -126,7 +127,7 @@ namespace BiolyCompiler
                         removeAreaCommands.ForEach(x => Executor.SendCommand(x));
                     }
 
-                    Thread.Sleep(500);
+                    Thread.Sleep(TIME_BETWEEN_COMMANDS);
                 }
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
