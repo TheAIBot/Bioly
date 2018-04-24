@@ -73,7 +73,7 @@ namespace BiolyCompiler.Scheduling
                         fluidType = new BoardFluid(input.OutputVariable);
                         FluidVariableLocations.Add(input.OutputVariable, fluidType);
                     }
-                    InputModule inputModule = new InputModule(fluidType, input.Amount);
+                    InputModule inputModule = new InputModule(fluidType, (int)input.Amount);
                     bool couldBePlaced = board.FastTemplatePlace(inputModule);
                     if (!couldBePlaced) throw new Exception("The input module couldn't be placed. The module is: " + inputModule.ToString());
                     input.boundModule = inputModule;
@@ -118,8 +118,13 @@ namespace BiolyCompiler.Scheduling
                 {
                     Module operationExecutingModule;
                     if (topPriorityOperation is StaticUseageBlock staticOperation)
+                    {
                         operationExecutingModule = StaticModules[staticOperation.ModuleName];
-                    else operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
+                    }
+                    else
+                    {
+                        operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
+                    }
                     topPriorityOperation.Bind(operationExecutingModule);
                     AllUsedModules.Add(operationExecutingModule);
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);

@@ -11,12 +11,12 @@ namespace BiolyCompiler.BlocklyParts
 
         private static readonly List<string> EmptyList = new List<string>();
 
-        public VariableBlock(bool canBeOutput, string output) : base(canBeOutput, output)
+        public VariableBlock(bool canBeOutput, string output, string id) : base(canBeOutput, output, id)
         {
             InputVariables = EmptyList;
         }
 
-        public VariableBlock(bool canBeOutput, List<string> input, string output) : base(canBeOutput, output)
+        public VariableBlock(bool canBeOutput, List<string> input, string output, string id) : base(canBeOutput, output, id)
         {
             InputVariables = input;
         }

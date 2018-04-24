@@ -1,5 +1,5 @@
-﻿using CefSharp.Wpf;
-using CefSharp;
+﻿using CefSharp;
+using CefSharp.WinForms;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;

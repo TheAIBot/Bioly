@@ -13,8 +13,11 @@ namespace BiolyCompiler.BlocklyParts
         public readonly bool CanBeOutput;
         public readonly string OutputVariable;
         public readonly string OriginalOutputVariable;
+        public readonly string BlockID;
         private static int nameID;
         public const string DEFAULT_NAME = "anonymous var";
+        public const string TypeFieldName = "type";
+        public const string IDFieldName = "id";
 
         //For the scheduling:
         public bool hasBeenScheduled = false;
@@ -22,10 +25,11 @@ namespace BiolyCompiler.BlocklyParts
         public int endTime = -1;
         public int priority = Int32.MaxValue;
 
-        public Block(bool canBeOutput, string output)
+        public Block(bool canBeOutput, string output, string blockID)
         {
             this.CanBeOutput = canBeOutput;
             this.OutputVariable = $"N{nameID}";
+            this.BlockID = blockID;
             nameID++;
             this.OriginalOutputVariable = output ?? DEFAULT_NAME;
         }

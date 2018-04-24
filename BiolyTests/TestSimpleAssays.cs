@@ -14,6 +14,7 @@ using BiolyTests.TestObjects;
 using BiolyCompiler.BlocklyParts.Misc;
 using System.IO;
 using BiolyCompiler.Parser;
+using BiolyCompiler.Exceptions.ParserExceptions;
 //using MoreLinq;
 
 namespace BiolyTests.SimpleAssayTests
@@ -26,9 +27,9 @@ namespace BiolyTests.SimpleAssayTests
         {
             DFG<Block> dfg = new DFG<Block>();
             int numberOfInputs = 5;
-            StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10);
-            StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", "meh", null);
-            FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null);
+            StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
+            StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", "meh", null, "");
+            FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(outputDeclaration);
             dfg.AddNode(outputOperation);
@@ -58,7 +59,7 @@ namespace BiolyTests.SimpleAssayTests
         {
             //C:\Users\Lombre\Bioly\BiolyTests\BiolyPrograms
             String xmlAssayCode = File.ReadAllText("../../../BiolyPrograms/SequentialMixing.bc" + ".txt");
-            CDFG graph = XmlParser.Parse(xmlAssayCode);
+            (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlAssayCode);
             DFG<Block> runningGraph = graph.StartDFG;
             Assay assay = new Assay(runningGraph);
             Board board = new Board(15, 15);

@@ -9,7 +9,7 @@ namespace BiolyCompiler.BlocklyParts
     public class StaticDeclarationBlock : StaticBlock
     {
 
-        public StaticDeclarationBlock(string moduleName, bool canBeOutput, string output) : base(moduleName, canBeOutput, output)
+        public StaticDeclarationBlock(string moduleName, bool canBeOutput, string output, string id) : base(moduleName, canBeOutput, output, id)
         {
         }
         

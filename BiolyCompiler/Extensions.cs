@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,6 +11,15 @@ namespace BiolyCompiler
     {
         public static XmlNode GetNodeWithName(this XmlNode xmlNode, string name)
         {
+            XmlNode result = TryGetNodeWithName(xmlNode, name);
+            if (result == null)
+            {
+                throw new InternalParseException($"Failed to find a node with name {name}. Xml: {xmlNode.InnerXml}");
+            }
+            return result;
+        }
+        public static XmlNode TryGetNodeWithName(this XmlNode xmlNode, string name)
+        {
             foreach (XmlNode item in xmlNode.ChildNodes)
             {
                 if (item.Name == name)
@@ -20,13 +30,23 @@ namespace BiolyCompiler
             return null;
         }
 
-        internal static XmlNode GetNodeWithAttributeValue(this XmlNode xmlNode, string attributeName)
+        internal static XmlNode GetNodeWithAttributeValue(this XmlNode xmlNode, string attributeValue)
+        {
+            XmlNode result = TryGetNodeWithAttributeValue(xmlNode, attributeValue);
+            if (result == null)
+            {
+                throw new InternalParseException($"Failed to find a node with the attribute value {attributeValue}. Xml: {xmlNode.InnerXml}");
+            }
+            return result;
+        }
+
+        internal static XmlNode TryGetNodeWithAttributeValue(this XmlNode xmlNode, string attributeValue)
         {
             foreach (XmlNode item in xmlNode.ChildNodes)
             {
                 foreach (XmlNode attribute in item.Attributes)
                 {
-                    if (attribute.Value == attributeName)
+                    if (attribute.Value == attributeValue)
                     {
                         return item;
                     }
@@ -35,19 +55,45 @@ namespace BiolyCompiler
             return null;
         }
 
-        internal static int ToInt(this XmlNode xmlNode)
+        internal static string GetAttributeValue(this XmlNode xmlNode, string attributeName)
         {
-            return int.Parse(xmlNode.Value);
+            string result = xmlNode.TryGetAttributeValue(attributeName);
+            if (result == null)
+            {
+                throw new InternalParseException($"Failed to find the attribute {attributeName}. Xml: {xmlNode.InnerXml}");
+            }
+            return result;
         }
 
-        internal static int TextToInt(this XmlNode xmlNode)
+        internal static string TryGetAttributeValue(this XmlNode xmlNode, string attributeName)
         {
-            return int.Parse(xmlNode.InnerText);
+            foreach (XmlNode attribute in xmlNode.Attributes)
+            {
+                if (attribute.Name == attributeName)
+                {
+                    return attribute.Value;
+                }
+            }
+            return null;
         }
 
-        public static List<FluidInput> ToList(this FluidInput fluidInput)
+        internal static float TextToFloat(this XmlNode xmlNode, string id)
         {
-            return new List<FluidInput>() { fluidInput };
+            if (float.TryParse(xmlNode.InnerText, out float value))
+            {
+                return value;
+            }
+            throw new NotANumberException(id, xmlNode.InnerText);
+        }
+
+        internal static XmlNode GetInnerBlockNode(this XmlNode node, string nodeAttribName, ParseException exception)
+        {
+            XmlNode innerNode = node.TryGetNodeWithAttributeValue(nodeAttribName);
+            if (innerNode == null)
+            {
+                throw exception;
+            }
+            return innerNode.FirstChild;
         }
     }
 }

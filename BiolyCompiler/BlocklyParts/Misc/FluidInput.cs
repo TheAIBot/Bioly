@@ -14,18 +14,19 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string XmlTypeName = "getFluid";
 
         public  readonly string FluidName;
-        private readonly int AmountInML;
+        private readonly float AmountInML;
         public  readonly bool UseAllFluid;
 
         public const int ML_PER_DROPLET = 1;
 
         public FluidInput(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
+            string id = node.GetAttributeValue(Block.IDFieldName);
             string originalName = node.GetNodeWithAttributeValue(FluidNameFieldName).InnerText;
             mostRecentRef.TryGetValue(originalName, out string correctedName);
 
             this.FluidName = correctedName ?? "ERROR_FINDING_NODE";
-            this.AmountInML = node.GetNodeWithAttributeValue(FluidAmountFieldName).TextToInt();
+            this.AmountInML = node.GetNodeWithAttributeValue(FluidAmountFieldName).TextToFloat(id);
             this.UseAllFluid = FluidInput.StringToBool(node.GetNodeWithAttributeValue(UseAllFluidFieldName).InnerText);
         }
 
@@ -66,7 +67,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public int GetAmountInDroplets()
         {
             //tempoary until ratio is added
-            return AmountInML/ML_PER_DROPLET;
+            return (int)Math.Floor((AmountInML / ML_PER_DROPLET) + 0.01);
         }
 
         public int GetMLOfFluidFromNumberOfDroplets(int numberOfDroplets)
@@ -83,7 +84,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             }
             else
             {
-                return AmountInML.ToString() + " ml";
+                return AmountInML.ToString("N2") + " ml";
             }
         }
     }

@@ -9,7 +9,7 @@ namespace BiolyCompiler.BlocklyParts
     public class StaticUseageBlock : StaticBlock
     {
 
-        public StaticUseageBlock(string moduleName, List<FluidInput> inputs, bool canBeOutput, string output) : base(moduleName, inputs, canBeOutput, output)
+        public StaticUseageBlock(string moduleName, List<FluidInput> inputs, bool canBeOutput, string output, string id) : base(moduleName, inputs, canBeOutput, output, id)
         {
         }
 

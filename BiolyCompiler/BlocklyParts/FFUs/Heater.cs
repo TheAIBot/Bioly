@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -16,18 +17,28 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public readonly int Temperature;
         public readonly int Time;
 
-        public Heater(List<FluidInput> input, string output, XmlNode node) : base(true, input, output)
+        public Heater(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, output, id)
         {
-            this.Temperature = node.GetNodeWithAttributeValue(TemperatureFieldName).TextToInt();
-            this.Time = node.GetNodeWithAttributeValue(TimeFieldName).TextToInt();
+            this.Temperature = (int)node.GetNodeWithAttributeValue(TemperatureFieldName).TextToFloat(id);
+            //Can't be colder than absolute zero and the board probably can't handle more than 1000C
+            Validator.ValueWithinRange(id, this.Temperature, -273, 1000);
+
+            this.Time = (int)node.GetNodeWithAttributeValue(TimeFieldName).TextToFloat(id);
+            //Time can't be negative and probably shouldn't be over a months time so throw an erro in those cases
+            Validator.ValueWithinRange(id, this.Time, 0, 2592000);
         }
 
         public static Block CreateHeater(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild, mostRecentRef));
+            string id = node.GetAttributeValue(Block.IDFieldName);
 
-            return new Heater(inputs, output, node);
+            XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Heater is missing input fluid block."));
+            FluidInput fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, mostRecentRef);
+
+            List<FluidInput> inputs = new List<FluidInput>();
+            inputs.Add(fluidInput);
+
+            return new Heater(inputs, output, node, id);
         }
 
         public override string ToString()

@@ -187,7 +187,7 @@ namespace BiolyTests
                 switch (random.Next(4))
                 {
                     case 0:
-                        AddHeaterSegment(outputName, random.Next(), random.Next(), firstInputName, random.Next(), GetRandomBool(random));
+                        AddHeaterSegment(outputName, random.Next(-273, 1000), random.Next(0, 1000), firstInputName, random.Next(), GetRandomBool(random));
                         fluidNames.Add(outputName);
                         break;
                     case 1:
