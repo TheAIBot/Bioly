@@ -155,7 +155,7 @@ namespace BiolyCompiler.Architechtures
             //The placed module is the removed, leaving the original board.
             MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
 
-            Schedule.checkAdjacencyMatrixCorrectness(this);
+            DebugTools.checkAdjacencyMatrixCorrectness(this);
             bool visitsEverything = VisitsAllModulesAndEmptyRectangles(extraEmptyRectangles, 1, visitedEmptyRectangles, connectedModuleRectangles);
             return visitsEverything;
         }

@@ -155,7 +155,7 @@ namespace BiolyTests.ScheduleTests
             for (int i = 0; i < boardsAtDifferentTimes.Count; i++)
             {
                 Debug.WriteLine("Time: " + boardsAtDifferentTimes[i].Key);
-                Debug.WriteLine(boardsAtDifferentTimes[i].Value.print(schedule.allUsedModules));
+                Debug.WriteLine(boardsAtDifferentTimes[i].Value.print(schedule.AllUsedModules));
             }
             //Only the first board should contain a single module, the input.
             Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 2 || pair.Key == 0));

@@ -10,23 +10,21 @@ using BiolyCompiler.BlocklyParts;
 using System.Linq;
 using System.Diagnostics;
 using BiolyCompiler.BlocklyParts.Misc;
-//using BiolyCompiler.Modules.ModuleLibrary;
 
 namespace BiolyCompiler.Scheduling
 {
-
     public class Schedule
     {
         //Records how the board looks at all the times where the board have been changed. 
         //This is primarily for testing and visulization purposes.
         public Dictionary<int, Board> boardAtDifferentTimes = new Dictionary<int, Board>();
         // For debuging. Used when printing the board to the console, for visulization purposes.
-        public List<Module> allUsedModules = new List<Module>(); 
+        public List<Module> AllUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
         public Dictionary<string, Module> StaticModules = new Dictionary<string, Module>();
         public SimplePriorityQueue<FluidBlock> CurrentlyRunningOpertions = new SimplePriorityQueue<FluidBlock>();
         public List<Block> ScheduledOperations = new List<Block>();
-        public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move over one electrode.
+        public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
         public const int IGNORED_TIME_DIFFERENCE = 100; 
 
         public Schedule(){
@@ -52,12 +50,7 @@ namespace BiolyCompiler.Scheduling
                 CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.endTime);
             }
         }
-
-        private static void waitForAFinishedOperation()
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public void TransferFluidVariableLocationInformation(Dictionary<string, BoardFluid> fluidLocationInformation)
         {
             fluidLocationInformation.ForEach(pair => FluidVariableLocations.Add(pair.Key, pair.Value));
@@ -98,8 +91,6 @@ namespace BiolyCompiler.Scheduling
          */
         public int ListScheduling(Assay assay, Board board, ModuleLibrary library)
         {
-            //(*) TODO sammenlign igen med algoritmen set i artiklen
-
             //Setup:
             int startTime = 0;
             board = ListSchedulingSetup(assay, board, library, startTime);
@@ -130,8 +121,8 @@ namespace BiolyCompiler.Scheduling
                         operationExecutingModule = StaticModules[staticOperation.ModuleName];
                     else operationExecutingModule = library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board); //Also called place
                     topPriorityOperation.Bind(operationExecutingModule);
-                    allUsedModules.Add(operationExecutingModule);
-                    makeDebugCorrectnessChecks(board);
+                    AllUsedModules.Add(operationExecutingModule);
+                    DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
 
                     //If the module can't be placed, one must wait until there is enough space for it:
                     if (operationExecutingModule == null) throw new Exception("Not enough space for a module: this is not handeled yet");
@@ -139,15 +130,16 @@ namespace BiolyCompiler.Scheduling
                     //Now all the droplet that the module should operate on, needs to be delivered to it.
                     //By construction, there will be a route from the droplets to the module, 
                     //and so it will always be possible for this routing to be done:
-                    startTime = RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
-                    makeDebugCorrectnessChecks(board);
+                    startTime = RouteDropletsToModuleAndUpdateSchedule(board, startTime, topPriorityOperation, operationExecutingModule);
+                    DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
 
                     //Note that handleFinishingOperations will also wait for operations to finish, 
                     //in the case that there are no more operations that can be executed, before this happen:
                     (startTime, board) = handleFinishingOperations(startTime, assay, board);
                     readyOperations = assay.getReadyOperations();
-                    makeDebugCorrectnessChecks(board);
-                } else throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
+                    DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+                }
+                else throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
                                            "It is of type: " +  nextOperation.GetType() + ", and it is operation/block: " + nextOperation.ToString());
             }
             if (assay.hasUnfinishedOperations()) throw new Exception("There were operations that couldn't be scheduled.");
@@ -155,13 +147,20 @@ namespace BiolyCompiler.Scheduling
             return getCompletionTime();
         }
 
+        private int RouteDropletsToModuleAndUpdateSchedule(Board board, int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)
+        {
+            int finishedRoutingTime = Router.RouteDropletsToModule(operationExecutingModule, board, startTime, topPriorityOperation);
+            updateSchedule(topPriorityOperation, finishedRoutingTime, startTime);
+            return finishedRoutingTime;
+        }
+
         private Board ListSchedulingSetup(Assay assay, Board board, ModuleLibrary library, int startTime) {
             assay.calculateCriticalPath();
             library.allocateModules(assay);
             library.sortLibrary();
-            allUsedModules.AddRange(board.placedModules);
+            AllUsedModules.AddRange(board.placedModules);
             boardAtDifferentTimes.Add(startTime, board);
-            Debug.WriteLine(board.print(allUsedModules));
+            Debug.WriteLine(board.print(AllUsedModules));
             board = board.Copy();
             return board;
         }
@@ -201,9 +200,9 @@ namespace BiolyCompiler.Scheduling
                             dropletOutputFluid = new BoardFluid(finishedOperation.OutputVariable);
                             FluidVariableLocations.Add(finishedOperation.OutputVariable, dropletOutputFluid);
                         }
-                        makeDebugCorrectnessChecks(board);
+                        DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
-                        allUsedModules.AddRange(replacingDroplets);
+                        AllUsedModules.AddRange(replacingDroplets);
                     }
                     assay.updateReadyOperations(finishedOperation);
                 }
@@ -230,6 +229,13 @@ namespace BiolyCompiler.Scheduling
             return batch;
         }
 
+        public static Block removeOperation(List<Block> readyOperations)
+        {
+            Block topPrioriyOperation = readyOperations.MaxBy(operation => operation.priority);
+            readyOperations.Remove(topPrioriyOperation);
+            return topPrioriyOperation;
+        }
+
         private bool canExecuteMoreOperations(List<Block> readyOperations)
         {
             return readyOperations.Count > 0;
@@ -239,255 +245,10 @@ namespace BiolyCompiler.Scheduling
         {
             return CurrentlyRunningOpertions.Count > 0 && (readyOperations.Count == 0  || startTime >= CurrentlyRunningOpertions.First().endTime);
         }
-
-        public int RouteDropletsToModule(Module operationExecutingModule, Board board, int currentTime, FluidBlock topPriorityOperation)
-        {
-            int originalStartTime = currentTime;
-            foreach (var dropletInput in operationExecutingModule.GetInputLayout().Droplets)
-            {
-                Route route = RouteSingleDropletToModule(operationExecutingModule, board, currentTime, dropletInput);
-                //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
-                //This will give an overhead of +1 for the operation starting time, for each droplet routed:
-                currentTime = route.getEndTime() + 1;
-            }
-            updateSchedule(topPriorityOperation, currentTime, originalStartTime);
-            return currentTime;
-        }
-
-        private static Route RouteSingleDropletToModule(Module operationExecutingModule, Board board, int currentTime, Droplet dropletInput)
-        {
-            BoardFluid InputFluidType = dropletInput.getFluidType();
-            if (InputFluidType.GetNumberOfDropletsAvailable() < 1) throw new Exception("There isn't enough droplets of type " + InputFluidType.FluidName +
-                                                                                       " avaiable, to satisfy the requirement of the module: " + operationExecutingModule.ToString());
-            //Routes a droplet of type InputFluid to the module.
-            Route route = DetermineRouteToModule(InputFluidType, operationExecutingModule, dropletInput, board, currentTime); //Will be included as part of a later step.
-            if (route == null) throw new Exception("No route found. This should not be possible.");
-
-            //The route is added to the module's routes:
-            List<Route> inputRoutes;
-            operationExecutingModule.InputRoutes.TryGetValue(InputFluidType.FluidName, out inputRoutes);
-            if (inputRoutes == null)
-            {
-                inputRoutes = new List<Route>();
-                operationExecutingModule.InputRoutes.Add(InputFluidType.FluidName, inputRoutes);
-            }
-            inputRoutes.Add(route);
-
-            //The droplet routed is used by the module, and as such it can be removed from the board,
-            //unless it comes from a spawner:
-            switch (route.routedDroplet)
-            {
-                case Droplet dropletSource:
-                    board.FastTemplateRemove(dropletSource);
-                    break;
-                case InputModule dropletSource:
-                    if (1 < dropletSource.DropletCount) dropletSource.DecrementDropletCount();
-                    else if (dropletSource.DropletCount == 1)
-                    {
-                        dropletSource.DecrementDropletCount();
-                        //board.FastTemplateRemove(dropletSource); 
-                    }
-                    else
-                    {
-                        throw new Exception("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
-                    }
-                    break;
-                default:
-                    throw new Exception("Unhandled droplet source: " + route.routedDroplet.ToString());
-            }
-
-            return route;
-        }
-
+        
         public int getCompletionTime(){
             return ScheduledOperations.Max(operation => operation.endTime);
         }
-
-        public static Route DetermineRouteToModule(BoardFluid targetFluidType, Module sourceModule, Droplet targetInputDroplet, Board board, int startTime)
-        {
-            //Dijkstras algorithm, based on the one seen on wikipedia.
-            //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
-            //and then inverts the route.
-            RoutingInformation[,] dijkstraGraph = createDijkstraGraph(board);
-            (int startingXPos, int startingYPos) = targetInputDroplet.getMiddleOfSource();
-            RoutingInformation source = dijkstraGraph[startingXPos, startingYPos];
-            source.distanceFromSource = 0;
-
-            SimplePriorityQueue<RoutingInformation, int> priorityQueue = new SimplePriorityQueue<RoutingInformation, int>();
-            foreach (var node in dijkstraGraph)
-            {
-                priorityQueue.Enqueue(node, node.distanceFromSource);
-            }
-
-            while (priorityQueue.Count > 0)
-            {
-                RoutingInformation currentNode = priorityQueue.Dequeue();
-                Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
-
-                if (isUnreachableNode(currentNode))
-                    throw new Exception("No route to the desired component could be found. Desired droplet type: " + targetFluidType.FluidName);
-                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode, sourceModule, currentNode)) //Have reached the desired module
-                    return GetRouteFromSourceToTarget(currentNode, (IDropletSource)moduleAtCurrentNode, startTime); 
-                //No collisions with other modules are allowed (except the starting module):
-                else if (hasCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
-                    continue;
-
-                //go through all neighbors
-                if (0 < currentNode.x)
-                    UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x - 1, currentNode.y]);
-                if (0 < currentNode.y)
-                    UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y - 1]);
-                if (currentNode.x < board.width - 1)
-                    UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x + 1, currentNode.y]);
-                if (currentNode.y < board.heigth - 1)
-                    UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y + 1]);
-
-            }
-            //If no route was found:
-            throw new Exception("No route to the desired component could be found");
-        }
-
-        private static void UpdateNeighborPriority(SimplePriorityQueue<RoutingInformation, int> priorityQueue, RoutingInformation currentNode, RoutingInformation neighbor)
-        {
-            //Unit lenght distances, and thus the distance is incremented with a +1.
-            int distanceToNeighborFromCurrent = currentNode.distanceFromSource + 1;
-            if (distanceToNeighborFromCurrent < neighbor.distanceFromSource)
-            {
-                neighbor.distanceFromSource = distanceToNeighborFromCurrent;
-                neighbor.previous = currentNode;
-                priorityQueue.UpdatePriority(neighbor, neighbor.distanceFromSource);
-            }
-        }
-
-        private static bool hasCollisionWithOtherModules(Module sourceModule, Module moduleAtCurrentNode)
-        {
-            return !(moduleAtCurrentNode == null || moduleAtCurrentNode == sourceModule);
-        }
-
-        private static bool isUnreachableNode(RoutingInformation currentNode)
-        {
-            return currentNode.distanceFromSource == Int32.MaxValue;
-        }
-
-        private static bool haveReachedDropletOfTargetType(BoardFluid targetFluidType, Module moduleAtCurrentNode, Module sourceModule, RoutingInformation location)
-        {
-            return moduleAtCurrentNode is IDropletSource dropletSource  && 
-                   dropletSource.getFluidType().Equals(targetFluidType);
-        }
-        
-        private static Route GetRouteFromSourceToTarget(RoutingInformation routeInfo, IDropletSource routedDroplet, int startTime)
-        {
-            (int dropletMiddleX, int dropletMiddleY) = routedDroplet.getMiddleOfSource();
-            //Currently, the route ends at the edges of the droplets location: it will need to be routed to the middle:
-            while (dropletMiddleX - routeInfo.x != 0)
-            {
-                RoutingInformation nextPosition = new RoutingInformation(routeInfo.x + ((dropletMiddleX - routeInfo.x > 0)? 1: -1), routeInfo.y);
-                nextPosition.previous = routeInfo;
-                routeInfo = nextPosition;
-            }
-            while (dropletMiddleY - routeInfo.y != 0)
-            {
-                RoutingInformation nextPosition = new RoutingInformation(routeInfo.x, routeInfo.y + ((dropletMiddleY - routeInfo.y > 0) ? 1 : -1));
-                nextPosition.previous = routeInfo;
-                routeInfo = nextPosition;
-            }
-
-            List<RoutingInformation> routeNodes = new List<RoutingInformation>();
-            while(routeInfo.previous != null)
-            {
-                routeNodes.Add(routeInfo);
-                routeInfo = routeInfo.previous;
-            }
-            routeNodes.Add(routeInfo);
-            //routeNodes.Reverse();
-            Route route = new Route(routeNodes, routedDroplet, startTime);
-            return route;
-        }
-
-        private static RoutingInformation[,] createDijkstraGraph(Board board)
-        {
-            RoutingInformation[,] dijkstraGraph = new RoutingInformation[board.width, board.heigth];
-
-            for (int x = 0; x < dijkstraGraph.GetLength(0); x++)
-            {
-                for (int y = 0; y < dijkstraGraph.GetLength(1); y++)
-                {
-                    dijkstraGraph[x, y] = new RoutingInformation(x, y);
-                }
-            }
-
-            return dijkstraGraph;
-        }
-
-        private void makeDebugCorrectnessChecks(Board board)
-        {
-            Debug.WriteLine(board.print(allUsedModules));
-            CurrentlyRunningOpertions.ToList()
-                                     .OrderBy(element => element.startTime)
-                                     .ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
-            checkAdjacencyMatrixCorrectness(board);
-        }
-
-        public static void checkAdjacencyMatrixCorrectness(Board board)
-        {
-            if (!doAdjacencyGraphContainTheCorrectNodes(board))
-                throw new Exception("The boards adjacency graph does not match up with the placed modules and empty rectangles.");
-        }
-
-        public static Block removeOperation(List<Block> readyOperations){
-            Block topPrioriyOperation = readyOperations.MaxBy(operation => operation.priority);
-            readyOperations.Remove(topPrioriyOperation);
-            return topPrioriyOperation;
-        }
-
-        public static bool doAdjacencyGraphContainTheCorrectNodes(Board board)
-        {
-            //It visits all the modules and rectangles in the graph, 
-            //and checks if they are in board.PlacedModules and board.EmptyRectangles respectivly.
-            HashSet<Rectangle> emptyVisitedRectangles = new HashSet<Rectangle>();
-            HashSet<Rectangle> moduleVisitedRectangles = new HashSet<Rectangle>();
-
-            Rectangle initialRectangle = GetRandomRectangle(board.EmptyRectangles);
-            emptyVisitedRectangles.Add(initialRectangle);
-            Queue<Rectangle> rectanglesToVisit = new Queue<Rectangle>();
-            rectanglesToVisit.Enqueue(initialRectangle);
-
-            while (rectanglesToVisit.Count > 0)
-            {
-                Rectangle currentRectangle = rectanglesToVisit.Dequeue();
-                foreach (var adjacentRectangle in currentRectangle.AdjacentRectangles)
-                {
-                    if (emptyVisitedRectangles.Contains(adjacentRectangle) || moduleVisitedRectangles.Contains(adjacentRectangle))
-                        continue;
-                    else
-                    {
-                        if (adjacentRectangle.isEmpty)
-                            emptyVisitedRectangles.Add(adjacentRectangle);
-                        else
-                            moduleVisitedRectangles.Add(adjacentRectangle);
-                        rectanglesToVisit.Enqueue(adjacentRectangle);
-                    }
-                }
-            }
-
-            HashSet<Rectangle> placedModuleRectangles = new HashSet<Rectangle>(board.placedModules.Select(module => module.Shape));
-
-
-            return isSameSet(emptyVisitedRectangles, board.EmptyRectangles) && isSameSet(moduleVisitedRectangles, placedModuleRectangles);
-        }
-
-        private static bool isSameSet(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
-        {
-            return set1.Count == set2.Count && set1.All(rectangle => set2.Contains(rectangle));
-        }
-
-        private static Rectangle GetRandomRectangle(HashSet<Rectangle> set)
-        {
-            foreach (var rectangle in set)
-                return rectangle;
-            return null;
-        }
-
 
     }
 }

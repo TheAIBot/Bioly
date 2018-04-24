@@ -153,7 +153,7 @@ namespace BiolyCompiler
             dropPositions = scheduler.FluidVariableLocations;
             staticModules = scheduler.StaticModules;
 
-            usedModules = scheduler.allUsedModules;
+            usedModules = scheduler.AllUsedModules;
             return (scheduler.ScheduledOperations, time);
         }
 
