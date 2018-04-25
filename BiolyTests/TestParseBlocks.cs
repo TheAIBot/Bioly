@@ -134,7 +134,7 @@ namespace BiolyTests.ParseBlockTests
             XmlNode node = TestTools.GetWorkspace();
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
 
-            Assert.IsTrue(input is OutputDeclaration);
+            Assert.IsTrue(input is OutputUseage);
         }
 
         [TestMethod]
