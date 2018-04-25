@@ -40,7 +40,7 @@ namespace BiolyCompiler.Scheduling
         {
             ScheduledOperations.Add(operation);
             operation.startTime = startTime;
-            if (operation is VariableBlock) return;
+            if (operation is VariableBlock || operation is Fluid) return;
             else
             {
                 FluidBlock fluidOperation = operation as FluidBlock;
@@ -79,8 +79,8 @@ namespace BiolyCompiler.Scheduling
                     input.boundModule = inputModule;
                     inputModule.RepositionLayout();
                 } else {
-                    Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board);
-                    StaticModules.Add(staticDeclaration.ModuleName, staticModule);
+                    //Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board);
+                    //StaticModules.Add(staticDeclaration.ModuleName, staticModule);
                 }                
             }
         }
@@ -101,22 +101,23 @@ namespace BiolyCompiler.Scheduling
             {
                 Block nextOperation = removeOperation(readyOperations);
 
-                if (nextOperation is VariableBlock)
-                {
+                if (nextOperation is VariableBlock) {
                     //This is a mathematical operation, and it should be scheduled to run as soon as possible
                     updateSchedule(nextOperation, startTime, startTime);
                     assay.updateReadyOperations(nextOperation);
+                    continue;
                 }
-                else if (nextOperation is StaticDeclarationBlock)
-                {
+                else if (nextOperation is StaticDeclarationBlock) {
                     assay.updateReadyOperations(nextOperation);
                     continue;
                     //throw new Exception("Static module declarations must not be part of the DFG that is being scheduled." +
                     //                    "The operation at fault is: " + nextOperation.ToString());
                 }
-                else if (nextOperation is Fluid fluidTransfer)
-                {
-                    if(fluidTransfer.InputVariables[0].GetAmountInDroplets() == 0) {
+                else if (nextOperation is Fluid fluidTransfer) {
+                    int originalStartTime = startTime;
+                    FluidInput input = fluidTransfer.InputVariables[0];
+                    int requiredDroplets = input.GetAmountInDroplets();
+                    if(requiredDroplets == 0) {
                         assay.updateReadyOperations(nextOperation);
                         continue;
                     }
@@ -127,13 +128,50 @@ namespace BiolyCompiler.Scheduling
                     //but if origin is simply droplets placed on the board, a simple renaiming can be done instead.
                     BoardFluid targetFluidType;
                     FluidVariableLocations.TryGetValue(fluidTransfer.OutputVariable, out targetFluidType);
-                    if (targetFluidType == null) targetFluidType = new BoardFluid(fluidTransfer.OutputVariable);
+                    if (targetFluidType == null)                    {
+                        targetFluidType = new BoardFluid(fluidTransfer.OutputVariable);
+                        FluidVariableLocations.Add(fluidTransfer.OutputVariable, targetFluidType);
+                    }
 
                     BoardFluid inputFluid;
-                    FluidVariableLocations.TryGetValue(fluidTransfer.InputVariables[0].ToString(), out inputFluid);
-                    if (inputFluid == null) throw new Exception("Fluid of type \"" + fluidTransfer.InputVariables[0].ToString() + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
-                    List<Droplet> availableDroplets = inputFluid.dropletSources.Where(dropletSource => dropletSource is Droplet).Select(dropletSource => dropletSource as Droplet).ToList();
-
+                    FluidVariableLocations.TryGetValue(input.FluidName, out inputFluid);
+                    if (inputFluid == null) throw new Exception("Fluid of type \"" + input.FluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
+                    List<Droplet> availableDroplets = inputFluid.dropletSources.Where(dropletSource => dropletSource is Droplet)
+                                                                               .Select(dropletSource => dropletSource as Droplet)
+                                                                               .ToList();
+                    int numberOfDropletsToTransfer = Math.Min(availableDroplets.Count, requiredDroplets);
+                    for (int i = 0; i < numberOfDropletsToTransfer; i++)
+                    {
+                        availableDroplets[i].SetFluidType(targetFluidType);
+                    }
+                    int numberOfDropletsTransfered = numberOfDropletsToTransfer;
+                    if (numberOfDropletsTransfered != requiredDroplets) {
+                        //As there aren't enough droplets placed on the board, to satisfy the requirement, 
+                        //some must be taken from the input modules.
+                        List<InputModule> inputModules = inputFluid.dropletSources.Where(dropletSource => dropletSource is InputModule)
+                                                                                  .Select(dropletSource => dropletSource as InputModule)
+                                                                                  .ToList();
+                        List<Route> dropletRoutes = new List<Route>();
+                        foreach (var inputModule in inputModules)
+                        {
+                            while (inputModule.DropletCount > 0 && numberOfDropletsTransfered < requiredDroplets)
+                            {
+                                numberOfDropletsTransfered++;
+                                inputModule.DecrementDropletCount();
+                                Droplet droplet = new Droplet(targetFluidType);
+                                AllUsedModules.Add(droplet);
+                                board.FastTemplatePlace(droplet);
+                                Route route = Router.RouteDropletToNewPosition(inputModule, droplet, board, startTime);
+                                startTime = route.getEndTime() + 1;
+                                dropletRoutes.Add(route);
+                            }
+                            if (numberOfDropletsTransfered == requiredDroplets) break;
+                        }
+                        if (numberOfDropletsTransfered != requiredDroplets) throw new Exception("Not enough droplets available.");
+                    }
+                    updateSchedule(nextOperation, startTime + 2, originalStartTime);
+                    assay.updateReadyOperations(nextOperation);
+                    DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                 }
                 else if (nextOperation is FluidBlock topPriorityOperation)
                 {

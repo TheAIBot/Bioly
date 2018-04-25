@@ -24,17 +24,16 @@ namespace BiolyCompiler.Routing
                 //This will give an overhead of +1 for the operation starting time, for each droplet routed:
                 currentTime = route.getEndTime() + 1;
             }
-            //updateSchedule(topPriorityOperation, currentTime, originalStartTime);
             return currentTime;
         }
 
         private static Route RouteSingleDropletToModule(Module operationExecutingModule, Board board, int currentTime, Droplet dropletInput)
         {
-            BoardFluid InputFluidType = dropletInput.getFluidType();
+            BoardFluid InputFluidType = dropletInput.GetFluidType();
             if (InputFluidType.GetNumberOfDropletsAvailable() < 1) throw new Exception("There isn't enough droplets of type " + InputFluidType.FluidName +
                                                                                        " avaiable, to satisfy the requirement of the module: " + operationExecutingModule.ToString());
             //Routes a droplet of type InputFluid to the module.
-            Route route = DetermineRouteToModule(InputFluidType, operationExecutingModule, dropletInput, board, currentTime); //Will be included as part of a later step.
+            Route route = DetermineRouteToModule(haveReachedDropletOfTargetType(dropletInput), operationExecutingModule, dropletInput, board, currentTime); //Will be included as part of a later step.
             if (route == null) throw new Exception("No route found. This should not be possible.");
 
             //The route is added to the module's routes:
@@ -46,7 +45,15 @@ namespace BiolyCompiler.Routing
                 operationExecutingModule.InputRoutes.Add(InputFluidType.FluidName, inputRoutes);
             }
             inputRoutes.Add(route);
+            //The droplet has been "used up"/it is now inside a module, 
+            //so it needs to be removed from its original position:
+            RemoveRoutedDropletFromBoard(board, route);
 
+            return route;
+        }
+
+        private static void RemoveRoutedDropletFromBoard(Board board, Route route)
+        {
             //The droplet routed is used by the module, and as such it can be removed from the board,
             //unless it comes from a spawner:
             switch (route.routedDroplet)
@@ -69,17 +76,40 @@ namespace BiolyCompiler.Routing
                 default:
                     throw new Exception("Unhandled droplet source: " + route.routedDroplet.ToString());
             }
-
-            return route;
         }
 
-        public static Route DetermineRouteToModule(BoardFluid targetFluidType, Module sourceModule, Droplet targetInputDroplet, Board board, int startTime)
+        public static Route DetermineRouteToModule(Func<Module, RoutingInformation, bool> hasReachedTarget, Module sourceModule, IDropletSource targetInput, Board board, int startTime)
         {
             //Dijkstras algorithm, based on the one seen on wikipedia.
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
             //and then inverts the route.
+            (var dijkstraGraph, var priorityQueue) = SetUpInitialDijsktraGraph(targetInput, board);
+
+            while (priorityQueue.Count > 0)
+            {
+                RoutingInformation currentNode = priorityQueue.Dequeue();
+                Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
+
+                if (isUnreachableNode(currentNode))
+                    throw new Exception("No route to the desired component could be found. Desired droplet type: " + targetInput.GetFluidType().FluidName);
+                else if (hasReachedTarget(moduleAtCurrentNode, currentNode)) //Have reached the desired target
+                    return GetRouteFromSourceToTarget(currentNode, (IDropletSource)moduleAtCurrentNode, startTime);
+                //No collisions with other modules are allowed (except the starting module):
+                else if (hasCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
+                    continue;
+
+                //go through all neighbors
+                UpdateAllNeighborPriorities(board, dijkstraGraph, priorityQueue, currentNode);
+
+            }
+            //If no route was found:
+            throw new Exception("No route to the desired component could be found");
+        }
+
+        private static (RoutingInformation[,], SimplePriorityQueue<RoutingInformation, int>) SetUpInitialDijsktraGraph(IDropletSource targetInput, Board board)
+        {
             RoutingInformation[,] dijkstraGraph = createDijkstraGraph(board);
-            (int startingXPos, int startingYPos) = targetInputDroplet.getMiddleOfSource();
+            (int startingXPos, int startingYPos) = targetInput.GetMiddleOfSource();
             RoutingInformation source = dijkstraGraph[startingXPos, startingYPos];
             source.distanceFromSource = 0;
 
@@ -88,33 +118,20 @@ namespace BiolyCompiler.Routing
             {
                 priorityQueue.Enqueue(node, node.distanceFromSource);
             }
+            return (dijkstraGraph, priorityQueue);
+        }
+        
 
-            while (priorityQueue.Count > 0)
-            {
-                RoutingInformation currentNode = priorityQueue.Dequeue();
-                Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
-
-                if (isUnreachableNode(currentNode))
-                    throw new Exception("No route to the desired component could be found. Desired droplet type: " + targetFluidType.FluidName);
-                else if (haveReachedDropletOfTargetType(targetFluidType, moduleAtCurrentNode, sourceModule, currentNode)) //Have reached the desired module
-                    return GetRouteFromSourceToTarget(currentNode, (IDropletSource)moduleAtCurrentNode, startTime);
-                //No collisions with other modules are allowed (except the starting module):
-                else if (hasCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
-                    continue;
-
-                //go through all neighbors
-                if (0 < currentNode.x)
-                    UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x - 1, currentNode.y]);
-                if (0 < currentNode.y)
-                    UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y - 1]);
-                if (currentNode.x < board.width - 1)
-                    UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x + 1, currentNode.y]);
-                if (currentNode.y < board.heigth - 1)
-                    UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y + 1]);
-
-            }
-            //If no route was found:
-            throw new Exception("No route to the desired component could be found");
+        private static void UpdateAllNeighborPriorities(Board board, RoutingInformation[,] dijkstraGraph, SimplePriorityQueue<RoutingInformation, int> priorityQueue, RoutingInformation currentNode)
+        {
+            if (0 < currentNode.x)
+                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x - 1, currentNode.y]);
+            if (0 < currentNode.y)
+                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y - 1]);
+            if (currentNode.x < board.width - 1)
+                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x + 1, currentNode.y]);
+            if (currentNode.y < board.heigth - 1)
+                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y + 1]);
         }
 
         private static void UpdateNeighborPriority(SimplePriorityQueue<RoutingInformation, int> priorityQueue, RoutingInformation currentNode, RoutingInformation neighbor)
@@ -139,15 +156,22 @@ namespace BiolyCompiler.Routing
             return currentNode.distanceFromSource == Int32.MaxValue;
         }
 
-        private static bool haveReachedDropletOfTargetType(BoardFluid targetFluidType, Module moduleAtCurrentNode, Module sourceModule, RoutingInformation location)
+        public delegate bool TargetFunction(Module moduleAtCurrentNode, RoutingInformation currentNode);
+
+        public static Func<Module, RoutingInformation, bool> haveReachedSpecifficModule(Object targetModule) {
+            return (moduleAtCurrentNode, location) => targetModule.Equals(moduleAtCurrentNode);
+        }
+
+        public static Func<Module, RoutingInformation, bool> haveReachedDropletOfTargetType(Droplet targetDroplet)
         {
-            return moduleAtCurrentNode is IDropletSource dropletSource &&
-                   dropletSource.getFluidType().Equals(targetFluidType);
+            return (moduleAtCurrentNode, location) => moduleAtCurrentNode is IDropletSource dropletSource &&
+                                                      targetDroplet        is IDropletSource dropletTarget &&
+                                                      dropletSource.GetFluidType().Equals(dropletTarget.GetFluidType());
         }
 
         private static Route GetRouteFromSourceToTarget(RoutingInformation routeInfo, IDropletSource routedDroplet, int startTime)
         {
-            (int dropletMiddleX, int dropletMiddleY) = routedDroplet.getMiddleOfSource();
+            (int dropletMiddleX, int dropletMiddleY) = routedDroplet.GetMiddleOfSource();
             //Currently, the route ends at the edges of the droplets location: it will need to be routed to the middle:
             while (dropletMiddleX - routeInfo.x != 0)
             {
@@ -161,16 +185,23 @@ namespace BiolyCompiler.Routing
                 nextPosition.previous = routeInfo;
                 routeInfo = nextPosition;
             }
-
+            //Now the droplet is at the middle.
             List<RoutingInformation> routeNodes = new List<RoutingInformation>();
             while (routeInfo.previous != null)
             {
                 routeNodes.Add(routeInfo);
                 routeInfo = routeInfo.previous;
+
             }
             routeNodes.Add(routeInfo);
             //routeNodes.Reverse();
             Route route = new Route(routeNodes, routedDroplet, startTime);
+            return route;
+        }
+
+        public static Route RouteDropletToNewPosition(Module oldDropletPosition, Droplet newDropletPosition, Board board, int startTime)
+        {
+            Route route = DetermineRouteToModule(haveReachedSpecifficModule(oldDropletPosition), newDropletPosition, newDropletPosition, board, startTime);
             return route;
         }
 

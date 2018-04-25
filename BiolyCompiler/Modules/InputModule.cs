@@ -46,17 +46,17 @@ namespace BiolyCompiler.Modules
             return 0;
         }
 
-        public bool isInMiddleOfSource(RoutingInformation information)
+        public bool IsInMiddleOfSource(RoutingInformation information)
         {
-            (int xMiddle, int yMiddle) = getMiddleOfSource();
+            (int xMiddle, int yMiddle) = GetMiddleOfSource();
             return xMiddle == information.x && yMiddle == information.y;
         }
 
-        public (int, int) getMiddleOfSource() {
+        public (int, int) GetMiddleOfSource() {
             return (Shape.x + Droplet.DROPLET_WIDTH / 2, Shape.y + Droplet.DROPLET_HEIGHT / 2);
         }
 
-        public BoardFluid getFluidType()
+        public BoardFluid GetFluidType()
         {
             return FluidType;
         }

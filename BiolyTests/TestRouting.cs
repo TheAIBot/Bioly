@@ -40,7 +40,7 @@ namespace BiolyTests.RoutingTests
             //inputLocation shouldn't be placed, as it "inside" the module.
 
             int startTime = 55;
-            Route route = Router.DetermineRouteToModule(fluidType, sourceModule, inputLocation, board, startTime);
+            Route route = Router.DetermineRouteToModule(Router.haveReachedDropletOfTargetType(inputLocation), sourceModule, inputLocation, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Has detected collision while this shouldn't be possible");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
@@ -72,7 +72,7 @@ namespace BiolyTests.RoutingTests
 
 
             int startTime = 55;
-            Route route = Router.DetermineRouteToModule(fluidType, sourceModule, inputLocation, board, startTime);
+            Route route = Router.DetermineRouteToModule(Router.haveReachedDropletOfTargetType(inputLocation), sourceModule, inputLocation, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Obstacle not avoided: the path has a collisition");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
@@ -241,8 +241,8 @@ namespace BiolyTests.RoutingTests
         public static bool hasCorrectStartAndEnding(Route route, Board board, IDropletSource source, IDropletSource inputLocation)
         {
             RoutingInformation startOfPath = route.route[0];
-            (int sourceX, int sourceY) = source.getMiddleOfSource();
-            (int inputX , int inputY ) = inputLocation.getMiddleOfSource();
+            (int sourceX, int sourceY) = source.GetMiddleOfSource();
+            (int inputX , int inputY ) = inputLocation.GetMiddleOfSource();
             return  sourceX == startOfPath.x &&
                     sourceY == startOfPath.y &&
                     route.route.Last().x == inputX &&

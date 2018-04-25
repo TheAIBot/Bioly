@@ -48,7 +48,7 @@ namespace BiolyCompiler.Scheduling
 
         public bool hasUnfinishedOperations()
         {
-            return readyOperations.Count > 0;
+            return !dfg.Nodes.All(node => node.value.hasBeenScheduled);
         }
     }
 }
