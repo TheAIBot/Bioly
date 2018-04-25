@@ -56,15 +56,17 @@ namespace BiolyCompiler.Parser
                         controlBlock = ParseConditionalBlocks(node, cdfg, dfg, mostRecentRef, parseExceptions);
                         break;
                     }
+
+                    Block block = null;
                     try
                     {
-                        Block block = ParseAndAddNodeToDFG(node, dfg, mostRecentRef, parseExceptions, allowDeclarationBlocks);
-                        allowDeclarationBlocks = block is StaticDeclarationBlock && allowDeclarationBlocks;
+                        block = ParseAndAddNodeToDFG(node, dfg, mostRecentRef, parseExceptions, allowDeclarationBlocks);
                     }
                     catch (ParseException e)
                     {
                         parseExceptions.Add(e);
                     }
+                    allowDeclarationBlocks = block is StaticDeclarationBlock && allowDeclarationBlocks;
 
                     //move on to the next node or exit if none
                     node = node.TryGetNodeWithName("next");
