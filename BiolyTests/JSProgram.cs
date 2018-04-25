@@ -150,9 +150,9 @@ namespace BiolyTests
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
-            AddBlock(a, OutputDeclaration.XML_TYPE_NAME);
+            AddBlock(a, OutputUseage.XML_TYPE_NAME);
             AddFluidInputBlock(b, fluidName, amount, useAllFluid);
-            AddConnection(a, OutputDeclaration.INPUT_FLUID_FIELD_NAME, b);
+            AddConnection(a, OutputUseage.INPUT_FLUID_FIELD_NAME, b);
 
             Segments.Add(a);
         }
