@@ -58,7 +58,8 @@ namespace BiolyCompiler.Parser
                     }
                     try
                     {
-                        ParseAndAddNodeToDFG(node, dfg, mostRecentRef, parseExceptions, allowDeclarationBlocks);
+                        Block block = ParseAndAddNodeToDFG(node, dfg, mostRecentRef, parseExceptions, allowDeclarationBlocks);
+                        allowDeclarationBlocks = block is StaticDeclarationBlock && allowDeclarationBlocks;
                     }
                     catch (ParseException e)
                     {
