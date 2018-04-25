@@ -144,6 +144,7 @@ namespace BiolyCompiler.Parser
 
         public static Block ParseBlock(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
         {
+            string id = node.GetAttributeValue(Block.IDFieldName);
             string blockType = node.GetAttributeValue(Block.TypeFieldName);
             switch (blockType)
             {
@@ -170,7 +171,7 @@ namespace BiolyCompiler.Parser
                 //case Sensor.XmlTypeName:
                 //    return Sensor.Parse(node);
                 default:
-                    throw new Exception("Invalid type: " + blockType);
+                    throw new UnknownBlockException(id);
             }
         }
 
