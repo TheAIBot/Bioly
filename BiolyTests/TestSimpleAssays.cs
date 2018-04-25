@@ -41,16 +41,16 @@ namespace BiolyTests.SimpleAssayTests
             ModuleLibrary library = new ModuleLibrary();
             schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation, outputDeclaration }, board,library);
             schedule.ListScheduling(assay, board, library);
-            Assert.AreEqual(1, outputOperation.boundModule.InputRoutes.Count);
-            Assert.AreEqual(5, outputOperation.boundModule.InputRoutes[inputOperation.OutputVariable].Count);
+            Assert.AreEqual(0, inputOperation.InputRoutes.Count);
+            Assert.AreEqual(5, outputOperation.InputRoutes[inputOperation.OutputVariable].Count);
             int startTime = 0;
             for (int i = 0; i < numberOfInputs; i++)
             {
-                Route route = outputOperation.boundModule.InputRoutes[inputOperation.OutputVariable][i];
+                Route route = outputOperation.InputRoutes[inputOperation.OutputVariable][i];
                 Assert.AreEqual(startTime, route.startTime);
                 Assert.AreEqual(startTime + 3, route.getEndTime());
                 Assert.IsTrue(RoutingTests.TestRouting.isAnActualRoute(route, board));
-                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route, board, inputOperation.boundModule.GetInputLayout().Droplets[0], outputOperation.boundModule.GetInputLayout().Droplets[0]));
+                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route, board, inputOperation.BoundModule.GetInputLayout().Droplets[0], outputOperation.BoundModule.GetInputLayout().Droplets[0]));
                 startTime += 4;
             }
         }
@@ -74,17 +74,17 @@ namespace BiolyTests.SimpleAssayTests
             Mixer mixOperation2 = (Mixer) schedule.ScheduledOperations[1];
             OutputUseage outputOpereration = (OutputUseage) schedule.ScheduledOperations[2];
 
-            Assert.IsTrue(mixOperation1.startTime == 0);
-            Assert.IsTrue(mixOperation1.boundModule.OperationTime + mixOperation1.startTime + 10*Schedule.DROP_MOVEMENT_TIME <= mixOperation1.endTime);
-            Assert.IsTrue(mixOperation1.endTime   <= mixOperation1.startTime + mixOperation1.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+            Assert.IsTrue(mixOperation1.StartTime == 0);
+            Assert.IsTrue(mixOperation1.BoundModule.OperationTime + mixOperation1.StartTime + 10*Schedule.DROP_MOVEMENT_TIME <= mixOperation1.endTime);
+            Assert.IsTrue(mixOperation1.endTime   <= mixOperation1.StartTime + mixOperation1.BoundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
 
-            Assert.IsTrue(mixOperation1.endTime + 1 == mixOperation2.startTime);
-            Assert.IsTrue(mixOperation2.boundModule.OperationTime + mixOperation2.startTime + 10 * Schedule.DROP_MOVEMENT_TIME <= mixOperation2.endTime);
-            Assert.IsTrue(mixOperation2.endTime <= mixOperation2.startTime + mixOperation2.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+            Assert.IsTrue(mixOperation1.endTime + 1 == mixOperation2.StartTime);
+            Assert.IsTrue(mixOperation2.BoundModule.OperationTime + mixOperation2.StartTime + 10 * Schedule.DROP_MOVEMENT_TIME <= mixOperation2.endTime);
+            Assert.IsTrue(mixOperation2.endTime <= mixOperation2.StartTime + mixOperation2.BoundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
 
-            Assert.IsTrue(mixOperation2.endTime + 1 == outputOpereration.startTime);
-            Assert.IsTrue(outputOpereration.boundModule.OperationTime + outputOpereration.startTime + 10 * Schedule.DROP_MOVEMENT_TIME <= outputOpereration.endTime);
-            Assert.IsTrue(outputOpereration.endTime <= outputOpereration.startTime + outputOpereration.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+            Assert.IsTrue(mixOperation2.endTime + 1 == outputOpereration.StartTime);
+            Assert.IsTrue(outputOpereration.BoundModule.OperationTime + outputOpereration.StartTime + 10 * Schedule.DROP_MOVEMENT_TIME <= outputOpereration.endTime);
+            Assert.IsTrue(outputOpereration.endTime <= outputOpereration.StartTime + outputOpereration.BoundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
         }
 
 

@@ -5,6 +5,9 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Commands;
+using BiolyCompiler.Routing;
+using System.Linq;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -41,6 +44,17 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 default:
                     return CreateFluid(output, innerNode, mostRecentRef);
             }
+        }
+
+        public List<Command> GetFluidTransferOperations()
+        {
+            int time = 0;
+            List<Command> routeCommands = new List<Command>();
+            foreach (List<Route> routes in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
+            }
+            return routeCommands;
         }
     }
 }

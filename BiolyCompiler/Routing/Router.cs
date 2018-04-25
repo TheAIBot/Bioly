@@ -14,12 +14,12 @@ namespace BiolyCompiler.Routing
 {
     public class Router
     {
-        public static int RouteDropletsToModule(Module operationExecutingModule, Board board, int currentTime, FluidBlock topPriorityOperation)
+        public static int RouteDropletsToModule(Board board, int currentTime, FluidBlock operation)
         {
             int originalStartTime = currentTime;
-            foreach (var dropletInput in operationExecutingModule.GetInputLayout().Droplets)
+            foreach (var dropletInput in operation.BoundModule.GetInputLayout().Droplets)
             {
-                Route route = RouteSingleDropletToModule(operationExecutingModule, board, currentTime, dropletInput);
+                Route route = RouteSingleDropletToModule(operation, board, currentTime, dropletInput);
                 //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
                 //This will give an overhead of +1 for the operation starting time, for each droplet routed:
                 currentTime = route.getEndTime() + 1;
@@ -27,22 +27,22 @@ namespace BiolyCompiler.Routing
             return currentTime;
         }
 
-        private static Route RouteSingleDropletToModule(Module operationExecutingModule, Board board, int currentTime, Droplet dropletInput)
+        private static Route RouteSingleDropletToModule(FluidBlock operation, Board board, int currentTime, Droplet dropletInput)
         {
             BoardFluid InputFluidType = dropletInput.GetFluidType();
             if (InputFluidType.GetNumberOfDropletsAvailable() < 1) throw new Exception("There isn't enough droplets of type " + InputFluidType.FluidName +
-                                                                                       " avaiable, to satisfy the requirement of the module: " + operationExecutingModule.ToString());
+                                                                                       " avaiable, to satisfy the requirement of the module: " + operation.BoundModule.ToString());
             //Routes a droplet of type InputFluid to the module.
-            Route route = DetermineRouteToModule(haveReachedDropletOfTargetType(dropletInput), operationExecutingModule, dropletInput, board, currentTime); //Will be included as part of a later step.
+            Route route = DetermineRouteToModule(haveReachedDropletOfTargetType(dropletInput), operation.BoundModule, dropletInput, board, currentTime); //Will be included as part of a later step.
             if (route == null) throw new Exception("No route found. This should not be possible.");
 
             //The route is added to the module's routes:
             List<Route> inputRoutes;
-            operationExecutingModule.InputRoutes.TryGetValue(InputFluidType.FluidName, out inputRoutes);
+            operation.InputRoutes.TryGetValue(InputFluidType.FluidName, out inputRoutes);
             if (inputRoutes == null)
             {
                 inputRoutes = new List<Route>();
-                operationExecutingModule.InputRoutes.Add(InputFluidType.FluidName, inputRoutes);
+                operation.InputRoutes.Add(InputFluidType.FluidName, inputRoutes);
             }
             inputRoutes.Add(route);
             //The droplet has been "used up"/it is now inside a module, 

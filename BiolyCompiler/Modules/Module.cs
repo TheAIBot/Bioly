@@ -14,11 +14,8 @@ namespace BiolyCompiler.Modules
         public Rectangle Shape;
         public int OperationTime = 1;
         public Block BindingOperation;
-        //The key is the input fluid name, see the operation/block which the module is bound to.
-        public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
         protected ModuleLayout InputLayout;
         protected ModuleLayout OutputLayout;
-        public int StartTime = int.MinValue;
         
 
 
@@ -56,6 +53,11 @@ namespace BiolyCompiler.Modules
             if (TopRectangle != null) emptyRectangles.Add(TopRectangle);
             if (RightRectangle != null) emptyRectangles.Add(RightRectangle);
             return new ModuleLayout(rectangle, emptyRectangles, new List<Droplet>() {droplet});
+        }
+
+        public int GetRunningTime()
+        {
+            return ToCommands().Last().Time;
         }
 
         public void RepositionLayout()
@@ -151,9 +153,13 @@ namespace BiolyCompiler.Modules
             List<Command> commands = new List<Command>();
             int time = 0;
             List<Command> routeCommands = new List<Command>();
-            foreach (List<Route> routes in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
+            //Only fluidoperations have routes associated with them
+            if (BindingOperation is FluidBlock fluidOperation)
             {
-                routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
+                foreach (List<Route> routes in fluidOperation.InputRoutes.Values.OrderBy(routes => routes.First().startTime))
+                {
+                    routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
+                }
             }
             List<Command> moduleCommands = GetModuleCommands(ref time);
             if (moduleCommands.Count > 0)
