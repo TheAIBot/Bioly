@@ -18,16 +18,16 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
         }
 
-        private static Block CreateFluid(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
+        private static Block CreateFluid(string output, XmlNode node, ParserInfo parserInfo)
         {
             List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node, mostRecentRef));
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node, parserInfo));
 
             string id = node.GetAttributeValue(Block.IDFieldName);
             return new Fluid(inputs, output, node, id);
         }
 
-        public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
+        public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string output = node.GetNodeWithAttributeValue(OutputFluidFieldName).InnerText;
@@ -36,11 +36,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             switch (innerNode.GetAttributeValue(Block.TypeFieldName))
             {
                 case Heater.XmlTypeName:
-                    return Heater.CreateHeater(output, innerNode, mostRecentRef);
+                    return Heater.CreateHeater(output, innerNode, parserInfo);
                 case Mixer.XmlTypeName:
-                    return Mixer.CreateMixer(output, innerNode, mostRecentRef);
+                    return Mixer.CreateMixer(output, innerNode, parserInfo);
                 default:
-                    return CreateFluid(output, innerNode, mostRecentRef);
+                    return CreateFluid(output, innerNode, parserInfo);
             }
         }
     }

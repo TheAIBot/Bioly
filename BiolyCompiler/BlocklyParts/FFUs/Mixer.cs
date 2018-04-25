@@ -20,15 +20,15 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         }
 
-        public static Block CreateMixer(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
+        public static Block CreateMixer(string output, XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
 
             XmlNode inputFluidNode1 = node.GetInnerBlockNode(FirstInputFieldName , new MissingBlockException(id, "Mixer is missing input fluid block."));
             XmlNode inputFluidNode2 = node.GetInnerBlockNode(SecondInputFieldName, new MissingBlockException(id, "Mixer is missing input fluid block."));
 
-            FluidInput fluidInput1 = XmlParser.GetVariablesCorrectedName(inputFluidNode1, mostRecentRef);
-            FluidInput fluidInput2 = XmlParser.GetVariablesCorrectedName(inputFluidNode2, mostRecentRef);
+            FluidInput fluidInput1 = XmlParser.GetVariablesCorrectedName(inputFluidNode1, parserInfo);
+            FluidInput fluidInput2 = XmlParser.GetVariablesCorrectedName(inputFluidNode2, parserInfo);
 
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput1);

@@ -17,11 +17,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         }
 
-        public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
+        public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, moduleName);
+            parserInfo.AddModuleName(moduleName);
             return new OutputDeclaration(moduleName, null, node, id);
         }
 

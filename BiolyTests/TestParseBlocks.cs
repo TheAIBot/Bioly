@@ -33,8 +33,12 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null, true);
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", input.OriginalOutputVariable);
             Assert.AreEqual(20, input.Amount);
             Assert.AreEqual(FluidUnit.ml, input.Unit);
@@ -48,8 +52,13 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Heater heater = (Heater)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            parserInfo.AddFluidVariable("b");
+            Heater heater = (Heater)XmlParser.ParseBlock(node, null, parserInfo);
 
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", heater.OriginalOutputVariable);
             Assert.AreEqual(173, heater.Temperature);
             Assert.AreEqual(39, heater.Time);
@@ -63,8 +72,14 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
-            
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            parserInfo.AddFluidVariable("b");
+            parserInfo.AddFluidVariable("c");
+            Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, parserInfo);
+
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", mixer.OriginalOutputVariable);
         }
 
@@ -76,8 +91,10 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Constant constant = (Constant)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            Constant constant = (Constant)XmlParser.ParseBlock(node, null, parserInfo);
 
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(210, constant.Value);
         }
 
@@ -91,8 +108,10 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            ArithOP arithOP = (ArithOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            ArithOP arithOP = (ArithOP)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(ArithOPTypes.ADD, arithOP.OPType);
         }
 
@@ -106,8 +125,10 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            BoolOP boolOP = (BoolOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            BoolOP boolOP = (BoolOP)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(BoolOPTypes.EQ, boolOP.OPType);
         }
 
@@ -119,8 +140,12 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.IsTrue(input is Waste);
         }
 
@@ -132,8 +157,13 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            parserInfo.AddModuleName(StaticBlock.DEFAULT_MODULE_NAME);
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.IsTrue(input is OutputUseage);
         }
 

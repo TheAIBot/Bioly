@@ -15,7 +15,9 @@ namespace BiolyCompiler.BlocklyParts
         public readonly string OriginalOutputVariable;
         public readonly string BlockID;
         private static int nameID;
-        public const string DEFAULT_NAME = "anonymous var";
+        //first symbol is important because it makes it an invalid name to parse
+        //but that's okay here because this is after the parser step
+        public const string DEFAULT_NAME = "@anonymous var";
         public const string TypeFieldName = "type";
         public const string IDFieldName = "id";
 

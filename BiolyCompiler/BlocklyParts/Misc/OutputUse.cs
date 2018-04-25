@@ -17,12 +17,13 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         }
 
-        public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
+        public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
             List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).FirstChild, mostRecentRef));
-            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).FirstChild, parserInfo));
             string id = node.GetAttributeValue(Block.IDFieldName);
+            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            parserInfo.CheckModuleVariable(id, moduleName);
             return new OutputUseage(moduleName, inputs, null, node, id);
         }
 
