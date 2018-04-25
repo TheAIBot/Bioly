@@ -23,6 +23,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string originalName = node.GetNodeWithAttributeValue(FluidNameFieldName).InnerText;
+            Validator.CheckVariableName(id, originalName);
             mostRecentRef.TryGetValue(originalName, out string correctedName);
 
             this.FluidName = correctedName ?? "ERROR_FINDING_NODE";

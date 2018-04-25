@@ -33,9 +33,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public static Block Parse(XmlNode node)
         {
-            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
-            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             string id = node.GetAttributeValue(Block.IDFieldName);
+            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
+            Validator.CheckVariableName(id, output);
+
+            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            Validator.CheckVariableName(id, moduleName);
             return new InputDeclaration(moduleName, output, node, id);
         }
 

@@ -31,6 +31,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string output = node.GetNodeWithAttributeValue(OutputFluidFieldName).InnerText;
+            Validator.CheckVariableName(id, output);
             XmlNode innerNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Fluid is missing fluid definition blocks."));
             switch (innerNode.GetAttributeValue(Block.TypeFieldName))
             {

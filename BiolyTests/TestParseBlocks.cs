@@ -33,7 +33,7 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
+            InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null, true);
 
             Assert.AreEqual("a", input.OriginalOutputVariable);
             Assert.AreEqual(20, input.Amount);
