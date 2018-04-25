@@ -36,13 +36,13 @@ namespace BiolyCompiler.Parser
             CDFG cdfg = new CDFG();
             List<ParseException> parseExceptions = new List<ParseException>();
 
-            DFG<Block> startDFG = ParseDFG(node, cdfg, parseExceptions);
+            DFG<Block> startDFG = ParseDFG(node, cdfg, parseExceptions, true);
             cdfg.StartDFG = startDFG;
 
             return (cdfg, parseExceptions);
         }
 
-        internal static DFG<Block> ParseDFG(XmlNode node, CDFG cdfg, List<ParseException> parseExceptions)
+        internal static DFG<Block> ParseDFG(XmlNode node, CDFG cdfg, List<ParseException> parseExceptions, bool allowDeclarationBlocks = false)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace BiolyCompiler.Parser
                     }
                     try
                     {
-                        ParseAndAddNodeToDFG(node, dfg, mostRecentRef, parseExceptions);
+                        ParseAndAddNodeToDFG(node, dfg, mostRecentRef, parseExceptions, allowDeclarationBlocks);
                     }
                     catch (ParseException e)
                     {
@@ -89,9 +89,9 @@ namespace BiolyCompiler.Parser
             }
         }
 
-        internal static Block ParseAndAddNodeToDFG(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
+        internal static Block ParseAndAddNodeToDFG(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions, bool allowDeclarationBlocks = false)
         {
-            Block block = ParseBlock(node, dfg, mostRecentRef, parseExceptions);
+            Block block = ParseBlock(node, dfg, mostRecentRef, parseExceptions, allowDeclarationBlocks);
             
             dfg.AddNode(block);
 
@@ -142,7 +142,7 @@ namespace BiolyCompiler.Parser
             return blockType == If.XML_TYPE_NAME || blockType == Repeat.XML_TYPE_NAME;
         }
 
-        public static Block ParseBlock(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
+        public static Block ParseBlock(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions, bool allowDeclarationBlocks = false)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string blockType = node.GetAttributeValue(Block.TypeFieldName);
@@ -159,8 +159,16 @@ namespace BiolyCompiler.Parser
                 case Fluid.XML_TYPE_NAME:
                     return Fluid.Parse(node, mostRecentRef);
                 case InputDeclaration.XML_TYPE_NAME:
+                    if (!allowDeclarationBlocks)
+                    {
+                        throw new ParseException(id, "Declaration blocks has be at the top of the program.");
+                    }
                     return InputDeclaration.Parse(node);
                 case OutputDeclaration.XML_TYPE_NAME:
+                    if (!allowDeclarationBlocks)
+                    {
+                        throw new ParseException(id, "Declaration blocks has be at the top of the program.");
+                    }
                     return OutputDeclaration.Parse(node, mostRecentRef);
                 case OutputUseage.XML_TYPE_NAME:
                     return OutputUseage.Parse(node, mostRecentRef);
