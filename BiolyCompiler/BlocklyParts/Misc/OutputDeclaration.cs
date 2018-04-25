@@ -12,7 +12,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "outputDeclaration";
 
-        public OutputDeclaration(string moduleName, string output, XmlNode node) : base(moduleName, false, output)
+        public OutputDeclaration(string moduleName, string output, XmlNode node, string id) : base(moduleName, false, output, id)
         {
 
         }
@@ -21,7 +21,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             List<FluidInput> inputs = new List<FluidInput>();
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
-            return new OutputDeclaration(moduleName, null, node);
+            string id = node.GetAttributeValue(Block.IDFieldName);
+            return new OutputDeclaration(moduleName, null, node, id);
         }
 
         public override Module getAssociatedModule()

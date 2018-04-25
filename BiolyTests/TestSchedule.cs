@@ -27,8 +27,8 @@ namespace BiolyTests.ScheduleTests
             int OperationsToAdd = 5;
             for (int i = 0; i < OperationsToAdd; i++)
             {
-                Block Operation1 = new Sensor(null, null, null);
-                Block Operation2 = new Mixer(null, null, null);
+                Block Operation1 = new Sensor(null, null, null, String.Empty);
+                Block Operation2 = new Mixer(null, null, null, String.Empty);
                 Operation1.priority = i;
                 Operation2.priority = i;
                 Operations.Add(Operation1);
@@ -102,7 +102,7 @@ namespace BiolyTests.ScheduleTests
             String inputFluid = "Kage";
 
             TestModule module = new TestModule();
-            InputDeclaration input = new InputDeclaration("testModule", inputFluid, 1);
+            InputDeclaration input = new InputDeclaration("testModule", inputFluid, 1, null);
             TestBlock operation1 = new TestBlock(new List<string>() { input.OutputVariable }, null, module);
             TestBlock operation2 = new TestBlock(new List<string>() { operation1.OutputVariable }, null, module);
             TestBlock operation3 = new TestBlock(new List<string>() { operation2.OutputVariable }, null, module);
@@ -155,7 +155,7 @@ namespace BiolyTests.ScheduleTests
             for (int i = 0; i < boardsAtDifferentTimes.Count; i++)
             {
                 Debug.WriteLine("Time: " + boardsAtDifferentTimes[i].Key);
-                Debug.WriteLine(boardsAtDifferentTimes[i].Value.print(schedule.allUsedModules));
+                Debug.WriteLine(boardsAtDifferentTimes[i].Value.print(schedule.AllUsedModules));
             }
             //Only the first board should contain a single module, the input.
             Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.placedModules.Count == 2 || pair.Key == 0));

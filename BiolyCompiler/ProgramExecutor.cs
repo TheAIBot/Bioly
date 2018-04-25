@@ -14,12 +14,14 @@ using BiolyCompiler.BlocklyParts.ControlFlow;
 using BiolyCompiler.BlocklyParts.Misc;
 using System.Threading.Tasks;
 using System.Threading;
+using BiolyCompiler.Exceptions.ParserExceptions;
 
 namespace BiolyCompiler
 {
     public class ProgramExecutor<T>
     {
         private readonly CommandExecutor<T> Executor;
+        public const int TIME_BETWEEN_COMMANDS = 50;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -28,7 +30,7 @@ namespace BiolyCompiler
 
         public void Run(int width, int height, string xmlText)
         {
-            CDFG graph = XmlParser.Parse(xmlText);
+            (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlText);
             DFG<Block> runningGraph = graph.StartDFG;
 
             Board board = new Board(width, height);
@@ -125,7 +127,7 @@ namespace BiolyCompiler
                         removeAreaCommands.ForEach(x => Executor.SendCommand(x));
                     }
 
-                    Thread.Sleep(50);
+                    Thread.Sleep(TIME_BETWEEN_COMMANDS);
                 }
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
@@ -153,7 +155,7 @@ namespace BiolyCompiler
             dropPositions = scheduler.FluidVariableLocations;
             staticModules = scheduler.StaticModules;
 
-            usedModules = scheduler.allUsedModules;
+            usedModules = scheduler.AllUsedModules;
             return (scheduler.ScheduledOperations, time);
         }
 

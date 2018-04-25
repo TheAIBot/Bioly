@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Parser;
+﻿using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,17 +12,22 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string InputFluidFieldName = "inputFluid";
         public const string XML_TYPE_NAME = "waste";
 
-        public Waste(List<FluidInput> input, string output, XmlNode node) : base(false, input, output)
+        public Waste(List<FluidInput> input, string output, XmlNode node, string id) : base(false, input, output, id)
         {
 
         }
 
         public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(InputFluidFieldName).FirstChild, mostRecentRef));
+            string id = node.GetAttributeValue(Block.IDFieldName);
 
-            return new Waste(inputs, null, node);
+            XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Waste is missing input fluid block."));
+            FluidInput fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, mostRecentRef);
+
+            List<FluidInput> inputs = new List<FluidInput>();
+            inputs.Add(fluidInput);
+
+            return new Waste(inputs, null, node, id);
         }
 
         public override string ToString()

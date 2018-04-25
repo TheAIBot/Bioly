@@ -14,7 +14,7 @@ namespace BiolyCompiler.Modules
         public InputModule(BoardFluid fluidType, int capacity) : base(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0, 1, null)
         {
             this.FluidType = fluidType;
-            fluidType.droplets.Add(this);
+            fluidType.dropletSources.Add(this);
             if (capacity < 1) throw new Exception("A droplet source/spawner needs to be initally non-empty. The droplet source has fluid type = " + fluidType.ToString());
             this.Capacity = capacity;
             this.DropletCount = capacity;

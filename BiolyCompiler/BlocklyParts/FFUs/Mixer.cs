@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Exceptions.ParserExceptions;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -14,18 +15,26 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public const string SecondInputFieldName = "inputFluidB";
         public const string XmlTypeName = "mixer";
 
-        public Mixer(List<FluidInput> input, string output, XmlNode node) : base(true, input, output)
+        public Mixer(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, output, id)
         {
 
         }
 
         public static Block CreateMixer(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
         {
-            List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(FirstInputFieldName).FirstChild, mostRecentRef));
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(SecondInputFieldName).FirstChild, mostRecentRef));
+            string id = node.GetAttributeValue(Block.IDFieldName);
 
-            return new Mixer(inputs, output, node);
+            XmlNode inputFluidNode1 = node.GetInnerBlockNode(FirstInputFieldName , new MissingBlockException(id, "Mixer is missing input fluid block."));
+            XmlNode inputFluidNode2 = node.GetInnerBlockNode(SecondInputFieldName, new MissingBlockException(id, "Mixer is missing input fluid block."));
+
+            FluidInput fluidInput1 = XmlParser.GetVariablesCorrectedName(inputFluidNode1, mostRecentRef);
+            FluidInput fluidInput2 = XmlParser.GetVariablesCorrectedName(inputFluidNode2, mostRecentRef);
+
+            List<FluidInput> inputs = new List<FluidInput>();
+            inputs.Add(fluidInput1);
+            inputs.Add(fluidInput2);
+
+            return new Mixer(inputs, output, node, id);
         }
 
         public override string ToString()
@@ -35,7 +44,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override Module getAssociatedModule()
         {
-            return new MixerModule(3000);
+            return new MixerModule(100);
         }
     }
 }

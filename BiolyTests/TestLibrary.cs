@@ -11,7 +11,8 @@ namespace BiolyTests.ModuleLibraryTests
 {
     [TestClass]
     public class TestLibrary
-    {        
+    {      
+        /*
         [TestMethod]
         public void TestGetFirstPlaceableModule()
         {
@@ -29,7 +30,7 @@ namespace BiolyTests.ModuleLibraryTests
         {
             Assert.Fail("Has not been implemented yet.");
         }
-        
+        */
 
 
     }

@@ -17,7 +17,7 @@ namespace BiolyCompiler.Modules
         public Droplet(BoardFluid fluidType) : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, false)
         {
             this.fluidType = fluidType;
-            fluidType.droplets.Add(this);
+            fluidType.dropletSources.Add(this);
         }
 
         public BoardFluid getFluidType()
@@ -27,9 +27,9 @@ namespace BiolyCompiler.Modules
 
         public void SetFluidType(BoardFluid fluidType)
         {
-            if (this.fluidType != null) this.fluidType.droplets.Remove(this);
+            if (this.fluidType != null) this.fluidType.dropletSources.Remove(this);
             this.fluidType = fluidType;
-            fluidType.droplets.Add(this);
+            fluidType.dropletSources.Add(this);
         }
 
         public override bool Equals(object obj)

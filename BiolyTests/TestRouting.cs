@@ -40,7 +40,7 @@ namespace BiolyTests.RoutingTests
             //inputLocation shouldn't be placed, as it "inside" the module.
 
             int startTime = 55;
-            Route route = Schedule.DetermineRouteToModule(fluidType, sourceModule, inputLocation, board, startTime);
+            Route route = Router.DetermineRouteToModule(fluidType, sourceModule, inputLocation, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Has detected collision while this shouldn't be possible");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
@@ -72,7 +72,7 @@ namespace BiolyTests.RoutingTests
 
 
             int startTime = 55;
-            Route route = Schedule.DetermineRouteToModule(fluidType, sourceModule, inputLocation, board, startTime);
+            Route route = Router.DetermineRouteToModule(fluidType, sourceModule, inputLocation, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Obstacle not avoided: the path has a collisition");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
@@ -113,7 +113,7 @@ namespace BiolyTests.RoutingTests
             testBlock.Bind(sourceModule);
 
             int startTime = 55;
-            int endtime = schedule.RouteDropletsToModule(sourceModule, board, startTime, testBlock);
+            int endtime = Router.RouteDropletsToModule(sourceModule, board, startTime, testBlock);
             Assert.AreEqual(1, sourceModule.InputRoutes.Count);
             Assert.IsTrue(sourceModule.InputRoutes.TryGetValue(fluidType1.FluidName, out List<Route> routes));
             Assert.AreEqual(2, routes.Count);
@@ -168,7 +168,7 @@ namespace BiolyTests.RoutingTests
             testBlock.Bind(sourceModule);
 
             int startTime = 55;
-            int endtime = schedule.RouteDropletsToModule(sourceModule, board, startTime, testBlock);
+            int endtime = Router.RouteDropletsToModule(sourceModule, board, startTime, testBlock);
             Assert.AreEqual(2, sourceModule.InputRoutes.Count);
             Assert.IsTrue(sourceModule.InputRoutes.TryGetValue(fluidType1.FluidName, out List<Route> routes1));
             Assert.AreEqual(1, routes1.Count);
@@ -211,7 +211,7 @@ namespace BiolyTests.RoutingTests
 
             int startTime = 55;
             Schedule schedule = new Schedule();
-            int endTime = schedule.RouteDropletsToModule(sourceModule, board, startTime, operation);
+            int endTime = Router.RouteDropletsToModule(sourceModule, board, startTime, operation);
             Assert.AreEqual(2, dropletSpawner.DropletCount);
             Assert.AreEqual(2, board.placedModules.Count);
             Assert.AreEqual(1, sourceModule.InputRoutes.Count);
