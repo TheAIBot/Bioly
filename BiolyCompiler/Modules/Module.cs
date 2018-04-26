@@ -153,13 +153,11 @@ namespace BiolyCompiler.Modules
             List<Command> commands = new List<Command>();
             int time = 0;
             List<Command> routeCommands = new List<Command>();
-            //Only fluidoperations have routes associated with them
-            if (BindingOperation is FluidBlock fluidOperation)
+
+            FluidBlock fluidOperation = (FluidBlock)BindingOperation;
+            foreach (List<Route> routes in fluidOperation.InputRoutes.Values.OrderBy(routes => routes.First().startTime))
             {
-                foreach (List<Route> routes in fluidOperation.InputRoutes.Values.OrderBy(routes => routes.First().startTime))
-                {
-                    routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
-                }
+                routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
             }
             List<Command> moduleCommands = GetModuleCommands(ref time);
             if (!IsStaticModule())
