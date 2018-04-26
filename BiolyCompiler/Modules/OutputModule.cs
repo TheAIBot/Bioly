@@ -21,7 +21,7 @@ namespace BiolyCompiler.Modules
         }
 
 
-        public override bool isStaticModule()
+        public override bool IsStaticModule()
         {
             return true;
         }

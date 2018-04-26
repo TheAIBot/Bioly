@@ -110,7 +110,7 @@ namespace BiolyCompiler.Modules
         public abstract Module GetCopyOf();
 
         //True iff the module is placed permenently on the board.
-        public virtual bool isStaticModule()
+        public virtual bool IsStaticModule()
         {
             return false;
         }
@@ -128,7 +128,7 @@ namespace BiolyCompiler.Modules
             else if (moduleObj.GetType() != this.GetType()) return false;
             else
             {
-                bool sameBindingOperation = (BindingOperation != null && moduleObj.BindingOperation != null && BindingOperation.Equals(moduleObj.BindingOperation)) ||
+                bool sameBindingOperation = (BindingOperation != null && BindingOperation.Equals(moduleObj.BindingOperation)) ||
                                             (BindingOperation == null && moduleObj.BindingOperation == null);
                 return Shape.Equals(moduleObj.Shape) &&
                         OperationTime == moduleObj.OperationTime &&
@@ -150,25 +150,26 @@ namespace BiolyCompiler.Modules
 
         public List<Command> ToCommands()
         {
-            List<Command> commands = new List<Command>();
             int time = 0;
-            List<Command> routeCommands = new List<Command>();
+            List<Command> commands = new List<Command>();
 
-            FluidBlock fluidOperation = (FluidBlock)BindingOperation;
-            foreach (List<Route> routes in fluidOperation.InputRoutes.Values.OrderBy(routes => routes.First().startTime))
-            {
-                routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
-            }
-            List<Command> moduleCommands = GetModuleCommands(ref time);
-            if (moduleCommands.Count > 0)
+            if (!IsStaticModule())
             {
                 //show module on simulator
                 commands.Add(new AreaCommand(Shape, CommandType.SHOW_AREA, 0));
             }
-            commands.AddRange(routeCommands);
-            commands.AddRange(moduleCommands);
 
-            if (moduleCommands.Count > 0)
+            //add commands for the routes
+            FluidBlock fluidOperation = (FluidBlock)BindingOperation;
+            foreach (List<Route> routeList in fluidOperation.InputRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                routeList.ForEach(route => commands.AddRange(route.ToCommands(ref time)));
+            }
+            
+            //add commands for the module itself
+            commands.AddRange(GetModuleCommands(ref time));
+
+            if (!IsStaticModule())
             {
                 //remove module from simulator
                 commands.Add(new AreaCommand(Shape, CommandType.REMOVE_AREA, time));

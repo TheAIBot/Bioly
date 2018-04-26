@@ -15,6 +15,7 @@ using BiolyCompiler.BlocklyParts.Misc;
 using System.Threading.Tasks;
 using System.Threading;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using System.Diagnostics;
 
 namespace BiolyCompiler
 {
@@ -32,6 +33,7 @@ namespace BiolyCompiler
         {
             (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlText);
             DFG<Block> runningGraph = graph.StartDFG;
+            Debug.WriteLine("asdasa");
 
             Board board = new Board(width, height);
             ModuleLibrary library = new ModuleLibrary();
@@ -47,22 +49,21 @@ namespace BiolyCompiler
             controlStack.Push(new Conditional(null, null, null));
             repeatStack.Push(0);
 
-            //foreach (InputDeclaration input in runningGraph.Nodes.Select(x => x.value).OfType<InputDeclaration>())
-            //{
-            //    BoardFluid fluid = new BoardFluid(input.OutputVariable);
-            //    fluid.droplets.Add((InputModule)input.getAssociatedModule());
-            //    dropPositions.Add(input.OutputVariable, fluid);
-            //}
-
             while (runningGraph != null)
             {
                 List<Module> usedModules;
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, ref staticModules, out usedModules);
                 if (firstRun)
                 {
+                    List<StaticDeclarationBlock> staticDeclarations = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock)
+                                                                                          .Select(x => x.value)
+                                                                                          .Cast<StaticDeclarationBlock>()
+                                                                                          .ToList();
                     List<Module> inputs = usedModules.Where(x => x is InputModule)
                                                      .ToList();
                     List<Module> outputs = usedModules.Where(x => x is OutputModule/* || x is Waste*/)
+                                                      .Where(x => staticDeclarations.Any(dec => dec.ModuleName == ((StaticUseageBlock)x.BindingOperation).ModuleName))
+                                                      .Distinct()
                                                       .ToList();
 
                     Executor.StartExecutor(inputs, outputs);
@@ -79,20 +80,16 @@ namespace BiolyCompiler
                         {
                             commands = fluidOperation.GetFluidTransferOperations();
                         }
-                        else commands = fluidBlock.BoundModule.ToCommands();
+                        else
+                        {
+                            commands = fluidBlock.BoundModule.ToCommands();
+                        }
+
                         foreach (Command command in commands)
                         {
                             int index = fluidBlock.StartTime + command.Time;
-                            try
-                            {
-                                commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
-                                commandTimeline[index].Add(command);
-                            }
-                            catch (Exception)
-                            {
-
-                                throw;
-                            }
+                            commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
+                            commandTimeline[index].Add(command);
                         }
                     }
                     else if (operation is VariableBlock varBlock)
@@ -121,15 +118,22 @@ namespace BiolyCompiler
 
                         if (offCommands.Count > 0)
                         {
-                            Executor.SendCommands(offCommands);
+                            Executor.QueueCommands(offCommands);
                         }
                         if (onCommands.Count > 0)
                         {
-                            Executor.SendCommands(onCommands);
+                            Executor.QueueCommands(onCommands);
+                        }
+                        if (showAreaCommands.Count > 0)
+                        {
+                            Executor.QueueCommands(showAreaCommands);
+                        }
+                        if (removeAreaCommands.Count > 0)
+                        {
+                            Executor.QueueCommands(removeAreaCommands);
                         }
 
-                        showAreaCommands.ForEach(x => Executor.SendCommand(x));
-                        removeAreaCommands.ForEach(x => Executor.SendCommand(x));
+                        Executor.SendCommands();
                     }
 
                     Thread.Sleep(TIME_BETWEEN_COMMANDS);
@@ -147,8 +151,8 @@ namespace BiolyCompiler
             scheduler.TransferFluidVariableLocationInformation(dropPositions);
             scheduler.TransferStaticModulesInformation(staticModules);
             List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
-                                                                                      .Select(node => node.value as StaticDeclarationBlock)
-                                                                                      .ToList();
+                                                              .Select(node => node.value as StaticDeclarationBlock)
+                                                              .ToList();
             scheduler.PlaceStaticModules(staticModuleDeclarations, board, library);
             Assay assay = new Assay(runningGraph);
 
