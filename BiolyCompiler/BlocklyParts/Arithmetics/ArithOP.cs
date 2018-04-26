@@ -26,7 +26,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             this.RightBlock = rightBlock;
         }
 
-        public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
 
@@ -35,20 +35,20 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             try
             {
                 XmlNode leftNode = node.GetInnerBlockNode(LeftArithFieldName, new MissingBlockException(id, "Left side of arithmetic operator is missing a block."));
-                leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef, parseExceptions);
+                leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo);
             }
             catch (ParseException e)
             {
-                parseExceptions.Add(e);
+                parserInfo.parseExceptions.Add(e);
             }
             try
             {
                 XmlNode rightNode = node.GetInnerBlockNode(RightArithFieldName, new MissingBlockException(id, "Right side of Arithmetic operator is missing a block."));
-                rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef, parseExceptions);
+                rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo);
             }
             catch (ParseException e)
             {
-                parseExceptions.Add(e);
+                parserInfo.parseExceptions.Add(e);
             }
 
             dfg.AddNode(leftArithBlock);

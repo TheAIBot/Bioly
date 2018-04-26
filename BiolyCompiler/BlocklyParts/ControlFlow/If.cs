@@ -13,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         public const string XML_TYPE_NAME = "controls_if";
         public readonly IReadOnlyList<Conditional> IfStatements;
 
-        public If(XmlNode node, CDFG cdfg, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
+        public If(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             List<Conditional> conditionals = new List<Conditional>();
@@ -42,33 +42,33 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
                 try
                 {
                     ifNode = node.GetInnerBlockNode($"IF{ifCounter}", new MissingBlockException(id, $"{exceptionStart} is missing its conditional block."));
-                    decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ifNode, dfg, mostRecentRef, parseExceptions);
+                    decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ifNode, dfg, parserInfo);
                 }
                 catch (ParseException e)
                 {
-                    parseExceptions.Add(e);
+                    parserInfo.parseExceptions.Add(e);
                 }
 
                 XmlNode guardedDFGNode = null;
                 try
                 {
                     guardedDFGNode = node.GetInnerBlockNode($"DO{ifCounter}", new MissingBlockException(id, $"{exceptionStart} is missing blocks to execute."));
-                    DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg, parseExceptions);
-                    DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg, parseExceptions);
+                    DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, parserInfo);
+                    DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, parserInfo);
 
                     conditionals.Add(new Conditional(decidingBlock, guardedDFG, nextDFG));
                 }
                 catch (ParseException e)
                 {
-                    parseExceptions.Add(e);
+                    parserInfo.parseExceptions.Add(e);
                 }
             }
 
             if (hasElse)
             {
                 XmlNode guardedDFGNode = node.GetInnerBlockNode("ELSE", new MissingBlockException(id, "Else statement is missing blocks to execute"));
-                DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg, parseExceptions);
-                DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg, parseExceptions);
+                DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, parserInfo);
+                DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, parserInfo);
 
                 conditionals.Add(new Conditional(null, guardedDFG, nextDFG));
             }

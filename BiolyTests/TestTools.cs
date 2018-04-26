@@ -105,15 +105,6 @@ namespace BiolyTests
             return StringToXmlBlock(xml);
         }
 
-        public static Dictionary<string, string> GetDefaultRefDictionary()
-        {
-            Dictionary<string, string> mostRecentRef = new Dictionary<string, string>();
-            mostRecentRef.Add("input_fluid_name", "input_fluid_name");
-            mostRecentRef.Add("fluid_name", "fluid_name");
-
-            return mostRecentRef;
-        }
-
         public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
         {
             if (enumerable == null) throw new ArgumentNullException("enumerable");

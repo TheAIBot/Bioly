@@ -31,11 +31,15 @@ namespace BiolyCompiler.BlocklyParts.Misc
             this.Unit = FluidUnit.drops;
         }
 
-        public static Block Parse(XmlNode node)
+        public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
-            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
-            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             string id = node.GetAttributeValue(Block.IDFieldName);
+            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
+            Validator.CheckVariableName(id, output);
+
+            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            Validator.CheckVariableName(id, moduleName);
+            parserInfo.AddModuleName(moduleName);
             return new InputDeclaration(moduleName, output, node, id);
         }
 

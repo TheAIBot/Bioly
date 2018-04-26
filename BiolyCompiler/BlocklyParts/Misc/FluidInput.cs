@@ -19,11 +19,13 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public const int ML_PER_DROPLET = 1;
 
-        public FluidInput(XmlNode node, Dictionary<string, string> mostRecentRef)
+        public FluidInput(XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string originalName = node.GetNodeWithAttributeValue(FluidNameFieldName).InnerText;
-            mostRecentRef.TryGetValue(originalName, out string correctedName);
+            Validator.CheckVariableName(id, originalName);
+            parserInfo.CheckFluidVariable(id, originalName);
+            parserInfo.mostRecentVariableRef.TryGetValue(originalName, out string correctedName);
 
             this.FluidName = correctedName ?? "ERROR_FINDING_NODE";
             this.AmountInML = node.GetNodeWithAttributeValue(FluidAmountFieldName).TextToFloat(id);

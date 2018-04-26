@@ -28,16 +28,15 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             Validator.ValueWithinRange(id, this.Time, 0, 2592000);
         }
 
-        public static Block CreateHeater(string output, XmlNode node, Dictionary<string, string> mostRecentRef)
+        public static Block CreateHeater(string output, XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
 
             XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Heater is missing input fluid block."));
-            FluidInput fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, mostRecentRef);
+            FluidInput fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, parserInfo);
 
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);
-
             return new Heater(inputs, output, node, id);
         }
 
