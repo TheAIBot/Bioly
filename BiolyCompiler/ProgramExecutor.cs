@@ -15,6 +15,7 @@ using BiolyCompiler.BlocklyParts.Misc;
 using System.Threading.Tasks;
 using System.Threading;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using System.Diagnostics;
 
 namespace BiolyCompiler
 {
@@ -32,6 +33,7 @@ namespace BiolyCompiler
         {
             (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlText);
             DFG<Block> runningGraph = graph.StartDFG;
+            Debug.WriteLine("asdasa");
 
             Board board = new Board(width, height);
             ModuleLibrary library = new ModuleLibrary();
@@ -53,9 +55,15 @@ namespace BiolyCompiler
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, ref staticModules, out usedModules);
                 if (firstRun)
                 {
+                    List<StaticDeclarationBlock> staticDeclarations = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock)
+                                                                                          .Select(x => x.value)
+                                                                                          .Cast<StaticDeclarationBlock>()
+                                                                                          .ToList();
                     List<Module> inputs = usedModules.Where(x => x is InputModule)
                                                      .ToList();
                     List<Module> outputs = usedModules.Where(x => x is OutputModule/* || x is Waste*/)
+                                                      .Where(x => staticDeclarations.Any(dec => dec.ModuleName == ((StaticUseageBlock)x.BindingOperation).ModuleName))
+                                                      .Distinct()
                                                       .ToList();
 
                     Executor.StartExecutor(inputs, outputs);
@@ -143,8 +151,8 @@ namespace BiolyCompiler
             scheduler.TransferFluidVariableLocationInformation(dropPositions);
             scheduler.TransferStaticModulesInformation(staticModules);
             List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
-                                                                                      .Select(node => node.value as StaticDeclarationBlock)
-                                                                                      .ToList();
+                                                              .Select(node => node.value as StaticDeclarationBlock)
+                                                              .ToList();
             scheduler.PlaceStaticModules(staticModuleDeclarations, board, library);
             Assay assay = new Assay(runningGraph);
 

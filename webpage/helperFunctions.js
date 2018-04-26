@@ -89,9 +89,15 @@ function getWorkspaceAsXml()
 	return Blockly.Xml.domToText(xml);
 }
 
+var lastUpdateTime = new Date();
 function onWorkspaceChanged(event)
 {
-	webUpdater.update(getWorkspaceAsXml());
+	const currentTime = new Date();
+	if(lastUpdateTime.getMilliseconds() + 50 < currentTime.getMilliseconds())
+	{
+		webUpdater.update(getWorkspaceAsXml());
+	}
+	lastUpdateTime = new Date();
 }
 workspace.addChangeListener(onWorkspaceChanged);
 

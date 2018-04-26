@@ -128,7 +128,7 @@ namespace BiolyCompiler.Modules
             else if (moduleObj.GetType() != this.GetType()) return false;
             else
             {
-                bool sameBindingOperation = (BindingOperation != null && moduleObj.BindingOperation != null && BindingOperation.Equals(moduleObj.BindingOperation)) ||
+                bool sameBindingOperation = (BindingOperation != null && BindingOperation.Equals(moduleObj.BindingOperation)) ||
                                             (BindingOperation == null && moduleObj.BindingOperation == null);
                 return Shape.Equals(moduleObj.Shape) &&
                         OperationTime == moduleObj.OperationTime &&
