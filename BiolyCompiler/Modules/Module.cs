@@ -110,7 +110,7 @@ namespace BiolyCompiler.Modules
         public abstract Module GetCopyOf();
 
         //True iff the module is placed permenently on the board.
-        public virtual bool isStaticModule()
+        public virtual bool IsStaticModule()
         {
             return false;
         }
@@ -162,7 +162,7 @@ namespace BiolyCompiler.Modules
                 }
             }
             List<Command> moduleCommands = GetModuleCommands(ref time);
-            if (moduleCommands.Count > 0)
+            if (!IsStaticModule())
             {
                 //show module on simulator
                 commands.Add(new AreaCommand(Shape, CommandType.SHOW_AREA, 0));
@@ -170,7 +170,7 @@ namespace BiolyCompiler.Modules
             commands.AddRange(routeCommands);
             commands.AddRange(moduleCommands);
 
-            if (moduleCommands.Count > 0)
+            if (!IsStaticModule())
             {
                 //remove module from simulator
                 commands.Add(new AreaCommand(Shape, CommandType.REMOVE_AREA, time));
