@@ -13,8 +13,8 @@ namespace BiolyCompiler.Modules
             OperationTime = 2;
             InputLayout = new InfiniteModuleLayout(InputLayout.width, InputLayout.height, InputLayout.EmptyRectangles, InputLayout.Droplets);
         }
-        
-        
+
+
         public override Module GetCopyOf()
         {
             return new OutputModule();
@@ -28,8 +28,12 @@ namespace BiolyCompiler.Modules
 
         protected override List<Command> GetModuleCommands(ref int time)
         {
-            time += 2;
-            return new List<Command>() { new Command(InputLayout.Droplets[0].Shape.x, InputLayout.Droplets[0].Shape.y, CommandType.ELECTRODE_OFF, time) };
+            time += 1;
+            return new List<Command>()
+            {
+                new Command(InputLayout.Droplets[0].Shape.x, InputLayout.Droplets[0].Shape.y, 
+                CommandType.ELECTRODE_OFF, time)
+            };
         }
     }
 }
