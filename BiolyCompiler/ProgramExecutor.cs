@@ -47,13 +47,6 @@ namespace BiolyCompiler
             controlStack.Push(new Conditional(null, null, null));
             repeatStack.Push(0);
 
-            //foreach (InputDeclaration input in runningGraph.Nodes.Select(x => x.value).OfType<InputDeclaration>())
-            //{
-            //    BoardFluid fluid = new BoardFluid(input.OutputVariable);
-            //    fluid.droplets.Add((InputModule)input.getAssociatedModule());
-            //    dropPositions.Add(input.OutputVariable, fluid);
-            //}
-
             while (runningGraph != null)
             {
                 List<Module> usedModules;
@@ -79,20 +72,16 @@ namespace BiolyCompiler
                         {
                             commands = fluidOperation.GetFluidTransferOperations();
                         }
-                        else commands = fluidBlock.BoundModule.ToCommands();
+                        else
+                        {
+                            commands = fluidBlock.BoundModule.ToCommands();
+                        }
+
                         foreach (Command command in commands)
                         {
                             int index = fluidBlock.StartTime + command.Time;
-                            try
-                            {
-                                commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
-                                commandTimeline[index].Add(command);
-                            }
-                            catch (Exception)
-                            {
-
-                                throw;
-                            }
+                            commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
+                            commandTimeline[index].Add(command);
                         }
                     }
                     else if (operation is VariableBlock varBlock)
@@ -121,15 +110,22 @@ namespace BiolyCompiler
 
                         if (offCommands.Count > 0)
                         {
-                            Executor.SendCommands(offCommands);
+                            Executor.QueueCommands(offCommands);
                         }
                         if (onCommands.Count > 0)
                         {
-                            Executor.SendCommands(onCommands);
+                            Executor.QueueCommands(onCommands);
+                        }
+                        if (showAreaCommands.Count > 0)
+                        {
+                            Executor.QueueCommands(showAreaCommands);
+                        }
+                        if (removeAreaCommands.Count > 0)
+                        {
+                            Executor.QueueCommands(removeAreaCommands);
                         }
 
-                        showAreaCommands.ForEach(x => Executor.SendCommand(x));
-                        removeAreaCommands.ForEach(x => Executor.SendCommand(x));
+                        Executor.SendCommands();
                     }
 
                     Thread.Sleep(TIME_BETWEEN_COMMANDS);

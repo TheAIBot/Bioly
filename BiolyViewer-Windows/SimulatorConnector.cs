@@ -38,7 +38,6 @@ namespace BiolyViewer_Windows
                 string g = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
                 string b = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
                 inputBuilder.Append($"{{index: {electrodeIndex}, color: vec4({r}, {g}, {b}, 0.5)}},");
-
             }
             string inputString = inputBuilder.ToString();
 
@@ -61,13 +60,14 @@ namespace BiolyViewer_Windows
 
             for (int i = 0; i < inputs.Count; i++)
             {
-                SendCommand(new AreaCommand(inputs[i].Shape, CommandType.SHOW_AREA, 0));
+                QueueCommand(new AreaCommand(inputs[i].Shape, CommandType.SHOW_AREA, 0));
             }
 
             for (int i = 0; i < outputs.Count; i++)
             {
-                SendCommand(new AreaCommand(outputs[i].Shape, CommandType.SHOW_AREA, 0));
+                QueueCommand(new AreaCommand(outputs[i].Shape, CommandType.SHOW_AREA, 0));
             }
+            SendCommands();
 
             if (REALLY_SLOW_COMPUTER)
             {
@@ -75,12 +75,17 @@ namespace BiolyViewer_Windows
             }
         }
 
-        public override void SendCommand(Command command) => SendCommands(new List<Command>() { command });
+        private void QueueCommand(Command command) => QueueCommands(new List<Command>() { command });
 
-        public override void SendCommands(List<Command> commands)
+        public override void QueueCommands(List<Command> commands)
         {
-            string commandScript = $"addCommand(\"{ConvertCommand(commands)}\");";
-            ExecuteJs(commandScript);
+            QueuedCommands.Add($"addCommand(\"{ConvertCommand(commands)}\");");
+        }
+
+        public override void SendCommands()
+        {
+            ExecuteJs(String.Join(String.Empty, QueuedCommands));
+            QueuedCommands.Clear();
         }
 
         private async void ExecuteJs(string js)
