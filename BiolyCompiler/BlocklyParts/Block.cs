@@ -23,7 +23,7 @@ namespace BiolyCompiler.BlocklyParts
 
         //For the scheduling:
         public bool hasBeenScheduled = false;
-        public int startTime = -1;
+        public int StartTime = -1;
         public int endTime = -1;
         public int priority = Int32.MaxValue;
 
@@ -42,7 +42,7 @@ namespace BiolyCompiler.BlocklyParts
         {
             ResetBlock();
             this.hasBeenScheduled = false;
-            this.startTime = -1;
+            this.StartTime = -1;
             this.endTime = -1;
             this.priority = Int32.MaxValue;
     }

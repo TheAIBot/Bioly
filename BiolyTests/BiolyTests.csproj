@@ -92,6 +92,7 @@
     <Compile Include="TestAssay.cs" />
     <Compile Include="TestLibrary.cs" />
     <Compile Include="TestModules.cs" />
+    <Compile Include="TestRectangles.cs" />
     <Compile Include="TestObjects\TestBlock.cs" />
     <Compile Include="TestObjects\TestModule.cs" />
     <Compile Include="TestParseBlocks.cs" />

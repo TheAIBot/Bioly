@@ -72,12 +72,17 @@ namespace BiolyCompiler
                 List<Command>[] commandTimeline = new List<Command>[time + 1];
                 foreach (Block operation in scheduledOperations)
                 {
-                    if (operation is FluidBlock fluidBLock)
+                    if (operation is FluidBlock fluidBlock)
                     {
-                        List<Command> commands = fluidBLock.boundModule.ToCommands();
+                        List<Command> commands;
+                        if (operation is Fluid fluidOperation)
+                        {
+                            commands = fluidOperation.GetFluidTransferOperations();
+                        }
+                        else commands = fluidBlock.BoundModule.ToCommands();
                         foreach (Command command in commands)
                         {
-                            int index = fluidBLock.startTime + command.Time;
+                            int index = fluidBlock.StartTime + command.Time;
                             try
                             {
                                 commandTimeline[index] = commandTimeline[index] ?? new List<Command>();

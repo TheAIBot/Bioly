@@ -136,12 +136,22 @@ function updateLoop(version)
 		executeCommand(newCommands[0]);
 		newCommands.splice(0, 1);
 	}
-	
+	try
+	{
 	spawnInputDrops();
 	splitDrops();
 	removeDrops();
 	updateDropPositions();
 	mergeDrops();
+	}
+	catch(err)
+	{
+		console.log(err);
+		updateDropData(drops);
+		updateAreaData(areas);
+		render(drops.length, areas.length);
+		return;
+	}
 	
 	updateDropData(drops);
 	updateAreaData(areas);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BiolyCompiler.Architechtures;
 using BiolyCompiler.Scheduling;
 using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyCompiler.Modules
 {
@@ -39,8 +40,9 @@ namespace BiolyCompiler.Modules
             HashSet<Module> associatedModules = new HashSet<Module>();
             foreach (var node in assay.dfg.Nodes)
             {
-                if (node.value is FluidBlock operation && 
+                if (  node.value is FluidBlock operation && 
                     !(node.value is StaticUseageBlock) &&
+                    !(node.value is Fluid) &&
                     !associatedModules.Contains(operation.getAssociatedModule()))
                 {
                     associatedModules.Add(operation.getAssociatedModule());

@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Modules;
+using BiolyCompiler.Routing;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,7 +13,9 @@ namespace BiolyCompiler.BlocklyParts
 
         private static readonly List<FluidInput> EmptyList = new List<FluidInput>();
         //For the scheduling.
-        public Module boundModule = null;
+        public Module BoundModule = null;
+        //The key is the input fluid name, see InputVariables.
+        public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
 
         public FluidBlock(bool canBeOutput, string output, string id) : base(canBeOutput, output, id)
         {
@@ -31,7 +34,7 @@ namespace BiolyCompiler.BlocklyParts
 
         public virtual void Bind(Module module)
         {
-            boundModule = module;
+            BoundModule = module;
             module.BindingOperation = this;
 
             //The fluid types of the module layout, is changedto fit with the operation.
@@ -63,7 +66,7 @@ namespace BiolyCompiler.BlocklyParts
 
         protected override void ResetBlock()
         {
-            this.boundModule = null;
+            this.BoundModule = null;
         }
     }
 }

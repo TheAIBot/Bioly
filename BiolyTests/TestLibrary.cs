@@ -1,11 +1,8 @@
 using System.Collections.Generic;
 using MoreLinq;
 using BiolyTests.AssayTests;
-using BiolyCompiler.Modules;
-using BiolyCompiler.Scheduling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using BiolyCompiler.BlocklyParts;
 
 namespace BiolyTests.ModuleLibraryTests
 {

@@ -314,7 +314,7 @@ namespace BiolyCompiler.Architechtures
 
         public List<Droplet> replaceWithDroplets(FluidBlock finishedOperation, BoardFluid fluidType)
         {
-            Module operationExecutingModule = finishedOperation.boundModule;
+            Module operationExecutingModule = finishedOperation.BoundModule;
             //Checks for each pair of adjacent rectangle to the module on the board, and the rectangles in the modules layout,
             //if they are adjacent -> if so, it makes them adjacent.
             List<Rectangle> allRectangles = operationExecutingModule.GetOutputLayout().getAllRectanglesIncludingDroplets();
