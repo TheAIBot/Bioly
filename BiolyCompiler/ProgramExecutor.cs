@@ -55,96 +55,113 @@ namespace BiolyCompiler
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, ref staticModules, out usedModules);
                 if (firstRun)
                 {
-                    List<StaticDeclarationBlock> staticDeclarations = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock)
-                                                                                          .Select(x => x.value)
-                                                                                          .Cast<StaticDeclarationBlock>()
-                                                                                          .ToList();
-                    List<Module> inputs = usedModules.Where(x => x is InputModule)
-                                                     .ToList();
-                    List<Module> outputs = usedModules.Where(x => x is OutputModule/* || x is Waste*/)
-                                                      .Where(x => staticDeclarations.Any(dec => dec.ModuleName == ((StaticUseageBlock)x.BindingOperation).ModuleName))
-                                                      .Distinct()
-                                                      .ToList();
-
-                    Executor.StartExecutor(inputs, outputs);
+                    StartExecutor(graph, usedModules);
                     firstRun = false;
                 }
 
-                List<Command>[] commandTimeline = new List<Command>[time + 1];
-                foreach (Block operation in scheduledOperations)
-                {
-                    if (operation is FluidBlock fluidBlock)
-                    {
-                        List<Command> commands;
-                        if (operation is Fluid fluidOperation)
-                        {
-                            commands = fluidOperation.GetFluidTransferOperations();
-                        }
-                        else
-                        {
-                            commands = fluidBlock.BoundModule.ToCommands();
-                        }
+                List<Command>[] commandTimeline = CreateCommandTimeline(variables, varScopeStack, scheduledOperations, time);
 
-                        foreach (Command command in commands)
-                        {
-                            int index = fluidBlock.StartTime + command.Time;
-                            commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
-                            commandTimeline[index].Add(command);
-                        }
-                    }
-                    else if (operation is VariableBlock varBlock)
-                    {
-                        (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor);
-                        if (!variables.ContainsKey(variableName))
-                        {
-                            variables.Add(variableName, value);
-                            varScopeStack.Peek().Add(variableName);
-                        }
-                        else
-                        {
-                            variables[variableName] = value;
-                        }
-                    }
-                }
-
-                foreach (List<Command> commands in commandTimeline)
-                {
-                    if (commands != null)
-                    {
-                        List<Command> onCommands = commands.Where(x => x.Type == CommandType.ELECTRODE_ON).ToList();
-                        List<Command> offCommands = commands.Where(x => x.Type == CommandType.ELECTRODE_OFF).ToList();
-                        List<Command> showAreaCommands = commands.Where(x => x.Type == CommandType.SHOW_AREA).ToList();
-                        List<Command> removeAreaCommands = commands.Where(x => x.Type == CommandType.REMOVE_AREA).ToList();
-
-                        if (offCommands.Count > 0)
-                        {
-                            Executor.QueueCommands(offCommands);
-                        }
-                        if (onCommands.Count > 0)
-                        {
-                            Executor.QueueCommands(onCommands);
-                        }
-                        if (showAreaCommands.Count > 0)
-                        {
-                            Executor.QueueCommands(showAreaCommands);
-                        }
-                        if (removeAreaCommands.Count > 0)
-                        {
-                            Executor.QueueCommands(removeAreaCommands);
-                        }
-
-                        Executor.SendCommands();
-                    }
-
-                    Thread.Sleep(TIME_BETWEEN_COMMANDS);
-                }
+                SendCommands(commandTimeline);
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
                 runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack, repeatStack);
             }
         }
-        
+
+        private void StartExecutor(CDFG graph, List<Module> usedModules)
+        {
+            List<StaticDeclarationBlock> staticDeclarations = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock)
+                                                                                  .Select(x => x.value)
+                                                                                  .Cast<StaticDeclarationBlock>()
+                                                                                  .ToList();
+            List<Module> inputs = usedModules.Where(x => x is InputModule)
+                                             .ToList();
+            List<Module> outputs = usedModules.Where(x => x is OutputModule/* || x is Waste*/)
+                                              .Where(x => staticDeclarations.Any(dec => dec.ModuleName == ((StaticUseageBlock)x.BindingOperation).ModuleName))
+                                              .Distinct()
+                                              .ToList();
+
+            Executor.StartExecutor(inputs, outputs);
+        }
+
+        private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, Stack<List<string>> varScopeStack, List<Block> scheduledOperations, int time)
+        {
+            List<Command>[] commandTimeline = new List<Command>[time + 1];
+            foreach (Block operation in scheduledOperations)
+            {
+                if (operation is FluidBlock fluidBlock)
+                {
+                    List<Command> commands;
+                    if (operation is Fluid fluidOperation)
+                    {
+                        commands = fluidOperation.GetFluidTransferOperations();
+                    }
+                    else
+                    {
+                        commands = fluidBlock.BoundModule.ToCommands();
+                    }
+
+                    foreach (Command command in commands)
+                    {
+                        int index = fluidBlock.StartTime + command.Time;
+                        commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
+                        commandTimeline[index].Add(command);
+                    }
+                }
+                else if (operation is VariableBlock varBlock)
+                {
+                    (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor);
+                    if (!variables.ContainsKey(variableName))
+                    {
+                        variables.Add(variableName, value);
+                        varScopeStack.Peek().Add(variableName);
+                    }
+                    else
+                    {
+                        variables[variableName] = value;
+                    }
+                }
+            }
+
+            return commandTimeline;
+        }
+
+        private void SendCommands(List<Command>[] commandTimeline)
+        {
+            foreach (List<Command> commands in commandTimeline)
+            {
+                if (commands != null)
+                {
+                    List<Command> onCommands = commands.Where(x => x.Type == CommandType.ELECTRODE_ON).ToList();
+                    List<Command> offCommands = commands.Where(x => x.Type == CommandType.ELECTRODE_OFF).ToList();
+                    List<Command> showAreaCommands = commands.Where(x => x.Type == CommandType.SHOW_AREA).ToList();
+                    List<Command> removeAreaCommands = commands.Where(x => x.Type == CommandType.REMOVE_AREA).ToList();
+
+                    if (offCommands.Count > 0)
+                    {
+                        Executor.QueueCommands(offCommands);
+                    }
+                    if (onCommands.Count > 0)
+                    {
+                        Executor.QueueCommands(onCommands);
+                    }
+                    if (showAreaCommands.Count > 0)
+                    {
+                        Executor.QueueCommands(showAreaCommands);
+                    }
+                    if (removeAreaCommands.Count > 0)
+                    {
+                        Executor.QueueCommands(removeAreaCommands);
+                    }
+
+                    Executor.SendCommands();
+                }
+
+                Thread.Sleep(TIME_BETWEEN_COMMANDS);
+            }
+        }
+
         private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out List<Module> usedModules)
         {
             Schedule scheduler = new Schedule();
