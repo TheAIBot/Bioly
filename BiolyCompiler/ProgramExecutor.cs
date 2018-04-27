@@ -32,6 +32,10 @@ namespace BiolyCompiler
         public void Run(int width, int height, string xmlText)
         {
             (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlText);
+            if (exceptions.Count > 0)
+            {
+                return;
+            }
             DFG<Block> runningGraph = graph.StartDFG;
             Debug.WriteLine("asdasa");
 
