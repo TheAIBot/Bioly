@@ -105,7 +105,7 @@ namespace BiolyCompiler.Architechtures
         /// This is to ensure that it is always possible to route droplets between modules,
         /// and to ensure that there isn't any space on the board (an empty rectangle) that simply can't be used.
         /// 
-        /// To construct the correct adjacency graph for the board, the module is temporarily placed and is the removed,
+        /// To construct the correct adjacency graph for the board, the module is temporarily placed and is then removed,
         /// giving the original board.
         /// 
         /// Checking that everything is connected is done using a Breadth first search, only moving between empty rectangles.
@@ -119,7 +119,7 @@ namespace BiolyCompiler.Architechtures
             
 
             //The module is temporarily "placed" (but not really), to get the adjacency graph corresponding to the module being placed.
-            //It is not really placed, as it would change EmptyRectangles, which is itterated over.
+            //It is not really placed, as it would change EmptyRectangles, which is itterated over. Trust me, it would crash everything - Jesper.
             (Rectangle emptyTopRectangle, Rectangle emptyRightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
             int extraEmptyRectangles = ((emptyTopRectangle == null) ? 0 : 1) + ((emptyRightRectangle == null) ? 0 : 1) - 1; //-1 as the initial rectangle is removed.
 
@@ -160,7 +160,7 @@ namespace BiolyCompiler.Architechtures
             return visitsEverything;
         }
 
-        private Rectangle getEmptyAdjacentRectangle(Rectangle rectangle)
+        private static Rectangle getEmptyAdjacentRectangle(Rectangle rectangle)
         {
             Rectangle randomEmptyRectangle = null;
             foreach (var adjacentRectangle in rectangle.AdjacentRectangles)
@@ -192,27 +192,13 @@ namespace BiolyCompiler.Architechtures
             return differenceSet;
         }
 
-        private void MergeToGetOriginalRectangle(Module module, Rectangle originalRectangle, Rectangle emptyTopRectangle, Rectangle emptyRightRectangle)
+        private  void MergeToGetOriginalRectangle(Module module, Rectangle originalRectangle, Rectangle emptyTopRectangle, Rectangle emptyRightRectangle)
         {
             //Dummy rectangles to avoid constant null checks:
             //The y=-5 position is to create unique hash values
             if (emptyTopRectangle == null)   emptyTopRectangle = new Rectangle(0, 0, 0, -5);
             if (emptyRightRectangle == null) emptyRightRectangle = new Rectangle(0, 0, 1, -5);
-
-
-            /*
-            //The module is the removed, leaving the original board. It is done this way, instead of using the mergin method,
-            //to ensure that the rectangle doesn't merge with other rectangles, instead of the top and right rectangle:
             
-            int originalWidth  = module.Shape.width  + emptyRightRectangle.width;
-            int originalHeight = module.Shape.height + emptyTopRectangle.height ;
-            Rectangle mergedRectangle = new Rectangle(originalWidth, originalHeight, module.Shape.x, module.Shape.y);
-
-            mergedRectangle.AdjacentRectangles.UnionWith(module.Shape.AdjacentRectangles);
-            mergedRectangle.AdjacentRectangles.UnionWith(emptyTopRectangle.AdjacentRectangles);
-            mergedRectangle.AdjacentRectangles.UnionWith(emptyRightRectangle.AdjacentRectangles);
-            */
-
 
             foreach (var adjacentRectangle in originalRectangle.AdjacentRectangles)
             {

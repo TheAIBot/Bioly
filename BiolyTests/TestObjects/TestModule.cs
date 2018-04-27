@@ -66,7 +66,7 @@ namespace BiolyTests.TestObjects
             return module;
         }
 
-        protected override List<Command> GetModuleCommands(ref int time)
+        public override List<Command> GetModuleCommands(ref int time)
         {
             //It is included, so that when the completion time is calculated, 
             //the correct result is attained. This calculation uses the last command that is generated.

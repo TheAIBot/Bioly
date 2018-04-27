@@ -52,9 +52,9 @@ namespace BiolyCompiler.Modules
         {
             throw new NotImplementedException();
         }
-        
 
-        protected override List<Command> GetModuleCommands(ref int time)
+
+        public override List<Command> GetModuleCommands(ref int time)
         {
             throw new Exception("Droplet can't be converted into commands");
         }

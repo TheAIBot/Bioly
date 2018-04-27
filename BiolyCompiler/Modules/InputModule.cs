@@ -61,7 +61,7 @@ namespace BiolyCompiler.Modules
             return FluidType;
         }
 
-        protected override List<Command> GetModuleCommands(ref int time)
+        public override List<Command> GetModuleCommands(ref int time)
         {
             throw new Exception("A droplet spawner does not execute any commands.");
         }

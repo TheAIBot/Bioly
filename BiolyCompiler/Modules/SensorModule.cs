@@ -18,7 +18,7 @@ namespace BiolyCompiler.Modules
             return sensor;
         }
 
-        protected override List<Command> GetModuleCommands(ref int time)
+        public override List<Command> GetModuleCommands(ref int time)
         {
             return new List<Command>();
         }

@@ -44,7 +44,7 @@ namespace BiolyCompiler.Scheduling
             else
             {
                 FluidBlock fluidOperation = operation as FluidBlock;
-                int moduleRunningTime = fluidOperation.BoundModule.GetRunningTime();
+                int moduleRunningTime = fluidOperation.GetRunningTime();
                 fluidOperation.endTime = operation.StartTime + moduleRunningTime;// currentTime + fluidOperation.boundModule.OperationTime;
                 CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.endTime);
             }

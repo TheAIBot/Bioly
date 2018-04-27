@@ -1,8 +1,10 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Routing;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BiolyCompiler.BlocklyParts
@@ -35,7 +37,7 @@ namespace BiolyCompiler.BlocklyParts
         public virtual void Bind(Module module)
         {
             BoundModule = module;
-            module.BindingOperation = this;
+            //module.BindingOperation = this;
 
             //The fluid types of the module layout, is changedto fit with the operation.
             //Thus for example, when the module is removed when the operations have finished,
@@ -57,6 +59,40 @@ namespace BiolyCompiler.BlocklyParts
                 droplet.SetFluidType(outputFluidType);
             }
 
+        }
+
+        public int GetRunningTime()
+        {
+            return ToCommands().Last().Time;
+        }
+
+        public List<Command> ToCommands()
+        {
+            int time = 0;
+            List<Command> commands = new List<Command>();
+
+            if (!(this is StaticBlock))
+            {
+                //show module on simulator
+                commands.Add(new AreaCommand(BoundModule.Shape, CommandType.SHOW_AREA, 0));
+            }
+
+            //add commands for the routes
+            foreach (List<Route> routeList in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                routeList.ForEach(route => commands.AddRange(route.ToCommands(ref time)));
+            }
+
+            //add commands for the module itself
+            commands.AddRange(BoundModule.GetModuleCommands(ref time));
+
+            if (!(this is StaticBlock))
+            {
+                //remove module from simulator
+                commands.Add(new AreaCommand(BoundModule.Shape, CommandType.REMOVE_AREA, time));
+            }
+
+            return commands;
         }
 
         internal void Unbind(Module module)

@@ -13,7 +13,7 @@ namespace BiolyCompiler.Modules
     {
         public Rectangle Shape;
         public int OperationTime = 1;
-        public Block BindingOperation;
+        //public Block BindingOperation;
         protected ModuleLayout InputLayout;
         protected ModuleLayout OutputLayout;
         
@@ -54,11 +54,7 @@ namespace BiolyCompiler.Modules
             if (RightRectangle != null) emptyRectangles.Add(RightRectangle);
             return new ModuleLayout(rectangle, emptyRectangles, new List<Droplet>() {droplet});
         }
-
-        public int GetRunningTime()
-        {
-            return ToCommands().Last().Time;
-        }
+        
 
         public void RepositionLayout()
         {
@@ -128,13 +124,10 @@ namespace BiolyCompiler.Modules
             else if (moduleObj.GetType() != this.GetType()) return false;
             else
             {
-                bool sameBindingOperation = (BindingOperation != null && BindingOperation.Equals(moduleObj.BindingOperation)) ||
-                                            (BindingOperation == null && moduleObj.BindingOperation == null);
                 return Shape.Equals(moduleObj.Shape) &&
                         OperationTime == moduleObj.OperationTime &&
-                        getNumberOfInputs()  == moduleObj.getNumberOfInputs() &&
-                        getNumberOfOutputs() == moduleObj.getNumberOfOutputs() &&
-                        sameBindingOperation;
+                        getNumberOfInputs() == moduleObj.getNumberOfInputs() &&
+                        getNumberOfOutputs() == moduleObj.getNumberOfOutputs(); //&& sameBindingOperation;
             }
         }
         
@@ -146,36 +139,8 @@ namespace BiolyCompiler.Modules
                     this.GetType().Equals(operation.getAssociatedModule().GetType());
         }
 
-        protected abstract List<Command> GetModuleCommands(ref int time);
+        public abstract List<Command> GetModuleCommands(ref int time);
 
-        public List<Command> ToCommands()
-        {
-            int time = 0;
-            List<Command> commands = new List<Command>();
-
-            if (!IsStaticModule())
-            {
-                //show module on simulator
-                commands.Add(new AreaCommand(Shape, CommandType.SHOW_AREA, 0));
-            }
-
-            //add commands for the routes
-            FluidBlock fluidOperation = (FluidBlock)BindingOperation;
-            foreach (List<Route> routeList in fluidOperation.InputRoutes.Values.OrderBy(routes => routes.First().startTime))
-            {
-                routeList.ForEach(route => commands.AddRange(route.ToCommands(ref time)));
-            }
-            
-            //add commands for the module itself
-            commands.AddRange(GetModuleCommands(ref time));
-
-            if (!IsStaticModule())
-            {
-                //remove module from simulator
-                commands.Add(new AreaCommand(Shape, CommandType.REMOVE_AREA, time));
-            }
-
-            return commands;
-        }
+       
     }
 }

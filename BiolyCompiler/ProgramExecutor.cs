@@ -81,7 +81,6 @@ namespace BiolyCompiler
             List<Module> inputs = usedModules.Where(x => x is InputModule)
                                              .ToList();
             List<Module> outputs = usedModules.Where(x => x is OutputModule/* || x is Waste*/)
-                                              .Where(x => staticDeclarations.Any(dec => dec.ModuleName == ((StaticUseageBlock)x.BindingOperation).ModuleName))
                                               .Distinct()
                                               .ToList();
 
@@ -102,12 +101,16 @@ namespace BiolyCompiler
                     }
                     else
                     {
-                        commands = fluidBlock.BoundModule.ToCommands();
+                        commands = fluidBlock.ToCommands();
                     }
 
                     foreach (Command command in commands)
                     {
                         int index = fluidBlock.StartTime + command.Time;
+                        if (index == 101)
+                        {
+                            Console.WriteLine();
+                        }
                         commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
                         commandTimeline[index].Add(command);
                     }
@@ -132,6 +135,7 @@ namespace BiolyCompiler
 
         private void SendCommands(List<Command>[] commandTimeline)
         {
+            int time = 0;
             foreach (List<Command> commands in commandTimeline)
             {
                 if (commands != null)
@@ -162,6 +166,7 @@ namespace BiolyCompiler
                 }
 
                 Thread.Sleep(TIME_BETWEEN_COMMANDS);
+                time++;
             }
         }
 

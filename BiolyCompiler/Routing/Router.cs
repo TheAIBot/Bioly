@@ -85,6 +85,11 @@ namespace BiolyCompiler.Routing
             //and then inverts the route.
             (var dijkstraGraph, var priorityQueue) = SetUpInitialDijsktraGraph(targetInput, board);
 
+
+            Func<int, Func<int, int>> Add = x => y => x + y;
+            Func<int, int> Add3 = Add(3);
+            int sdf = Add3(10); //13
+
             while (priorityQueue.Count > 0)
             {
                 RoutingInformation currentNode = priorityQueue.Dequeue();

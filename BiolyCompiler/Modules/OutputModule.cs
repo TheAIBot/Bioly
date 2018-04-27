@@ -26,7 +26,7 @@ namespace BiolyCompiler.Modules
             return true;
         }
 
-        protected override List<Command> GetModuleCommands(ref int time)
+        public override List<Command> GetModuleCommands(ref int time)
         {
             time += 2;
             return new List<Command>() { new Command(InputLayout.Droplets[0].Shape.x, InputLayout.Droplets[0].Shape.y, CommandType.ELECTRODE_OFF, time) };
