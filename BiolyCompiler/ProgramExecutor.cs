@@ -37,7 +37,6 @@ namespace BiolyCompiler
                 return;
             }
             DFG<Block> runningGraph = graph.StartDFG;
-            Debug.WriteLine("asdasa");
 
             Board board = new Board(width, height);
             ModuleLibrary library = new ModuleLibrary();
