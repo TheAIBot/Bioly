@@ -168,6 +168,30 @@ namespace BiolyTests.ParseBlockTests
         }
 
         [TestMethod]
+        public void ParseIfBlock()
+        {
+            JSProgram program = new JSProgram();
+            string left = program.AddConstantBlock(3);
+            string right = program.AddConstantBlock(3);
+            string conditionalBlock = program.AddBoolOPBlock(BoolOPTypes.EQ, left, right);
+
+            program.AddScope("a");
+            program.SetScope("a");
+            string guardedBlock = program.AddOutputSegment("random", 10, false);
+            program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
+
+            program.AddIfSegment(conditionalBlock, guardedBlock);
+            program.Finish();
+
+            TestTools.ExecuteJS(program);
+            string xml = TestTools.GetWorkspaceString();
+            (CDFG cdfg, var _) = XmlParser.Parse(xml);
+
+            Assert.AreEqual(2, cdfg.Nodes.Count);
+
+        }
+
+        [TestMethod]
         public void ParseRandomDFG()
         {
             Random random = new Random(1280);
