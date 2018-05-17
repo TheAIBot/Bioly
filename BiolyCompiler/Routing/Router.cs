@@ -4,6 +4,7 @@ using BiolyCompiler.Commands;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
+using MoreLinq;
 using Priority_Queue;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,47 @@ namespace BiolyCompiler.Routing
                 //This will give an overhead of +1 for the operation starting time, for each droplet routed:
                 currentTime = route.getEndTime() + 1;
             }
+            return currentTime;
+        }
+
+        public static int RouteDropletsToModuleWithoutInternalDropletCollisions(Board board, int currentTime, FluidBlock operation)
+        {
+            int originalStartTime = currentTime;
+
+            ModuleLayout inputLayout = operation.BoundModule.GetInputLayout().GetCopy();
+            HashSet<Droplet> dropletInputs = new HashSet<Droplet>(inputLayout.Droplets);
+            HashSet<Rectangle> emptyRectangles = new HashSet<Rectangle>(inputLayout.EmptyRectangles);
+            //Before any droplets have been placed, the internal layout is empty.
+            HashSet<Module> placedModules = new HashSet<Module>();
+            dropletInputs.ForEach(droplet => emptyRectangles.Add(droplet.Shape));
+
+            //A droplet needs to be routed to all interal droplets of the module.
+            while (dropletInputs.Count > 0)
+            {
+                bool hasDropletBeenRouted = false;
+                foreach (var dropletInput in dropletInputs)
+                {
+                    if (Board.DoesNotBlockRouteToAnyModuleOrEmptyRectangle(dropletInput.Shape, dropletInput, emptyRectangles, placedModules))
+                    {
+                        Route route = RouteSingleDropletToModule(operation, board, currentTime, dropletInput);
+                        //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
+                        //This will give an overhead of +1 for the operation starting time, for each droplet routed:
+                        currentTime = route.getEndTime() + 1;
+                        hasDropletBeenRouted = true;
+                        dropletInputs.Remove(dropletInput);
+                        emptyRectangles.Remove(dropletInput.Shape);
+                        placedModules.Add(dropletInput);
+                        break;
+                    }
+                }
+                if (!hasDropletBeenRouted)
+                {
+                    throw new Exception("It is not possible to route a droplet to every internal droplet inside a module. This should always be possible." +
+                                        "The module is: " + operation.BoundModule.ToString());
+                }
+            }
+
+
             return currentTime;
         }
 
@@ -63,15 +105,11 @@ namespace BiolyCompiler.Routing
                     break;
                 case InputModule dropletSource:
                     if (1 < dropletSource.DropletCount) dropletSource.DecrementDropletCount();
-                    else if (dropletSource.DropletCount == 1)
-                    {
+                    else if (dropletSource.DropletCount == 1) {
                         dropletSource.DecrementDropletCount();
                         //board.FastTemplateRemove(dropletSource); 
                     }
-                    else
-                    {
-                        throw new Exception("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
-                    }
+                    else throw new Exception("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
                     break;
                 default:
                     throw new Exception("Unhandled droplet source: " + route.routedDroplet.ToString());
@@ -105,7 +143,6 @@ namespace BiolyCompiler.Routing
 
                 //go through all neighbors
                 UpdateAllNeighborPriorities(board, dijkstraGraph, priorityQueue, currentNode);
-
             }
             //If no route was found:
             throw new Exception("No route to the desired component could be found");

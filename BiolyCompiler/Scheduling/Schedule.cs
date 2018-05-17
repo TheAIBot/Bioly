@@ -227,7 +227,7 @@ namespace BiolyCompiler.Scheduling
             assay.calculateCriticalPath();
             library.allocateModules(assay);
             library.sortLibrary();
-            AllUsedModules.AddRange(board.placedModules);
+            AllUsedModules.AddRange(board.PlacedModules);
             boardAtDifferentTimes.Add(startTime, board);
             Debug.WriteLine(board.print(AllUsedModules));
             board = board.Copy();

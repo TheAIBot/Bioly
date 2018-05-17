@@ -213,7 +213,7 @@ namespace BiolyTests.RoutingTests
             Schedule schedule = new Schedule();
             int endTime = Router.RouteDropletsToModule(board, startTime, operation);
             Assert.AreEqual(2, dropletSpawner.DropletCount);
-            Assert.AreEqual(2, board.placedModules.Count);
+            Assert.AreEqual(2, board.PlacedModules.Count);
             Assert.AreEqual(1, operation.InputRoutes.Count);
             Assert.AreEqual(capacity - 2, operation.InputRoutes[fluidType.FluidName].Count);
             for (int i = 0; i < operation.InputRoutes[fluidType.FluidName].Count; i++)
