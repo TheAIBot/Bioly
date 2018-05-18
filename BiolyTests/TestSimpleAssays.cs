@@ -29,7 +29,7 @@ namespace BiolyTests.SimpleAssayTests
             DFG<Block> dfg = new DFG<Block>();
             int numberOfInputs = 5;
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
-            StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", "meh", null, "");
+            StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", null, "");
             FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(outputDeclaration);

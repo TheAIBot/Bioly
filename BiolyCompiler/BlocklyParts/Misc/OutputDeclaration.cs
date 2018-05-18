@@ -11,7 +11,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
     {
         public const string XML_TYPE_NAME = "outputDeclaration";
 
-        public OutputDeclaration(string moduleName, string output, XmlNode node, string id) : base(moduleName, false, output, id)
+        public OutputDeclaration(string moduleName, XmlNode node, string id) : base(moduleName, false, null, id)
         {
 
         }
@@ -22,7 +22,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, moduleName);
             parserInfo.AddModuleName(moduleName);
-            return new OutputDeclaration(moduleName, null, node, id);
+
+            return new OutputDeclaration(moduleName, node, id);
         }
 
         public override Module getAssociatedModule()

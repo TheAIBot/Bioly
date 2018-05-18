@@ -1,6 +1,7 @@
 ﻿using BiolyCompiler;
 using BiolyCompiler.BlocklyParts.Arithmetics;
 using BiolyCompiler.BlocklyParts.BoolLogic;
+using BiolyCompiler.BlocklyParts.ControlFlow;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using System;
@@ -15,9 +16,28 @@ namespace BiolyTests
     {
         StringBuilder Builder = new StringBuilder();
         int nameID = 0;
-        List<string> Segments = new List<string>();
+        //List<string> Segments = new List<string>();
+        Dictionary<string, List<string>> Scopes = new Dictionary<string, List<string>>();
+        List<string> CurrentScope = null;
+        public const string DEFAULT_SCOPE_NAME = "default scope";
         List<string> Blocks = new List<string>();
         public bool Render = false;
+
+        public JSProgram()
+        {
+            CurrentScope = new List<string>();
+            Scopes.Add(DEFAULT_SCOPE_NAME, CurrentScope);
+        }
+
+        public void AddScope(string scopeName)
+        {
+            Scopes.Add(scopeName, new List<string>());
+        }
+
+        public void SetScope(string scopeName)
+        {
+            CurrentScope = Scopes[scopeName];
+        }
 
         public void AddBlock(string name, string blockType)
         {
@@ -50,7 +70,7 @@ namespace BiolyTests
             Builder.Append($"{blockName}.render();");
         }
 
-        public void AddInputBlock(string fluidName, int fluidAmount, FluidUnit unit)
+        public string AddInputBlock(string fluidName, int fluidAmount, FluidUnit unit)
         {
             string a = GetUniqueName();
             AddBlock(a, InputDeclaration.XML_TYPE_NAME);
@@ -58,7 +78,28 @@ namespace BiolyTests
             SetField(a, InputDeclaration.INPUT_AMOUNT_FIELD_NAME, fluidAmount);
             SetField(a, InputDeclaration.FLUID_UNIT_FIELD_NAME, InputDeclaration.FluidUnitToString(unit));
 
-            Segments.Add(a);
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddHeaterDeclarationBlock(string moduleName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, HeaterDeclaration.XML_TYPE_NAME);
+            SetField(a, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddOutputDeclarationBlock(string moduleName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, OutputDeclaration.XML_TYPE_NAME);
+            SetField(a, OutputDeclaration.MODULE_NAME_FIELD_NAME, moduleName);
+
+            CurrentScope.Add(a);
+            return a;
         }
 
         public void AddFluidInputBlock(string blockName, string fluidName, int amount, bool useAllFluid)
@@ -69,29 +110,26 @@ namespace BiolyTests
             SetField(blockName, FluidInput.UseAllFluidFieldName, FluidInput.BoolToString(useAllFluid));
         }
 
-        public void AddHeaterSegment(string outputName, string moduleName, int temperature, int time, string inputFluidName, int fluidAmount, bool useAllFluid)
+        public string AddHeaterSegment(string outputName, string moduleName, int temperature, int time, string inputFluidName, int fluidAmount, bool useAllFluid)
         {
-            string fluidInputName = GetUniqueName();
-            string heaterDeclarationName = GetUniqueName();
-            string heaterUseageName = GetUniqueName();
+            string a = GetUniqueName();
+            string b = GetUniqueName();
+            string c = GetUniqueName();
+            AddBlock(a, Fluid.XML_TYPE_NAME);
+            AddBlock(b, HeaterUseage.XML_TYPE_NAME);
+            AddFluidInputBlock(c, inputFluidName, fluidAmount, useAllFluid);
+            SetField(a, Fluid.OutputFluidFieldName, outputName);
+            SetField(b, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
+            SetField(b, HeaterUseage.TEMPERATURE_FIELD_NAME, temperature);
+            SetField(b, HeaterUseage.TIME_FIELD_NAME, time);
+            AddConnection(a, Fluid.InputFluidFieldName, b);
+            AddConnection(b, HeaterUseage.INPUT_FLUID_FIELD_NAME, c);
 
-            AddFluidInputBlock(fluidInputName, inputFluidName, fluidAmount, useAllFluid);
-            AddBlock(heaterDeclarationName, HeaterDeclaration.XML_TYPE_NAME);
-            AddBlock(heaterUseageName, HeaterUseage.XML_TYPE_NAME);
-
-            SetField(heaterDeclarationName, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
-            SetField(heaterUseageName, HeaterUseage.TEMPERATURE_FIELD_NAME, temperature);
-            SetField(heaterUseageName, HeaterUseage.TIME_FIELD_NAME, time);
-            SetField(heaterUseageName, HeaterUseage.MODULE_NAME_FIELD_NAME , moduleName);
-            SetField(heaterUseageName, HeaterUseage.OUTPUT_FLUID_FIELD_NAME, outputName);
-
-            AddConnection(fluidInputName, HeaterUseage.INPUT_FLUID_FIELD_NAME, fluidInputName);
-
-            Segments.Add(heaterDeclarationName);
-            Segments.Add(heaterUseageName);
+            CurrentScope.Add(a);
+            return a;
         }
 
-        public void AddMixerSegment(string outputName, string inputNameA, int amountA, bool useAllFluidA, string inputNameB, int amountB, bool useAllFluidB)
+        public string AddMixerSegment(string outputName, string inputNameA, int amountA, bool useAllFluidA, string inputNameB, int amountB, bool useAllFluidB)
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
@@ -106,7 +144,8 @@ namespace BiolyTests
             AddConnection(b, Mixer.FirstInputFieldName , c);
             AddConnection(b, Mixer.SecondInputFieldName, d);
 
-            Segments.Add(a);
+            CurrentScope.Add(a);
+            return a;
         }
 
         public string AddConstantBlock(int number)
@@ -140,31 +179,59 @@ namespace BiolyTests
             return a;
         }
 
-        public void AddWasteSegment(string fluidName, int amount, bool useAllFluid)
+        public string AddWasteSegment(string fluidName/*, string moduleName*/, int amount, bool useAllFluid)
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
             AddBlock(a, Waste.XML_TYPE_NAME);
+            //SetField(a, Waste.MODULE_NAME_FIELD_NAME, moduleName);
             AddFluidInputBlock(b, fluidName, amount, useAllFluid);
             AddConnection(a, Waste.InputFluidFieldName, b);
 
-            Segments.Add(a);
+            CurrentScope.Add(a);
+            return a;
         }
 
-        public void AddOutputSegment(string fluidName, int amount, bool useAllFluid)
+        public string AddOutputSegment(string fluidName, string moduleName, int amount, bool useAllFluid)
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
             AddBlock(a, OutputUseage.XML_TYPE_NAME);
+            SetField(a, OutputUseage.MODULE_NAME_FIELD_NAME, moduleName);
             AddFluidInputBlock(b, fluidName, amount, useAllFluid);
             AddConnection(a, OutputUseage.INPUT_FLUID_FIELD_NAME, b);
 
-            Segments.Add(a);
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddIfSegment(string conditionalBlock, string guardedBlock)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, If.XML_TYPE_NAME);
+            AddConnection(a, If.GetIfFieldName(), conditionalBlock);
+            Builder.Append($"{a}.getInput(\"{If.GetDoFieldName()}\").connection.connect({guardedBlock}.previousConnection);");
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddRepeatSegment(string conditionalBlock, string guardedBlock)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, Repeat.XML_TYPE_NAME);
+            AddConnection(a, Repeat.TimesBlockFieldName, conditionalBlock);
+            Builder.Append($"{a}.getInput(\"{Repeat.DoBlockFieldName}\").connection.connect({guardedBlock}.previousConnection);");
+
+            CurrentScope.Add(a);
+            return a;
         }
 
         public void CreateRandomDFG(int size, Random random = null)
         {
             List<string> fluidNames = new List<string>();
+            List<string> outputModuleNames = new List<string>();
+            List<string> heaterModuleNames = new List<string>();
             random = random ?? new Random();
             
 
@@ -175,9 +242,24 @@ namespace BiolyTests
                 fluidNames.Add(fluidName);
             }
 
+            for (int i = 0; i < random.Next(10, Math.Max(20, size / 10)); i++)
+            {
+                string moduleName = GetUniqueName();
+                AddOutputDeclarationBlock(moduleName);
+                outputModuleNames.Add(moduleName);
+            }
+            for (int i = 0; i < random.Next(10, Math.Max(20, size / 10)); i++)
+            {
+                string moduleName = GetUniqueName();
+                AddHeaterDeclarationBlock(moduleName);
+                heaterModuleNames.Add(moduleName);
+            }
+
             for (int i = 0; i < size; i++)
             {
-                string outputName = GetUniqueName();
+                string outputFluidName = GetUniqueName();
+                string outputModuleName = outputModuleNames[random.Next(outputModuleNames.Count)];
+                string heaterModuleName = outputModuleNames[random.Next(outputModuleNames.Count)];
                 string firstInputName = fluidNames[random.Next(fluidNames.Count)];
                 string secondInputName = fluidNames[random.Next(fluidNames.Count)];
                 if (fluidNames.Count <= 1)
@@ -192,24 +274,24 @@ namespace BiolyTests
                 switch (random.Next(4))
                 {
                     case 0:
-                        AddHeaterSegment(outputName, random.Next(-273, 1000), random.Next(0, 1000), firstInputName, random.Next(), GetRandomBool(random));
-                        fluidNames.Add(outputName);
+                        AddHeaterSegment(outputFluidName, heaterModuleName, random.Next(0, 1000), random.Next(0, 1000), firstInputName, random.Next(), GetRandomBool(random));
+                        fluidNames.Add(outputFluidName);
                         break;
                     case 1:
-                        AddMixerSegment(outputName, firstInputName, random.Next(), GetRandomBool(random), secondInputName, random.Next(), GetRandomBool(random));
-                        fluidNames.Add(outputName);
+                        AddMixerSegment(outputFluidName, firstInputName, random.Next(), GetRandomBool(random), secondInputName, random.Next(), GetRandomBool(random));
+                        fluidNames.Add(outputFluidName);
                         break;
                     case 2:
                         AddWasteSegment(firstInputName, random.Next(), GetRandomBool(random));
                         fluidNames.Remove(firstInputName);
                         break;
                     case 3:
-                        AddOutputSegment(firstInputName, random.Next(), GetRandomBool(random));
+                        AddOutputSegment(firstInputName, outputModuleName, random.Next(), GetRandomBool(random));
                         fluidNames.Remove(firstInputName);
                         break;
                 }
             }
-            FinishDFG();
+            Finish();
         }
 
         private FluidUnit GetRandomFluidUnit(Random random)
@@ -230,11 +312,11 @@ namespace BiolyTests
             return random.NextDouble() > 0.5;
         }
 
-        private void FinishDFG()
+        public void Finish()
         {
             string a = GetUniqueName();
             AddBlock(a, "start");
-            Builder.Append($"{a}.getInput(\"program\").connection.connect({Segments.First()}.previousConnection);");
+            Builder.Append($"{a}.getInput(\"program\").connection.connect({Scopes[DEFAULT_SCOPE_NAME].First()}.previousConnection);");
         }
 
         public string GetUniqueName()
@@ -250,9 +332,12 @@ namespace BiolyTests
             //    Blocks.Reverse();
             //    Blocks.ForEach(x => RenderBlock(x));
             //}
-            for (int i = 1; i < Segments.Count; i++)
+            foreach (List<string> segments in Scopes.Values)
             {
-                ConnectSegments(Segments[i - 1], Segments[i]);
+                for (int i = 1; i < segments.Count; i++)
+                {
+                    ConnectSegments(segments[i - 1], segments[i]);
+                }
             }
 
             return Builder.ToString();

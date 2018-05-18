@@ -93,23 +93,25 @@ var lastUpdateTime = new Date();
 function onWorkspaceChanged(event)
 {
 	const currentTime = new Date();
-	if(lastUpdateTime.getMilliseconds() + 50 < currentTime.getMilliseconds())
-	{
+	//if(lastUpdateTime.getMilliseconds() + 50 < currentTime.getMilliseconds())
+	//{
 		webUpdater.update(getWorkspaceAsXml());
-	}
+	//}
 	lastUpdateTime = new Date();
 }
 workspace.addChangeListener(onWorkspaceChanged);
 
-function openTab(e, tabName) {
-
+function openTab(e, tabName) 
+{
     const tabs = document.getElementsByClassName("tabItemContent");
-    for (var i = 0; i < tabs.length; i++) {
+    for (var i = 0; i < tabs.length; i++) 
+	{
         tabs[i].style.display = "none";
     }
 
     const tablinks = document.getElementsByClassName("tabLink");
-    for (var i = 0; i < tablinks.length; i++) {
+    for (var i = 0; i < tablinks.length; i++) 
+	{
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
 

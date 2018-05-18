@@ -14,6 +14,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string XmlTypeName = "getFluid";
 
         public  readonly string FluidName;
+        public readonly string OriginalFluidName;
         private readonly float AmountInML;
         public  readonly bool UseAllFluid;
 
@@ -22,10 +23,10 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public FluidInput(XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
-            string originalName = node.GetNodeWithAttributeValue(FluidNameFieldName).InnerText;
-            Validator.CheckVariableName(id, originalName);
-            parserInfo.CheckFluidVariable(id, originalName);
-            parserInfo.mostRecentVariableRef.TryGetValue(originalName, out string correctedName);
+            OriginalFluidName = node.GetNodeWithAttributeValue(FluidNameFieldName).InnerText;
+            Validator.CheckVariableName(id, OriginalFluidName);
+            parserInfo.CheckFluidVariable(id, OriginalFluidName);
+            parserInfo.mostRecentVariableRef.TryGetValue(OriginalFluidName, out string correctedName);
 
             this.FluidName = correctedName ?? "ERROR_FINDING_NODE";
             this.AmountInML = node.GetNodeWithAttributeValue(FluidAmountFieldName).TextToFloat(id);

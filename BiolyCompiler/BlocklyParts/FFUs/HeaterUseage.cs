@@ -13,7 +13,6 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public const string TEMPERATURE_FIELD_NAME = "temperature";
         public const string TIME_FIELD_NAME = "time";
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
-        public const string OUTPUT_FLUID_FIELD_NAME = "outputFluid";
         public const string XML_TYPE_NAME = "heaterUseage";
         public readonly int Temperature;
         public readonly int Time;
@@ -29,20 +28,16 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             Validator.ValueWithinRange(id, this.Time, 0, 2592000);
         }
 
-        public static Block Parse(XmlNode node, ParserInfo parserInfo)
+        public static Block CreateHeater(string output, XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
-            string moduleName = node.GetAttributeValue(MODULE_NAME_FIELD_NAME);
-            Validator.CheckVariableName(id, moduleName);
-            parserInfo.AddModuleName(moduleName);
+            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            parserInfo.CheckModuleVariable(id, moduleName);
 
             XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, new MissingBlockException(id, "Heater is missing input fluid block."));
             FluidInput fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, parserInfo);
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);
-
-            string output = node.GetNodeWithAttributeValue(OUTPUT_FLUID_FIELD_NAME).InnerText;
-            Validator.CheckVariableName(id, output);
 
             return new HeaterUseage(moduleName, inputs, output, node, id);
         }

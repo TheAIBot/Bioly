@@ -135,7 +135,7 @@ Blockly.Blocks["outputUseage"] = {
 Blockly.Blocks["heaterUseage"] = {
 	init: function() {
 		this.jsonInit({
-			"message0": "input %1",
+			"message0": "heater %1",
 			"args0": [
 				{
 					"type": "input_value",
@@ -167,16 +167,7 @@ Blockly.Blocks["heaterUseage"] = {
 					"check": "Number"
 				}
 			],
-			"message4": "output fluid %1",
-			"args4": [
-				{
-					"type": "field_variable",
-					"name": "outputName",
-					"variable": "output_fluid_name"
-				}
-			],
-			"previousStatement": null,
-			"nextStatement": null,
+			"output": "FluidOperator",
 			"colour": 80,
 			"tooltip": ""
 		});

@@ -41,7 +41,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
                 VariableBlock decidingBlock = null;
                 try
                 {
-                    ifNode = node.GetInnerBlockNode($"IF{ifCounter}", new MissingBlockException(id, $"{exceptionStart} is missing its conditional block."));
+                    ifNode = node.GetInnerBlockNode(GetIfFieldName(ifCounter), new MissingBlockException(id, $"{exceptionStart} is missing its conditional block."));
                     decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ifNode, dfg, parserInfo);
                 }
                 catch (ParseException e)
@@ -52,7 +52,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
                 XmlNode guardedDFGNode = null;
                 try
                 {
-                    guardedDFGNode = node.GetInnerBlockNode($"DO{ifCounter}", new MissingBlockException(id, $"{exceptionStart} is missing blocks to execute."));
+                    guardedDFGNode = node.GetInnerBlockNode(GetDoFieldName(ifCounter), new MissingBlockException(id, $"{exceptionStart} is missing blocks to execute."));
                     DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, parserInfo);
                     DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, parserInfo);
 
@@ -74,6 +74,16 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             }
 
             this.IfStatements = conditionals;
+        }
+
+        public static string GetIfFieldName(int ifCounter = 0)
+        {
+            return $"IF{ifCounter}";
+        }
+
+        public static string GetDoFieldName(int ifCounter = 0)
+        {
+            return $"DO{ifCounter}";
         }
     }
 }

@@ -14,18 +14,18 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public readonly int Temperature;
         public readonly int Time;
 
-        public HeaterDeclaration(string moduleName, string output, XmlNode node, string id) : base(moduleName, true, output, id)
+        public HeaterDeclaration(string moduleName, XmlNode node, string id) : base(moduleName, true, null, id)
         {
         }
 
         public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
-            string moduleName = node.GetAttributeValue(MODULE_NAME_FIELD_NAME);
+            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, moduleName);
             parserInfo.AddModuleName(moduleName);
             
-            return new HeaterDeclaration(moduleName, null, node, id);
+            return new HeaterDeclaration(moduleName, node, id);
         }
 
         public override string ToString()
