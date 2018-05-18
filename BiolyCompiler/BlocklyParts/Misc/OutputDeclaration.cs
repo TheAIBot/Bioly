@@ -9,7 +9,6 @@ namespace BiolyCompiler.BlocklyParts.Misc
 {
     public class OutputDeclaration : StaticDeclarationBlock
     {
-        public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "outputDeclaration";
 
         public OutputDeclaration(string moduleName, string output, XmlNode node, string id) : base(moduleName, false, output, id)

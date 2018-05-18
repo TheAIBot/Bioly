@@ -69,21 +69,26 @@ namespace BiolyTests
             SetField(blockName, FluidInput.UseAllFluidFieldName, FluidInput.BoolToString(useAllFluid));
         }
 
-        public void AddHeaterSegment(string outputName, int temperature, int time, string inputFluidName, int fluidAmount, bool useAllFluid)
+        public void AddHeaterSegment(string outputName, string moduleName, int temperature, int time, string inputFluidName, int fluidAmount, bool useAllFluid)
         {
-            string a = GetUniqueName();
-            string b = GetUniqueName();
-            string c = GetUniqueName();
-            AddBlock(a, Fluid.XML_TYPE_NAME);
-            AddBlock(b, Heater.XmlTypeName);
-            AddFluidInputBlock(c, inputFluidName, fluidAmount, useAllFluid);
-            SetField(a, Fluid.OutputFluidFieldName, outputName);
-            SetField(b, Heater.TemperatureFieldName, temperature);
-            SetField(b, Heater.TimeFieldName, time);
-            AddConnection(a, Fluid.InputFluidFieldName, b);
-            AddConnection(b, Heater.InputFluidFieldName, c);
+            string fluidInputName = GetUniqueName();
+            string heaterDeclarationName = GetUniqueName();
+            string heaterUseageName = GetUniqueName();
 
-            Segments.Add(a);
+            AddFluidInputBlock(fluidInputName, inputFluidName, fluidAmount, useAllFluid);
+            AddBlock(heaterDeclarationName, HeaterDeclaration.XML_TYPE_NAME);
+            AddBlock(heaterUseageName, HeaterUseage.XML_TYPE_NAME);
+
+            SetField(heaterDeclarationName, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
+            SetField(heaterUseageName, HeaterUseage.TEMPERATURE_FIELD_NAME, temperature);
+            SetField(heaterUseageName, HeaterUseage.TIME_FIELD_NAME, time);
+            SetField(heaterUseageName, HeaterUseage.MODULE_NAME_FIELD_NAME , moduleName);
+            SetField(heaterUseageName, HeaterUseage.OUTPUT_FLUID_FIELD_NAME, outputName);
+
+            AddConnection(fluidInputName, HeaterUseage.INPUT_FLUID_FIELD_NAME, fluidInputName);
+
+            Segments.Add(heaterDeclarationName);
+            Segments.Add(heaterUseageName);
         }
 
         public void AddMixerSegment(string outputName, string inputNameA, int amountA, bool useAllFluidA, string inputNameB, int amountB, bool useAllFluidB)

@@ -177,6 +177,10 @@ namespace BiolyCompiler.Parser
                     return OutputDeclaration.Parse(node, parserInfo);
                 case OutputUseage.XML_TYPE_NAME:
                     return OutputUseage.Parse(node, parserInfo);
+                case HeaterDeclaration.XML_TYPE_NAME:
+                    return HeaterDeclaration.Parse(node, parserInfo);
+                case HeaterUseage.XML_TYPE_NAME:
+                    return HeaterUseage.Parse(node, parserInfo);
                 case Waste.XML_TYPE_NAME:
                     return Waste.Parse(node, parserInfo);
                 case BoolOP.XML_TYPE_NAME:

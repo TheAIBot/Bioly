@@ -38,8 +38,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
             XmlNode innerNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Fluid is missing fluid definition blocks."));
             switch (innerNode.GetAttributeValue(Block.TypeFieldName))
             {
-                case Heater.XmlTypeName:
-                    return Heater.CreateHeater(output, innerNode, parserInfo);
+                //case Heater.XmlTypeName:
+                //    return Heater.CreateHeater(output, innerNode, parserInfo);
                 case Mixer.XmlTypeName:
                     return Mixer.CreateMixer(output, innerNode, parserInfo);
                 default:

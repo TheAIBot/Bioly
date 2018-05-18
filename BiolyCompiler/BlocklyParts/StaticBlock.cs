@@ -8,7 +8,7 @@ namespace BiolyCompiler.BlocklyParts
 {
     public abstract class StaticBlock : FluidBlock
     {
-        //Each static block gets one associated module name. It must be uniqueue.
+        //Each static block gets one associated module name. It must be unique.
         //It will be used to find the associated module, during the scheduling.
         public const string MODULE_NAME_FIELD_NAME = "moduleName";
         public const string DEFAULT_MODULE_NAME = "module_name";

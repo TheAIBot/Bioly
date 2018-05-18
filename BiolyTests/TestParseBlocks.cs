@@ -45,10 +45,10 @@ namespace BiolyTests.ParseBlockTests
         }
 
         [TestMethod]
-        public void ParseHeaterBlock()
+        public void ParseHeaterUseageAndHeaterDeclarationBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddHeaterSegment("a", 173, 39, "b", 29, false);
+            program.AddHeaterSegment("a", "bestModule", 173, 39, "b", 29, false);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
@@ -56,7 +56,7 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.EnterDFG();
             parserInfo.AddFluidVariable("a");
             parserInfo.AddFluidVariable("b");
-            Heater heater = (Heater)XmlParser.ParseBlock(node, null, parserInfo);
+            HeaterUseage heater = (HeaterUseage)XmlParser.ParseBlock(node, null, parserInfo);
 
             Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", heater.OriginalOutputVariable);

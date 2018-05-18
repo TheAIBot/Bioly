@@ -82,6 +82,28 @@ Blockly.Blocks["outputDeclaration"] = {
 	}
 };
 
+Blockly.Blocks["heaterDeclaration"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new heater",
+			"args0": [
+			],			
+			"message1": "module name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 280,
+			"tooltip": "",
+		});
+	}
+};
+
 Blockly.Blocks["outputUseage"] = {
 	init: function() {
 		this.jsonInit({
@@ -106,6 +128,57 @@ Blockly.Blocks["outputUseage"] = {
 			"colour": 280,
 			"tooltip": "",
 			"inputsInline": false
+		});
+	}
+};
+
+Blockly.Blocks["heaterUseage"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "input %1",
+			"args0": [
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": ["InputType", "FluidType"]
+				}
+			],						
+			"message1": "target heater %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"message2": "temperature %1",
+			"args2": [
+				{
+					"type": "field_number",
+					"name": "temperature",
+					"check": "Number"
+				}
+			],
+			"message3": "time %1",
+			"args3": [
+				{
+					"type": "field_number",
+					"name": "time",
+					"check": "Number"
+				}
+			],
+			"message4": "output fluid %1",
+			"args4": [
+				{
+					"type": "field_variable",
+					"name": "outputName",
+					"variable": "output_fluid_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 80,
+			"tooltip": ""
 		});
 	}
 };
@@ -195,44 +268,6 @@ Blockly.Blocks["mixer"] = {
 			"output": "FluidOperator",
 			"colour": 120,
 			"tooltip": ""
-		});
-	}
-};
-
-Blockly.Blocks["heater"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "heat",
-			"args0": [
-			],
-			"message1": "fluid %1",
-			"args1": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],
-			"message2": "temperature %1",
-			"args2": [
-				{
-					"type": "field_number",
-					"name": "temperature",
-					"check": "Number"
-				}
-			],
-			"message3": "time %1",
-			"args3": [
-				{
-					"type": "field_number",
-					"name": "time",
-					"check": "Number"
-				}
-			],
-			"output": "FluidOperator",
-			"colour": 200,
-			"tooltip": "",
-			"inputsInline": false
 		});
 	}
 };
