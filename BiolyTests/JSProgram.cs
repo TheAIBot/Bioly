@@ -82,6 +82,16 @@ namespace BiolyTests
             return a;
         }
 
+        public string AddOutputDeclarationBlock(string moduleName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, OutputDeclaration.XML_TYPE_NAME);
+            SetField(a, OutputDeclaration.MODULE_NAME_FIELD_NAME, moduleName);
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
         public void AddFluidInputBlock(string blockName, string fluidName, int amount, bool useAllFluid)
         {
             AddBlock(blockName, FluidInput.XmlTypeName);
@@ -158,11 +168,12 @@ namespace BiolyTests
             return a;
         }
 
-        public string AddWasteSegment(string fluidName, int amount, bool useAllFluid)
+        public string AddWasteSegment(string fluidName/*, string moduleName*/, int amount, bool useAllFluid)
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
             AddBlock(a, Waste.XML_TYPE_NAME);
+            //SetField(a, Waste.MODULE_NAME_FIELD_NAME, moduleName);
             AddFluidInputBlock(b, fluidName, amount, useAllFluid);
             AddConnection(a, Waste.InputFluidFieldName, b);
 
@@ -170,11 +181,12 @@ namespace BiolyTests
             return a;
         }
 
-        public string AddOutputSegment(string fluidName, int amount, bool useAllFluid)
+        public string AddOutputSegment(string fluidName, string moduleName, int amount, bool useAllFluid)
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
             AddBlock(a, OutputUseage.XML_TYPE_NAME);
+            SetField(a, OutputUseage.MODULE_NAME_FIELD_NAME, moduleName);
             AddFluidInputBlock(b, fluidName, amount, useAllFluid);
             AddConnection(a, OutputUseage.INPUT_FLUID_FIELD_NAME, b);
 
@@ -207,6 +219,7 @@ namespace BiolyTests
         public void CreateRandomDFG(int size, Random random = null)
         {
             List<string> fluidNames = new List<string>();
+            List<string> outputModuleNames = new List<string>();
             random = random ?? new Random();
             
 
@@ -217,9 +230,17 @@ namespace BiolyTests
                 fluidNames.Add(fluidName);
             }
 
+            for (int i = 0; i < random.Next(10, Math.Max(20, size / 10)); i++)
+            {
+                string moduleName = GetUniqueName();
+                AddOutputDeclarationBlock(moduleName);
+                outputModuleNames.Add(moduleName);
+            }
+
             for (int i = 0; i < size; i++)
             {
                 string outputName = GetUniqueName();
+                string outputModuleName = outputModuleNames[random.Next(outputModuleNames.Count)];
                 string firstInputName = fluidNames[random.Next(fluidNames.Count)];
                 string secondInputName = fluidNames[random.Next(fluidNames.Count)];
                 if (fluidNames.Count <= 1)
@@ -246,7 +267,7 @@ namespace BiolyTests
                         fluidNames.Remove(firstInputName);
                         break;
                     case 3:
-                        AddOutputSegment(firstInputName, random.Next(), GetRandomBool(random));
+                        AddOutputSegment(firstInputName, outputModuleName, random.Next(), GetRandomBool(random));
                         fluidNames.Remove(firstInputName);
                         break;
                 }

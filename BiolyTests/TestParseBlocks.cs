@@ -154,14 +154,14 @@ namespace BiolyTests.ParseBlockTests
         public void ParseOutputBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddOutputSegment("a", 1249, false);
+            program.AddOutputSegment("a", "z", 1249, false);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             ParserInfo parserInfo = new ParserInfo();
             parserInfo.EnterDFG();
             parserInfo.AddFluidVariable("a");
-            parserInfo.AddModuleName(StaticBlock.DEFAULT_MODULE_NAME);
+            parserInfo.AddModuleName("z");
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
             Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
@@ -173,6 +173,7 @@ namespace BiolyTests.ParseBlockTests
         {
             JSProgram program = new JSProgram();
             program.AddInputBlock("k", 10, FluidUnit.drops);
+            program.AddOutputDeclarationBlock("z");
 
             string left = program.AddConstantBlock(3);
             string right = program.AddConstantBlock(3);
@@ -180,7 +181,7 @@ namespace BiolyTests.ParseBlockTests
 
             program.AddScope("a");
             program.SetScope("a");
-            string guardedBlock = program.AddOutputSegment("k", 1, false);
+            string guardedBlock = program.AddOutputSegment("k", "z", 1, false);
             program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
 
             program.AddIfSegment(conditionalBlock, guardedBlock);
@@ -193,7 +194,7 @@ namespace BiolyTests.ParseBlockTests
             Assert.AreEqual(2, cdfg.Nodes.Count);
 
             DFG<Block> firstDFG = cdfg.StartDFG;
-            Assert.AreEqual(4, firstDFG.Nodes.Count);
+            Assert.AreEqual(5, firstDFG.Nodes.Count);
 
             (var _, DFG<Block> lastDFG) = cdfg.Nodes.Where(x => x.dfg != firstDFG).Single();
             Assert.AreEqual(1, lastDFG.Nodes.Count);
@@ -203,12 +204,13 @@ namespace BiolyTests.ParseBlockTests
         {
             JSProgram program = new JSProgram();
             program.AddInputBlock("k", 10, FluidUnit.drops);
+            program.AddOutputDeclarationBlock("z");
 
             string conditionalBlock = program.AddConstantBlock(3);
 
             program.AddScope("a");
             program.SetScope("a");
-            string guardedBlock = program.AddOutputSegment("k", 1, false);
+            string guardedBlock = program.AddOutputSegment("k", "z", 1, false);
             program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
 
             program.AddRepeatSegment(conditionalBlock, guardedBlock);
@@ -221,7 +223,7 @@ namespace BiolyTests.ParseBlockTests
             Assert.AreEqual(2, cdfg.Nodes.Count);
 
             DFG<Block> firstDFG = cdfg.StartDFG;
-            Assert.AreEqual(4, firstDFG.Nodes.Count);
+            Assert.AreEqual(5, firstDFG.Nodes.Count);
 
             (var _, DFG<Block> lastDFG) = cdfg.Nodes.Where(x => x.dfg != firstDFG).Single();
             Assert.AreEqual(1, lastDFG.Nodes.Count);
