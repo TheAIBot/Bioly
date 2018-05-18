@@ -10,34 +10,75 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyCompiler.Routing
 {
     public class Router
     {
+        private static Droplet FAKE_DROPLET = new Droplet(new BoardFluid("FAKE - DROPLET"));
+
         public static int RouteDropletsToModule(Board board, int currentTime, FluidBlock operation)
         {
             int originalStartTime = currentTime;
-            foreach (var dropletInput in operation.BoundModule.GetInputLayout().Droplets)
+            List<Droplet> internalDropletRoutingOrder = GetModulesDropletRoutingOrder(operation, board);
+
+            foreach (var dropletInput in internalDropletRoutingOrder)
             {
                 Route route = RouteSingleDropletToModule(operation, board, currentTime, dropletInput);
                 //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
                 //This will give an overhead of +1 for the operation starting time, for each droplet routed:
                 currentTime = route.getEndTime() + 1;
+                board.UpdateGridAtGivenLocation(FAKE_DROPLET, dropletInput.Shape);
+            }
+            board.UpdateGridAtGivenLocation(operation.BoundModule, operation.BoundModule.Shape);
+            return currentTime;
+        }
+
+
+        /// <summary>
+        /// Routes droplets to the output bound to the operation. The number of droplets routed,
+        /// is equal to. The routing starts at currentTime, and is based on the Board board given.
+        /// 
+        /// It is neccessary to seperate the routing to an output from the normal routing,
+        /// as outputs requires that multiple droplets are routed to the exact same location on the module.
+        /// </summary>
+        /// <param name="board"></param>
+        /// <param name="currentTime"></param>
+        /// <param name="outputOperation"></param>
+        /// <returns></returns>
+        public static int RouteDropletsToOutput(Board board, int currentTime, OutputUseage outputOperation)
+        {
+            int originalStartTime = currentTime;
+            Droplet inputLocation = outputOperation.BoundModule.GetInputLayout().Droplets[0];
+            foreach (var fluid in outputOperation.InputVariables)
+            {
+                for (int i = 0; i < fluid.GetAmountInDroplets(); i++)
+                {
+                    Route route = RouteSingleDropletToModule(outputOperation, board, currentTime, inputLocation);
+                    //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
+                    //This will give an overhead of +1 for the operation starting time, for each droplet routed:
+                    currentTime = route.getEndTime() + 1;
+                }
             }
             return currentTime;
         }
 
-        public static int RouteDropletsToModuleWithoutInternalDropletCollisions(Board board, int currentTime, FluidBlock operation)
+        private static List<Droplet> GetModulesDropletRoutingOrder(FluidBlock operation, Board board)
         {
-            int originalStartTime = currentTime;
+            List<Droplet> dropletRoutingOrder = new List<Droplet>();
+            ModuleLayout inputLayout = operation.BoundModule.GetInputLayout();
+            (var dropletInputs, var layoutEmptyRectangles) = GetDropletInputsAndInitiallyEmptyRectangles(inputLayout);
+            HashSet<Rectangle> duplicateLayoutEmptyRectangles = new HashSet<Rectangle>(layoutEmptyRectangles);
+            HashSet<Rectangle> outsideEmptyRectangle = operation.BoundModule.Shape.AdjacentRectangles
+                                                       .Where(rectangle => rectangle.isEmpty)
+                                                       .ToHashSet();
 
-            ModuleLayout inputLayout = operation.BoundModule.GetInputLayout().GetCopy();
-            HashSet<Droplet> dropletInputs = new HashSet<Droplet>(inputLayout.Droplets);
-            HashSet<Rectangle> emptyRectangles = new HashSet<Rectangle>(inputLayout.EmptyRectangles);
-            //Before any droplets have been placed, the internal layout is empty.
-            HashSet<Module> placedModules = new HashSet<Module>();
-            dropletInputs.ForEach(droplet => emptyRectangles.Add(droplet.Shape));
+            foreach (var outsideRectangle in outsideEmptyRectangle) {
+                foreach (var insideRectangle in layoutEmptyRectangles) {
+                    outsideRectangle.ConnectIfAdjacent(insideRectangle);
+                }
+            }
 
             //A droplet needs to be routed to all interal droplets of the module.
             while (dropletInputs.Count > 0)
@@ -45,18 +86,15 @@ namespace BiolyCompiler.Routing
                 bool hasDropletBeenRouted = false;
                 foreach (var dropletInput in dropletInputs)
                 {
-                    if (Board.DoesNotBlockRouteToAnyModuleOrEmptyRectangle(dropletInput.Shape, dropletInput, emptyRectangles, placedModules))
+                    if (Board.DoesNotBlockConnectionToSourceEmptyRectangles(dropletInput, outsideEmptyRectangle, layoutEmptyRectangles))
                     {
-                        Route route = RouteSingleDropletToModule(operation, board, currentTime, dropletInput);
-                        //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
-                        //This will give an overhead of +1 for the operation starting time, for each droplet routed:
-                        currentTime = route.getEndTime() + 1;
                         hasDropletBeenRouted = true;
                         dropletInputs.Remove(dropletInput);
-                        emptyRectangles.Remove(dropletInput.Shape);
-                        placedModules.Add(dropletInput);
+                        layoutEmptyRectangles.Remove(dropletInput.Shape);
+                        dropletRoutingOrder.Add(dropletInput);
                         break;
                     }
+
                 }
                 if (!hasDropletBeenRouted)
                 {
@@ -66,7 +104,25 @@ namespace BiolyCompiler.Routing
             }
 
 
-            return currentTime;
+            foreach (var outsideRectangle in outsideEmptyRectangle) {
+                foreach (var insideRectangle in duplicateLayoutEmptyRectangles) {
+                    outsideRectangle.AdjacentRectangles.Remove(insideRectangle);
+                    insideRectangle.AdjacentRectangles.Remove(outsideRectangle);
+                }
+            }
+
+
+            return dropletRoutingOrder;
+        }
+        
+
+        private static (HashSet<Droplet>, HashSet<Rectangle>) GetDropletInputsAndInitiallyEmptyRectangles(ModuleLayout inputLayout)
+        {
+            HashSet<Droplet> dropletInputs = new HashSet<Droplet>(inputLayout.Droplets);
+            HashSet<Rectangle> emptyRectangles = new HashSet<Rectangle>(inputLayout.EmptyRectangles);
+            //Before any droplets have been placed, the internal layout is empty.
+            dropletInputs.ForEach(droplet => emptyRectangles.Add(droplet.Shape));
+            return (dropletInputs, emptyRectangles);
         }
 
         private static Route RouteSingleDropletToModule(FluidBlock operation, Board board, int currentTime, Droplet dropletInput)

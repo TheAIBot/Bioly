@@ -218,7 +218,10 @@ namespace BiolyCompiler.Scheduling
 
         private int RouteDropletsToModuleAndUpdateSchedule(Board board, int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)
         {
-            int finishedRoutingTime = Router.RouteDropletsToModule(board, startTime, topPriorityOperation);
+            int finishedRoutingTime;
+            if (topPriorityOperation is OutputUseage)
+                finishedRoutingTime = Router.RouteDropletsToOutput(board, startTime, (OutputUseage) topPriorityOperation);
+            else finishedRoutingTime = Router.RouteDropletsToModule(board, startTime, topPriorityOperation);
             updateSchedule(topPriorityOperation, finishedRoutingTime, startTime);
             return finishedRoutingTime;
         }

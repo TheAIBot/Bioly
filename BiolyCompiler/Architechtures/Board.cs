@@ -72,6 +72,7 @@ namespace BiolyCompiler.Architechtures
             else return PlaceBufferedModule(module, candidateBufferedRectangles);
         }
 
+
         public bool PlaceBufferedModule(Module module, List<Rectangle> candidateRectangles)
         {
             //The intention is that it should have a one wide buffer on each side,
@@ -177,6 +178,39 @@ namespace BiolyCompiler.Architechtures
             return visitsEverything;
         }
 
+
+        public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, HashSet<Rectangle> outsideEmptyRectangles, HashSet<Rectangle> layoutEmptyRectangles)
+        {
+            //Breadth first search, finding all the empty rectangles that can be visited.
+            HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>(outsideEmptyRectangles);
+            Queue<Rectangle> emptyRectanglesToVisit = new Queue<Rectangle>();
+            foreach (var rectangle in outsideEmptyRectangles)
+                emptyRectanglesToVisit.Enqueue(rectangle);
+
+            while (emptyRectanglesToVisit.Count > 0)
+            {
+                Rectangle current = emptyRectanglesToVisit.Dequeue();
+                foreach (var adjacentRectangle in current.AdjacentRectangles)
+                {
+                    //We do not care for rectangles, that are not inside the module layout.
+                    if ( layoutEmptyRectangles.Contains(adjacentRectangle) &&
+                        !visitedEmptyRectangles.Contains(adjacentRectangle))
+                    {
+                        //If dropletInput is placed, it is not possible to go through it, 
+                        //so it is not added to the nodes to visit:
+                        visitedEmptyRectangles.Add(adjacentRectangle);
+                        if (dropletInput.Shape != adjacentRectangle)
+                        {
+                            emptyRectanglesToVisit.Enqueue(adjacentRectangle);
+                        }
+                    }
+                }
+            }
+
+            bool hasAllEmptyRectanglesBeenVisited = layoutEmptyRectangles.IsSubsetOf(visitedEmptyRectangles);
+            return hasAllEmptyRectanglesBeenVisited;
+        }
+
         private static Rectangle getEmptyAdjacentRectangle(Rectangle rectangle)
         {
             Rectangle randomEmptyRectangle = null;
@@ -271,17 +305,21 @@ namespace BiolyCompiler.Architechtures
             }
         }
 
+        public void UpdateGridAtGivenLocation(Module module, Rectangle rectangleToPlaceAt)
+        {
+            for (int i = 0; i < module.Shape.width; i++)
+            {
+                for (int j = 0; j < module.Shape.height; j++)
+                {
+                    grid[i + rectangleToPlaceAt.x, j + rectangleToPlaceAt.y] = module;
+                }
+            }
+        }
+
         public void UpdateGridWithModulePlacement(Module module, Rectangle rectangleToPlaceAt)
         {
             module.Shape.PlaceAt(rectangleToPlaceAt.x, rectangleToPlaceAt.y);
-            Rectangle Shape = module.Shape;
-            for (int i = 0; i < Shape.width; i++)
-            {
-                for (int j = 0; j < Shape.height; j++)
-                {
-                    grid[i + Shape.x, j + Shape.y] = module;
-                }
-            }
+            UpdateGridAtGivenLocation(module, rectangleToPlaceAt);
             PlacedModules.Add(module);
         }
         

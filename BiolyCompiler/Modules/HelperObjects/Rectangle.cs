@@ -45,6 +45,15 @@ namespace BiolyCompiler.Modules
             return height * width;
         }
 
+        public void ConnectIfAdjacent(Rectangle insideRectangle)
+        {
+            if (this.IsAdjacent(insideRectangle))
+            {
+                this.AdjacentRectangles.Add(insideRectangle);
+                insideRectangle.AdjacentRectangles.Add(this);
+            }
+        }
+
 
         /// <summary>
         /// Given a module, the rectangle is split up into three rectangles, 
