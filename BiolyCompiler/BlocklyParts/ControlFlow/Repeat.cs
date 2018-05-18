@@ -11,8 +11,8 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
     public class Repeat : IControlBlock
     {
         public const string XML_TYPE_NAME = "controls_repeat_ext";
-        private const string TimesBlockFieldName = "TIMES";
-        private const string DoBlockFieldName = "DO";
+        public const string TimesBlockFieldName = "TIMES";
+        public const string DoBlockFieldName = "DO";
         public readonly Conditional Cond;
 
         public Repeat(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)

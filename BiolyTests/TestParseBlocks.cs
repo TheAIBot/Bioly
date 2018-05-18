@@ -2,6 +2,7 @@
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Arithmetics;
 using BiolyCompiler.BlocklyParts.BoolLogic;
+using BiolyCompiler.BlocklyParts.ControlFlow;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Graphs;
@@ -171,13 +172,15 @@ namespace BiolyTests.ParseBlockTests
         public void ParseIfBlock()
         {
             JSProgram program = new JSProgram();
+            program.AddInputBlock("k", 10, FluidUnit.drops);
+
             string left = program.AddConstantBlock(3);
             string right = program.AddConstantBlock(3);
             string conditionalBlock = program.AddBoolOPBlock(BoolOPTypes.EQ, left, right);
 
             program.AddScope("a");
             program.SetScope("a");
-            string guardedBlock = program.AddOutputSegment("random", 10, false);
+            string guardedBlock = program.AddOutputSegment("k", 1, false);
             program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
 
             program.AddIfSegment(conditionalBlock, guardedBlock);
@@ -189,6 +192,39 @@ namespace BiolyTests.ParseBlockTests
 
             Assert.AreEqual(2, cdfg.Nodes.Count);
 
+            DFG<Block> firstDFG = cdfg.StartDFG;
+            Assert.AreEqual(4, firstDFG.Nodes.Count);
+
+            (var _, DFG<Block> lastDFG) = cdfg.Nodes.Where(x => x.dfg != firstDFG).Single();
+            Assert.AreEqual(1, lastDFG.Nodes.Count);
+        }
+
+        public void ParseRepeatBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("k", 10, FluidUnit.drops);
+
+            string conditionalBlock = program.AddConstantBlock(3);
+
+            program.AddScope("a");
+            program.SetScope("a");
+            string guardedBlock = program.AddOutputSegment("k", 1, false);
+            program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
+
+            program.AddRepeatSegment(conditionalBlock, guardedBlock);
+            program.Finish();
+
+            TestTools.ExecuteJS(program);
+            string xml = TestTools.GetWorkspaceString();
+            (CDFG cdfg, var _) = XmlParser.Parse(xml);
+
+            Assert.AreEqual(2, cdfg.Nodes.Count);
+
+            DFG<Block> firstDFG = cdfg.StartDFG;
+            Assert.AreEqual(4, firstDFG.Nodes.Count);
+
+            (var _, DFG<Block> lastDFG) = cdfg.Nodes.Where(x => x.dfg != firstDFG).Single();
+            Assert.AreEqual(1, lastDFG.Nodes.Count);
         }
 
         [TestMethod]

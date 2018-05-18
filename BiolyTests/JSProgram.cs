@@ -187,7 +187,18 @@ namespace BiolyTests
             string a = GetUniqueName();
             AddBlock(a, If.XML_TYPE_NAME);
             AddConnection(a, If.GetIfFieldName(), conditionalBlock);
-            AddConnection(a, If.GetDoFieldName(), guardedBlock);
+            Builder.Append($"{a}.getInput(\"{If.GetDoFieldName()}\").connection.connect({guardedBlock}.previousConnection);");
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddRepeatSegment(string conditionalBlock, string guardedBlock)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, Repeat.XML_TYPE_NAME);
+            AddConnection(a, Repeat.TimesBlockFieldName, conditionalBlock);
+            Builder.Append($"{a}.getInput(\"{Repeat.DoBlockFieldName}\").connection.connect({guardedBlock}.previousConnection);");
 
             CurrentScope.Add(a);
             return a;
