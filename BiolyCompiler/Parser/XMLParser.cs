@@ -147,14 +147,14 @@ namespace BiolyCompiler.Parser
             return blockType == If.XML_TYPE_NAME || blockType == Repeat.XML_TYPE_NAME;
         }
 
-        public static Block ParseBlock(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false)
+        public static Block ParseBlock(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false, bool canBeScheduled = true)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string blockType = node.GetAttributeValue(Block.TypeFieldName);
             switch (blockType)
             {
                 case ArithOP.XML_TYPE_NAME:
-                    return ArithOP.Parse(node, dfg, parserInfo);
+                    return ArithOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 case Constant.XML_TYPE_NAME:
                     return Constant.Parse(node);
                 //case FluidArray.XmlTypeName:
@@ -182,7 +182,7 @@ namespace BiolyCompiler.Parser
                 case Waste.XML_TYPE_NAME:
                     return Waste.Parse(node, parserInfo);
                 case BoolOP.XML_TYPE_NAME:
-                    return BoolOP.Parse(node, dfg, parserInfo);
+                    return BoolOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 //case Sensor.XmlTypeName:
                 //    return Sensor.Parse(node);
                 default:

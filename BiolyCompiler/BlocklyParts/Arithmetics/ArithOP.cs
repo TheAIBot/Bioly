@@ -19,14 +19,14 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id) : base(false, input, output, id)
+        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : base(false, input, output, id, canBeScheduled)
         {
             this.OPType = ArithOP.StringToArithOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
             this.LeftBlock = leftBlock;
             this.RightBlock = rightBlock;
         }
 
-        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
 
@@ -35,7 +35,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             try
             {
                 XmlNode leftNode = node.GetInnerBlockNode(LeftArithFieldName, new MissingBlockException(id, "Left side of arithmetic operator is missing a block."));
-                leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo);
+                leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo, false, false);
             }
             catch (ParseException e)
             {
@@ -44,7 +44,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             try
             {
                 XmlNode rightNode = node.GetInnerBlockNode(RightArithFieldName, new MissingBlockException(id, "Right side of Arithmetic operator is missing a block."));
-                rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo);
+                rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo, false, false);
             }
             catch (ParseException e)
             {
@@ -58,7 +58,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             inputs.Add(leftArithBlock?.OutputVariable);
             inputs.Add(rightArithBlock?.OutputVariable);
 
-            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, node, id);
+            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, node, id, canBeScheduled);
         }
 
         public static ArithOPTypes StringToArithOPType(string id, string arithOPTypeAsString)

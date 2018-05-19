@@ -107,10 +107,7 @@ namespace BiolyCompiler
                     foreach (Command command in commands)
                     {
                         int index = fluidBlock.StartTime + command.Time;
-                        if (index == 101)
-                        {
-                            Console.WriteLine();
-                        }
+
                         commandTimeline[index] = commandTimeline[index] ?? new List<Command>();
                         commandTimeline[index].Add(command);
                     }
@@ -209,6 +206,7 @@ namespace BiolyCompiler
                         return conditional.GuardedDFG;
                     }
                 }
+                return ifControl.IfStatements.First().NextDFG;
             }
             else if (control is Repeat repeatControl)
             {

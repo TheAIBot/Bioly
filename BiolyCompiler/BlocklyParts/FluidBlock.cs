@@ -46,7 +46,7 @@ namespace BiolyCompiler.BlocklyParts
             int currentDroplet = 0;
             foreach (var fluid in InputVariables)
             {
-                BoardFluid fluidType = new BoardFluid(fluid.FluidName);
+                BoardFluid fluidType = new BoardFluid(fluid.OriginalFluidName);
                 for (int i = 0; i < fluid.GetAmountInDroplets(); i++)
                 {
                     module.GetInputLayout().Droplets[currentDroplet].SetFluidType(fluidType);

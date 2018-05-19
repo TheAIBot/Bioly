@@ -56,8 +56,15 @@ namespace BiolyCompiler.Graphs
                 {
                     Output.Add(node);
                 }
-                if (node.getIngoingEdges().Count == 0)
+                if (node.getIngoingEdges().Count == 0 || (block is VariableBlock && node.getIngoingEdges().All(x => x.value is VariableBlock && !(x.value as VariableBlock).CanBeScheduled)))
                 {
+                    if (block is VariableBlock varBlock)
+                    {
+                        if (!varBlock.CanBeScheduled)
+                        {
+                            continue;
+                        }
+                    }
                     Input.Add(node);
                 }
             }

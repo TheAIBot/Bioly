@@ -100,26 +100,32 @@ namespace BiolyCompiler.Scheduling
             {
                 Block nextOperation = removeOperation(readyOperations);
 
-                if (nextOperation is VariableBlock) {
-                    //This is a mathematical operation, and it should be scheduled to run as soon as possible
-                    updateSchedule(nextOperation, currentTime, currentTime);
-                    ScheduledOperations.Add(nextOperation);
-                    assay.updateReadyOperations(nextOperation);
-                    readyOperations = assay.getReadyOperations();
+                if (nextOperation is VariableBlock varOperation)
+                {
+                    if (varOperation.CanBeScheduled)
+                    {
+                        //This is a mathematical operation, and it should be scheduled to run as soon as possible
+                        updateSchedule(nextOperation, currentTime, currentTime);
+                        assay.updateReadyOperations(nextOperation);
+                        readyOperations = assay.getReadyOperations();
+                    }
                     continue;
                 }
-                else if (nextOperation is StaticDeclarationBlock) {
+                else if (nextOperation is StaticDeclarationBlock)
+                {
                     assay.updateReadyOperations(nextOperation);
                     readyOperations = assay.getReadyOperations();
                     continue;
                     //throw new Exception("Static module declarations must not be part of the DFG that is being scheduled." +
                     //                    "The operation at fault is: " + nextOperation.ToString());
                 }
-                else if (nextOperation is Fluid fluidTransfer) {
+                else if (nextOperation is Fluid fluidTransfer)
+                {
                     int originalStartTime = currentTime;
                     FluidInput input = fluidTransfer.InputVariables[0];
                     int requiredDroplets = input.GetAmountInDroplets();
-                    if(requiredDroplets == 0) {
+                    if (requiredDroplets == 0)
+                    {
                         assay.updateReadyOperations(nextOperation);
                         continue;
                     }
@@ -130,13 +136,14 @@ namespace BiolyCompiler.Scheduling
                     //but if origin is simply droplets placed on the board, a simple renaiming can be done instead.
                     BoardFluid targetFluidType;
                     FluidVariableLocations.TryGetValue(fluidTransfer.OriginalOutputVariable, out targetFluidType);
-                    if (targetFluidType == null)                    {
+                    if (targetFluidType == null)
+                    {
                         targetFluidType = new BoardFluid(fluidTransfer.OriginalOutputVariable);
                         FluidVariableLocations.Add(fluidTransfer.OriginalOutputVariable, targetFluidType);
                     }
 
                     BoardFluid inputFluid;
-                    FluidVariableLocations.TryGetValue(input.FluidName, out inputFluid);
+                    FluidVariableLocations.TryGetValue(input.OriginalFluidName, out inputFluid);
                     if (inputFluid == null) throw new Exception("Fluid of type \"" + input.FluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
                     List<Droplet> availableDroplets = inputFluid.dropletSources.Where(dropletSource => dropletSource is Droplet)
                                                                                .Select(dropletSource => dropletSource as Droplet)
@@ -147,7 +154,8 @@ namespace BiolyCompiler.Scheduling
                         availableDroplets[i].SetFluidType(targetFluidType);
                     }
                     int numberOfDropletsTransfered = numberOfDropletsToTransfer;
-                    if (numberOfDropletsTransfered != requiredDroplets) {
+                    if (numberOfDropletsTransfered != requiredDroplets)
+                    {
                         //As there aren't enough droplets placed on the board, to satisfy the requirement, 
                         //some must be taken from the input modules.
                         List<InputModule> inputModules = inputFluid.dropletSources.Where(dropletSource => dropletSource is InputModule)
@@ -208,10 +216,16 @@ namespace BiolyCompiler.Scheduling
                     readyOperations = assay.getReadyOperations();
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                 }
-                else throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
-                                           "It is of type: " +  nextOperation.GetType() + ", and it is operation/block: " + nextOperation.ToString());
+                else
+                {
+                    throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
+                                           "It is of type: " + nextOperation.GetType() + ", and it is operation/block: " + nextOperation.ToString());
+                }
             }
-            if (assay.hasUnfinishedOperations()) throw new Exception("There were operations that couldn't be scheduled.");
+            if (assay.hasUnfinishedOperations())
+            {
+                throw new Exception("There were operations that couldn't be scheduled.");
+            }
             ScheduledOperations.Sort((x, y) => (x.StartTime < y.StartTime || (x.StartTime == y.StartTime && x.endTime <= y.endTime)) ? 0 : 1);
             return getCompletionTime();
         }

@@ -16,7 +16,20 @@ namespace BiolyCompiler.Scheduling
         public Assay(DFG<Block> dfg){
             this.dfg = dfg;
             //Set ready nodes
-            dfg.Nodes.ForEach(node => operationToNode.Add(node.value, node));
+            foreach (Node<Block> node in dfg.Nodes)
+            {
+                if (node.value is VariableBlock varBlock)
+                {
+                    if (varBlock.CanBeScheduled)
+                    {
+                        operationToNode.Add(node.value, node);
+                    }
+                }
+                else
+                {
+                    operationToNode.Add(node.value, node);
+                }
+            }
             readyOperations = dfg.Input.Select(x => x.value).ToList();
         }
 
@@ -37,7 +50,7 @@ namespace BiolyCompiler.Scheduling
 
             foreach (var successorOperationNode in operationNode.getOutgoingEdges())
             {
-                if (successorOperationNode.getIngoingEdges().All(node => node.value.hasBeenScheduled))
+                if (successorOperationNode.getIngoingEdges().All(node => node.value.hasBeenScheduled || (node.value is VariableBlock && !((VariableBlock)node.value).CanBeScheduled)))
                 {
                     readyOperations.Add(successorOperationNode.value);
                     //This will not happen multiple times, as once an operation list has been added to the readyOperaition list,
@@ -48,7 +61,7 @@ namespace BiolyCompiler.Scheduling
 
         public bool hasUnfinishedOperations()
         {
-            return !dfg.Nodes.All(node => node.value.hasBeenScheduled);
+            return !operationToNode.All(node => node.Key.hasBeenScheduled || (node.Key is VariableBlock && !((VariableBlock)node.Key).CanBeScheduled));
         }
     }
 }

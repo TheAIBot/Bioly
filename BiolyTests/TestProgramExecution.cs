@@ -19,12 +19,13 @@ namespace BiolyTests
         private JSProgram CreateProgramWithIfStatement(bool[] enableIfs)
         {
             JSProgram program = new JSProgram();
+            program.Render = true;
             program.AddInputBlock("k", 100, FluidUnit.drops);
             program.AddOutputDeclarationBlock("z");
 
             foreach (bool enableIf in enableIfs)
             {
-                string left = program.AddConstantBlock(3);
+                string left = program.AddConstantBlock(enableIf ? 3 : 2);
                 string right = program.AddConstantBlock(3);
                 string conditionalBlock = program.AddBoolOPBlock(BoolOPTypes.EQ, left, right);
 
@@ -69,11 +70,11 @@ namespace BiolyTests
             List<Command> program2Commands = GetProgramCommands(program2);
             Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
 
-            //JSProgram program3 = CreateProgramWithIfStatement(new bool[] { false, false });
-            //JSProgram program4 = CreateProgramWithoutIfStatement(new bool[] { false, false });
-            //List<Command> program3Commands = GetProgramCommands(program3);
-            //List<Command> program4Commands = GetProgramCommands(program4);
-            //Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
+            JSProgram program3 = CreateProgramWithIfStatement(new bool[] { false, false });
+            JSProgram program4 = CreateProgramWithoutIfStatement(new bool[] { false, false });
+            List<Command> program3Commands = GetProgramCommands(program3);
+            List<Command> program4Commands = GetProgramCommands(program4);
+            Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
         }
 
         private List<Command> GetProgramCommands(JSProgram program)
