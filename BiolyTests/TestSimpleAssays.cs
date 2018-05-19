@@ -63,6 +63,13 @@ namespace BiolyTests.SimpleAssayTests
         }
 
         [TestMethod]
+        public void testReassignFluidToVariableAlreadyUsed()
+        {
+            Schedule schedule = runSelectedProgram("ReassignFluid");
+            Board initialBoard = schedule.boardAtDifferentTimes[0];
+        }
+
+        [TestMethod]
         public void testSequentialMixer()
         {
             Schedule schedule = runSelectedProgram("SequentialMixing");
