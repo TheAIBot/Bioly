@@ -30,7 +30,7 @@ namespace BiolyTests.SimpleAssayTests
             int numberOfInputs = 5;
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
             StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", null, "");
-            FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null, "");
+            FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new FluidInput(inputOperation.OriginalOutputVariable, numberOfInputs, false) }, "Kage", null, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(outputDeclaration);
             dfg.AddNode(outputOperation);
@@ -42,11 +42,11 @@ namespace BiolyTests.SimpleAssayTests
             schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation, outputDeclaration }, board,library);
             schedule.ListScheduling(assay, board, library);
             Assert.AreEqual(0, inputOperation.InputRoutes.Count);
-            Assert.AreEqual(5, outputOperation.InputRoutes[inputOperation.OutputVariable].Count);
+            Assert.AreEqual(5, outputOperation.InputRoutes[inputOperation.OriginalOutputVariable].Count);
             int startTime = 0;
             for (int i = 0; i < numberOfInputs; i++)
             {
-                Route route = outputOperation.InputRoutes[inputOperation.OutputVariable][i];
+                Route route = outputOperation.InputRoutes[inputOperation.OriginalOutputVariable][i];
                 Assert.AreEqual(startTime, route.startTime);
                 Assert.AreEqual(startTime + 3, route.getEndTime());
                 Assert.IsTrue(RoutingTests.TestRouting.isAnActualRoute(route, board));

@@ -53,8 +53,8 @@ namespace BiolyTests.ScheduleTests
             DFG<Block> dfg = new DFG<Block>();
 
             TestModule module = new TestModule();
-            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1 }, null, module);
-            TestBlock operation2 = new TestBlock(new List<string>() { inputFluid2 }, null, module);
+            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1 }, "op1", module);
+            TestBlock operation2 = new TestBlock(new List<string>() { inputFluid2 }, "op2", module);
 
             dfg.AddNode(operation1);
             dfg.AddNode(operation2);
@@ -103,9 +103,9 @@ namespace BiolyTests.ScheduleTests
 
             TestModule module = new TestModule();
             InputDeclaration input = new InputDeclaration("testModule", inputFluid, 1, null);
-            TestBlock operation1 = new TestBlock(new List<string>() { input.OutputVariable }, null, module);
-            TestBlock operation2 = new TestBlock(new List<string>() { operation1.OutputVariable }, null, module);
-            TestBlock operation3 = new TestBlock(new List<string>() { operation2.OutputVariable }, null, module);
+            TestBlock operation1 = new TestBlock(new List<string>() { input.OriginalOutputVariable }, "op1", module);
+            TestBlock operation2 = new TestBlock(new List<string>() { operation1.OriginalOutputVariable }, "op2", module);
+            TestBlock operation3 = new TestBlock(new List<string>() { operation2.OriginalOutputVariable }, "op3", module);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(input);
@@ -172,12 +172,12 @@ namespace BiolyTests.ScheduleTests
             DFG<Block> dfg = new DFG<Block>();
 
             TestModule module = new TestModule();
-            TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, module);
-            TestBlock operation21 = new TestBlock(new List<string>() { operation11.OutputVariable }, null, module);
-            TestBlock operation31 = new TestBlock(new List<string>() { operation21.OutputVariable }, null, module);
-            TestBlock operation12 = new TestBlock(new List<string>() { inputFluid2 }, null, module);
-            TestBlock operation22 = new TestBlock(new List<string>() { operation12.OutputVariable }, null, module);
-            TestBlock operation32 = new TestBlock(new List<string>() { operation22.OutputVariable }, null, module);
+            TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, "op11", module);
+            TestBlock operation21 = new TestBlock(new List<string>() { operation11.OriginalOutputVariable }, "op21", module);
+            TestBlock operation31 = new TestBlock(new List<string>() { operation21.OriginalOutputVariable }, "op31", module);
+            TestBlock operation12 = new TestBlock(new List<string>() { inputFluid2 }, "op12", module);
+            TestBlock operation22 = new TestBlock(new List<string>() { operation12.OriginalOutputVariable }, "op22", module);
+            TestBlock operation32 = new TestBlock(new List<string>() { operation22.OriginalOutputVariable }, "op32", module);
 
             dfg.AddNode(operation11);
             dfg.AddNode(operation21);
@@ -296,7 +296,7 @@ namespace BiolyTests.ScheduleTests
             String inputFluid2 = "Kage";
             DFG<Block> dfg = new DFG<Block>();
             TestModule module = new TestModule(2, 1);
-            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1, inputFluid2 }, null, module);
+            TestBlock operation1 = new TestBlock(new List<string>() { inputFluid1, inputFluid2 }, "op1", module);
 
             dfg.AddNode(operation1);
             dfg.FinishDFG();
@@ -354,15 +354,15 @@ namespace BiolyTests.ScheduleTests
             TestModule sequentialModule1 = new TestModule();
             TestModule sequentialModule2 = new TestModule(4, 4, 1500); //Different operation time, to check if it the schedule takes the max of the two input operation times.
             TestModule multiInputModule = new TestModule(2, 1);
-            TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, null, sequentialModule2);
-            TestBlock operation21 = new TestBlock(new List<string>() { inputFluid3 }, null, sequentialModule1);
-            TestBlock operation31 = new TestBlock(new List<string>() { operation11.OutputVariable, operation21.OutputVariable }, null, multiInputModule);
+            TestBlock operation11 = new TestBlock(new List<string>() { inputFluid1 }, "op11", sequentialModule2);
+            TestBlock operation21 = new TestBlock(new List<string>() { inputFluid3 }, "op21", sequentialModule1);
+            TestBlock operation31 = new TestBlock(new List<string>() { operation11.OriginalOutputVariable, operation21.OriginalOutputVariable }, "op31", multiInputModule);
 
-            TestBlock operation12 = new TestBlock(new List<string>() { inputFluid2 }, null, sequentialModule1);
-            TestBlock operation22 = new TestBlock(new List<string>() { operation12.OutputVariable }, null, sequentialModule1);
-            TestBlock operation32 = new TestBlock(new List<string>() { operation22.OutputVariable }, null, sequentialModule2);
+            TestBlock operation12 = new TestBlock(new List<string>() { inputFluid2 }, "op12", sequentialModule1);
+            TestBlock operation22 = new TestBlock(new List<string>() { operation12.OriginalOutputVariable }, "op22", sequentialModule1);
+            TestBlock operation32 = new TestBlock(new List<string>() { operation22.OriginalOutputVariable }, "op32", sequentialModule2);
 
-            TestBlock operationLast = new TestBlock(new List<string>() { operation31.OutputVariable, operation32.OutputVariable }, null, multiInputModule);
+            TestBlock operationLast = new TestBlock(new List<string>() { operation31.OriginalOutputVariable, operation32.OriginalOutputVariable }, "opL", multiInputModule);
 
             dfg.AddNode(operation11);
             dfg.AddNode(operation21);

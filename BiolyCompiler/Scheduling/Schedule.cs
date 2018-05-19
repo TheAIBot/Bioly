@@ -66,11 +66,11 @@ namespace BiolyCompiler.Scheduling
             {
                 if (staticDeclaration is InputDeclaration input)
                 {
-                    FluidVariableLocations.TryGetValue(input.OutputVariable, out BoardFluid fluidType);
+                    FluidVariableLocations.TryGetValue(input.OriginalOutputVariable, out BoardFluid fluidType);
                     if (fluidType == null)
                     {
-                        fluidType = new BoardFluid(input.OutputVariable);
-                        FluidVariableLocations.Add(input.OutputVariable, fluidType);
+                        fluidType = new BoardFluid(input.OriginalOutputVariable);
+                        FluidVariableLocations.Add(input.OriginalOutputVariable, fluidType);
                     }
                     InputModule inputModule = new InputModule(fluidType, (int)input.Amount);
                     bool couldBePlaced = board.FastTemplatePlace(inputModule);
@@ -129,10 +129,10 @@ namespace BiolyCompiler.Scheduling
                     //If the origin of the fluid is an input, a given amount of droplets needs to moved unto the board,
                     //but if origin is simply droplets placed on the board, a simple renaiming can be done instead.
                     BoardFluid targetFluidType;
-                    FluidVariableLocations.TryGetValue(fluidTransfer.OutputVariable, out targetFluidType);
+                    FluidVariableLocations.TryGetValue(fluidTransfer.OriginalOutputVariable, out targetFluidType);
                     if (targetFluidType == null)                    {
-                        targetFluidType = new BoardFluid(fluidTransfer.OutputVariable);
-                        FluidVariableLocations.Add(fluidTransfer.OutputVariable, targetFluidType);
+                        targetFluidType = new BoardFluid(fluidTransfer.OriginalOutputVariable);
+                        FluidVariableLocations.Add(fluidTransfer.OriginalOutputVariable, targetFluidType);
                     }
 
                     BoardFluid inputFluid;
@@ -267,12 +267,12 @@ namespace BiolyCompiler.Scheduling
                     if (!(finishedOperation is StaticUseageBlock))
                     {
                         BoardFluid dropletOutputFluid;
-                        FluidVariableLocations.TryGetValue(finishedOperation.OutputVariable, out dropletOutputFluid);
+                        FluidVariableLocations.TryGetValue(finishedOperation.OriginalOutputVariable, out dropletOutputFluid);
                         //If it is the first time this type of fluid has been outputed, record it:
                         if (dropletOutputFluid == null)
                         {
-                            dropletOutputFluid = new BoardFluid(finishedOperation.OutputVariable);
-                            FluidVariableLocations.Add(finishedOperation.OutputVariable, dropletOutputFluid);
+                            dropletOutputFluid = new BoardFluid(finishedOperation.OriginalOutputVariable);
+                            FluidVariableLocations.Add(finishedOperation.OriginalOutputVariable, dropletOutputFluid);
                         }
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);

@@ -104,11 +104,11 @@ namespace BiolyCompiler.Parser
             //just updated the value
             if (parserInfo.mostRecentVariableRef.ContainsKey(block.OriginalOutputVariable))
             {
-                parserInfo.mostRecentVariableRef[block.OriginalOutputVariable] = block.OutputVariable;
+                parserInfo.mostRecentVariableRef[block.OriginalOutputVariable] = block.OriginalOutputVariable;
             }
             else
             {
-                parserInfo.mostRecentVariableRef.Add(block.OriginalOutputVariable, block.OutputVariable);
+                parserInfo.mostRecentVariableRef.Add(block.OriginalOutputVariable, block.OriginalOutputVariable);
                 parserInfo.AddFluidVariable(block.OriginalOutputVariable);
             }
 

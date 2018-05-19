@@ -69,10 +69,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCorrectIntialReadyOperationsNonParallelDFG()
         {
-            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable }, null, null);
-            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation4 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation1 = new TestBlock(new List<string> { }, "op1", null);
+            TestBlock operation2 = new TestBlock(new List<string> { operation1.OriginalOutputVariable }, "op2", null);
+            TestBlock operation3 = new TestBlock(new List<string> { }, "op3", null);
+            TestBlock operation4 = new TestBlock(new List<string> { }, "op4", null);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -104,10 +104,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestUpdateReadyOperations1Dependecy()
         {
-            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable }, null, null);
-            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation4 = new TestBlock(new List<string> { operation3.OutputVariable }, null, null);
+            TestBlock operation1 = new TestBlock(new List<string> { }, "op1", null);
+            TestBlock operation2 = new TestBlock(new List<string> { operation1.OriginalOutputVariable }, "op2", null);
+            TestBlock operation3 = new TestBlock(new List<string> { }, "op3", null);
+            TestBlock operation4 = new TestBlock(new List<string> { operation3.OriginalOutputVariable }, "op4", null);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -139,10 +139,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestUpdateReadyOperationsMultiDependecy()
         {
-            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable, operation3.OutputVariable }, null, null);
-            TestBlock operation4 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation1 = new TestBlock(new List<string> { }, "op1", null);
+            TestBlock operation3 = new TestBlock(new List<string> { }, "op3", null);
+            TestBlock operation2 = new TestBlock(new List<string> { operation1.OriginalOutputVariable, operation3.OriginalOutputVariable }, "op2", null);
+            TestBlock operation4 = new TestBlock(new List<string> { }, "op4", null);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);

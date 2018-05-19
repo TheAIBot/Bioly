@@ -53,7 +53,7 @@ namespace BiolyCompiler.BlocklyParts
                     currentDroplet++;
                 }
             }
-            BoardFluid outputFluidType = new BoardFluid(OutputVariable);
+            BoardFluid outputFluidType = new BoardFluid(OriginalOutputVariable);
             foreach (var droplet in module.GetOutputLayout().Droplets)
             {
                 droplet.SetFluidType(outputFluidType);

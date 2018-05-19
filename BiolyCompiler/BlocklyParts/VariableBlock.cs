@@ -29,7 +29,7 @@ namespace BiolyCompiler.BlocklyParts
         
         public virtual (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
         {
-            return (OutputVariable, Run(variables, executor));
+            return (OriginalOutputVariable, Run(variables, executor));
         }
     }
 }
