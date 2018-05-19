@@ -60,5 +60,10 @@ namespace BiolyCompiler.BlocklyParts
             }
             return false;
         }
+
+        public override string ToString()
+        {
+            return "Block type: " + this.GetType().ToString() + ", Output name: " + OriginalOutputVariable;
+        }
     }
 }

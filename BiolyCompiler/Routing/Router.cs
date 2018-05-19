@@ -244,6 +244,37 @@ namespace BiolyCompiler.Routing
             }
         }
 
+        public List<Droplet> GetInternalDropletExstractionOrder(HeaterModule module)
+        {
+            List<Droplet> dropletRoutingOrder = new List<Droplet>();
+            ModuleLayout outputLayout = module.GetOutputLayout();
+            HashSet<Droplet> internalDroplets = outputLayout.Droplets.ToHashSet();
+            HashSet<Rectangle> internalEmptyRectangles = outputLayout.EmptyRectangles.ToHashSet();
+            HashSet<Rectangle> internalRectangles = new HashSet<Rectangle>(internalEmptyRectangles);
+            internalEmptyRectangles.UnionWith(internalDroplets.Select(droplet => droplet.Shape));
+            HashSet<Rectangle> outsideEmptyRectangle = module.Shape.AdjacentRectangles
+                                                       .Where(rectangle => rectangle.isEmpty)
+                                                       .ToHashSet();
+
+            foreach (var externalRectangle in outsideEmptyRectangle)
+                foreach (var internalRectangle in internalRectangles)
+                    externalRectangle.ConnectIfAdjacent(internalRectangle);
+            
+            //Breadth first seach, starting from the outside empty rectangles, to find the correct order of extraction:
+            
+
+
+            foreach (var externalRectangle in outsideEmptyRectangle)
+            {
+                foreach (var internalRectangle in internalRectangles)
+                {
+                    externalRectangle.AdjacentRectangles.Remove(internalRectangle);
+                    internalRectangle.AdjacentRectangles.Remove(externalRectangle);
+                }
+            }
+            return null;
+        }
+
         private static bool hasCollisionWithOtherModules(Module sourceModule, Module moduleAtCurrentNode)
         {
             return !(moduleAtCurrentNode == null || moduleAtCurrentNode == sourceModule);
