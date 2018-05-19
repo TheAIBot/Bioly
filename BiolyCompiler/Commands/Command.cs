@@ -19,6 +19,18 @@ namespace BiolyCompiler.Commands
             this.Time = time;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Command command)
+            {
+                return this.X == command.X && 
+                       this.Y == command.Y && 
+                       this.Time == command.Time && 
+                       this.Type == command.Type;
+            }
+            return false;
+        }
+
         public override string ToString()
         {
             return $"x: {X}, y: {Y}, T: {Time}";

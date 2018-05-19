@@ -27,6 +27,7 @@ namespace BiolyTests.TestObjects
 
         public TestBlock(List<string> inputs, string output, Module associatedModule) : this(inputs.Select(input => new FluidInput(input, 1, true)).ToList(), output, associatedModule)
         {
+
         }
 
         public override Module getAssociatedModule()

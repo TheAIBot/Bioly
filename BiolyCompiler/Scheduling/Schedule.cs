@@ -100,7 +100,6 @@ namespace BiolyCompiler.Scheduling
             while (assay.hasUnfinishedOperations() && canExecuteMoreOperations(readyOperations))
             {
                 Block nextOperation = removeOperation(readyOperations);
-
                 if (isSpecialCaseOperation(nextOperation))
                 {
                     (readyOperations, currentTime) = handleSpecialCases(assay, board, currentTime, nextOperation, readyOperations);
@@ -232,13 +231,14 @@ namespace BiolyCompiler.Scheduling
 
         private List<Block> handleVariableOperation(Assay assay, int currentTime, Block nextOperation)
         {
-            List<Block> readyOperations;
             //This is a mathematical operation, and it should be scheduled to run as soon as possible
-            updateSchedule(nextOperation, currentTime, currentTime);
-            ScheduledOperations.Add(nextOperation);
-            assay.updateReadyOperations(nextOperation);
-            readyOperations = assay.getReadyOperations();
-            return readyOperations;
+            if ((nextOperation as VariableBlock).CanBeScheduled)
+            {
+                //This is a mathematical operation, and it should be scheduled to run as soon as possible
+                updateSchedule(nextOperation, currentTime, currentTime);
+                assay.updateReadyOperations(nextOperation);
+            }
+            return assay.getReadyOperations();
         }
 
         private (List<Block>, int) handleSpecialCases(Assay assay, Board board, int currentTime, Block nextOperation, List<Block> readyOperations)

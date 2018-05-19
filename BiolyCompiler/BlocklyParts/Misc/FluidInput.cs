@@ -37,6 +37,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
 
             this.FluidName = fluidName;
+            this.OriginalFluidName = fluidName;
             this.AmountInML = GetMLOfFluidFromNumberOfDroplets(inputAmountInDroplets);
             this.UseAllFluid = useAllFluid;
         }

@@ -20,14 +20,14 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id) : base(false, input, output, id)
+        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : base(false, input, output, id, canBeScheduled)
         {
             this.OPType = BoolOP.StringToBoolOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
             this.LeftBlock = leftBlock;
             this.RightBlock = rightBlock;
         }
 
-        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
 
@@ -36,7 +36,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             try
             {
                 XmlNode leftNode = node.GetInnerBlockNode(LeftBoolFieldName, new MissingBlockException(id, "Left side of boolean operator is missing a block."));
-                leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo);
+                leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo, false, false);
             }
             catch (ParseException e)
             {
@@ -45,7 +45,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             try
             {
                 XmlNode rightNode = node.GetInnerBlockNode(RightBoolFieldName, new MissingBlockException(id, "Right side of boolean operator is missing a block."));
-                rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo);
+                rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo, false, false);
             }
             catch (ParseException e)
             {
@@ -56,10 +56,10 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             dfg.AddNode(rightBoolBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(leftBoolBlock?.OutputVariable);
-            inputs.Add(rightBoolBlock?.OutputVariable);
+            inputs.Add(leftBoolBlock?.OriginalOutputVariable);
+            inputs.Add(rightBoolBlock?.OriginalOutputVariable);
 
-            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node, id);
+            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node, id, canBeScheduled);
         }
 
         public static BoolOPTypes StringToBoolOPType(string id, string boolOPAsString)

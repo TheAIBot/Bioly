@@ -28,7 +28,7 @@ namespace BiolyCompiler.Graphs
                 {
                     foreach (string nodeName in varBlock.InputVariables)
                     {
-                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
+                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OriginalOutputVariable == nodeName);
                         if (inputNode != null)
                         {
                             AddEdge(inputNode, node);
@@ -39,7 +39,7 @@ namespace BiolyCompiler.Graphs
                 {
                     foreach (FluidInput nodeName in fluidBlock.InputVariables)
                     {
-                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName.FluidName);
+                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OriginalOutputVariable == nodeName.FluidName);
                         if (inputNode != null)
                         {
                             AddEdge(inputNode, node);
@@ -56,8 +56,15 @@ namespace BiolyCompiler.Graphs
                 {
                     Output.Add(node);
                 }
-                if (node.getIngoingEdges().Count == 0)
+                if (node.getIngoingEdges().Count == 0 || (block is VariableBlock && node.getIngoingEdges().All(x => x.value is VariableBlock && !(x.value as VariableBlock).CanBeScheduled)))
                 {
+                    if (block is VariableBlock varBlock)
+                    {
+                        if (!varBlock.CanBeScheduled)
+                        {
+                            continue;
+                        }
+                    }
                     Input.Add(node);
                 }
             }

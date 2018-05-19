@@ -52,17 +52,17 @@ namespace BiolyViewer_Windows
 
             foreach (Node<Block> node in dfg.Nodes)
             {
-                nodes += CreateNode(node.value.OutputVariable, node.value.ToString(), dfgName);
+                nodes += CreateNode(node.value.OriginalOutputVariable, node.value.ToString(), dfgName);
 
                 foreach (Node<Block> edgeNode in node.getOutgoingEdges())
                 {
                     if (edgeNode.value is VariableBlock)
                     {
-                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
+                        edges += CreateEdge(node.value.OriginalOutputVariable, edgeNode.value.OriginalOutputVariable);
                     }
                     else if (edgeNode.value is FluidBlock fluidBlock)
                     {
-                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable, null, fluidBlock.InputVariables.Single(x => x.FluidName == node.value.OutputVariable).ToString());
+                        edges += CreateEdge(node.value.OriginalOutputVariable, edgeNode.value.OriginalOutputVariable, null, fluidBlock.InputVariables.Single(x => x.FluidName == node.value.OriginalOutputVariable).ToString());
                     }
                 }
             }
@@ -118,13 +118,13 @@ namespace BiolyViewer_Windows
         {
             string edges = "";
             source.Nodes.Where(x => x.value is VariableBlock)
-                        .Where(x => source.Nodes.Where(k => k.value is VariableBlock).All(y => !((VariableBlock)y.value).InputVariables.Contains(x.value.OutputVariable)))
+                        .Where(x => source.Nodes.Where(k => k.value is VariableBlock).All(y => !((VariableBlock)y.value).InputVariables.Contains(x.value.OriginalOutputVariable)))
                         .ToList()
-                        .ForEach(x => target.Input.ForEach(y => edges+= CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
+                        .ForEach(x => target.Input.ForEach(y => edges+= CreateEdge(x.value.OriginalOutputVariable, y.value.OriginalOutputVariable, "haystack")));
             source.Nodes.Where(x => x.value is FluidBlock)
-                        .Where(x => source.Nodes.Where(k => k.value is FluidBlock).All(y => !((FluidBlock)y.value).InputVariables.Any(z => z.FluidName == x.value.OutputVariable)))
+                        .Where(x => source.Nodes.Where(k => k.value is FluidBlock).All(y => !((FluidBlock)y.value).InputVariables.Any(z => z.FluidName == x.value.OriginalOutputVariable)))
                         .ToList()
-                        .ForEach(x => target.Input.ForEach(y => edges += CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
+                        .ForEach(x => target.Input.ForEach(y => edges += CreateEdge(x.value.OriginalOutputVariable, y.value.OriginalOutputVariable, "haystack")));
             return edges;
         }
 
