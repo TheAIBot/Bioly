@@ -56,8 +56,8 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             dfg.AddNode(rightBoolBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(leftBoolBlock?.OriginalOutputVariable);
-            inputs.Add(rightBoolBlock?.OriginalOutputVariable);
+            inputs.Add(leftBoolBlock?.OutputVariable);
+            inputs.Add(rightBoolBlock?.OutputVariable);
 
             return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node, id, canBeScheduled);
         }
