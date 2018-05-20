@@ -343,21 +343,61 @@ namespace BiolyCompiler.Scheduling
 
         private static void ExtractInternalDropletsAndPlaceThemOnTheBoard(Board board, FluidBlock finishedOperation)
         {
-            HeaterModule heater = (HeaterModule)finishedOperation.BoundModule;
+            List<Droplet> extractionOrder = new List<Droplet>();
+            HeaterModule module = (HeaterModule)finishedOperation.BoundModule;
             //The droplets needs to be extracted in such an order and way, that there is a route to "outside" the module, 
             //and they don't collide with the other internal droplets of the module.
 
             //The latter can be done by temporarily placing the internal structure of the module on the board 
             //(the routing algorithm handles the rest), while the first corresponds to extracting droplets, 
             //where they can reach an empty reactangle adjacent to the module bound to finishedOperation.
-            
-            //Breadth first to find the extraction order:
 
+            //Breadth first to find the extraction order:
+            ModuleLayout inputLayout = module.GetInputLayout();
+            HashSet<Rectangle> internalEmptyRectangles = new HashSet<Rectangle>(inputLayout.EmptyRectangles);
+            HashSet<Droplet> internalDroplets = new HashSet<Droplet>(inputLayout.Droplets);
+            HashSet<Rectangle> internalRectangles = new HashSet<Rectangle>(internalEmptyRectangles);
+            internalRectangles.UnionWith(internalDroplets.Select(droplet => droplet.Shape).ToHashSet());
+            HashSet<Rectangle> externalEmptyRectangle = module.Shape.AdjacentRectangles
+                                                       .Where(rectangle => rectangle.isEmpty)
+                                                       .ToHashSet();
+
+            foreach (var outsideRectangle in externalEmptyRectangle)
+                foreach (var internalRectangle in internalRectangles)
+                    outsideRectangle.ConnectIfAdjacent(internalRectangle);
+
+            HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>(externalEmptyRectangle);
+            Queue<Rectangle> rectanglesToVisit = new Queue<Rectangle>();
+            foreach (var rectangle in externalEmptyRectangle)
+                rectanglesToVisit.Enqueue(rectangle);
+
+            while (rectanglesToVisit.Count > 0)
+            {
+                Rectangle current = rectanglesToVisit.Dequeue();
+                foreach (var adjacentRectangle in current.AdjacentRectangles)
+                {
+                    //We do not care for rectangles, that are not inside the module layout.
+                    if ( internalRectangles.Contains(adjacentRectangle) &&
+                        !visitedEmptyRectangles.Contains(adjacentRectangle))
+                    {
+                    }
+                }
+            }
+            /*
+            foreach (var outsideRectangle in externalEmptyRectangle)
+            {
+                foreach (var insideRectangle in duplicateLayoutEmptyRectangles)
+                {
+                    outsideRectangle.AdjacentRectangles.Remove(insideRectangle);
+                    insideRectangle.AdjacentRectangles.Remove(outsideRectangle);
+                }
+            }
+            */
 
 
 
             //The module needs to be "placed" on the board again:
-            board.UpdateGridAtGivenLocation(heater, heater.Shape);
+            board.UpdateGridAtGivenLocation(module, module.Shape);
         }
 
         private List<FluidBlock> getNextBatchOfFinishedOperations()

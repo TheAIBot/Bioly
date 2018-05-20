@@ -178,7 +178,6 @@ namespace BiolyCompiler.Architechtures
             return visitsEverything;
         }
 
-
         public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, HashSet<Rectangle> outsideEmptyRectangles, HashSet<Rectangle> layoutEmptyRectangles)
         {
             //Breadth first search, finding all the empty rectangles that can be visited.
@@ -391,35 +390,6 @@ namespace BiolyCompiler.Architechtures
 
             return operationExecutingModule.GetOutputLayout().Droplets;
         }
-
-        /*
-        private void FastTemplateReplace(Rectangle oldRectangle, Module replacingModule)
-        {
-            (Rectangle TopRectangle, Rectangle RightRectangle) = oldRectangle.SplitIntoSmallerRectangles(replacingModule);
-            //All the adjacenecies from the old rectangle (moduleRectangle), should be removed, and added to the new rectangles.
-            foreach (var adjacentRectangle in oldRectangle.AdjacentRectangles)
-            {
-                adjacentRectangle.AdjacentRectangles.Remove(oldRectangle);
-                if (adjacentRectangle.IsAdjacent(replacingModule.Shape))
-                {
-                    replacingModule.Shape.AdjacentRectangles.Add(adjacentRectangle);
-                    adjacentRectangle.AdjacentRectangles.Add(replacingModule.Shape);
-                }
-                if (TopRectangle != null && adjacentRectangle.IsAdjacent(TopRectangle))
-                {
-                    TopRectangle.AdjacentRectangles.Add(adjacentRectangle);
-                    adjacentRectangle.AdjacentRectangles.Add(TopRectangle);
-                }
-                if (RightRectangle != null && adjacentRectangle.IsAdjacent(RightRectangle))
-                {
-                    RightRectangle.AdjacentRectangles.Add(adjacentRectangle);
-                    adjacentRectangle.AdjacentRectangles.Add(RightRectangle);
-                }
-            }
-            //The two empty rectangles from the splitting can be removed, as they are not used by the placed module:
-            if (TopRectangle != null) FastTemplateRemove(TopRectangle);
-            if (RightRectangle != null) FastTemplateRemove(RightRectangle);
-        } */
 
         public Board Copy()
         {
