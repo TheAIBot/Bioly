@@ -41,7 +41,10 @@ namespace BiolyCompiler.Scheduling
         {
             ScheduledOperations.Add(operation);
             operation.StartTime = startTime;
-            if (operation is VariableBlock || operation is Fluid) return;
+            if (operation is VariableBlock || operation is Fluid) {
+                operation.endTime = currentTime;
+                return;
+            }            
             else
             {
                 FluidBlock fluidOperation = operation as FluidBlock;
