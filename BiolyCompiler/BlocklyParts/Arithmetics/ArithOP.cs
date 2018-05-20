@@ -55,8 +55,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             dfg.AddNode(rightArithBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(leftArithBlock?.OriginalOutputVariable);
-            inputs.Add(rightArithBlock?.OriginalOutputVariable);
+            inputs.Add(leftArithBlock?.OutputVariable);
+            inputs.Add(rightArithBlock?.OutputVariable);
 
             return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, node, id, canBeScheduled);
         }
