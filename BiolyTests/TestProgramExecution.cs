@@ -91,7 +91,7 @@ namespace BiolyTests
             string xml = TestTools.GetWorkspaceString();
             TestCommandExecutor executor = new TestCommandExecutor();
             ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-            programExecutor.Run(100, 100, xml);
+            programExecutor.Run(10, 10, xml);
 
             return executor.Commands;
         }

@@ -223,7 +223,13 @@ namespace BiolyCompiler.Scheduling
                 }
                 if (numberOfDropletsTransfered != requiredDroplets) throw new Exception("Not enough droplets available.");
             }
+            else
+            {
+                currentTime += 1; //Necessary for the recording of the board below.
+            }
             updateSchedule(nextOperation, currentTime, originalStartTime);
+            boardAtDifferentTimes.Add(currentTime, board);
+            board = board.Copy();
             currentTime += 2;
             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             assay.updateReadyOperations(nextOperation);
