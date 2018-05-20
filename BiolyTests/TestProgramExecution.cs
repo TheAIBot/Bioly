@@ -68,22 +68,6 @@ namespace BiolyTests
             return program;
         }
 
-        [TestMethod]
-        public void ProgramWithDisabledIfStatement()
-        {
-            //JSProgram program1 = CreateProgramWithIfStatement(new bool[] { false });
-            //JSProgram program2 = CreateProgramWithoutIfStatement(new bool[] { false });
-            //List<Command> program1Commands = GetProgramCommands(program1);
-            //List<Command> program2Commands = GetProgramCommands(program2);
-            //Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
-
-            JSProgram program3 = CreateProgramWithIfStatement(new bool[] { false, false });
-            JSProgram program4 = CreateProgramWithoutIfStatement(new bool[] { false, false });
-            List<Command> program3Commands = GetProgramCommands(program3);
-            List<Command> program4Commands = GetProgramCommands(program4);
-            Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
-        }
-
         private List<Command> GetProgramCommands(JSProgram program)
         {
             ClearWorkspace();
@@ -97,9 +81,47 @@ namespace BiolyTests
         }
 
         [TestMethod]
+        public void ProgramWithDisabledIfStatement()
+        {
+            JSProgram program1 = CreateProgramWithIfStatement(new bool[] { false });
+            JSProgram program2 = CreateProgramWithoutIfStatement(new bool[] { false });
+            List<Command> program1Commands = GetProgramCommands(program1);
+            List<Command> program2Commands = GetProgramCommands(program2);
+            Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
+
+            //JSProgram program3 = CreateProgramWithIfStatement(new bool[] { false, false });
+            //JSProgram program4 = CreateProgramWithoutIfStatement(new bool[] { false, false });
+            //List<Command> program3Commands = GetProgramCommands(program3);
+            //List<Command> program4Commands = GetProgramCommands(program4);
+            //Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
+
+            //JSProgram program5 = CreateProgramWithIfStatement(new bool[] { false, false, false, false, false, false });
+            //JSProgram program6 = CreateProgramWithoutIfStatement(new bool[] { false, false, false, false, false, false });
+            //List<Command> program5Commands = GetProgramCommands(program5);
+            //List<Command> program6Commands = GetProgramCommands(program6);
+            //Assert.IsTrue(program5Commands.SequenceEqual(program6Commands));
+        }
+
+        [TestMethod]
         public void ProgramWithEnabledIfStatement()
         {
+            JSProgram program1 = CreateProgramWithIfStatement(new bool[] { true });
+            JSProgram program2 = CreateProgramWithoutIfStatement(new bool[] { true });
+            List<Command> program1Commands = GetProgramCommands(program1);
+            List<Command> program2Commands = GetProgramCommands(program2);
+            Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
 
+            JSProgram program3 = CreateProgramWithIfStatement(new bool[] { true, true });
+            JSProgram program4 = CreateProgramWithoutIfStatement(new bool[] { true, true });
+            List<Command> program3Commands = GetProgramCommands(program3);
+            List<Command> program4Commands = GetProgramCommands(program4);
+            Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
+
+            JSProgram program5 = CreateProgramWithIfStatement(new bool[] { true, true, true, true, true, true });
+            JSProgram program6 = CreateProgramWithoutIfStatement(new bool[] { true, true, true, true, true, true });
+            List<Command> program5Commands = GetProgramCommands(program5);
+            List<Command> program6Commands = GetProgramCommands(program6);
+            Assert.IsTrue(program5Commands.SequenceEqual(program6Commands));
         }
 
         [TestMethod]
