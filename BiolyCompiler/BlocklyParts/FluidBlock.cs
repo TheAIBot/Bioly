@@ -34,7 +34,7 @@ namespace BiolyCompiler.BlocklyParts
             throw new NotImplementedException("No modules have been associated with blocks/operations of type " + this.GetType().ToString());
         }
 
-        public virtual void Bind(Module module)
+        public virtual void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)
         {
             BoundModule = module;
             //module.BindingOperation = this;
@@ -47,7 +47,7 @@ namespace BiolyCompiler.BlocklyParts
             foreach (var fluid in InputVariables)
             {
                 BoardFluid fluidType = new BoardFluid(fluid.OriginalFluidName);
-                for (int i = 0; i < fluid.GetAmountInDroplets(); i++)
+                for (int i = 0; i < fluid.GetAmountInDroplets(FluidVariableLocations); i++)
                 {
                     module.GetInputLayout().Droplets[currentDroplet].SetFluidType(fluidType);
                     currentDroplet++;

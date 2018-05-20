@@ -27,18 +27,18 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new OutputUseage(moduleName, inputs, null, node, id);
         }
 
-        public override void Bind(Module module)
+        public override void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)
         {
             //The amount of droplets that the output module will take,
             //needs to be changed to the amount required by this block/operation.
             //This is neccessary for the routing to work:
             InfiniteModuleLayout layout = (InfiniteModuleLayout) module.GetInputLayout();
-            layout.SetGivenAmountOfDroplets(InputVariables[0].GetAmountInDroplets(), module);
+            layout.SetGivenAmountOfDroplets(InputVariables[0].GetAmountInDroplets(FluidVariableLocations), module);
 
 
 
 
-            base.Bind(module);  
+            base.Bind(module, FluidVariableLocations);  
         }
 
         public override string ToString()

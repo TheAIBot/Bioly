@@ -112,7 +112,7 @@ namespace BiolyCompiler.Scheduling
                     Module operationExecutingModule = (topPriorityOperation is StaticUseageBlock staticOperation) ?
                                                        StaticModules[staticOperation.ModuleName] :
                                                        library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board);
-                    topPriorityOperation.Bind(operationExecutingModule);
+                    topPriorityOperation.Bind(operationExecutingModule, FluidVariableLocations);
 
                     //For debuging:
                     AllUsedModules.Add(operationExecutingModule);
@@ -133,11 +133,18 @@ namespace BiolyCompiler.Scheduling
                     (currentTime, board) = handleFinishingOperations(currentTime, assay, board);
                     readyOperations = assay.getReadyOperations();
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+                    nextOperation.hasBeenScheduled = true;
                 }
-                else throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
+                else
+                {
+                    throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
                                          "The operation is: " + nextOperation.ToString());
+                }
             }
-            if (assay.hasUnfinishedOperations()) throw new Exception("There were operations that couldn't be scheduled.");
+            if (assay.hasUnfinishedOperations())
+            {
+                throw new Exception("There were operations that couldn't be scheduled.");
+            }
             SortScheduledOperations();
             return getCompletionTime();
         }
@@ -152,7 +159,7 @@ namespace BiolyCompiler.Scheduling
             List<Block> readyOperations;
             int originalStartTime = currentTime;
             FluidInput input = nextOperation.InputVariables[0];
-            int requiredDroplets = input.GetAmountInDroplets();
+            int requiredDroplets = input.GetAmountInDroplets(FluidVariableLocations);
             //First it is checked if there is even any fluid that needs to be transfered:
             if(requiredDroplets == 0) {
                 assay.updateReadyOperations(nextOperation);
@@ -174,7 +181,7 @@ namespace BiolyCompiler.Scheduling
             }
 
             BoardFluid inputFluid;
-            FluidVariableLocations.TryGetValue(input.FluidName, out inputFluid);
+            FluidVariableLocations.TryGetValue(input.OriginalFluidName, out inputFluid);
             if (inputFluid == null) throw new Exception("Fluid of type \"" + input.FluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
             
             //Trying to take as many droplets as possible from those already placed on the board,
@@ -263,7 +270,7 @@ namespace BiolyCompiler.Scheduling
         {
             int finishedRoutingTime;
             if (topPriorityOperation is OutputUseage)
-                finishedRoutingTime = Router.RouteDropletsToOutput(board, startTime, (OutputUseage) topPriorityOperation);
+                finishedRoutingTime = Router.RouteDropletsToOutput(board, startTime, (OutputUseage) topPriorityOperation, FluidVariableLocations);
             else finishedRoutingTime = Router.RouteDropletsToModule(board, startTime, topPriorityOperation);
             updateSchedule(topPriorityOperation, finishedRoutingTime, startTime);
             return finishedRoutingTime;

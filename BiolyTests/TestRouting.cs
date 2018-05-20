@@ -33,7 +33,7 @@ namespace BiolyTests.RoutingTests
             sourceModule.Shape.y = 0;
             droplet.Shape.x = 10;
             droplet.Shape.y = 10;
-            operation.Bind(sourceModule);
+            operation.Bind(sourceModule, null);
             Board board = new Board(20, 20);
             board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
             board.UpdateGridWithModulePlacement(droplet, droplet.Shape);
@@ -110,7 +110,7 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
             TestBlock testOperation = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, 2, false) }, null, null);
-            testOperation.Bind(sourceModule);
+            testOperation.Bind(sourceModule, null);
 
             int startTime = 55;
             int endtime = Router.RouteDropletsToModule(board, startTime, testOperation);
@@ -165,7 +165,7 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
             TestBlock testOperation = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, 1, false) , new FluidInput(fluidType2.FluidName, 1, false) }, null, null);
-            testOperation.Bind(sourceModule);
+            testOperation.Bind(sourceModule, null);
 
             int startTime = 55;
             int endtime = Router.RouteDropletsToModule(board, startTime, testOperation);
@@ -206,7 +206,7 @@ namespace BiolyTests.RoutingTests
             Assert.AreEqual(0, dropletSpawner.Shape.y);
             sourceModule.Shape.x = 10;
             sourceModule.Shape.y = 10;
-            operation.Bind(sourceModule);
+            operation.Bind(sourceModule, null);
             board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
 
             int startTime = 55;

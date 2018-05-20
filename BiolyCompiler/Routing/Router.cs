@@ -47,13 +47,13 @@ namespace BiolyCompiler.Routing
         /// <param name="currentTime"></param>
         /// <param name="outputOperation"></param>
         /// <returns></returns>
-        public static int RouteDropletsToOutput(Board board, int currentTime, OutputUseage outputOperation)
+        public static int RouteDropletsToOutput(Board board, int currentTime, OutputUseage outputOperation, Dictionary<string, BoardFluid> FluidVariableLocations)
         {
             int originalStartTime = currentTime;
             Droplet inputLocation = outputOperation.BoundModule.GetInputLayout().Droplets[0];
             foreach (var fluid in outputOperation.InputVariables)
             {
-                for (int i = 0; i < fluid.GetAmountInDroplets(); i++)
+                for (int i = 0; i < fluid.GetAmountInDroplets(FluidVariableLocations); i++)
                 {
                     Route route = RouteSingleDropletToModule(outputOperation, board, currentTime, inputLocation);
                     //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
