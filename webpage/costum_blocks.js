@@ -464,10 +464,37 @@ const inlineProgramMutatorMixFunctions =
 				index++;
 			}
 		}
+	},
+	compose: function(topBlock)
+	{
+		
+	},
+	decompose: function(localWorkspace) 
+	{
+		const programName = this.getField("programsDropdown").getText();
+		var programInfo = null;
+		for(var i = 0; i < window.inlineProgramPrograms.length; i++)
+		{
+			const program = window.inlineProgramPrograms[i];
+			if(program.name == programName)
+			{
+				programInfo = program;
+				break;
+			}
+		}
+		
+		if(programInfo && programInfo.programXml)
+		{
+			const xml = Blockly.Xml.textToDom(programInfo.programXml);
+			Blockly.Xml.domToWorkspace(xml, localWorkspace);
+			localWorkspace.options.readOnly = true;
+			
+			return localWorkspace.getTopBlocks[0];
+		}
 	}
 };
 
-Blockly.Extensions.registerMutator("inlineProgramMutator", inlineProgramMutatorMixFunctions);
+Blockly.Extensions.registerMutator("inlineProgramMutator", inlineProgramMutatorMixFunctions, null, []);
 
 
 

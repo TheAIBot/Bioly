@@ -68,14 +68,14 @@ namespace BiolyViewer_Windows
                             (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(fileContent);
                             if (exceptions.Count == 0)
                             {
-                                string programName = System.IO.Path.GetFileName(file);
+                                string programName = System.IO.Path.GetFileNameWithoutExtension(file);
                                 string[] inputs = cdfg.StartDFG.Input.Where(x => x.value is InputDeclaration)
                                                                      .Select(x => "\"" + x.value.OriginalOutputVariable + "\"")
                                                                      .ToArray();
                                 string[] outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
                                                                       .Select(x => "\"" + (x.value as OutputDeclaration).ModuleName + "\"")
                                                                       .ToArray();
-                                loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{String.Join(",", inputs)}], outputs: [{String.Join(",", outputs)}]}}");
+                                loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{String.Join(",", inputs)}], outputs: [{String.Join(",", outputs)}], programXml: \"{fileContent.Replace("\"", "'")}\"}}");
                             }
                         }
                     }
