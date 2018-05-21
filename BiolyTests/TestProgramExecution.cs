@@ -18,42 +18,51 @@ namespace BiolyTests
 
         private string AddFluidBlock(JSProgram program)
         {
-            string newFluidName = program.GetUniqueName();
-            string block = program.AddFluidSegment("k", "k", 0, true);
-            return block;
+            return program.AddHeaterSegment("k", "z", 100, 1, "k", 1, false);
         }
 
-        private JSProgram CreateProgramWithIfStatement(bool[] enableIfs)
+        private void nestIfs(JSProgram program, string prevScopeName, Queue<bool> enableIf)
+        {
+            string left = program.AddConstantBlock(enableIf.Dequeue() ? 3 : 2);
+            string right = program.AddConstantBlock(3);
+            string conditionalBlock = program.AddBoolOPBlock(BoolOPTypes.EQ, left, right);
+
+            string scopeName = program.GetUniqueName();
+            program.AddScope(scopeName);
+            program.SetScope(scopeName);
+            string guardedBlock = AddFluidBlock(program);
+            if (enableIf.Count > 0)
+            {
+                nestIfs(program, scopeName, enableIf);
+            }
+            program.SetScope(prevScopeName);
+
+            program.AddIfSegment(conditionalBlock, guardedBlock);
+            AddFluidBlock(program);
+        }
+
+        private JSProgram CreateProgramWithIfStatement(bool[][] enableIfs)
         {
             JSProgram program = new JSProgram();
             program.Render = true;
             program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddHeaterDeclarationBlock("z");
             AddFluidBlock(program);
             
 
-            foreach (bool enableIf in enableIfs)
+            foreach (bool[] enableIf in enableIfs)
             {
-                string left = program.AddConstantBlock(enableIf ? 3 : 2);
-                string right = program.AddConstantBlock(3);
-                string conditionalBlock = program.AddBoolOPBlock(BoolOPTypes.EQ, left, right);
-
-                string scopeName = program.GetUniqueName();
-                program.AddScope(scopeName);
-                program.SetScope(scopeName);
-                string guardedBlock = AddFluidBlock(program);
-                program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
-
-                program.AddIfSegment(conditionalBlock, guardedBlock);
-                AddFluidBlock(program);
+                nestIfs(program, JSProgram.DEFAULT_SCOPE_NAME, new Queue<bool>(enableIf));
             }
 
             program.Finish();
             return program;
         }
+
         private JSProgram CreateProgramWithoutIfStatement(bool[] enableIfs)
         {
             JSProgram program = new JSProgram();
-            program.AddInputBlock("k", 100, FluidUnit.drops);
+            program.AddInputBlock("k", 1, FluidUnit.drops);
 
             foreach (bool enableIf in enableIfs)
             {
@@ -83,41 +92,41 @@ namespace BiolyTests
         [TestMethod]
         public void ProgramWithDisabledIfStatement()
         {
-            JSProgram program1 = CreateProgramWithIfStatement(new bool[] { false });
+            JSProgram program1 = CreateProgramWithIfStatement(new bool[][] { new bool[] { false } });
             JSProgram program2 = CreateProgramWithoutIfStatement(new bool[] { false });
             List<Command> program1Commands = GetProgramCommands(program1);
             List<Command> program2Commands = GetProgramCommands(program2);
             Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
 
-            //JSProgram program3 = CreateProgramWithIfStatement(new bool[] { false, false });
-            //JSProgram program4 = CreateProgramWithoutIfStatement(new bool[] { false, false });
-            //List<Command> program3Commands = GetProgramCommands(program3);
-            //List<Command> program4Commands = GetProgramCommands(program4);
-            //Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
+            JSProgram program3 = CreateProgramWithIfStatement(new bool[][] { new bool[] { false }, new bool[] { false } });
+            JSProgram program4 = CreateProgramWithoutIfStatement(new bool[] { false, false });
+            List<Command> program3Commands = GetProgramCommands(program3);
+            List<Command> program4Commands = GetProgramCommands(program4);
+            Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
 
-            //JSProgram program5 = CreateProgramWithIfStatement(new bool[] { false, false, false, false, false, false });
-            //JSProgram program6 = CreateProgramWithoutIfStatement(new bool[] { false, false, false, false, false, false });
-            //List<Command> program5Commands = GetProgramCommands(program5);
-            //List<Command> program6Commands = GetProgramCommands(program6);
-            //Assert.IsTrue(program5Commands.SequenceEqual(program6Commands));
+            JSProgram program5 = CreateProgramWithIfStatement(new bool[][] { new bool[] { false }, new bool[] { false }, new bool[] { false }, new bool[] { false }, new bool[] { false }, new bool[] { false } });
+            JSProgram program6 = CreateProgramWithoutIfStatement(new bool[] { false, false, false, false, false, false });
+            List<Command> program5Commands = GetProgramCommands(program5);
+            List<Command> program6Commands = GetProgramCommands(program6);
+            Assert.IsTrue(program5Commands.SequenceEqual(program6Commands));
         }
 
         [TestMethod]
         public void ProgramWithEnabledIfStatement()
         {
-            JSProgram program1 = CreateProgramWithIfStatement(new bool[] { true });
+            JSProgram program1 = CreateProgramWithIfStatement(new bool[][] { new bool[] { true } });
             JSProgram program2 = CreateProgramWithoutIfStatement(new bool[] { true });
             List<Command> program1Commands = GetProgramCommands(program1);
             List<Command> program2Commands = GetProgramCommands(program2);
             Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
 
-            JSProgram program3 = CreateProgramWithIfStatement(new bool[] { true, true });
+            JSProgram program3 = CreateProgramWithIfStatement(new bool[][] { new bool[] { true }, new bool[] { true } });
             JSProgram program4 = CreateProgramWithoutIfStatement(new bool[] { true, true });
             List<Command> program3Commands = GetProgramCommands(program3);
             List<Command> program4Commands = GetProgramCommands(program4);
             Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
 
-            JSProgram program5 = CreateProgramWithIfStatement(new bool[] { true, true, true, true, true, true });
+            JSProgram program5 = CreateProgramWithIfStatement(new bool[][] { new bool[] { true }, new bool[] { true }, new bool[] { true }, new bool[] { true }, new bool[] { true }, new bool[] { true } });
             JSProgram program6 = CreateProgramWithoutIfStatement(new bool[] { true, true, true, true, true, true });
             List<Command> program5Commands = GetProgramCommands(program5);
             List<Command> program6Commands = GetProgramCommands(program6);
@@ -127,13 +136,83 @@ namespace BiolyTests
         [TestMethod]
         public void ProgramWithNestedIfStatements()
         {
+            JSProgram program1 = CreateProgramWithIfStatement(new bool[][] { new bool[] { false, true, true, true } });
+            JSProgram program2 = CreateProgramWithoutIfStatement(new bool[] { false });
+            List<Command> program1Commands = GetProgramCommands(program1);
+            List<Command> program2Commands = GetProgramCommands(program2);
+            Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
+        }
 
+        private void nestRepeats(JSProgram program, string prevScopeName, Queue<int> repeatTimes)
+        {
+            string times = program.AddConstantBlock(repeatTimes.Dequeue());
+
+            string scopeName = program.GetUniqueName();
+            program.AddScope(scopeName);
+            program.SetScope(scopeName);
+            string guardedBlock = AddFluidBlock(program);
+            if (repeatTimes.Count > 0)
+            {
+                nestRepeats(program, scopeName, repeatTimes);
+            }
+            program.SetScope(prevScopeName);
+
+            program.AddRepeatSegment(times, guardedBlock);
+            AddFluidBlock(program);
+        }
+
+        private JSProgram CreateProgramWithRepeatStatement(int[][] repeatTimes)
+        {
+            JSProgram program = new JSProgram();
+            program.Render = true;
+            program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddHeaterDeclarationBlock("z");
+            AddFluidBlock(program);
+
+
+            foreach (int[] repeats in repeatTimes)
+            {
+                nestRepeats(program, JSProgram.DEFAULT_SCOPE_NAME, new Queue<int>(repeats));
+            }
+
+            program.Finish();
+            return program;
+        }
+
+        private JSProgram CreateProgramWithoutRepeatStatement(int repeatTimes)
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("k", 1, FluidUnit.drops);
+
+            for (int i = 0; i < repeatTimes; i++)
+            {
+                AddFluidBlock(program);
+            }
+
+            program.Finish();
+            return program;
         }
 
         [TestMethod]
         public void ProgramWithDisabledRepeatStatement()
         {
+            JSProgram program1 = CreateProgramWithRepeatStatement(new int[][] { new int[] { -2 } });
+            JSProgram program2 = CreateProgramWithoutRepeatStatement(1);
+            List<Command> program1Commands = GetProgramCommands(program1);
+            List<Command> program2Commands = GetProgramCommands(program2);
+            Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
 
+            JSProgram program3 = CreateProgramWithRepeatStatement(new int[][] { new int[] { -1 }, new int[] { -2 }, new int[] { -3 } });
+            JSProgram program4 = CreateProgramWithoutRepeatStatement(3);
+            List<Command> program3Commands = GetProgramCommands(program3);
+            List<Command> program4Commands = GetProgramCommands(program4);
+            Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
+
+            JSProgram program5 = CreateProgramWithRepeatStatement(new int[][] { new int[] { -2, -1 } });
+            JSProgram program6 = CreateProgramWithoutRepeatStatement(1);
+            List<Command> program5Commands = GetProgramCommands(program5);
+            List<Command> program6Commands = GetProgramCommands(program6);
+            Assert.IsTrue(program5Commands.SequenceEqual(program6Commands));
         }
 
         [TestMethod]
@@ -144,12 +223,6 @@ namespace BiolyTests
 
         [TestMethod]
         public void ProgramWithNestedRepeatStatements()
-        {
-
-        }
-
-        [TestMethod]
-        public void ProgramWithRepeatsAndIfStatements()
         {
 
         }
