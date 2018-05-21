@@ -106,21 +106,18 @@ Blockly.Blocks["heaterDeclaration"] = {
 
 Blockly.Blocks["outputUseage"] = {
 	init: function() {
-		this.jsonInit({
-			"message0": "output %1",
+		this.jsonInit({						
+			"message0": "target %1 %2",
 			"args0": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],						
-			"message1": "target %1",
-			"args1": [
 				{
 					"type": "field_variable",
 					"name": "moduleName",
 					"variable": "module_name"
+				},
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": ["InputType", "FluidType"]
 				}
 			],
 			"previousStatement": null,
@@ -389,6 +386,70 @@ Blockly.Blocks["getFLuidArrayIndex"] = {
 		});
 	}
 };
+
+var inlineProgramPrograms = []
+//{
+//	name,
+//	inputs = [],
+//	outputs = []
+//
+//
+Blockly.Blocks["inlineProgram"] = {
+	init: function() {
+		init: function() 
+		{
+			
+			
+			this.appendField("program")
+				.appendField(new Blockly.FieldDropdown([
+				['first item', 'ITEM1'],
+				['second item', 'ITEM2']
+				]),
+				'FIELDNAME');
+		}
+	}
+};
+
+const inlineProgramMutatorMixFunctions = 
+{
+	mutationToDom: function() 
+	{
+		var container = document.createElement('mutation');
+		var divisorInput = (this.getFieldValue('PROPERTY') == 'DIVISIBLE_BY');
+		container.setAttribute('divisor_input', divisorInput);
+		return container;
+	},
+	domToMutation: function(xmlElement) 
+	{
+		var divisorInput = (xmlElement.getAttribute('divisor_input') == 'true');
+		this.updateShape_(divisorInput);
+	},
+	updateShape_: function(inputs, outputs)
+	{
+		// Add or remove a Value Input.
+		var inputExists = this.getInput('DIVISOR');
+		if (divisorInput) 
+		{
+			if (!inputExists) 
+			{
+				this.appendValueInput('DIVISOR').setCheck('Number');
+			}
+		} 
+		else if (inputExists) 
+		{
+			this.removeInput('DIVISOR');
+		}
+	}
+};
+inlineProgramMutatorExtensionFunction = function() 
+{
+	this.getField("programName").setValidator(function() 
+	{
+		this.sourceBlock_.updateShape_();
+	});
+};
+
+Blockly.Extensions.registerMutator("inlineProgramMutator", inlineProgramMutatorMixFunctions, inlineProgramMutatorExtensionFunction);
 
 
 
