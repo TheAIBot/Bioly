@@ -218,13 +218,33 @@ namespace BiolyTests
         [TestMethod]
         public void ProgramWithEnabledRepeatStatement()
         {
+            JSProgram program1 = CreateProgramWithRepeatStatement(new int[][] { new int[] { 2 } });
+            JSProgram program2 = CreateProgramWithoutRepeatStatement(3);
+            List<Command> program1Commands = GetProgramCommands(program1);
+            List<Command> program2Commands = GetProgramCommands(program2);
+            Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
 
+            JSProgram program3 = CreateProgramWithRepeatStatement(new int[][] { new int[] { 1 }, new int[] { 2 }, new int[] { 3 } });
+            JSProgram program4 = CreateProgramWithoutRepeatStatement(9);
+            List<Command> program3Commands = GetProgramCommands(program3);
+            List<Command> program4Commands = GetProgramCommands(program4);
+            Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
+
+            JSProgram program5 = CreateProgramWithRepeatStatement(new int[][] { new int[] { 2, -1 }, new int[] { 10 } });
+            JSProgram program6 = CreateProgramWithoutRepeatStatement(16);
+            List<Command> program5Commands = GetProgramCommands(program5);
+            List<Command> program6Commands = GetProgramCommands(program6);
+            Assert.IsTrue(program5Commands.SequenceEqual(program6Commands));
         }
 
         [TestMethod]
         public void ProgramWithNestedRepeatStatements()
         {
-
+            JSProgram program1 = CreateProgramWithRepeatStatement(new int[][] { new int[] { 10, 1, 5 }, new int[] { -1, 10, 100 }, new int[] { 10, 10, 10 } });
+            JSProgram program2 = CreateProgramWithoutRepeatStatement(1171);
+            List<Command> program1Commands = GetProgramCommands(program1);
+            List<Command> program2Commands = GetProgramCommands(program2);
+            Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
         }
     }
 }
