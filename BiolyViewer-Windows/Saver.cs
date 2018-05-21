@@ -13,7 +13,7 @@ namespace BiolyViewer_Windows
     public class Saver
     {
         private readonly ChromiumWebBrowser Browser;
-        private const string DEFAULT_FILE_EXTENSION = ".txt";
+        public const string DEFAULT_FILE_EXTENSION = ".bc";
         private const string TEMP_FILE_NAME = "temp" + DEFAULT_FILE_EXTENSION;
 
         public Saver(ChromiumWebBrowser browser)

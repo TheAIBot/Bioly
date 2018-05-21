@@ -68,38 +68,11 @@ function loadWorkspace(xmlText) {
 	Blockly.Xml.domToWorkspace(xml, workspace);
 }
 
-var workspace = Blockly.inject('blocklyDiv',
-{
-	media: 'media/',
-	toolbox: document.getElementById('toolbox'),
-	zoom:
-	{
-		controls: true,
-		wheel: true,
-		startScale: 1.0,
-		maxScale: 3,
-		minScale: 0.1,
-		scaleSpeed: 1.2
-	}
-});
-
 function getWorkspaceAsXml()
 {
 	const xml = Blockly.Xml.workspaceToDom(workspace);
 	return Blockly.Xml.domToText(xml);
 }
-
-var lastUpdateTime = new Date();
-function onWorkspaceChanged(event)
-{
-	const currentTime = new Date();
-	//if(lastUpdateTime.getMilliseconds() + 50 < currentTime.getMilliseconds())
-	//{
-		webUpdater.update(getWorkspaceAsXml());
-	//}
-	lastUpdateTime = new Date();
-}
-workspace.addChangeListener(onWorkspaceChanged);
 
 function openTab(e, tabName) 
 {
@@ -163,6 +136,16 @@ function ClearErrors()
 		allBlocks[i].setWarningText(null);
 	}
 	workspace.highlightBlock(null);
+}
+
+if(typeof(CefSharp) == "undefined") 
+{
+	startBlockly([{name: "crashes", inputs: ["fish","cake"], outputs: ["output"]},
+				  {name: "ReassignFluid", inputs: ["input1","input2"], outputs: ["output"]},
+				  {name: "SemiParallelMixing", inputs: ["H2O","CH3OH"], outputs: ["output"]},
+				  {name: "SequentialMixing", inputs: ["input1","input2"], outputs: ["output"]},
+				  {name: "SimpleFluidTransfer", inputs: ["H2O"], outputs: ["output"]},
+				  {name: "SimpleInputOutput", inputs: ["H2O"], outputs: ["Bar"]}]);
 }
 
 

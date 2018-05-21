@@ -19,25 +19,17 @@ Blockly.Blocks["inputDeclaration"] = {
 		this.jsonInit({
 			"message0": "new input",
 			"args0": [
-			],			
-			"message1": "module name %1",
-			"args1": [
-				{
-					"type": "field_variable",
-					"name": "moduleName",
-					"variable": "module_name"
-				}
 			],
-			"message2": "fluid name %1",
-			"args2": [
+			"message1": "fluid name %1",
+			"args1": [
 				{
 					"type": "field_variable",
 					"name": "inputName",
 					"variable": "input_fluid_name"
 				}
 			],
-			"message3": "amount %1 %2",
-			"args3": [
+			"message2": "amount %1 %2",
+			"args2": [
 				{
 					"type": "field_number",
 					"name": "inputAmount",
@@ -387,69 +379,95 @@ Blockly.Blocks["getFLuidArrayIndex"] = {
 	}
 };
 
-var inlineProgramPrograms = []
 //{
 //	name,
 //	inputs = [],
-//	outputs = []
-//
-//
-Blockly.Blocks["inlineProgram"] = {
-	init: function() {
-		init: function() 
+//	outputs = [],
+//	programXml
+//}
+var inlineProgramPrograms = [{name: "program name", inputs: [], outputs: []}];
+
+Blockly.Blocks["inlineProgram"] = 
+{
+	init: function() 
+	{
+		this.jsonInit(
 		{
-			
-			
-			this.appendField("program")
-				.appendField(new Blockly.FieldDropdown([
-				['first item', 'ITEM1'],
-				['second item', 'ITEM2']
-				]),
-				'FIELDNAME');
+			"inputsInline": false,
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 40,
+			"tooltip": "",
+			"mutator": "inlineProgramMutator"
+		});
+		var items = [];
+		for(var i = 0; i < inlineProgramPrograms.length; i++)
+		{
+			const item = inlineProgramPrograms[i];
+			items.push([item.name, item.name]);
 		}
+		
+		this.appendDummyInput().appendField("program").appendField(new Blockly.FieldDropdown(items), "programsDropdown");
+		this.getField("programsDropdown").setValidator(function(option) 
+		{
+			this.sourceBlock_.updateShape_(option);
+		});
 	}
 };
+
 
 const inlineProgramMutatorMixFunctions = 
 {
 	mutationToDom: function() 
 	{
-		var container = document.createElement('mutation');
-		var divisorInput = (this.getFieldValue('PROPERTY') == 'DIVISIBLE_BY');
-		container.setAttribute('divisor_input', divisorInput);
+		const container = document.createElement('mutation');
+		container.setAttribute("programName", this.getFieldValue("programsDropdown"));
 		return container;
 	},
 	domToMutation: function(xmlElement) 
 	{
-		var divisorInput = (xmlElement.getAttribute('divisor_input') == 'true');
-		this.updateShape_(divisorInput);
+		const programName = xmlElement.getAttribute("programName");
+		this.updateShape_(programName);
 	},
-	updateShape_: function(inputs, outputs)
+	updateShape_: function(programName)
 	{
-		// Add or remove a Value Input.
-		var inputExists = this.getInput('DIVISOR');
-		if (divisorInput) 
+		for(var i = 0; i < 100; i++)
 		{
-			if (!inputExists) 
+			this.removeInput("io-" + i, true);
+		}
+	
+		var programInfo = null;
+		for(var i = 0; i < window.inlineProgramPrograms.length; i++)
+		{
+			const program = window.inlineProgramPrograms[i];
+			if(program.name == programName)
 			{
-				this.appendValueInput('DIVISOR').setCheck('Number');
+				programInfo = program;
+				break;
 			}
-		} 
-		else if (inputExists) 
+		}
+		
+		if(programInfo != null)
 		{
-			this.removeInput('DIVISOR');
+			var index = 0;
+			for(var i = 0; i < programInfo.inputs.length; i++)
+			{
+				const inputName = programInfo.inputs[i];
+				this.appendValueInput("io-" + index).setCheck(["InputType", "FluidType"]).appendField("input " + inputName);
+				index++;
+			}
+			
+			for(var i = 0; i < programInfo.outputs.length; i++)
+			{
+				const outputName = programInfo.outputs[i];
+				this.appendDummyInput("io-" + index).appendField("output " + outputName).appendField(new Blockly.FieldVariable("output fluid name"));
+				index++;
+			}
 		}
 	}
 };
-inlineProgramMutatorExtensionFunction = function() 
-{
-	this.getField("programName").setValidator(function() 
-	{
-		this.sourceBlock_.updateShape_();
-	});
-};
 
-Blockly.Extensions.registerMutator("inlineProgramMutator", inlineProgramMutatorMixFunctions, inlineProgramMutatorExtensionFunction);
+Blockly.Extensions.registerMutator("inlineProgramMutator", inlineProgramMutatorMixFunctions);
 
 
 
