@@ -415,12 +415,14 @@ Blockly.Blocks["inlineProgram"] =
 		
 		this.setMutator(new Blockly.Mutator([]));
 	},
-		mutationToDom: function() 
+	mutationToDom: function() 
 	{
 		if(this.program)
 		{
 			const container = document.createElement('mutation');
-			container.setAttribute("programName", this.getFieldValue("programsDropdown"));
+			container.setAttribute("program_name", this.program.name);
+			container.setAttribute("input_count" , this.program.inputs.length);
+			container.setAttribute("output_count", this.program.outputs.length);
 			return container;
 		}
 		
@@ -433,12 +435,21 @@ Blockly.Blocks["inlineProgram"] =
 	},
 	updateShape_: function(programName)
 	{
-		for(var i = 0; i < 100; i++)
+		//remove previous defined inputs and outputs
+		var inputCounter = 0;
+		while(this.getInput("input-" + inputCounter))
 		{
-			this.removeInput("input-" + i, true);
-			this.removeInput("output-" + i, true);
+			this.removeInput("input-" + inputCounter);
+			inputCounter++;
+		}
+		
+		var outputCounter = 0;
+		while(this.getInput("outputer-" + outputCounter))
+		{
+			this.removeInput("outputer-" + outputCounter);
 		}
 	
+		//find the new program
 		this.program = null;
 		for(var i = 0; i < window.inlineProgramPrograms.length; i++)
 		{
@@ -452,16 +463,17 @@ Blockly.Blocks["inlineProgram"] =
 		
 		if(this.program != null)
 		{
+			//add programs inputs and outputs
 			for(var i = 0; i < this.program.inputs.length; i++)
 			{
 				const inputName = this.program.inputs[i];
-				this.appendValueInput("input-" + i).setCheck(["InputType", "FluidType"]).appendField("input " + inputName);
+				this.appendValueInput("input-" + i).setCheck("FluidType").appendField("input " + inputName);
 			}
 			
 			for(var i = 0; i < this.program.outputs.length; i++)
 			{
 				const outputName = this.program.outputs[i];
-				this.appendDummyInput("output-" + i).appendField("output " + outputName).appendField(new Blockly.FieldVariable("output fluid name"));
+				this.appendDummyInput("outputer-" + i).appendField("output " + outputName).appendField(new Blockly.FieldVariable("output fluid name"), "output-" + i);
 			}
 		}
 	},
@@ -479,6 +491,35 @@ Blockly.Blocks["inlineProgram"] =
 			
 			return localWorkspace.getTopBlocks[0];
 		}
+	}
+};
+
+Blockly.Blocks["union"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "merge fluids",
+			"args0": [
+			],
+			"message1": "a %1",
+			"args1": [
+				{
+					"type": "input_value",
+					"name": "inputFluidA",
+					"check": ["FluidType"]
+				}
+			],
+			"message2": "b %1",
+			"args2": [
+				{
+					"type": "input_value",
+					"name": "inputFluidB",
+					"check": ["FluidType"]
+				}
+			],
+			"output": "FluidOperator",
+			"colour": 120,
+			"tooltip": ""
+		});
 	}
 };
 
