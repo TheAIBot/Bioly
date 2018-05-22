@@ -70,19 +70,15 @@ namespace BiolyCompiler.Scheduling
             {
                 if (staticDeclaration is InputDeclaration input)
                 {
-                    FluidVariableLocations.TryGetValue(input.OriginalOutputVariable, out BoardFluid fluidType);
-                    if (fluidType == null)
-                    {
-                        fluidType = new BoardFluid(input.OriginalOutputVariable);
-                        FluidVariableLocations.Add(input.OriginalOutputVariable, fluidType);
-                    }
+                    BoardFluid fluidType = RecordNewFluidType(input);
                     InputModule inputModule = new InputModule(fluidType, (int)input.Amount);
                     bool couldBePlaced = board.FastTemplatePlace(inputModule);
                     if (!couldBePlaced) throw new Exception("The input module couldn't be placed. The module is: " + inputModule.ToString());
                     input.BoundModule = inputModule;
                     inputModule.RepositionLayout();
                     StaticModules.Add(staticDeclaration.ModuleName, inputModule);
-                } else {
+                }
+                else {
                     Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board);
                     StaticModules.Add(staticDeclaration.ModuleName, staticModule);
                 }
@@ -90,6 +86,29 @@ namespace BiolyCompiler.Scheduling
                 DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             }
         }
+
+        private BoardFluid RecordNewFluidType(FluidBlock operation)
+        {
+            string fluidName = operation.OriginalOutputVariable;
+            if (FluidVariableLocations.ContainsKey(fluidName))
+            {
+                //If there already are droplets associated with the fluid name,
+                //they must be overwritten: This is done by changing their internal names,
+                //so they can never be used in any operation later on.
+
+                BoardFluid oldFluidType = FluidVariableLocations[fluidName];
+                BoardFluid overwrittingFluidType = new BoardFluid("overwritten - fluidname");
+                List<IDropletSource> dropletSources = new List<IDropletSource>(oldFluidType.dropletSources);
+                foreach (var dropletSource in dropletSources)
+                {
+                    dropletSource.SetFluidType(overwrittingFluidType);
+                }
+            }
+            BoardFluid fluidType = new BoardFluid(operation.OriginalOutputVariable);
+            FluidVariableLocations[fluidName] = fluidType;
+            return fluidType;
+        }
+        
 
         /**
             Implements/based on the list scheduling based algorithm found in 
@@ -176,15 +195,10 @@ namespace BiolyCompiler.Scheduling
             //If the origin of the fluid is an input, a given amount of droplets needs to moved unto the board,
             //but if origin is simply droplets placed on the board, a simple renaiming can be done instead.
             //It will prioritize taking droplets already on the board, instead of taking droplets out of the inputs.
-            
+
             //If there already exists droplets with the target fluid type (what the droplets should be renamed to),
-            //then the droplets are renamed, are added to these droplets:
-            BoardFluid targetFluidType;
-            FluidVariableLocations.TryGetValue(nextOperation.OriginalOutputVariable, out targetFluidType);
-            if (targetFluidType == null) {
-                targetFluidType = new BoardFluid(nextOperation.OriginalOutputVariable);
-                FluidVariableLocations.Add(nextOperation.OriginalOutputVariable, targetFluidType);
-            }
+            //then they are overwritten:
+            BoardFluid targetFluidType = RecordNewFluidType(nextOperation);
 
             BoardFluid inputFluid;
             FluidVariableLocations.TryGetValue(input.OriginalFluidName, out inputFluid);
@@ -331,13 +345,7 @@ namespace BiolyCompiler.Scheduling
                     {
                         //If a module is not static, and it is not used anymore, it is "disolved",
                         //leaving the droplets that is inside the module behind:
-                        BoardFluid dropletOutputFluid;
-                        FluidVariableLocations.TryGetValue(finishedOperation.OriginalOutputVariable, out dropletOutputFluid);
-                        //If it is the first time this type of fluid has been outputed, record it:
-                        if (dropletOutputFluid == null) {
-                            dropletOutputFluid = new BoardFluid(finishedOperation.OriginalOutputVariable);
-                            FluidVariableLocations.Add(finishedOperation.OriginalOutputVariable, dropletOutputFluid);
-                        }
+                        BoardFluid dropletOutputFluid = RecordNewFluidType(finishedOperation);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         AllUsedModules.AddRange(replacingDroplets);
@@ -353,14 +361,7 @@ namespace BiolyCompiler.Scheduling
 
                             //For the special case that the heater has size 3x3, with only one droplet inside it:
                             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                            BoardFluid dropletOutputFluid;
-                            FluidVariableLocations.TryGetValue(heaterOperation.OriginalOutputVariable, out dropletOutputFluid);
-                            //If it is the first time this type of fluid has been outputed, record it:
-                            if (dropletOutputFluid == null)
-                            {
-                                dropletOutputFluid = new BoardFluid(heaterOperation.OriginalOutputVariable);
-                                FluidVariableLocations.Add(heaterOperation.OriginalOutputVariable, dropletOutputFluid);
-                            }
+                            BoardFluid dropletOutputFluid = RecordNewFluidType(finishedOperation);
                             Droplet droplet = new Droplet(dropletOutputFluid);
                             AllUsedModules.Add(droplet);
                             bool couldBePlaced = board.FastTemplatePlace(droplet);
