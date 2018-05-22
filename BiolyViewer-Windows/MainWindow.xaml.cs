@@ -75,13 +75,14 @@ namespace BiolyViewer_Windows
                                 string[] outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
                                                                       .Select(x => "\"" + (x.value as OutputDeclaration).ModuleName + "\"")
                                                                       .ToArray();
-                                loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{String.Join(",", inputs)}], outputs: [{String.Join(",", outputs)}], programXml: \"{fileContent.Replace("\"", "'")}\"}}");
+                                string programXml = fileContent.Replace("\"", "'");
+                                loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{String.Join(",", inputs)}], outputs: [{String.Join(",", outputs)}], programXml: \"{programXml}\"}}");
                             }
                         }
                     }
 
                     string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
-                    Browser.ExecuteScriptAsync($"startBlockly({allPrograms})");
+                    Browser.ExecuteScriptAsync($"startBlockly({allPrograms});");
                 }
             };
         }
