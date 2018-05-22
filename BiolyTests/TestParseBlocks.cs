@@ -46,23 +46,35 @@ namespace BiolyTests.ParseBlockTests
         }
 
         [TestMethod]
-        public void ParseHeaterUseageAndHeaterDeclarationBlock()
+        public void ParseOutputDeclarationBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddHeaterSegment("a", "bestModule", 173, 39, "b", 29, false);
+            program.AddOutputDeclarationBlock("z");
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
             ParserInfo parserInfo = new ParserInfo();
             parserInfo.EnterDFG();
-            parserInfo.AddFluidVariable("b");
-            parserInfo.AddModuleName("bestModule");
-            HeaterUseage heater = (HeaterUseage)XmlParser.ParseBlock(node, null, parserInfo);
+            OutputDeclaration heater = (OutputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
             Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
-            Assert.AreEqual("a", heater.OriginalOutputVariable);
-            Assert.AreEqual(173, heater.Temperature);
-            Assert.AreEqual(39, heater.Time);
+            Assert.IsTrue(parserInfo.validModuleNames.Contains("z"));
+        }
+
+        [TestMethod]
+        public void ParseHeaterDeclarationBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddHeaterDeclarationBlock("z");
+            TestTools.ExecuteJS(program);
+
+            XmlNode node = TestTools.GetWorkspace();
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            HeaterDeclaration heater = (HeaterDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
+
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.IsTrue(parserInfo.validModuleNames.Contains("z"));
         }
 
         [TestMethod]
@@ -151,6 +163,22 @@ namespace BiolyTests.ParseBlockTests
         }
 
         [TestMethod]
+        public void ParseFluidBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddFluidSegment("k", "a", 10, false);
+            TestTools.ExecuteJS(program);
+
+            XmlNode node = TestTools.GetWorkspace();
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            Fluid input = (Fluid)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
+
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+        }
+
+        [TestMethod]
         public void ParseOutputBlock()
         {
             JSProgram program = new JSProgram();
@@ -166,6 +194,26 @@ namespace BiolyTests.ParseBlockTests
 
             Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
             Assert.IsTrue(input is OutputUseage);
+        }
+
+        [TestMethod]
+        public void ParseHeaterBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddHeaterSegment("a", "z", 173, 39, "b", 29, false);
+            TestTools.ExecuteJS(program);
+
+            XmlNode node = TestTools.GetWorkspace();
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("b");
+            parserInfo.AddModuleName("z");
+            HeaterUseage heater = (HeaterUseage)XmlParser.ParseBlock(node, null, parserInfo);
+
+            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual("a", heater.OriginalOutputVariable);
+            Assert.AreEqual(173, heater.Temperature);
+            Assert.AreEqual(39, heater.Time);
         }
 
         [TestMethod]

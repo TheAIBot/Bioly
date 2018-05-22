@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Parser;
+﻿using BiolyCompiler.Modules;
+using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -68,8 +69,13 @@ namespace BiolyCompiler.BlocklyParts.Misc
             }
         }
 
-        public int GetAmountInDroplets()
+        public int GetAmountInDroplets(Dictionary<string, BoardFluid> FluidVariableLocations)
         {
+            if (UseAllFluid)
+            {
+                return FluidVariableLocations.ContainsKey(OriginalFluidName) ? FluidVariableLocations[OriginalFluidName].GetNumberOfDropletsAvailable() : 0;
+
+            }
             //tempoary until ratio is added
             return (int)Math.Floor((AmountInML / ML_PER_DROPLET) + 0.01);
         }

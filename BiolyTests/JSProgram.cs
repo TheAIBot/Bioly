@@ -110,6 +110,19 @@ namespace BiolyTests
             SetField(blockName, FluidInput.UseAllFluidFieldName, FluidInput.BoolToString(useAllFluid));
         }
 
+        public string AddFluidSegment(string outputName, string inputName, int amount, bool useAllFluid)
+        {
+            string a = GetUniqueName();
+            string b = GetUniqueName();
+            AddBlock(a, Fluid.XML_TYPE_NAME);
+            SetField(a, Fluid.OutputFluidFieldName, outputName);
+            AddFluidInputBlock(b, inputName, amount, useAllFluid);
+            AddConnection(a, Fluid.InputFluidFieldName, b);
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
         public string AddHeaterSegment(string outputName, string moduleName, int temperature, int time, string inputFluidName, int fluidAmount, bool useAllFluid)
         {
             string a = GetUniqueName();
