@@ -58,7 +58,7 @@ namespace BiolyCompiler
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, ref staticModules, out usedModules);
                 if (firstRun)
                 {
-                    StartExecutor(graph, usedModules);
+                    StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
                     firstRun = false;
                 }
 
@@ -72,19 +72,17 @@ namespace BiolyCompiler
             }
         }
 
-        private void StartExecutor(CDFG graph, List<Module> usedModules)
+        private void StartExecutor(CDFG graph, List<Module> staticModules)
         {
-            List<StaticDeclarationBlock> staticDeclarations = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock)
-                                                                                  .Select(x => x.value)
-                                                                                  .Cast<StaticDeclarationBlock>()
-                                                                                  .ToList();
-            List<Module> inputs = usedModules.Where(x => x is InputModule)
+
+            List<Module> inputs = staticModules.Where(x => x is InputModule)
                                              .ToList();
-            List<Module> outputs = usedModules.Where(x => x is OutputModule/* || x is Waste*/)
+            List<Module> outputs = staticModules.Where(x => x is OutputModule/* || x is Waste*/)
                                               .Distinct()
                                               .ToList();
+            List<Module> staticModulesWithoutInputOutputs = staticModules.Except(inputs).Except(outputs).ToList();
 
-            Executor.StartExecutor(inputs, outputs);
+            Executor.StartExecutor(inputs, outputs, staticModulesWithoutInputOutputs);
         }
 
         private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, Stack<List<string>> varScopeStack, List<Block> scheduledOperations, int time)

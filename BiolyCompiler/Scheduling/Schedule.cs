@@ -81,10 +81,13 @@ namespace BiolyCompiler.Scheduling
                     if (!couldBePlaced) throw new Exception("The input module couldn't be placed. The module is: " + inputModule.ToString());
                     input.BoundModule = inputModule;
                     inputModule.RepositionLayout();
+                    StaticModules.Add(staticDeclaration.ModuleName, inputModule);
                 } else {
                     Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board);
                     StaticModules.Add(staticDeclaration.ModuleName, staticModule);
-                }                
+                }
+
+                DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             }
         }
 
@@ -118,7 +121,7 @@ namespace BiolyCompiler.Scheduling
                     topPriorityOperation.Bind(operationExecutingModule, FluidVariableLocations);
 
                     //For debuging:
-                    AllUsedModules.Add(operationExecutingModule);
+                    if (!(topPriorityOperation is StaticUseageBlock)) AllUsedModules.Add(operationExecutingModule);
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
 
                     //If the module can't be placed, one must wait until there is enough space for it:
@@ -335,16 +338,46 @@ namespace BiolyCompiler.Scheduling
                             dropletOutputFluid = new BoardFluid(finishedOperation.OriginalOutputVariable);
                             FluidVariableLocations.Add(finishedOperation.OriginalOutputVariable, dropletOutputFluid);
                         }
-                        DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
+                        DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         AllUsedModules.AddRange(replacingDroplets);
                     }
                     else {
-                        if (finishedOperation is HeaterUseage)
+                        if (finishedOperation is HeaterUseage heaterOperation)
                         {
                             //When a heater operation has finished, the droplets inside the heater needs to be moved out of the module,
                             //so that it can be used again, by other droplets:
-                            ExtractInternalDropletsAndPlaceThemOnTheBoard(board, finishedOperation);
+
+                            //General method:
+                            //ExtractInternalDropletsAndPlaceThemOnTheBoard(board, finishedOperation);
+
+                            //For the special case that the heater has size 3x3, with only one droplet inside it:
+                            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+                            BoardFluid dropletOutputFluid;
+                            FluidVariableLocations.TryGetValue(heaterOperation.OriginalOutputVariable, out dropletOutputFluid);
+                            //If it is the first time this type of fluid has been outputed, record it:
+                            if (dropletOutputFluid == null)
+                            {
+                                dropletOutputFluid = new BoardFluid(heaterOperation.OriginalOutputVariable);
+                                FluidVariableLocations.Add(heaterOperation.OriginalOutputVariable, dropletOutputFluid);
+                            }
+                            Droplet droplet = new Droplet(dropletOutputFluid);
+                            AllUsedModules.Add(droplet);
+                            bool couldBePlaced = board.FastTemplatePlace(droplet);
+
+                            //Temporaily placing a droplet on the initial position of the heater, for routing purposes:
+                            Droplet routingDroplet = new Droplet(new BoardFluid("Routing - droplet"));
+                            routingDroplet.Shape.PlaceAt(heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
+                            board.UpdateGridAtGivenLocation(routingDroplet, heaterOperation.BoundModule.Shape);
+                            if (!couldBePlaced) throw new Exception("Not enough space available to place a Droplet.");
+                            Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, startTime);
+                            startTime = dropletRoute.getEndTime() + 1;
+                            heaterOperation.OutputRoutes.Add(heaterOperation.OriginalOutputVariable, new List<Route>() { dropletRoute});
+                            heaterOperation.endTime = startTime;
+                            startTime++;
+                            
+                            board.UpdateGridAtGivenLocation(heaterOperation.BoundModule, heaterOperation.BoundModule.Shape);
+                            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         }
                     }
                     assay.updateReadyOperations(finishedOperation);
@@ -359,21 +392,61 @@ namespace BiolyCompiler.Scheduling
 
         private static void ExtractInternalDropletsAndPlaceThemOnTheBoard(Board board, FluidBlock finishedOperation)
         {
-            HeaterModule heater = (HeaterModule)finishedOperation.BoundModule;
+            List<Droplet> extractionOrder = new List<Droplet>();
+            HeaterModule module = (HeaterModule)finishedOperation.BoundModule;
             //The droplets needs to be extracted in such an order and way, that there is a route to "outside" the module, 
             //and they don't collide with the other internal droplets of the module.
 
             //The latter can be done by temporarily placing the internal structure of the module on the board 
             //(the routing algorithm handles the rest), while the first corresponds to extracting droplets, 
             //where they can reach an empty reactangle adjacent to the module bound to finishedOperation.
-            
-            //Breadth first to find the extraction order:
 
+            //Breadth first to find the extraction order:
+            ModuleLayout inputLayout = module.GetInputLayout();
+            HashSet<Rectangle> internalEmptyRectangles = new HashSet<Rectangle>(inputLayout.EmptyRectangles);
+            HashSet<Droplet> internalDroplets = new HashSet<Droplet>(inputLayout.Droplets);
+            HashSet<Rectangle> internalRectangles = new HashSet<Rectangle>(internalEmptyRectangles);
+            internalRectangles.UnionWith(internalDroplets.Select(droplet => droplet.Shape).ToHashSet());
+            HashSet<Rectangle> externalEmptyRectangle = module.Shape.AdjacentRectangles
+                                                       .Where(rectangle => rectangle.isEmpty)
+                                                       .ToHashSet();
+
+            foreach (var outsideRectangle in externalEmptyRectangle)
+                foreach (var internalRectangle in internalRectangles)
+                    outsideRectangle.ConnectIfAdjacent(internalRectangle);
+
+            HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>(externalEmptyRectangle);
+            Queue<Rectangle> rectanglesToVisit = new Queue<Rectangle>();
+            foreach (var rectangle in externalEmptyRectangle)
+                rectanglesToVisit.Enqueue(rectangle);
+
+            while (rectanglesToVisit.Count > 0)
+            {
+                Rectangle current = rectanglesToVisit.Dequeue();
+                foreach (var adjacentRectangle in current.AdjacentRectangles)
+                {
+                    //We do not care for rectangles, that are not inside the module layout.
+                    if ( internalRectangles.Contains(adjacentRectangle) &&
+                        !visitedEmptyRectangles.Contains(adjacentRectangle))
+                    {
+                    }
+                }
+            }
+            /*
+            foreach (var outsideRectangle in externalEmptyRectangle)
+            {
+                foreach (var insideRectangle in duplicateLayoutEmptyRectangles)
+                {
+                    outsideRectangle.AdjacentRectangles.Remove(insideRectangle);
+                    insideRectangle.AdjacentRectangles.Remove(outsideRectangle);
+                }
+            }
+            */
 
 
 
             //The module needs to be "placed" on the board again:
-            board.UpdateGridAtGivenLocation(heater, heater.Shape);
+            board.UpdateGridAtGivenLocation(module, module.Shape);
         }
 
         private List<FluidBlock> getNextBatchOfFinishedOperations()
