@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Parser;
 using System;
@@ -43,6 +44,14 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             inputs.Add(fluidInput);
 
             return new HeaterUseage(moduleName, inputs, output, node, id);
+        }
+
+
+        public override List<Command> ToCommands()
+        {
+            //This is neccessary to ensure that the the droplets spends the required time in the module:
+            BoundModule.OperationTime = Time;
+            return base.ToCommands();
         }
 
         private void SetTemperatureAndTime(string id, int temperature, int time)

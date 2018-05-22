@@ -81,6 +81,7 @@ namespace BiolyCompiler.Scheduling
                     if (!couldBePlaced) throw new Exception("The input module couldn't be placed. The module is: " + inputModule.ToString());
                     input.BoundModule = inputModule;
                     inputModule.RepositionLayout();
+                    StaticModules.Add(staticDeclaration.ModuleName, inputModule);
                 } else {
                     Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board);
                     StaticModules.Add(staticDeclaration.ModuleName, staticModule);
@@ -372,6 +373,8 @@ namespace BiolyCompiler.Scheduling
                             Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, startTime);
                             startTime = dropletRoute.getEndTime() + 1;
                             heaterOperation.OutputRoutes.Add(heaterOperation.OriginalOutputVariable, new List<Route>() { dropletRoute});
+                            heaterOperation.endTime = startTime;
+                            startTime++;
                             
                             board.UpdateGridAtGivenLocation(heaterOperation.BoundModule, heaterOperation.BoundModule.Shape);
                             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
