@@ -66,7 +66,7 @@ namespace BiolyCompiler.BlocklyParts
             return ToCommands().Last().Time;
         }
 
-        public List<Command> ToCommands()
+        public virtual List<Command> ToCommands()
         {
             int time = 0;
             List<Command> commands = new List<Command>();

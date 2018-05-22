@@ -81,7 +81,9 @@ namespace BiolyCompiler.Scheduling
                 } else {
                     Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board);
                     StaticModules.Add(staticDeclaration.ModuleName, staticModule);
-                }                
+                }
+
+                DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             }
         }
 
@@ -115,7 +117,7 @@ namespace BiolyCompiler.Scheduling
                     topPriorityOperation.Bind(operationExecutingModule);
 
                     //For debuging:
-                    AllUsedModules.Add(operationExecutingModule);
+                    if (!(topPriorityOperation is StaticUseageBlock)) AllUsedModules.Add(operationExecutingModule);
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
 
                     //If the module can't be placed, one must wait until there is enough space for it:
@@ -319,16 +321,44 @@ namespace BiolyCompiler.Scheduling
                             dropletOutputFluid = new BoardFluid(finishedOperation.OriginalOutputVariable);
                             FluidVariableLocations.Add(finishedOperation.OriginalOutputVariable, dropletOutputFluid);
                         }
-                        DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
+                        DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         AllUsedModules.AddRange(replacingDroplets);
                     }
                     else {
-                        if (finishedOperation is HeaterUseage)
+                        if (finishedOperation is HeaterUseage heaterOperation)
                         {
                             //When a heater operation has finished, the droplets inside the heater needs to be moved out of the module,
                             //so that it can be used again, by other droplets:
-                            ExtractInternalDropletsAndPlaceThemOnTheBoard(board, finishedOperation);
+
+                            //General method:
+                            //ExtractInternalDropletsAndPlaceThemOnTheBoard(board, finishedOperation);
+
+                            //For the special case that the heater has size 3x3, with only one droplet inside it:
+                            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+                            BoardFluid dropletOutputFluid;
+                            FluidVariableLocations.TryGetValue(heaterOperation.OriginalOutputVariable, out dropletOutputFluid);
+                            //If it is the first time this type of fluid has been outputed, record it:
+                            if (dropletOutputFluid == null)
+                            {
+                                dropletOutputFluid = new BoardFluid(heaterOperation.OriginalOutputVariable);
+                                FluidVariableLocations.Add(heaterOperation.OriginalOutputVariable, dropletOutputFluid);
+                            }
+                            Droplet droplet = new Droplet(dropletOutputFluid);
+                            AllUsedModules.Add(droplet);
+                            bool couldBePlaced = board.FastTemplatePlace(droplet);
+
+                            //Temporaily placing a droplet on the initial position of the heater, for routing purposes:
+                            Droplet routingDroplet = new Droplet(new BoardFluid("Routing - droplet"));
+                            routingDroplet.Shape.PlaceAt(heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
+                            board.UpdateGridAtGivenLocation(routingDroplet, heaterOperation.BoundModule.Shape);
+                            if (!couldBePlaced) throw new Exception("Not enough space available to place a Droplet.");
+                            Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, startTime);
+                            startTime = dropletRoute.getEndTime() + 1;
+                            heaterOperation.OutputRoutes.Add(heaterOperation.OriginalOutputVariable, new List<Route>() { dropletRoute});
+                            
+                            board.UpdateGridAtGivenLocation(heaterOperation.BoundModule, heaterOperation.BoundModule.Shape);
+                            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         }
                     }
                     assay.updateReadyOperations(finishedOperation);

@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public HeaterDeclaration(string moduleName, XmlNode node, string id) : base(moduleName, true, null, id)
         {
+        }
+
+        public override Module getAssociatedModule()
+        {
+            return new HeaterModule();
         }
 
         public static Block Parse(XmlNode node, ParserInfo parserInfo)

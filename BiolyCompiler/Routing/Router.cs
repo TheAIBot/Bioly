@@ -111,6 +111,14 @@ namespace BiolyCompiler.Routing
                 }
             }
 
+            //And because if one has a 3x3 module with a droplet inside it, the code above completly disconnects it
+            //from all its adjacent rectangles, it is necessary to connect it again:
+
+            foreach (var outsideRectangle in outsideEmptyRectangle)
+            {
+                outsideRectangle.ConnectIfAdjacent(operation.BoundModule.Shape);
+            }
+
 
             return dropletRoutingOrder;
         }

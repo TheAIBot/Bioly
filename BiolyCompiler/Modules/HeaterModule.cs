@@ -9,13 +9,13 @@ namespace BiolyCompiler.Modules
     {
         public int temperature { get; private set; } = 25; //In celcius
 
-        public HeaterModule() : base(Droplet.DROPLET_WIDTH*3, Droplet.DROPLET_HEIGHT, 1, true)
+        public HeaterModule() : base(Droplet.DROPLET_WIDTH*1, Droplet.DROPLET_HEIGHT, 1, true)
         {
         }        
         
         public override Module GetCopyOf()
         {
-            return new OutputModule();
+            return new HeaterModule();
         }
 
         public void setHeatingTemperatureAndDuration(int temperature, int heatingDuration)
