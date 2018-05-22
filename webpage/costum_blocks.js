@@ -397,9 +397,9 @@ Blockly.Blocks["inlineProgram"] =
 			"previousStatement": null,
 			"nextStatement": null,
 			"colour": 40,
-			"tooltip": "",
-			"mutator": "inlineProgramMutator"
+			"tooltip": ""
 		});
+		
 		var items = [];
 		for(var i = 0; i < inlineProgramPrograms.length; i++)
 		{
@@ -412,17 +412,19 @@ Blockly.Blocks["inlineProgram"] =
 		{
 			this.sourceBlock_.updateShape_(option);
 		});
-	}
-};
-
-
-const inlineProgramMutatorMixFunctions = 
-{
-	mutationToDom: function() 
+		
+		this.setMutator(new Blockly.Mutator([]));
+	},
+		mutationToDom: function() 
 	{
-		const container = document.createElement('mutation');
-		container.setAttribute("programName", this.getFieldValue("programsDropdown"));
-		return container;
+		if(this.program)
+		{
+			const container = document.createElement('mutation');
+			container.setAttribute("programName", this.getFieldValue("programsDropdown"));
+			return container;
+		}
+		
+		return null;
 	},
 	domToMutation: function(xmlElement) 
 	{
@@ -433,35 +435,33 @@ const inlineProgramMutatorMixFunctions =
 	{
 		for(var i = 0; i < 100; i++)
 		{
-			this.removeInput("io-" + i, true);
+			this.removeInput("input-" + i, true);
+			this.removeInput("output-" + i, true);
 		}
 	
-		var programInfo = null;
+		this.program = null;
 		for(var i = 0; i < window.inlineProgramPrograms.length; i++)
 		{
 			const program = window.inlineProgramPrograms[i];
 			if(program.name == programName)
 			{
-				programInfo = program;
+				this.program = program;
 				break;
 			}
 		}
 		
-		if(programInfo != null)
+		if(this.program != null)
 		{
-			var index = 0;
-			for(var i = 0; i < programInfo.inputs.length; i++)
+			for(var i = 0; i < this.program.inputs.length; i++)
 			{
-				const inputName = programInfo.inputs[i];
-				this.appendValueInput("io-" + index).setCheck(["InputType", "FluidType"]).appendField("input " + inputName);
-				index++;
+				const inputName = this.program.inputs[i];
+				this.appendValueInput("input-" + i).setCheck(["InputType", "FluidType"]).appendField("input " + inputName);
 			}
 			
-			for(var i = 0; i < programInfo.outputs.length; i++)
+			for(var i = 0; i < this.program.outputs.length; i++)
 			{
-				const outputName = programInfo.outputs[i];
-				this.appendDummyInput("io-" + index).appendField("output " + outputName).appendField(new Blockly.FieldVariable("output fluid name"));
-				index++;
+				const outputName = this.program.outputs[i];
+				this.appendDummyInput("output-" + i).appendField("output " + outputName).appendField(new Blockly.FieldVariable("output fluid name"));
 			}
 		}
 	},
@@ -470,22 +470,10 @@ const inlineProgramMutatorMixFunctions =
 		
 	},
 	decompose: function(localWorkspace) 
-	{
-		const programName = this.getField("programsDropdown").getText();
-		var programInfo = null;
-		for(var i = 0; i < window.inlineProgramPrograms.length; i++)
+	{		
+		if(this.program && this.program.programXml)
 		{
-			const program = window.inlineProgramPrograms[i];
-			if(program.name == programName)
-			{
-				programInfo = program;
-				break;
-			}
-		}
-		
-		if(programInfo && programInfo.programXml)
-		{
-			const xml = Blockly.Xml.textToDom(programInfo.programXml);
+			const xml = Blockly.Xml.textToDom(this.program.programXml);
 			Blockly.Xml.domToWorkspace(xml, localWorkspace);
 			localWorkspace.options.readOnly = true;
 			
@@ -493,8 +481,6 @@ const inlineProgramMutatorMixFunctions =
 		}
 	}
 };
-
-Blockly.Extensions.registerMutator("inlineProgramMutator", inlineProgramMutatorMixFunctions, null, []);
 
 
 
