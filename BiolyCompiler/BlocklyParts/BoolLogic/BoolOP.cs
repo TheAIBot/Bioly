@@ -33,23 +33,17 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
 
             VariableBlock leftBoolBlock = null;
             VariableBlock rightBoolBlock = null;
-            try
+
+            XmlNode leftNode = node.GetInnerBlockNode(LeftBoolFieldName, parserInfo, new MissingBlockException(id, "Left side of boolean operator is missing a block."));
+            if (leftNode != null)
             {
-                XmlNode leftNode = node.GetInnerBlockNode(LeftBoolFieldName, new MissingBlockException(id, "Left side of boolean operator is missing a block."));
                 leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo, false, false);
             }
-            catch (ParseException e)
+
+            XmlNode rightNode = node.GetInnerBlockNode(RightBoolFieldName, parserInfo, new MissingBlockException(id, "Right side of boolean operator is missing a block."));
+            if (rightNode != null)
             {
-                parserInfo.parseExceptions.Add(e);
-            }
-            try
-            {
-                XmlNode rightNode = node.GetInnerBlockNode(RightBoolFieldName, new MissingBlockException(id, "Right side of boolean operator is missing a block."));
                 rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo, false, false);
-            }
-            catch (ParseException e)
-            {
-                parserInfo.parseExceptions.Add(e);
             }
 
             dfg.AddNode(leftBoolBlock);

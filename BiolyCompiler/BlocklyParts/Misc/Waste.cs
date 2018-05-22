@@ -20,9 +20,16 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
+            //use when it's converted to a static usage block
+            //string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            //parserInfo.CheckModuleVariable(id, moduleName);
 
-            XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Waste is missing input fluid block."));
-            FluidInput fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, parserInfo);
+            FluidInput fluidInput = null;
+            XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, parserInfo, new MissingBlockException(id, "Waste is missing input fluid block."));
+            if (inputFluidNode != null)
+            {
+                fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, parserInfo);
+            }
 
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);

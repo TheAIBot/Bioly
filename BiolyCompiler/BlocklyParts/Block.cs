@@ -31,8 +31,8 @@ namespace BiolyCompiler.BlocklyParts
         {
             this.CanBeOutput = canBeOutput;
             this.OutputVariable = $"N{nameID}";
-            this.BlockID = blockID;
             nameID++;
+            this.BlockID = blockID;
             this.OriginalOutputVariable = output ?? DEFAULT_NAME;
         }
 

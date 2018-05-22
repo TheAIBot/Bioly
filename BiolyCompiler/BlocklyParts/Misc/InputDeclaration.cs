@@ -17,7 +17,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public readonly float Amount;
         public readonly FluidUnit Unit;
 
-        public InputDeclaration(string moduleName, string output, XmlNode node, string id) : base(moduleName, true, output, id)
+        public InputDeclaration(string output, XmlNode node, string id) : base("moduleName-" + id, true, output, id)
         {
             this.Amount = node.GetNodeWithAttributeValue(INPUT_AMOUNT_FIELD_NAME).TextToFloat(id);
             Validator.ValueWithinRange(id, this.Amount, 0, int.MaxValue);
@@ -37,10 +37,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, output);
 
-            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
-            Validator.CheckVariableName(id, moduleName);
-            parserInfo.AddModuleName(moduleName);
-            return new InputDeclaration(moduleName, output, node, id);
+            return new InputDeclaration(output, node, id);
         }
 
         public static FluidUnit StringToFluidUnit(string id, string value)

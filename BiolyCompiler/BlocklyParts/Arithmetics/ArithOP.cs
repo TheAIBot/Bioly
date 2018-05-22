@@ -32,23 +32,17 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
             VariableBlock leftArithBlock = null;
             VariableBlock rightArithBlock = null;
-            try
+
+            XmlNode leftNode = node.GetInnerBlockNode(LeftArithFieldName, parserInfo, new MissingBlockException(id, "Left side of arithmetic operator is missing a block."));
+            if (leftNode != null)
             {
-                XmlNode leftNode = node.GetInnerBlockNode(LeftArithFieldName, new MissingBlockException(id, "Left side of arithmetic operator is missing a block."));
                 leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo, false, false);
             }
-            catch (ParseException e)
+
+            XmlNode rightNode = node.GetInnerBlockNode(RightArithFieldName, parserInfo, new MissingBlockException(id, "Right side of Arithmetic operator is missing a block."));
+            if (rightNode != null)
             {
-                parserInfo.parseExceptions.Add(e);
-            }
-            try
-            {
-                XmlNode rightNode = node.GetInnerBlockNode(RightArithFieldName, new MissingBlockException(id, "Right side of Arithmetic operator is missing a block."));
                 rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo, false, false);
-            }
-            catch (ParseException e)
-            {
-                parserInfo.parseExceptions.Add(e);
             }
 
             dfg.AddNode(leftArithBlock);

@@ -16,6 +16,7 @@ namespace BiolyCompiler.Parser
         public readonly HashSet<string> validFluidVariableNames = new HashSet<string>();
         public readonly Stack<List<string>> fluidVariableScope = new Stack<List<string>>();
         public Dictionary<string, string> mostRecentVariableRef;
+        private int Unique = 0;
 
         public void EnterDFG()
         {
@@ -65,6 +66,12 @@ namespace BiolyCompiler.Parser
                 fluidVariableScope.Peek().Add(variableName);
             }
             validFluidVariableNames.Add(variableName);
+        }
+
+        public string GetUniquePostFix()
+        {
+            Unique++;
+            return $"${Unique}";
         }
     }
 }

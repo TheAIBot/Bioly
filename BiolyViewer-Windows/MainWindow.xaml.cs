@@ -58,6 +58,7 @@ namespace BiolyViewer_Windows
                 //Wait for the MainFrame to finish loading
                 if (args.Frame.IsMain)
                 {
+                    CompilerOptions.PROGRAM_FOLDER_PATH = @"../../../../BiolyPrograms";
                     string[] files = Directory.GetFiles(@"../../../../BiolyPrograms");
                     List<string> loadedPrograms = new List<string>();
                     foreach (string file in files)
@@ -71,16 +72,11 @@ namespace BiolyViewer_Windows
                                 if (exceptions.Count == 0)
                                 {
                                     string programName = System.IO.Path.GetFileNameWithoutExtension(file);
+                                    (string[] inputStrings, string[] outputStrings, string programXml) = InlineProgram.LoadProgram(programName);
 
-                                    var inputStrings = cdfg.StartDFG.Input.Where(x => x.value is InputDeclaration)
-                                                                          .Select(x => "\"" + x.value.OriginalOutputVariable + "\"");
-                                    string inputs = String.Join(",", inputStrings);
-
-                                    var outputStrings = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
-                                                                           .Select(x => "\"" + (x.value as OutputDeclaration).ModuleName + "\"");
-                                    string outputs = String.Join(",", outputStrings);
-
-                                    string programXml = fileContent.Replace("\"", "'");
+                                    string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
+                                    string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
+                                    programXml = programXml.Replace("\"", "'");
                                     loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], programXml: \"{programXml}\"}}");
                                 }
                             }

@@ -194,5 +194,61 @@ namespace BiolyCompiler.Parser
         {
             return new FluidInput(node, parserInfo);
         }
+
+        private static void AppendProgramXml(XmlNode currentProgramXml, ParserInfo parserInfo)
+        {
+            InlineProgram programInfo = new InlineProgram(currentProgramXml, parserInfo);
+
+            XmlDocument newXmlDoc = new XmlDocument();
+            newXmlDoc.LoadXml(programInfo.ProgramXml);
+
+            //rename the id of all the blocks in the inline program
+            //so any errors in the inline program is shown on the 
+            //inline program block.
+            ReplaceIDAttribute(newXmlDoc.FirstChild, programInfo.ID);
+
+            //rename variables so they can't clash with the original programs variables
+            string xmlWithModifiedVariables = AppendPostfixToVariables(newXmlDoc, parserInfo.GetUniquePostFix());
+            newXmlDoc.LoadXml(xmlWithModifiedVariables);
+
+
+            //replace inputs
+
+
+            //replace outputs
+        }
+
+        private static void ReplaceIDAttribute(XmlNode node, string newID)
+        {
+            foreach (XmlAttribute attribute in node.Attributes)
+            {
+                if (attribute.Name == Block.IDFieldName)
+                {
+                    attribute.Value = newID;
+                }
+            }
+
+            foreach (XmlNode childNode in node.ChildNodes)
+            {
+                ReplaceIDAttribute(childNode, newID);
+            }
+        }
+
+        private static string AppendPostfixToVariables(XmlDocument document, string postfix)
+        {
+            List<string> variables = new List<string>();
+            foreach (XmlNode variableNode in document.FirstChild.GetNodeWithName("variables"))
+            {
+                variables.Add(variableNode.InnerText);
+            }
+
+            string programXml = document.InnerXml;
+            foreach (string variable in variables)
+            {
+                programXml = programXml.Replace($">{variable}<", $">{variable + postfix}<");
+            }
+
+            return programXml;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Modules;
+﻿using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -19,11 +20,20 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
-            List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(XmlParser.GetVariablesCorrectedName(node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).FirstChild, parserInfo));
             string id = node.GetAttributeValue(Block.IDFieldName);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             parserInfo.CheckModuleVariable(id, moduleName);
+
+            FluidInput fluidInput = null;
+            XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Output is missing input fluid block."));
+            if (inputFluidNode != null)
+            {
+                fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, parserInfo);
+            }
+
+            List<FluidInput> inputs = new List<FluidInput>();
+            inputs.Add(fluidInput);
+
             return new OutputUseage(moduleName, inputs, null, node, id);
         }
 
