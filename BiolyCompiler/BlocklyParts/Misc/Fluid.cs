@@ -17,7 +17,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string OutputFluidFieldName = "fluidName";
         public const string XML_TYPE_NAME = "fluid";
 
-        public Fluid(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, output, id)
+        public Fluid(List<FluidInput> input, string output, string id) : base(true, input, output, id)
         {
         }
 
@@ -27,7 +27,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             inputs.Add(XmlParser.GetVariablesCorrectedName(node, parserInfo));
 
             string id = node.GetAttributeValue(Block.IDFieldName);
-            return new Fluid(inputs, output, node, id);
+            return new Fluid(inputs, output, id);
         }
 
         public static Block Parse(XmlNode node, ParserInfo parserInfo)
@@ -35,16 +35,20 @@ namespace BiolyCompiler.BlocklyParts.Misc
             string id = node.GetAttributeValue(Block.IDFieldName);
             string output = node.GetNodeWithAttributeValue(OutputFluidFieldName).InnerText;
             Validator.CheckVariableName(id, output);
-            XmlNode innerNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Fluid is missing fluid definition blocks."));
-            switch (innerNode.GetAttributeValue(Block.TypeFieldName))
+            XmlNode innerNode = node.GetInnerBlockNode(InputFluidFieldName, parserInfo, new MissingBlockException(id, "Fluid is missing fluid definition blocks."));
+            if (innerNode != null)
             {
-                case HeaterUseage.XML_TYPE_NAME:
-                    return HeaterUseage.CreateHeater(output, innerNode, parserInfo);
-                case Mixer.XmlTypeName:
-                    return Mixer.CreateMixer(output, innerNode, parserInfo);
-                default:
-                    return CreateFluid(output, innerNode, parserInfo);
+                switch (innerNode.GetAttributeValue(Block.TypeFieldName))
+                {
+                    case HeaterUseage.XML_TYPE_NAME:
+                        return HeaterUseage.CreateHeater(output, innerNode, parserInfo);
+                    case Mixer.XmlTypeName:
+                        return Mixer.CreateMixer(output, innerNode, parserInfo);
+                    default:
+                        return CreateFluid(output, innerNode, parserInfo);
+                }
             }
+            return null;
         }
 
         public List<Command> GetFluidTransferOperations()

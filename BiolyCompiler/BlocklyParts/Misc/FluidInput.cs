@@ -34,12 +34,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             this.UseAllFluid = FluidInput.StringToBool(node.GetNodeWithAttributeValue(UseAllFluidFieldName).InnerText);
         }
 
-        public FluidInput(string fluidName, int inputAmountInDroplets, bool useAllFluid)
+        public FluidInput(string fluidName, int inputAmountInML, bool useAllFluid)
         {
-
             this.FluidName = fluidName;
             this.OriginalFluidName = fluidName;
-            this.AmountInML = GetMLOfFluidFromNumberOfDroplets(inputAmountInDroplets);
+            this.AmountInML = inputAmountInML;
             this.UseAllFluid = useAllFluid;
         }
 
@@ -78,12 +77,6 @@ namespace BiolyCompiler.BlocklyParts.Misc
             }
             //tempoary until ratio is added
             return (int)Math.Floor((AmountInML / ML_PER_DROPLET) + 0.01);
-        }
-
-        public int GetMLOfFluidFromNumberOfDroplets(int numberOfDroplets)
-        {
-            //tempoary until ratio is added
-            return numberOfDroplets * ML_PER_DROPLET;
         }
 
         public override string ToString()
