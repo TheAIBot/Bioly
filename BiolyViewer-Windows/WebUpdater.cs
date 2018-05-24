@@ -18,8 +18,8 @@ namespace BiolyViewer_Windows
 {
     public class WebUpdater
     {
-        int BOARD_WIDTH = 20;
-        int BOARD_HEIGHT = 50;
+        int BOARD_WIDTH = 10;
+        int BOARD_HEIGHT = 10;
         private readonly ChromiumWebBrowser Browser;
 
         public WebUpdater(ChromiumWebBrowser browser)

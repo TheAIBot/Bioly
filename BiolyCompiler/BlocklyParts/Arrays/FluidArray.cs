@@ -46,13 +46,22 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
         {
-            //array length is a float which can be a fraction so it's rounded up
-            return (GetArrayLengthVariable(ArrayName), (float)Math.Ceiling(ArrayLengthBlock.Run(variables, executor)));
+            string variableName = GetArrayLengthVariable(ArrayName);
+            //The value returned from the block can be a fraction and
+            //the array length can't be. So convert to int.
+            int arrayLength = (int)ArrayLengthBlock.Run(variables, executor);
+            
+            return (variableName, arrayLength);
         }
 
         public static string GetArrayLengthVariable(string arrayName)
         {
             return $"{arrayName}{Validator.FLUID_ARRAY_SPECIAL_SEPARATOR}Length";
+        }
+
+        public static string GetArrayIndexName(string arrayName, int index)
+        {
+            return $"{arrayName}{Validator.FLUID_ARRAY_SPECIAL_SEPARATOR}Index{index}";
         }
     }
 }
