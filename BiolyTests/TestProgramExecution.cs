@@ -46,9 +46,7 @@ namespace BiolyTests
             JSProgram program = new JSProgram();
             program.Render = true;
             program.AddInputBlock("k", 1, FluidUnit.drops);
-            program.AddHeaterDeclarationBlock("z");
-            AddFluidBlock(program);
-            
+            program.AddHeaterDeclarationBlock("z");            
 
             foreach (bool[] enableIf in enableIfs)
             {
@@ -86,6 +84,7 @@ namespace BiolyTests
             string xml = TestTools.GetWorkspaceString();
             TestCommandExecutor executor = new TestCommandExecutor();
             ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
+            programExecutor.TIME_BETWEEN_COMMANDS = 0;
             programExecutor.Run(10, 10, xml);
 
             return executor.Commands;
@@ -169,8 +168,6 @@ namespace BiolyTests
             program.Render = true;
             program.AddInputBlock("k", 1, FluidUnit.drops);
             program.AddHeaterDeclarationBlock("z");
-            AddFluidBlock(program);
-
 
             foreach (int[] repeats in repeatTimes)
             {
@@ -185,6 +182,7 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddHeaterDeclarationBlock("z");
 
             for (int i = 0; i < repeatTimes; i++)
             {

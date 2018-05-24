@@ -31,6 +31,12 @@ namespace BiolyCompiler.BlocklyParts
             return commands;
         }
 
+        protected override void ResetBlock()
+        {
+            base.ResetBlock();
+            OutputRoutes.Clear();
+        }
+
         public override Module getAssociatedModule()
         {
             throw new Exception("As this block represents the use of a module, it has no associated module.");

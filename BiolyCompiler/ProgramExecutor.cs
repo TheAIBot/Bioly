@@ -22,7 +22,7 @@ namespace BiolyCompiler
     public class ProgramExecutor<T>
     {
         private readonly CommandExecutor<T> Executor;
-        public const int TIME_BETWEEN_COMMANDS = 50;
+        public int TIME_BETWEEN_COMMANDS = 50;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -160,7 +160,10 @@ namespace BiolyCompiler
                     Executor.SendCommands();
                 }
 
-                Thread.Sleep(TIME_BETWEEN_COMMANDS);
+                if (TIME_BETWEEN_COMMANDS > 0)
+                {
+                    Thread.Sleep(TIME_BETWEEN_COMMANDS);
+                }
                 time++;
             }
         }
@@ -209,10 +212,17 @@ namespace BiolyCompiler
             else if (control is Repeat repeatControl)
             {
                 int loopCount = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor);
-                controlStack.Push(repeatControl.Cond);
-                varScopeStack.Push(new List<string>());
-                repeatStack.Push(--loopCount);
-                return repeatControl.Cond.GuardedDFG;
+                if (loopCount > 0)
+                {
+                    controlStack.Push(repeatControl.Cond);
+                    varScopeStack.Push(new List<string>());
+                    repeatStack.Push(--loopCount);
+                    return repeatControl.Cond.GuardedDFG;
+                }
+                else
+                {
+                    return repeatControl.Cond.NextDFG;
+                }
             }
 
             while (repeatStack.Count > 0)

@@ -482,7 +482,12 @@ namespace BiolyCompiler.Scheduling
             return CurrentlyRunningOpertions.Count > 0 && (readyOperations.Count == 0  || startTime >= CurrentlyRunningOpertions.First().EndTime);
         }
         
-        public int getCompletionTime(){
+        public int getCompletionTime()
+        {
+            if (ScheduledOperations.Count == 0)
+            {
+                return -1;
+            }
             return ScheduledOperations.Max(operation => operation.EndTime);
         }
 
