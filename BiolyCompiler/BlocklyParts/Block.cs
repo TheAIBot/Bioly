@@ -22,7 +22,7 @@ namespace BiolyCompiler.BlocklyParts
         public const string IDFieldName = "id";
 
         //For the scheduling:
-        public bool isFinished = false;
+        public bool IsDone = false;
         public int StartTime = -1;
         public int EndTime = -1;
         public int priority = Int32.MaxValue;
@@ -41,7 +41,7 @@ namespace BiolyCompiler.BlocklyParts
         public void Reset()
         {
             ResetBlock();
-            this.isFinished = false;
+            this.IsDone = false;
             this.StartTime = -1;
             this.EndTime = -1;
             this.priority = Int32.MaxValue;

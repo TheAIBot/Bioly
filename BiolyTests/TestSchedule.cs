@@ -39,7 +39,7 @@ namespace BiolyTests.ScheduleTests
             Operations[4].priority = 10;
             Block OperationThatShouldBeRemoved = Operations[4];
 
-            Block RemovedOperation = Schedule.removeOperation(Operations);
+            Block RemovedOperation = Schedule.RemoveOperation(Operations);
             Assert.AreEqual(OperationsToAdd * 2 - 1, Operations.Count);
             Assert.AreEqual(OperationThatShouldBeRemoved, RemovedOperation);
         }

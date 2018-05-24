@@ -6,6 +6,9 @@ using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Commands;
+using BiolyCompiler.Routing;
+using System.Linq;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -30,12 +33,10 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             FluidInput fluidInput1 = null;
             FluidInput fluidInput2 = null;
 
-            if (inputFluidNode1 != null)
-            {
+            if (inputFluidNode1 != null) {
                 fluidInput1 = new FluidInput(inputFluidNode1, parserInfo, false);
             }
-            if (inputFluidNode2 != null)
-            {
+            if (inputFluidNode2 != null) {
                 fluidInput2 = new FluidInput(inputFluidNode2, parserInfo, false);
             }
 
@@ -46,10 +47,18 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Union(inputs, output, node, id);
         }
 
-        public override Module getAssociatedModule()
+
+        public override List<Command> ToCommands()
         {
-            throw new NotImplementedException();
+            int time = 0;
+            List<Command> routeCommands = new List<Command>();
+            foreach (List<Route> routes in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
+            }
+            return routeCommands;
         }
+
 
         public string ToXml()
         {

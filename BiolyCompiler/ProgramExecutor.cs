@@ -92,15 +92,7 @@ namespace BiolyCompiler
             {
                 if (operation is FluidBlock fluidBlock)
                 {
-                    List<Command> commands;
-                    if (operation is Fluid fluidOperation)
-                    {
-                        commands = fluidOperation.GetFluidTransferOperations();
-                    }
-                    else
-                    {
-                        commands = fluidBlock.ToCommands();
-                    }
+                    List<Command> commands = fluidBlock.ToCommands();
 
                     foreach (Command command in commands)
                     {

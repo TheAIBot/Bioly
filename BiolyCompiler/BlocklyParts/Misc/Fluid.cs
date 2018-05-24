@@ -53,7 +53,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return null;
         }
 
-        public List<Command> GetFluidTransferOperations()
+        public override List<Command> ToCommands()
         {
             int time = 0;
             List<Command> routeCommands = new List<Command>();
