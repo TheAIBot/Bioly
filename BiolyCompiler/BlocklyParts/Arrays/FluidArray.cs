@@ -1,10 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
+using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Graphs;
+using BiolyCompiler.Parser;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
 {
-    class FluidArray
+    public class FluidArray : VariableBlock
     {
+        public const string ARRAY_NAME_FIELD_NAME = "arrayName";
+        public const string ARRAY_LENGTH_FIELD_NAME = "arrayLength";
+        public const string XML_TYPE_NAME = "fluidArray";
+        public readonly string ArrayName;
+        public readonly VariableBlock ArrayLengthBlock;
+
+        public FluidArray(string arrayName, VariableBlock arrayLengthBlock, string id) : base(true, null, id, true)
+        {
+            this.ArrayName = arrayName;
+            this.ArrayLengthBlock = arrayLengthBlock;
+        }
+
+        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        {
+            string id = node.GetAttributeValue(Block.IDFieldName);
+            string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
+            parserInfo.AddFluidArrayVariable(arrayName);
+
+            VariableBlock arrayLengthBlock = null;
+            XmlNode arrayLengthNode = node.GetInnerBlockNode(ARRAY_LENGTH_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block which define the length of the array."));
+            if (arrayLengthNode != null)
+            {
+                arrayLengthBlock = (VariableBlock)XmlParser.ParseBlock(arrayLengthNode, dfg, parserInfo, false, false);
+            }
+
+            return new FluidArray(arrayName, arrayLengthBlock, id);
+        }
+
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        {
+            //array length is a float which can be a fraction so it's rounded up
+            return (GetArrayLengthVariable(ArrayName), (float)Math.Ceiling(ArrayLengthBlock.Run(variables, executor)));
+        }
+
+        public static string GetArrayLengthVariable(string arrayName)
+        {
+            return $"{arrayName}{Validator.FLUID_ARRAY_SPECIAL_SEPARATOR}Length";
+        }
     }
 }

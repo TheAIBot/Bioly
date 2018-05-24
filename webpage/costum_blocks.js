@@ -226,6 +226,24 @@ Blockly.Blocks["getFluid"] = {
 	}
 };
 
+Blockly.Blocks["getDropletCount"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "droplet count of %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "fluidName",
+					"variable": "fluid_name"
+				}
+			],
+			"output": "Number",
+			"colour": 80,
+			"tooltip": ""
+		});
+	}
+};
+
 Blockly.Blocks["mixer"] = {
 	init: function() {
 		this.jsonInit({
@@ -349,7 +367,7 @@ Blockly.Blocks["setFLuidArrayIndex"] = {
 				{
 					"type": "input_value",
 					"name": "value",
-					"check": ["InputType", "FluidType", "FluidOperator"]
+					"check": ["FluidType"]
 				}
 			],
 			"previousStatement": null,
@@ -379,6 +397,64 @@ Blockly.Blocks["getFLuidArrayIndex"] = {
 				}
 			],
 			"output": "FluidType",
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["getArrayLength"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "array length of %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "fluid_array_name"
+				}
+			],
+			"output": "Number",
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["getNumberVariable"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "get value of %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "variableName",
+					"variable": "variable_name"
+				}
+			],
+			"output": "Number",
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["setNumberVariable"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "set %1 to %2",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "variableName",
+					"variable": "variable_name"
+				},
+				{
+					"type": "input_value",
+					"name": "inputVariable",
+					"check": ["Number"]
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
 			"colour": 40,
 			"tooltip": ""
 		});

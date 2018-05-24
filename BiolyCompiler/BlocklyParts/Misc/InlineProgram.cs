@@ -113,7 +113,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             if (!IsValidProgram)
             {
-                parserInfo.parseExceptions.Add(new ParseException(ID, "The program can't be parsed."));
+                parserInfo.ParseExceptions.Add(new ParseException(ID, "The program can't be parsed."));
                 return;
             }
 

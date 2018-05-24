@@ -13,6 +13,7 @@ using BiolyCompiler.BlocklyParts.Arithmetics;
 using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.BlocklyParts.ControlFlow;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.BlocklyParts.Arrays;
 
 namespace BiolyCompiler.Parser
 {
@@ -37,7 +38,7 @@ namespace BiolyCompiler.Parser
             DFG<Block> startDFG = ParseDFG(node, parserInfo, true);
             parserInfo.cdfg.StartDFG = startDFG;
 
-            return (parserInfo.cdfg, parserInfo.parseExceptions);
+            return (parserInfo.cdfg, parserInfo.ParseExceptions);
         }
 
         internal static DFG<Block> ParseDFG(XmlNode node, ParserInfo parserInfo, bool allowDeclarationBlocks = false)
@@ -63,7 +64,7 @@ namespace BiolyCompiler.Parser
                     }
                     catch (ParseException e)
                     {
-                        parserInfo.parseExceptions.Add(e);
+                        parserInfo.ParseExceptions.Add(e);
                     }
                     allowDeclarationBlocks = block is StaticDeclarationBlock && allowDeclarationBlocks;
 
@@ -76,7 +77,7 @@ namespace BiolyCompiler.Parser
                     node = node.FirstChild;
                 }
 
-                if (parserInfo.parseExceptions.Count == 0)
+                if (parserInfo.ParseExceptions.Count == 0)
                 {
                     dfg.FinishDFG();
                 }
@@ -87,7 +88,7 @@ namespace BiolyCompiler.Parser
             }
             catch (ParseException e)
             {
-                parserInfo.parseExceptions.Add(e);
+                parserInfo.ParseExceptions.Add(e);
                 parserInfo.LeftDFG();
                 return null;
             }
@@ -102,13 +103,13 @@ namespace BiolyCompiler.Parser
             //update map of most recent nodes that outputs the variable
             //so other nodes that get their value from the node that
             //just updated the value
-            if (parserInfo.mostRecentVariableRef.ContainsKey(block.OriginalOutputVariable))
+            if (parserInfo.MostRecentVariableRef.ContainsKey(block.OriginalOutputVariable))
             {
-                parserInfo.mostRecentVariableRef[block.OriginalOutputVariable] = block.OutputVariable;
+                parserInfo.MostRecentVariableRef[block.OriginalOutputVariable] = block.OutputVariable;
             }
             else
             {
-                parserInfo.mostRecentVariableRef.Add(block.OriginalOutputVariable, block.OutputVariable);
+                parserInfo.MostRecentVariableRef.Add(block.OriginalOutputVariable, block.OutputVariable);
                 parserInfo.AddFluidVariable(block.OriginalOutputVariable);
             }
 
@@ -162,8 +163,10 @@ namespace BiolyCompiler.Parser
                     return ArithOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 case Constant.XML_TYPE_NAME:
                     return Constant.Parse(node);
-                //case FluidArray.XmlTypeName:
-                //    return FluidArray.Parse(node);
+                case FluidArray.XML_TYPE_NAME:
+                    return FluidArray.Parse(node, dfg, parserInfo);
+                //case GetFluidArray.XmlTypeName:
+                //    return GetFluidArray.Parse(node);
                 //case SetFluidArray.XmlTypeName:
                 //    return SetFluidArray.Parse(node);
                 case Fluid.XML_TYPE_NAME:
@@ -171,13 +174,13 @@ namespace BiolyCompiler.Parser
                 case InputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
-                        throw new ParseException(id, "Declaration blocks has be at the top of the program.");
+                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
                     }
                     return InputDeclaration.Parse(node);
                 case OutputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
-                        throw new ParseException(id, "Declaration blocks has be at the top of the program.");
+                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
                     }
                     return OutputDeclaration.Parse(node, parserInfo);
                 case OutputUseage.XML_TYPE_NAME:
@@ -196,6 +199,10 @@ namespace BiolyCompiler.Parser
                         program.AppendProgramXml(ref node, parserInfo);
                         return ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks, canBeScheduled);
                     }
+                case GetNumberVariable.XML_TYPE_NAME:
+                    return GetNumberVariable.Parse(node, parserInfo);
+                case SetNumberVariable.XML_TYPE_NAME:
+                    return SetNumberVariable.Parse(node, dfg, parserInfo);
                 default:
                     throw new UnknownBlockException(id);
             }

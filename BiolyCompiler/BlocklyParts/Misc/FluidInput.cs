@@ -31,7 +31,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             {
                 parserInfo.CheckFluidVariable(ID, OriginalFluidName);
             }
-            parserInfo.mostRecentVariableRef.TryGetValue(OriginalFluidName, out string correctedName);
+            parserInfo.MostRecentVariableRef.TryGetValue(OriginalFluidName, out string correctedName);
 
             this.FluidName = correctedName ?? "ERROR_FINDING_NODE";
             this.AmountInML = node.GetNodeWithAttributeValue(FLUID_AMOUNT_FIELD_NAME).TextToFloat(ID);
