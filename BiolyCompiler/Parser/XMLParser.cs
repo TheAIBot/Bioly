@@ -1,7 +1,7 @@
 ﻿using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
-using BiolyCompiler.BlocklyParts.Sensors;
+using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.Graphs;
 using System;
 using System.Collections.Generic;
@@ -59,7 +59,7 @@ namespace BiolyCompiler.Parser
                     Block block = null;
                     try
                     {
-                        block = ParseAndAddNodeToDFG(node, dfg, parserInfo, allowDeclarationBlocks);
+                        block = ParseAndAddNodeToDFG(ref node, dfg, parserInfo, allowDeclarationBlocks);
                     }
                     catch (ParseException e)
                     {
@@ -93,9 +93,9 @@ namespace BiolyCompiler.Parser
             }
         }
 
-        internal static Block ParseAndAddNodeToDFG(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false)
+        internal static Block ParseAndAddNodeToDFG(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false)
         {
-            Block block = ParseBlock(node, dfg, parserInfo, allowDeclarationBlocks);
+            Block block = ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks);
             
             dfg.AddNode(block);
 
@@ -117,7 +117,7 @@ namespace BiolyCompiler.Parser
 
         private static IControlBlock ParseConditionalBlocks(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string blockType = node.Attributes["type"].Value;
+            string blockType = node.Attributes[Block.TypeFieldName].Value;
             switch (blockType)
             {
                 case If.XML_TYPE_NAME:
@@ -131,7 +131,7 @@ namespace BiolyCompiler.Parser
 
         internal static DFG<Block> ParseNextDFG(XmlNode node, ParserInfo parserInfo)
         {
-            node = Extensions.TryGetNodeWithName(node, "next");
+            node = node.TryGetNodeWithName("next");
             if (node == null)
             {
                 return null;
@@ -148,6 +148,11 @@ namespace BiolyCompiler.Parser
         }
 
         public static Block ParseBlock(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false, bool canBeScheduled = true)
+        {
+            return ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks, canBeScheduled);
+        }
+
+        public static Block ParseBlock(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false, bool canBeScheduled = true)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string blockType = node.GetAttributeValue(Block.TypeFieldName);
@@ -168,7 +173,7 @@ namespace BiolyCompiler.Parser
                     {
                         throw new ParseException(id, "Declaration blocks has be at the top of the program.");
                     }
-                    return InputDeclaration.Parse(node, parserInfo);
+                    return InputDeclaration.Parse(node);
                 case OutputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
@@ -185,70 +190,15 @@ namespace BiolyCompiler.Parser
                     return BoolOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 //case Sensor.XmlTypeName:
                 //    return Sensor.Parse(node);
+                case InlineProgram.XML_TYPE_NAME:
+                    {
+                        InlineProgram program = new InlineProgram(node, parserInfo);
+                        program.AppendProgramXml(ref node, parserInfo);
+                        return ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks, canBeScheduled);
+                    }
                 default:
                     throw new UnknownBlockException(id);
             }
-        }
-
-        internal static FluidInput GetVariablesCorrectedName(XmlNode node, ParserInfo parserInfo)
-        {
-            return new FluidInput(node, parserInfo);
-        }
-
-        private static void AppendProgramXml(XmlNode currentProgramXml, ParserInfo parserInfo)
-        {
-            InlineProgram programInfo = new InlineProgram(currentProgramXml, parserInfo);
-
-            XmlDocument newXmlDoc = new XmlDocument();
-            newXmlDoc.LoadXml(programInfo.ProgramXml);
-
-            //rename the id of all the blocks in the inline program
-            //so any errors in the inline program is shown on the 
-            //inline program block.
-            ReplaceIDAttribute(newXmlDoc.FirstChild, programInfo.ID);
-
-            //rename variables so they can't clash with the original programs variables
-            string xmlWithModifiedVariables = AppendPostfixToVariables(newXmlDoc, parserInfo.GetUniquePostFix());
-            newXmlDoc.LoadXml(xmlWithModifiedVariables);
-
-
-            //replace inputs
-
-
-            //replace outputs
-        }
-
-        private static void ReplaceIDAttribute(XmlNode node, string newID)
-        {
-            foreach (XmlAttribute attribute in node.Attributes)
-            {
-                if (attribute.Name == Block.IDFieldName)
-                {
-                    attribute.Value = newID;
-                }
-            }
-
-            foreach (XmlNode childNode in node.ChildNodes)
-            {
-                ReplaceIDAttribute(childNode, newID);
-            }
-        }
-
-        private static string AppendPostfixToVariables(XmlDocument document, string postfix)
-        {
-            List<string> variables = new List<string>();
-            foreach (XmlNode variableNode in document.FirstChild.GetNodeWithName("variables"))
-            {
-                variables.Add(variableNode.InnerText);
-            }
-
-            string programXml = document.InnerXml;
-            foreach (string variable in variables)
-            {
-                programXml = programXml.Replace($">{variable}<", $">{variable + postfix}<");
-            }
-
-            return programXml;
         }
     }
 }

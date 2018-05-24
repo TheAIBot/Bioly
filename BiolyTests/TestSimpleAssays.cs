@@ -16,6 +16,7 @@ using BiolyCompiler.BlocklyParts.Misc;
 using System.IO;
 using BiolyCompiler.Parser;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.BlocklyParts.Declarations;
 //using MoreLinq;
 
 namespace BiolyTests.SimpleAssayTests

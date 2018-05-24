@@ -80,9 +80,9 @@ namespace BiolyViewer_Windows
                                     loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], programXml: \"{programXml}\"}}");
                                 }
                             }
-                            catch (Exception)
+                            catch (Exception ee)
                             {
-                                
+                                MessageBox.Show(ee.Message + Environment.NewLine + ee.StackTrace);
                             }
                         }
                     }

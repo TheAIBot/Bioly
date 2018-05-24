@@ -14,6 +14,7 @@ using BiolyCompiler.Architechtures;
 using BiolyTests.TestObjects;
 using System.Diagnostics;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.BlocklyParts.Declarations;
 
 namespace BiolyTests.ScheduleTests
 {

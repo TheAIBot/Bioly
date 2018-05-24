@@ -18,7 +18,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         }
 
-        public static Block Parse(XmlNode node, ParserInfo parserInfo)
+        public static OutputUseage Parse(XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
@@ -28,7 +28,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Output is missing input fluid block."));
             if (inputFluidNode != null)
             {
-                fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, parserInfo);
+                fluidInput = new FluidInput(inputFluidNode, parserInfo);
             }
 
             List<FluidInput> inputs = new List<FluidInput>();
@@ -54,7 +54,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public override string ToString()
         {
             return "Output" + Environment.NewLine +
-                   "Fluid: " + InputVariables[0].FluidName + Environment.NewLine +
+                   "Fluid: " + InputVariables[0].OriginalFluidName + Environment.NewLine +
                    "To target module: " + ModuleName;
         }
     }

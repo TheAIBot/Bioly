@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.FFUs
+namespace BiolyCompiler.BlocklyParts.Declarations
 {
     public class HeaterDeclaration : StaticDeclarationBlock
     {

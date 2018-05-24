@@ -38,7 +38,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Heater is missing input fluid block."));
             if (inputFluidNode != null)
             {
-                fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, parserInfo);
+                fluidInput = new FluidInput(inputFluidNode, parserInfo);
             }
 
             List<FluidInput> inputs = new List<FluidInput>();

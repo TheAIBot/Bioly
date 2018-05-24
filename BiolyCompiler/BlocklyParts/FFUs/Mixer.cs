@@ -32,11 +32,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
             if (inputFluidNode1 != null)
             {
-                fluidInput1 = XmlParser.GetVariablesCorrectedName(inputFluidNode1, parserInfo);
+                fluidInput1 = new FluidInput(inputFluidNode1, parserInfo);
             }
             if (inputFluidNode2 != null)
             {
-                fluidInput2 = XmlParser.GetVariablesCorrectedName(inputFluidNode2, parserInfo);
+                fluidInput2 = new FluidInput(inputFluidNode2, parserInfo);
             }
 
             List<FluidInput> inputs = new List<FluidInput>();

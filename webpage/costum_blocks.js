@@ -98,9 +98,12 @@ Blockly.Blocks["heaterDeclaration"] = {
 
 Blockly.Blocks["outputUseage"] = {
 	init: function() {
-		this.jsonInit({						
-			"message0": "target %1 %2",
+		this.jsonInit({
+			"message0": "output",
 			"args0": [
+			],			
+			"message1": "target %1 %2",
+			"args1": [
 				{
 					"type": "field_variable",
 					"name": "moduleName",
@@ -430,7 +433,7 @@ Blockly.Blocks["inlineProgram"] =
 	},
 	domToMutation: function(xmlElement) 
 	{
-		const programName = xmlElement.getAttribute("programName");
+		const programName = xmlElement.getAttribute("program_name");
 		this.updateShape_(programName);
 	},
 	updateShape_: function(programName)

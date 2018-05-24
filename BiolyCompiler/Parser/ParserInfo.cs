@@ -71,7 +71,7 @@ namespace BiolyCompiler.Parser
         public string GetUniquePostFix()
         {
             Unique++;
-            return $"${Unique}";
+            return $"{Validator.SPECIAL_SEPARATOR}{Unique}";
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Exceptions.ParserExceptions;
 
-namespace BiolyCompiler.BlocklyParts.Misc
+namespace BiolyCompiler.BlocklyParts.Declarations
 {
     public class InputDeclaration : StaticDeclarationBlock
     {
@@ -31,7 +31,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             this.Unit = FluidUnit.drops;
         }
 
-        public static Block Parse(XmlNode node, ParserInfo parserInfo)
+        public static InputDeclaration Parse(XmlNode node)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;

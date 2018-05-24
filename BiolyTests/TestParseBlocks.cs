@@ -3,6 +3,7 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Arithmetics;
 using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.BlocklyParts.ControlFlow;
+using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Graphs;

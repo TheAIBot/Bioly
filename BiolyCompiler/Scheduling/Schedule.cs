@@ -11,6 +11,7 @@ using System.Linq;
 using System.Diagnostics;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.Declarations;
 
 namespace BiolyCompiler.Scheduling
 {

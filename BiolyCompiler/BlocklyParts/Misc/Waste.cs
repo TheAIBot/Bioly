@@ -28,7 +28,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, parserInfo, new MissingBlockException(id, "Waste is missing input fluid block."));
             if (inputFluidNode != null)
             {
-                fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, parserInfo);
+                fluidInput = new FluidInput(inputFluidNode, parserInfo);
             }
 
             List<FluidInput> inputs = new List<FluidInput>();
