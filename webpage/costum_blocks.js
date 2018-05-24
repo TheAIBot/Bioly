@@ -336,12 +336,16 @@ Blockly.Blocks["setFLuidArrayIndex"] = {
 					"variable": "fluid_array_name"
 				}
 			],
-			"message1": "set index %1 to %2",
+			"message1": "set index %1",
 			"args1": [
 				{
-					"type": "field_number",
-					"name": "arrayName"
-				},
+					"type": "input_value",
+					"name": "index",
+					"check": ["Number"]
+				}
+			],
+			"message2": "to %1",
+			"args2": [
 				{
 					"type": "input_value",
 					"name": "value",
@@ -369,13 +373,12 @@ Blockly.Blocks["getFLuidArrayIndex"] = {
 			"message1": "get index %1",
 			"args1": [
 				{
-					"type": "field_number",
-					"name": "arrayName"
+					"type": "input_value",
+					"name": "index",
+					"check": ["Number"]
 				}
 			],
 			"output": "FluidType",
-			"previousStatement": null,
-			"nextStatement": null,
 			"colour": 40,
 			"tooltip": ""
 		});
