@@ -1,8 +1,10 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Routing;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BiolyCompiler.BlocklyParts
@@ -14,8 +16,20 @@ namespace BiolyCompiler.BlocklyParts
 
         public StaticUseageBlock(string moduleName, List<FluidInput> inputs, bool canBeOutput, string output, string id) : base(moduleName, inputs, canBeOutput, output, id)
         {
+
         }
 
+        public override List<Command> ToCommands()
+        {
+            List<Command> commands =  base.ToCommands();
+            int time = commands.Last().Time;
+            //There can be extra output routes associated with a static use block:
+            foreach (List<Route> routeList in OutputRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                routeList.ForEach(route => commands.AddRange(route.ToCommands(ref time)));
+            }
+            return commands;
+        }
 
         public override Module getAssociatedModule()
         {

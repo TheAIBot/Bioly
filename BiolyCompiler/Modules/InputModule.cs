@@ -65,5 +65,12 @@ namespace BiolyCompiler.Modules
         {
             throw new Exception("A droplet spawner does not execute any commands.");
         }
+
+        public void SetFluidType(BoardFluid fluidType)
+        {
+            if (this.FluidType != null) this.FluidType.dropletSources.Remove(this);
+            this.FluidType = fluidType;
+            fluidType.dropletSources.Add(this);
+        }
     }
 }

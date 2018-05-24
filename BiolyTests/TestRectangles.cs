@@ -132,24 +132,24 @@ namespace BiolyTests.RectanglesWithModulesTests
             }
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void TestIsAdjacentRightRectangle() {
             Assert.Fail("Has not been implemented yet");
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void TestIsAdjacentTopRectangle()
         {
             Assert.Fail("Has not been implemented yet");
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void TestIsAdjacentLowerRectangle()
         {
             Assert.Fail("Has not been implemented yet");
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void TestSplitIntoSmallerRectanglesCorrectRightRectanglesAdjacencies()
         {
             Assert.Fail("Has not been implemented yet");

@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Parser;
 using System;
@@ -14,18 +15,21 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public const string TIME_FIELD_NAME = "time";
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "heaterUseage";
-        public readonly int Temperature;
-        public readonly int Time;
+        public int Temperature { get; private set; }
+        public int Time { get; private set; }
+
+
+        public HeaterUseage(string moduleName, List<FluidInput> inputs, string output, int temperature, int time, string id) : base(moduleName, inputs, true, output, id)
+        {
+            SetTemperatureAndTime(id, temperature, time);
+        }
+
 
         public HeaterUseage(string moduleName, List<FluidInput> inputs, string output, XmlNode node, string id) : base(moduleName, inputs, true, output, id)
         {
-            this.Temperature = (int)node.GetNodeWithAttributeValue(TEMPERATURE_FIELD_NAME).TextToFloat(id);
-            //Can't be colder than absolute zero and the board probably can't handle more than 1000C
-            Validator.ValueWithinRange(id, this.Temperature, -273, 1000);
-
-            this.Time = (int)node.GetNodeWithAttributeValue(TIME_FIELD_NAME).TextToFloat(id);
-            //Time can't be negative and probably shouldn't be over a months time so throw an erro in those cases
-            Validator.ValueWithinRange(id, this.Time, 0, 2592000);
+            int temperature = (int)node.GetNodeWithAttributeValue(TEMPERATURE_FIELD_NAME).TextToFloat(id);
+            int time = (int)node.GetNodeWithAttributeValue(TIME_FIELD_NAME).TextToFloat(id);
+            SetTemperatureAndTime(id, temperature, time);
         }
 
         public static Block CreateHeater(string output, XmlNode node, ParserInfo parserInfo)
@@ -45,6 +49,26 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             inputs.Add(fluidInput);
 
             return new HeaterUseage(moduleName, inputs, output, node, id);
+        }
+
+
+        public override List<Command> ToCommands()
+        {
+            //This is neccessary to ensure that the the droplets spends the required time in the module:
+            BoundModule.OperationTime = Time;
+            return base.ToCommands();
+        }
+
+        private void SetTemperatureAndTime(string id, int temperature, int time)
+        {
+            this.Temperature = temperature;
+            //Can't be colder than absolute zero and the board probably can't handle more than 1000C
+            Validator.ValueWithinRange(id, this.Temperature, -273, 1000);
+
+            this.Time = time;
+            //Time can't be negative and probably shouldn't be over a months time so throw an erro in those cases
+            Validator.ValueWithinRange(id, this.Time, 0, 2592000);
+
         }
 
         public override string ToString()

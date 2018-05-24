@@ -38,11 +38,15 @@ namespace BiolyCompiler.BlocklyParts.Misc
             this.UseAllFluid = FluidInput.StringToBool(node.GetNodeWithAttributeValue(USE_ALL_FLUID_FIELD_NAME).InnerText);
         }
 
-        public FluidInput(string fluidName, int inputAmountInML, bool useAllFluid)
+        public FluidInput(FluidBlock operation, int inputAmountInDroplets, bool useAllFluid) : this(operation.OutputVariable, operation.OriginalOutputVariable, inputAmountInDroplets, useAllFluid)
+        {
+        }
+
+        public FluidInput(string fluidName, string originalFluidName, int inputAmountInDroplets, bool useAllFluid)
         {
             this.FluidName = fluidName;
-            this.OriginalFluidName = fluidName;
-            this.AmountInML = inputAmountInML;
+            this.OriginalFluidName = originalFluidName;
+            this.AmountInML = inputAmountInDroplets;
             this.UseAllFluid = useAllFluid;
         }
 

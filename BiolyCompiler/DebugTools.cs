@@ -18,7 +18,7 @@ namespace BiolyCompiler
             Debug.WriteLine(board.print(usedModules));
             runningOperations.ToList()
                              .OrderBy(element => element.StartTime)
-                             .ForEach(element => Debug.WriteLine(element.OriginalOutputVariable + ", " + element.StartTime + ", " + element.endTime));
+                             .ForEach(element => Debug.WriteLine(element.OriginalOutputVariable + ", " + element.StartTime + ", " + element.EndTime));
             checkAdjacencyMatrixCorrectness(board);
         }
 

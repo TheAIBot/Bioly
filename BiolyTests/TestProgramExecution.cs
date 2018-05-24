@@ -62,7 +62,9 @@ namespace BiolyTests
         private JSProgram CreateProgramWithoutIfStatement(bool[] enableIfs)
         {
             JSProgram program = new JSProgram();
+            program.Render = true;
             program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddHeaterDeclarationBlock("z");
 
             foreach (bool enableIf in enableIfs)
             {

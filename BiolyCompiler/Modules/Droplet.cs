@@ -68,5 +68,6 @@ namespace BiolyCompiler.Modules
         public (int, int) GetMiddleOfSource() {
             return Shape.getCenterPosition();
         }
+        
     }
 }
