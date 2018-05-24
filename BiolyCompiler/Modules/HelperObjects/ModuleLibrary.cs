@@ -4,6 +4,7 @@ using BiolyCompiler.Architechtures;
 using BiolyCompiler.Scheduling;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.BlocklyParts.FFUs;
 
 namespace BiolyCompiler.Modules
 {
@@ -21,20 +22,6 @@ namespace BiolyCompiler.Modules
             allocatedModules.Sort((x,y) => (x.OperationTime < y.OperationTime)? 0: 1);
         }
 
-        /*
-        public Module GetFirstPlaceableModule(FluidBlock operation, Architechture archetichture){
-            for (int i = 0; i < allocatedModules.Count; i++)
-            {
-                Module module = allocatedModules[i];
-                if(allocatedModules[i].getOperationType() == operation.getOperationType() && 
-                   archetichture.canBePlaced(module))
-                {
-                    return module;
-                }
-            }
-            throw new Exception("No module can execute the operation and also be placed on the board");
-        } */
-        
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
             HashSet<Module> associatedModules = new HashSet<Module>();
@@ -43,6 +30,7 @@ namespace BiolyCompiler.Modules
                 if (  node.value is FluidBlock operation && 
                     !(node.value is StaticUseageBlock) &&
                     !(node.value is Fluid) &&
+                    !(node.value is Union) &&
                     !associatedModules.Contains(operation.getAssociatedModule()))
                 {
                     associatedModules.Add(operation.getAssociatedModule());
@@ -54,7 +42,10 @@ namespace BiolyCompiler.Modules
         public Module getOptimalModule(FluidBlock operation)
         {
             return operation.getAssociatedModule();
-            //Currently unused. Will become important for larger programs:
+            //Currently unused. Will become important for larger programs, 
+            //where there are multiple different modules that can execute an operation:
+            //Also if there is only a certain amount of different modules available.
+
             /*
             Module module = null;
             for (int i = 0; i < allocatedModules.Count; i++)

@@ -45,12 +45,12 @@ namespace BiolyCompiler
             Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<List<string>> varScopeStack = new Stack<List<string>>();
             Stack<Conditional> controlStack = new Stack<Conditional>();
-            Stack<int> repeatStack = new Stack<int>();
+            Stack<(int, DFG<Block>)> repeatStack = new Stack<(int, DFG<Block>)>();
             bool firstRun = true;
 
             varScopeStack.Push(new List<string>());
             controlStack.Push(new Conditional(null, null, null));
-            repeatStack.Push(0);
+            repeatStack.Push((0,null));
 
             while (runningGraph != null)
             {
@@ -92,15 +92,7 @@ namespace BiolyCompiler
             {
                 if (operation is FluidBlock fluidBlock)
                 {
-                    List<Command> commands;
-                    if (operation is Fluid fluidOperation)
-                    {
-                        commands = fluidOperation.GetFluidTransferOperations();
-                    }
-                    else
-                    {
-                        commands = fluidBlock.ToCommands();
-                    }
+                    List<Command> commands = fluidBlock.ToCommands();
 
                     foreach (Command command in commands)
                     {
@@ -191,7 +183,7 @@ namespace BiolyCompiler
             return (scheduler.ScheduledOperations, time);
         }
 
-        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<int> repeatStack)
+        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<(int, DFG<Block>)> repeatStack)
         {
             IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
             if (control is If ifControl)
@@ -203,7 +195,7 @@ namespace BiolyCompiler
                     {
                         controlStack.Push(conditional);
                         varScopeStack.Push(new List<string>());
-                        repeatStack.Push(0);
+                        repeatStack.Push((0, conditional.NextDFG));
                         return conditional.GuardedDFG;
                     }
                 }
@@ -216,7 +208,7 @@ namespace BiolyCompiler
                 {
                     controlStack.Push(repeatControl.Cond);
                     varScopeStack.Push(new List<string>());
-                    repeatStack.Push(--loopCount);
+                    repeatStack.Push((--loopCount, repeatControl.Cond.GuardedDFG));
                     return repeatControl.Cond.GuardedDFG;
                 }
                 else
@@ -229,25 +221,25 @@ namespace BiolyCompiler
             {
                 //if inside repeat block and still
                 //need to repeat
-                if (repeatStack.Peek() > 0)
+                if (repeatStack.Peek().Item1 > 0)
                 {
-                    repeatStack.Push(repeatStack.Pop() - 1);
-                    return currentDFG;
-                }
-
-                if (controlStack.Peek().NextDFG != null)
+                    (var repeatCount, var dfg) = repeatStack.Pop();
+                    repeatStack.Push((repeatCount - 1, dfg));
+                    return dfg;
+                } else if (controlStack.Peek().NextDFG != null)
                 {
                     DFG<Block> nextDFG = controlStack.Peek().NextDFG;
                     controlStack.Pop();
                     varScopeStack.Pop();
                     repeatStack.Pop();
-
                     return nextDFG;
+                } else
+                {
+                    controlStack.Pop();
+                    varScopeStack.Pop();
+                    repeatStack.Pop();
                 }
 
-                controlStack.Pop();
-                varScopeStack.Pop();
-                repeatStack.Pop();
             }
 
             return null;

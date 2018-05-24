@@ -130,10 +130,10 @@ namespace BiolyTests.AssayTests
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsFalse(dfg.Nodes[0].value.isFinished);
-            Assert.IsFalse(dfg.Nodes[1].value.isFinished);
-            Assert.IsTrue (dfg.Nodes[2].value.isFinished);
-            Assert.IsFalse(dfg.Nodes[3].value.isFinished);
+            Assert.IsFalse(dfg.Nodes[0].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[1].value.IsDone);
+            Assert.IsTrue (dfg.Nodes[2].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[3].value.IsDone);
         }
 
         [TestMethod]
@@ -167,10 +167,10 @@ namespace BiolyTests.AssayTests
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsFalse(dfg.Nodes[0].value.isFinished);
-            Assert.IsFalse(dfg.Nodes[1].value.isFinished);
-            Assert.IsTrue(dfg.Nodes[2].value.isFinished);
-            Assert.IsFalse(dfg.Nodes[3].value.isFinished);
+            Assert.IsFalse(dfg.Nodes[0].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[1].value.IsDone);
+            Assert.IsTrue(dfg.Nodes[2].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[3].value.IsDone);
 
             //remove last dependecy
             assay.updateReadyOperations(dfg.Nodes[0].value);
@@ -182,10 +182,10 @@ namespace BiolyTests.AssayTests
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[0].value));
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsTrue(dfg.Nodes[0].value.isFinished);
-            Assert.IsFalse(dfg.Nodes[1].value.isFinished);
-            Assert.IsTrue(dfg.Nodes[2].value.isFinished);
-            Assert.IsFalse(dfg.Nodes[3].value.isFinished);
+            Assert.IsTrue(dfg.Nodes[0].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[1].value.IsDone);
+            Assert.IsTrue(dfg.Nodes[2].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[3].value.IsDone);
         }
         
         //[TestMethod]

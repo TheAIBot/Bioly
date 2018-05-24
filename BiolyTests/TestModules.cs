@@ -95,7 +95,7 @@ namespace BiolyTests.ModulesTests
             Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 10); //Tranfering one droplet should one average take less than 10 time units.
             Assert.AreEqual(initialNumberOfDroplets - numberOfDropletsTransfered, ((InputModule)inputOperation.BoundModule).DropletCount);
             //Renaming them should be really fast (though their is a delay associated with the operation):
-            Assert.AreEqual(fluidTransfer1.EndTime + 2, fluidTransfer2.StartTime);
+            Assert.AreEqual(fluidTransfer1.EndTime + 1, fluidTransfer2.StartTime);
             Assert.IsTrue  (fluidTransfer2.EndTime <= fluidTransfer2.StartTime + 5);
 
             List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
@@ -157,6 +157,48 @@ namespace BiolyTests.ModulesTests
                 Assert.IsTrue(droplet != null);
                 Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
             }
+        }
+
+
+        [TestMethod]
+        public void TestUnionFromInputs()
+        {
+            DFG<Block> dfg = new DFG<Block>();
+            int initialNumberOfDroplets = 3;
+            int numberOfDropletsTransfered1 = 2;
+            int numberOfDropletsTransfered2 = 3;
+            InputDeclaration inputOperation1 = new InputDeclaration("kage1", "Test1", initialNumberOfDroplets, "");
+            InputDeclaration inputOperation2 = new InputDeclaration("kage2", "Test2", initialNumberOfDroplets, "");
+            //Testing extracting from an input:
+            Union union = new Union(new List<FluidInput>() { new FluidInput(inputOperation1, numberOfDropletsTransfered1, false), new FluidInput(inputOperation2, numberOfDropletsTransfered2, false) }, "op1", null, "");
+            dfg.AddNode(inputOperation1);
+            dfg.AddNode(inputOperation2);
+            dfg.AddNode(union);
+            dfg.FinishDFG();
+            Assay assay = new Assay(dfg);
+            Schedule schedule = new Schedule();
+            Board board = new Board(15, 15);
+            ModuleLibrary library = new ModuleLibrary();
+            schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation1, inputOperation2 }, board, library);
+            schedule.ListScheduling(assay, board, library);
+
+            Assert.AreEqual(1, schedule.ScheduledOperations.Count);
+            Assert.AreEqual(union, schedule.ScheduledOperations[0]);
+            Assert.AreEqual(0, union.StartTime);
+            /*
+            Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 10); //Tranfering one droplet should one average take less than 10 time units.
+            Assert.AreEqual(initialNumberOfDroplets - numberOfDropletsTransfered, ((InputModule)inputOperation.BoundModule).DropletCount);
+
+            List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
+            Assert.AreEqual(1, boardAtDifferentTimes[0].PlacedModules.Count);
+            Assert.AreEqual(1 + numberOfDropletsTransfered, boardAtDifferentTimes[1].PlacedModules.Count);
+            for (int i = 0; i < numberOfDropletsTransfered; i++)
+            {
+                Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.ToList()[i + 1];
+                Assert.IsTrue(droplet != null);
+                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
+            }
+            */
         }
 
         [TestMethod]
