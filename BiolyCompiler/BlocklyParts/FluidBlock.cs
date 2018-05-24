@@ -103,6 +103,7 @@ namespace BiolyCompiler.BlocklyParts
         protected override void ResetBlock()
         {
             this.BoundModule = null;
+            InputRoutes.Clear();
         }
     }
 }

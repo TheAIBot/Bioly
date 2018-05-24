@@ -22,7 +22,7 @@ namespace BiolyCompiler
     public class ProgramExecutor<T>
     {
         private readonly CommandExecutor<T> Executor;
-        public const int TIME_BETWEEN_COMMANDS = 50;
+        public int TIME_BETWEEN_COMMANDS = 50;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -45,12 +45,12 @@ namespace BiolyCompiler
             Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<List<string>> varScopeStack = new Stack<List<string>>();
             Stack<Conditional> controlStack = new Stack<Conditional>();
-            Stack<int> repeatStack = new Stack<int>();
+            Stack<(int, DFG<Block>)> repeatStack = new Stack<(int, DFG<Block>)>();
             bool firstRun = true;
 
             varScopeStack.Push(new List<string>());
             controlStack.Push(new Conditional(null, null, null));
-            repeatStack.Push(0);
+            repeatStack.Push((0,null));
 
             while (runningGraph != null)
             {
@@ -152,7 +152,10 @@ namespace BiolyCompiler
                     Executor.SendCommands();
                 }
 
-                Thread.Sleep(TIME_BETWEEN_COMMANDS);
+                if (TIME_BETWEEN_COMMANDS > 0)
+                {
+                    Thread.Sleep(TIME_BETWEEN_COMMANDS);
+                }
                 time++;
             }
         }
@@ -180,7 +183,7 @@ namespace BiolyCompiler
             return (scheduler.ScheduledOperations, time);
         }
 
-        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<int> repeatStack)
+        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<(int, DFG<Block>)> repeatStack)
         {
             IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
             if (control is If ifControl)
@@ -192,7 +195,7 @@ namespace BiolyCompiler
                     {
                         controlStack.Push(conditional);
                         varScopeStack.Push(new List<string>());
-                        repeatStack.Push(0);
+                        repeatStack.Push((0, conditional.NextDFG));
                         return conditional.GuardedDFG;
                     }
                 }
@@ -201,35 +204,42 @@ namespace BiolyCompiler
             else if (control is Repeat repeatControl)
             {
                 int loopCount = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor);
-                controlStack.Push(repeatControl.Cond);
-                varScopeStack.Push(new List<string>());
-                repeatStack.Push(--loopCount);
-                return repeatControl.Cond.GuardedDFG;
+                if (loopCount > 0)
+                {
+                    controlStack.Push(repeatControl.Cond);
+                    varScopeStack.Push(new List<string>());
+                    repeatStack.Push((--loopCount, repeatControl.Cond.GuardedDFG));
+                    return repeatControl.Cond.GuardedDFG;
+                }
+                else
+                {
+                    return repeatControl.Cond.NextDFG;
+                }
             }
 
             while (repeatStack.Count > 0)
             {
                 //if inside repeat block and still
                 //need to repeat
-                if (repeatStack.Peek() > 0)
+                if (repeatStack.Peek().Item1 > 0)
                 {
-                    repeatStack.Push(repeatStack.Pop() - 1);
-                    return currentDFG;
-                }
-
-                if (controlStack.Peek().NextDFG != null)
+                    (var repeatCount, var dfg) = repeatStack.Pop();
+                    repeatStack.Push((repeatCount - 1, dfg));
+                    return dfg;
+                } else if (controlStack.Peek().NextDFG != null)
                 {
                     DFG<Block> nextDFG = controlStack.Peek().NextDFG;
                     controlStack.Pop();
                     varScopeStack.Pop();
                     repeatStack.Pop();
-
                     return nextDFG;
+                } else
+                {
+                    controlStack.Pop();
+                    varScopeStack.Pop();
+                    repeatStack.Pop();
                 }
 
-                controlStack.Pop();
-                varScopeStack.Pop();
-                repeatStack.Pop();
             }
 
             return null;

@@ -346,7 +346,7 @@ namespace BiolyCompiler.Scheduling
             library.sortLibrary();
             AllUsedModules.AddRange(board.PlacedModules);
             boardAtDifferentTimes.Add(startTime, board);
-            Debug.WriteLine(board.print(AllUsedModules));
+            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             board = board.Copy();
             return board;
         }
@@ -461,7 +461,12 @@ namespace BiolyCompiler.Scheduling
             return CurrentlyRunningOpertions.Count > 0 && (readyOperations.Count == 0  || startTime >= CurrentlyRunningOpertions.First().EndTime);
         }
         
-        public int GetCompletionTime(){
+        public int GetCompletionTime()
+        {
+            if (ScheduledOperations.Count == 0)
+            {
+                return -1;
+            }
             return ScheduledOperations.Max(operation => operation.EndTime);
         }
 
