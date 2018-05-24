@@ -22,7 +22,7 @@ namespace BiolyTests.RoutingTests
         [TestMethod]
         public void TestDetermineRouteToModuleNoObstacles()
         {
-            FluidBlock operation = new TestBlock(new List<string>(), null, new TestModule());
+            FluidBlock operation = new TestBlock(new List<FluidBlock>(), null, new TestModule());
             Module sourceModule = new TestModule();
             BoardFluid fluidType = new BoardFluid("test");
             Droplet droplet = new Droplet(fluidType);
@@ -109,8 +109,13 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet1, droplet1.Shape);
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, 2, false) }, null, null);
+            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, fluidType1.FluidName, 2, false) }, null, null);
             testOperation.Bind(sourceModule, null);
+            sourceModule.RepositionLayout();
+            //A fake empty rectangle is added to the adjacent rectangles of sourceModule,
+            //as the routing requires at least one adjacent empty rectangle: this clearly exists in this case:
+            Rectangle fakeRectangle = new Rectangle(1, 1, 4, 3);
+            Assert.IsTrue(sourceModule.Shape.ConnectIfAdjacent(fakeRectangle));
 
             int startTime = 55;
             int endtime = Router.RouteDropletsToModule(board, startTime, testOperation);
@@ -164,8 +169,13 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet1, droplet1.Shape);
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, 1, false) , new FluidInput(fluidType2.FluidName, 1, false) }, null, null);
+            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, fluidType1.FluidName, 1, false) , new FluidInput(fluidType2.FluidName, fluidType2.FluidName, 1, false) }, null, null);
             testOperation.Bind(sourceModule, null);
+            sourceModule.RepositionLayout();
+            //A fake empty rectangle is added to the adjacent rectangles of sourceModule,
+            //as the routing requires at least one adjacent empty rectangle: this clearly exists in this case:
+            Rectangle fakeRectangle = new Rectangle(1, 1, 4, 3);
+            Assert.IsTrue(sourceModule.Shape.ConnectIfAdjacent(fakeRectangle));
 
             int startTime = 55;
             int endtime = Router.RouteDropletsToModule(board, startTime, testOperation);
@@ -195,7 +205,7 @@ namespace BiolyTests.RoutingTests
         public  void TestRoutingFromDropletSpawner()
         {
             Board board = new Board(20, 20);
-            FluidBlock operation = new TestBlock(new List<string>(), null, new TestModule());
+            FluidBlock operation = new TestBlock(new List<FluidBlock>(), null, new TestModule());
             int capacity = 5;
             BoardFluid fluidType = new BoardFluid("test");
             Module sourceModule = new TestModule(capacity - 2,0);
@@ -208,6 +218,11 @@ namespace BiolyTests.RoutingTests
             sourceModule.Shape.y = 10;
             operation.Bind(sourceModule, null);
             board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
+            sourceModule.RepositionLayout();
+            //A fake empty rectangle is added to the adjacent rectangles of sourceModule,
+            //as the routing requires at least one adjacent empty rectangle: this clearly exists in this case:
+            Rectangle fakeRectangle = new Rectangle(1, 1, 17, 9);
+            Assert.IsTrue(sourceModule.Shape.ConnectIfAdjacent(fakeRectangle));
 
             int startTime = 55;
             Schedule schedule = new Schedule();

@@ -27,7 +27,7 @@ namespace BiolyViewer_Windows
             Height = height;
         }
 
-        public override void StartExecutor(List<Module> inputs, List<Module> outputs)
+        public override void StartExecutor(List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules)
         {
             StringBuilder inputBuilder = new StringBuilder();
             foreach (Module input in inputs)
@@ -66,6 +66,11 @@ namespace BiolyViewer_Windows
             for (int i = 0; i < outputs.Count; i++)
             {
                 QueueCommand(new AreaCommand(outputs[i].Shape, CommandType.SHOW_AREA, 0));
+            }
+
+            for (int i = 0; i < otherStaticModules.Count; i++)
+            {
+                QueueCommand(new AreaCommand(otherStaticModules[i].Shape, CommandType.SHOW_AREA, 0));
             }
             SendCommands();
 

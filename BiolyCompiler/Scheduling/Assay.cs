@@ -43,14 +43,14 @@ namespace BiolyCompiler.Scheduling
         
         public void updateReadyOperations(Block operation)
         {
-            operation.hasBeenScheduled = true;
+            operation.isFinished = true;
             readyOperations.Remove(operation);
 
             operationToNode.TryGetValue(operation, out Node<Block> operationNode);
 
             foreach (var successorOperationNode in operationNode.getOutgoingEdges())
             {
-                if (successorOperationNode.getIngoingEdges().All(node => node.value.hasBeenScheduled || (node.value is VariableBlock && !((VariableBlock)node.value).CanBeScheduled)))
+                if (successorOperationNode.getIngoingEdges().All(node => node.value.isFinished || (node.value is VariableBlock && !((VariableBlock)node.value).CanBeScheduled)))
                 {
                     readyOperations.Add(successorOperationNode.value);
                     //This will not happen multiple times, as once an operation list has been added to the readyOperaition list,
@@ -61,7 +61,7 @@ namespace BiolyCompiler.Scheduling
 
         public bool hasUnfinishedOperations()
         {
-            return !operationToNode.All(node => node.Key.hasBeenScheduled || (node.Key is VariableBlock && !((VariableBlock)node.Key).CanBeScheduled));
+            return !operationToNode.All(node => node.Key.isFinished || (node.Key is VariableBlock && !((VariableBlock)node.Key).CanBeScheduled));
         }
     }
 }
