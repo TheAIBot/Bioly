@@ -42,15 +42,15 @@ namespace BiolyCompiler.Scheduling
             ScheduledOperations.Add(operation);
             operation.StartTime = startTime;
             if (operation is VariableBlock || operation is Fluid) {
-                operation.endTime = currentTime;
+                operation.EndTime = currentTime;
                 return;
             }            
             else
             {
                 FluidBlock fluidOperation = operation as FluidBlock;
                 int moduleRunningTime = fluidOperation.GetRunningTime();
-                fluidOperation.endTime = operation.StartTime + moduleRunningTime;// currentTime + fluidOperation.boundModule.OperationTime;
-                CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.endTime);
+                fluidOperation.EndTime = operation.StartTime + moduleRunningTime;// currentTime + fluidOperation.boundModule.OperationTime;
+                CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.EndTime);
             }
         }
         
@@ -158,7 +158,6 @@ namespace BiolyCompiler.Scheduling
                     (currentTime, board) = handleFinishingOperations(currentTime, assay, board);
                     readyOperations = assay.getReadyOperations();
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                    nextOperation.hasBeenScheduled = true;
                 }
                 else
                 {
@@ -176,7 +175,7 @@ namespace BiolyCompiler.Scheduling
 
         private void SortScheduledOperations()
         {
-            ScheduledOperations.Sort((x, y) => (x.StartTime < y.StartTime || (x.StartTime == y.StartTime && x.endTime <= y.endTime)) ? 0 : 1);
+            ScheduledOperations.Sort((x, y) => (x.StartTime < y.StartTime || (x.StartTime == y.StartTime && x.EndTime <= y.EndTime)) ? 0 : 1);
         }
 
         private (List<Block>, int) handleFluidTransfers(Assay assay, Board board, int currentTime, Fluid nextOperation)
@@ -222,7 +221,7 @@ namespace BiolyCompiler.Scheduling
                                                                           .Select(dropletSource => dropletSource as InputModule)
                                                                           .ToList();
                 List<Route> dropletRoutes = new List<Route>();
-                nextOperation.InputRoutes.Add(input.FluidName, dropletRoutes);
+                nextOperation.InputRoutes.Add(input.OriginalFluidName, dropletRoutes);
                 foreach (var inputModule in inputModules)
                 {
                     while (inputModule.DropletCount > 0 && numberOfDropletsTransfered < requiredDroplets)
@@ -338,7 +337,7 @@ namespace BiolyCompiler.Scheduling
 
                 //In the case that the operations have finished while routing was performed, 
                 //it is still impossible to go back in time. Therefore, the max of the two are chosen.
-                startTime = Math.Max(nextBatchOfFinishedOperations.Last().endTime + 1, startTime + 1);
+                startTime = Math.Max(nextBatchOfFinishedOperations.Last().EndTime + 1, startTime + 1);
                 foreach (var finishedOperation in nextBatchOfFinishedOperations)
                 {
                     if (!(finishedOperation is StaticUseageBlock))
@@ -374,7 +373,7 @@ namespace BiolyCompiler.Scheduling
                             Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, startTime);
                             startTime = dropletRoute.getEndTime() + 1;
                             heaterOperation.OutputRoutes.Add(heaterOperation.OriginalOutputVariable, new List<Route>() { dropletRoute});
-                            heaterOperation.endTime = startTime;
+                            heaterOperation.EndTime = startTime;
                             startTime++;
                             
                             board.UpdateGridAtGivenLocation(heaterOperation.BoundModule, heaterOperation.BoundModule.Shape);
@@ -457,7 +456,7 @@ namespace BiolyCompiler.Scheduling
             batch.Add(nextFinishedOperation);
             //Need to dequeue all operations that has finishes at the same time as nextFinishedOperation.
             //Differences under "IGNORED_TIME_DIFFERENCE" are ignored.
-            while (CurrentlyRunningOpertions.Count > 0 && nextFinishedOperation.endTime >= CurrentlyRunningOpertions.First.endTime - IGNORED_TIME_DIFFERENCE)
+            while (CurrentlyRunningOpertions.Count > 0 && nextFinishedOperation.EndTime >= CurrentlyRunningOpertions.First.EndTime - IGNORED_TIME_DIFFERENCE)
             {
                 batch.Add(CurrentlyRunningOpertions.Dequeue());
             }
@@ -479,11 +478,11 @@ namespace BiolyCompiler.Scheduling
 
         private bool areOperationsFinishing(int startTime, List<Block> readyOperations)
         {
-            return CurrentlyRunningOpertions.Count > 0 && (readyOperations.Count == 0  || startTime >= CurrentlyRunningOpertions.First().endTime);
+            return CurrentlyRunningOpertions.Count > 0 && (readyOperations.Count == 0  || startTime >= CurrentlyRunningOpertions.First().EndTime);
         }
         
         public int getCompletionTime(){
-            return ScheduledOperations.Max(operation => operation.endTime);
+            return ScheduledOperations.Max(operation => operation.EndTime);
         }
 
     }
