@@ -146,13 +146,20 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //replace inputs
             //replace outputs
             var splittedXml = SplitBlockXml(currentProgramXml, currentProgramXml.OwnerDocument.OuterXml);
-            string xmlWithReplacedBlock = ReplaceBlocks(newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild, dummyParserInfo, newXmlDoc.OuterXml, splittedXml.nextBlockXml);
+            string textToRepresentTheNextBlock = "<to_be_replaced>90234LKASJDW8U923RJJOMFN2978RF30FJ28</to_be_replaced>";
+            string xmlWithReplacedBlock = ReplaceBlocks(newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild, dummyParserInfo, newXmlDoc.OuterXml, textToRepresentTheNextBlock);
             newXmlDoc.LoadXml(xmlWithReplacedBlock);
 
             //rename the id of all the blocks in the inline program
             //so any errors in the inline program is shown on the 
             //inline program block.
             ReplaceIDAttribute(newXmlDoc.FirstChild);
+
+            string xmlWithReplacedIDs = newXmlDoc.OuterXml;
+            string xmlWithNextPartOfProgramInserted = xmlWithReplacedIDs.Replace(textToRepresentTheNextBlock, splittedXml.nextBlockXml);
+            newXmlDoc.LoadXml(xmlWithNextPartOfProgramInserted);
+
+
 
             InsertProgram(ref currentProgramXml, newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild.OuterXml);
         }
