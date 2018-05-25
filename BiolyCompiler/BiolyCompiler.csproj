@@ -9,8 +9,4 @@
     <PackageReference Include="OptimizedPriorityQueue" Version="4.1.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Exceptions\RuntimeExceptions\" />
-  </ItemGroup>
-
 </Project>

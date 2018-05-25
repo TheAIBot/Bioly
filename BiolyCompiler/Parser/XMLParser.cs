@@ -165,10 +165,10 @@ namespace BiolyCompiler.Parser
                     return Constant.Parse(node);
                 case FluidArray.XML_TYPE_NAME:
                     return FluidArray.Parse(node, dfg, parserInfo);
-                //case GetFluidArray.XmlTypeName:
-                //    return GetFluidArray.Parse(node);
-                //case SetFluidArray.XmlTypeName:
-                //    return SetFluidArray.Parse(node);
+                case GetFluidArray.XML_TYPE_NAME:
+                    return GetFluidArray.Parse(node, dfg, parserInfo);
+                case SetFluidArray.XML_TYPE_NAME:
+                    return SetFluidArray.Parse(node, dfg, parserInfo);
                 case Fluid.XML_TYPE_NAME:
                     return Fluid.Parse(node, parserInfo);
                 case InputDeclaration.XML_TYPE_NAME:

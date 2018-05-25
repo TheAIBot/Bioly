@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 
@@ -36,6 +37,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 indexBlock = (VariableBlock)XmlParser.ParseBlock(indexNode, dfg, parserInfo, false, false);
             }
 
+            dfg.AddNode(indexBlock);
+
             return new GetFluidArray(indexBlock, arrayName, id);
         }
 
@@ -43,11 +46,12 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         {
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             int index = (int)IndexBlock.Run(variables, executor);
-            if (true)
+            if (index < 0 || index >= arrayLength)
             {
-                throw new RuntimeException();
+                throw new ArrayIndexOutOfRange(IDFieldName, ArrayName, arrayLength, index);
             }
-            return variables[]
+
+            return variables[FluidArray.GetArrayIndexName(ArrayName, index)];
         }
     }
 }

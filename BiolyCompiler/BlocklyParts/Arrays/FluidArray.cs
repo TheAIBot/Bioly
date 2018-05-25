@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 
@@ -36,6 +37,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 arrayLengthBlock = (VariableBlock)XmlParser.ParseBlock(arrayLengthNode, dfg, parserInfo, false, false);
             }
 
+            dfg.AddNode(arrayLengthBlock);
+
             return new FluidArray(arrayName, arrayLengthBlock, id);
         }
 
@@ -50,6 +53,10 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             //The value returned from the block can be a fraction and
             //the array length can't be. So convert to int.
             int arrayLength = (int)ArrayLengthBlock.Run(variables, executor);
+            if (arrayLength < 0)
+            {
+                throw new RuntimeException(IDFieldName, $"Array length can't be set to {arrayLength}. The length has to be positive.");
+            }
             
             return (variableName, arrayLength);
         }

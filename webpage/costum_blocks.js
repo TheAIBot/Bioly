@@ -366,7 +366,7 @@ Blockly.Blocks["setFLuidArrayIndex"] = {
 			"args2": [
 				{
 					"type": "input_value",
-					"name": "value",
+					"name": "inputFluid",
 					"check": ["FluidType"]
 				}
 			],

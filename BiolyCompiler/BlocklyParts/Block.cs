@@ -5,6 +5,7 @@ using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Commands;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -12,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts
     {
         public readonly bool CanBeOutput;
         public readonly string OutputVariable;
-        public readonly string OriginalOutputVariable;
+        public string OriginalOutputVariable { get; protected set; }
         public readonly string BlockID;
         private static int nameID;
         //first symbol is important because it makes it an invalid name to parse
@@ -46,6 +47,11 @@ namespace BiolyCompiler.BlocklyParts
             this.EndTime = -1;
             this.priority = Int32.MaxValue;
     }
+
+        public virtual void UpdateOriginalOutputVariable<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        {
+
+        }
 
         public override int GetHashCode()
         {
