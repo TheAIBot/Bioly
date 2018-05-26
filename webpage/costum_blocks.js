@@ -396,6 +396,22 @@ Blockly.Blocks["getFLuidArrayIndex"] = {
 					"check": ["Number"]
 				}
 			],
+			"message2": "amount %1 ml",
+			"args2": [
+				{
+					"type": "field_number",
+					"name": "fluidAmount",
+					"check": "Number"
+				}
+			],
+			"message3": "use all fluid %1",
+			"args3": [
+				{
+					"type": "field_checkbox",
+					"name": "useAllFluid",
+					"checked": false
+				}
+			],
 			"output": "FluidType",
 			"colour": 40,
 			"tooltip": ""

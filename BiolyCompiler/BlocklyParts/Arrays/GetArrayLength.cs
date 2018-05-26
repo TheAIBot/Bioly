@@ -13,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public const string XML_TYPE_NAME = "getArrayLength";
         public readonly string ArrayName;
 
-        public GetArrayLength(string arrayName, string id) : base(false, null, id, false)
+        public GetArrayLength(string arrayName, List<string> input, string id) : base(false, input, null, id, false)
         {
             this.ArrayName = arrayName;
         }
@@ -24,7 +24,10 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
             parserInfo.CheckFluidArrayVariable(id, arrayName);
 
-            return new GetArrayLength(arrayName, id);
+            List<string> inputs = new List<string>();
+            inputs.Add(arrayName);
+
+            return new GetArrayLength(arrayName, inputs, id);
         }
 
 

@@ -54,6 +54,7 @@ function setGraph(nodes, edges)
 				}
 			}
 		],
+		wheelSensitivity: 0.2,
 
 		elements: 
 		{

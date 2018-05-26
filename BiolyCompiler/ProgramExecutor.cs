@@ -54,6 +54,11 @@ namespace BiolyCompiler
 
             while (runningGraph != null)
             {
+                //some blocks are able to  change their originaloutputvariable.
+                //Those blocks will always appear at the top of a dfg  so the first
+                //thing that should be done is to update these blocks originaloutputvariable.
+                runningGraph.Nodes.ForEach(node => node.value.UpdateOriginalOutputVariable(variables, Executor));
+
                 List<Module> usedModules;
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, ref staticModules, out usedModules);
                 if (firstRun)
@@ -215,6 +220,10 @@ namespace BiolyCompiler
                 {
                     return repeatControl.Cond.NextDFG;
                 }
+            }
+            else if (control is Direct directControl)
+            {
+                return directControl.Cond.NextDFG;
             }
 
             while (repeatStack.Count > 0)

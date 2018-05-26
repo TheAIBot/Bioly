@@ -10,15 +10,15 @@ using BiolyCompiler.Parser;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
 {
-    public class GetFluidArray : VariableBlock
+    public class GetFluidArray : FluidBlock
     {
         public const string INDEX_FIELD_NAME = "index";
         public const string ARRAY_NAME_FIELD_NAME = "arrayName";
-        public const string XML_TYPE_NAME = "getArrayLength";
+        public const string XML_TYPE_NAME = "getFLuidArrayIndex";
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public GetFluidArray(VariableBlock indexBlock, string arrayName, string id) : base(false, null, id, false)
+        public GetFluidArray(VariableBlock indexBlock, string arrayName, List<string> input, string id) : base(false, input, null, id, false)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -39,7 +39,23 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
             dfg.AddNode(indexBlock);
 
-            return new GetFluidArray(indexBlock, arrayName, id);
+            List<string> inputs = new List<string>();
+            inputs.Add(indexBlock?.OutputVariable);
+
+            return new GetFluidArray(indexBlock, arrayName, inputs, id);
+        }
+
+        public override void UpdateOriginalOutputVariable<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        {
+            int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
+            int index = (int)IndexBlock.Run(variables, executor);
+            if (index < 0 || index >= arrayLength)
+            {
+                throw new ArrayIndexOutOfRange(IDFieldName, ArrayName, arrayLength, index);
+            }
+
+
+            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)

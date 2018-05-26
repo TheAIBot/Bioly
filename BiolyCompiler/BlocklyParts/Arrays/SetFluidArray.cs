@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.BlocklyParts.Misc;
@@ -8,6 +9,7 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
+using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
 {
@@ -16,7 +18,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public const string INDEX_FIELD_NAME = "index";
         public const string ARRAY_NAME_FIELD_NAME = "arrayName";
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
-        public const string XML_TYPE_NAME = "setFluidArray";
+        public const string XML_TYPE_NAME = "setFLuidArrayIndex";
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
@@ -65,6 +67,17 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             }
 
             OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
+        }
+
+        public override List<Command> ToCommands()
+        {
+            int time = 0;
+            List<Command> routeCommands = new List<Command>();
+            foreach (List<Route> routes in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
+            }
+            return routeCommands;
         }
     }
 }

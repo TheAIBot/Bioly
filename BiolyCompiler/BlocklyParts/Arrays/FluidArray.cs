@@ -18,7 +18,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock ArrayLengthBlock;
 
-        public FluidArray(string arrayName, VariableBlock arrayLengthBlock, string id) : base(true, null, id, true)
+        public FluidArray(string arrayName, VariableBlock arrayLengthBlock, List<string> input, string id) : base(true, input, null, id, true)
         {
             this.ArrayName = arrayName;
             this.ArrayLengthBlock = arrayLengthBlock;
@@ -39,7 +39,10 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
             dfg.AddNode(arrayLengthBlock);
 
-            return new FluidArray(arrayName, arrayLengthBlock, id);
+            List<string> inputs = new List<string>();
+            inputs.Add(arrayLengthBlock?.OutputVariable);
+
+            return new FluidArray(arrayName, arrayLengthBlock, inputs, id);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
