@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public readonly string ID;
         public  readonly string FluidName;
-        public readonly string OriginalFluidName;
+        public string OriginalFluidName { get; internal set; }
         private readonly float AmountInML;
         public  readonly bool UseAllFluid;
 

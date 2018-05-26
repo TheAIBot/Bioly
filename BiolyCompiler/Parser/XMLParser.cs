@@ -41,7 +41,7 @@ namespace BiolyCompiler.Parser
             return (parserInfo.cdfg, parserInfo.ParseExceptions);
         }
 
-        internal static DFG<Block> ParseDFG(XmlNode node, ParserInfo parserInfo, bool allowDeclarationBlocks = false)
+        internal static DFG<Block> ParseDFG(XmlNode node, ParserInfo parserInfo, bool allowDeclarationBlocks = false, bool canFirstBlockBeControlFlow = true)
         {
             parserInfo.EnterDFG();
             try
@@ -51,9 +51,9 @@ namespace BiolyCompiler.Parser
                 var mostRecentRef = new Dictionary<string, string>();
                 while (true)
                 {
-                    if (IsConditional(node))
+                    if (IsDFGBreaker(node) && canFirstBlockBeControlFlow)
                     {
-                        controlBlock = ParseConditionalBlocks(node, dfg, parserInfo);
+                        controlBlock = ParseDFGBreaker(node, dfg, parserInfo);
                         break;
                     }
 
@@ -116,7 +116,22 @@ namespace BiolyCompiler.Parser
             return block;
         }
 
-        private static IControlBlock ParseConditionalBlocks(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        private static bool IsDFGBreaker(XmlNode node)
+        {
+            string blockType = node.GetAttributeValue(Block.TypeFieldName);
+            switch (blockType)
+            {
+                case If.XML_TYPE_NAME:
+                case Repeat.XML_TYPE_NAME:
+                case SetFluidArray.XML_TYPE_NAME:
+                    //case SensorUsage.XML_TYPE_NAME:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static IControlBlock ParseDFGBreaker(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string blockType = node.Attributes[Block.TypeFieldName].Value;
             switch (blockType)
@@ -125,6 +140,8 @@ namespace BiolyCompiler.Parser
                     return new If(node, dfg, parserInfo);
                 case Repeat.XML_TYPE_NAME:
                     return new Repeat(node, dfg, parserInfo);
+                case SetFluidArray.XML_TYPE_NAME:
+                    return new Direct(node, dfg, parserInfo);
                 default:
                     throw new Exception("Invalid type: " + blockType);
             }
@@ -140,12 +157,6 @@ namespace BiolyCompiler.Parser
 
             node = node.FirstChild;
             return ParseDFG(node, parserInfo);
-        }
-
-        private static bool IsConditional(XmlNode node)
-        {
-            string blockType = node.GetAttributeValue(Block.TypeFieldName);
-            return blockType == If.XML_TYPE_NAME || blockType == Repeat.XML_TYPE_NAME;
         }
 
         public static Block ParseBlock(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false, bool canBeScheduled = true)
