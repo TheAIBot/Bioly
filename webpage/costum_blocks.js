@@ -481,9 +481,10 @@ Blockly.Blocks["setNumberVariable"] = {
 //	name,
 //	inputs = [],
 //	outputs = [],
+//	variables = [],
 //	programXml
 //}
-var inlineProgramPrograms = [{name: "program name", inputs: [], outputs: []}];
+var inlineProgramPrograms = [{name: "program name", inputs: [], outputs: [], variables: []}];
 
 Blockly.Blocks["inlineProgram"] = 
 {
@@ -518,9 +519,10 @@ Blockly.Blocks["inlineProgram"] =
 		if(this.program)
 		{
 			const container = document.createElement('mutation');
-			container.setAttribute("program_name", this.program.name);
-			container.setAttribute("input_count" , this.program.inputs.length);
-			container.setAttribute("output_count", this.program.outputs.length);
+			container.setAttribute("program_name"  , this.program.name);
+			container.setAttribute("input_count"   , this.program.inputs.length);
+			container.setAttribute("output_count"  , this.program.outputs.length);
+			container.setAttribute("variable_count", this.program.variables.length);
 			return container;
 		}
 		
@@ -545,6 +547,14 @@ Blockly.Blocks["inlineProgram"] =
 		while(this.getInput("outputer-" + outputCounter))
 		{
 			this.removeInput("outputer-" + outputCounter);
+			outputCounter++;
+		}
+		
+		var variableCounter = 0;
+		while(this.getInput("variable-" + variableCounter))
+		{
+			this.removeInput("variable-" + variableCounter);
+			variableCounter++;
 		}
 	
 		//find the new program
@@ -561,11 +571,17 @@ Blockly.Blocks["inlineProgram"] =
 		
 		if(this.program != null)
 		{
-			//add programs inputs and outputs
+			//add programs inputs, outputs, variables
 			for(var i = 0; i < this.program.inputs.length; i++)
 			{
 				const inputName = this.program.inputs[i];
 				this.appendValueInput("input-" + i).setCheck("FluidType").appendField("input " + inputName);
+			}
+			
+			for(var i = 0; i < this.program.variables.length; i++)
+			{
+				const variableName = this.program.variables[i];
+				this.appendValueInput("variable-" + i).setCheck("Number").appendField("variable " + variableName);
 			}
 			
 			for(var i = 0; i < this.program.outputs.length; i++)
@@ -616,6 +632,28 @@ Blockly.Blocks["union"] = {
 			],
 			"output": "FluidOperator",
 			"colour": 120,
+			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["importNumberVariable"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "import variable",
+			"args0": [
+			],
+			"message1": "import as %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "variableName",
+					"variable": "variable_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 40,
 			"tooltip": ""
 		});
 	}

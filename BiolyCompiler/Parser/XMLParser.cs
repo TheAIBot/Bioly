@@ -217,6 +217,8 @@ namespace BiolyCompiler.Parser
                     return GetDropletCount.Parser(node, parserInfo, canBeScheduled);
                 case GetArrayLength.XML_TYPE_NAME:
                     return GetArrayLength.Parse(node, parserInfo, canBeScheduled);
+                case ImportVariable.XML_TYPE_NAME:
+                    return ImportVariable.Parse(node, parserInfo, canBeScheduled);
                 default:
                     throw new UnknownBlockException(id);
             }
