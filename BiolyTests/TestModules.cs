@@ -1,218 +1,261 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using BiolyCompiler.Architechtures;
+using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.Declarations;
+using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
+using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
 using BiolyTests.TestObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BiolyTests.RectanglesWithModulesTests
+namespace BiolyTests.ModulesTests
 {
     [TestClass]
-    public class TestRectangles
+    public class TestModules
     {
-        [TestMethod]
-        public void TestSplitIntoSmallerRectanglesSmallVerticalSegment()
-        {
-            int rectangleHeight = 10, rectangleWidth = 10;
-            int x = 5, y = 5;
-            int moduleHeight = 8, moduleWidth = 4;
-            Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
-            rectangle.PlaceAt(x, y);
-            
-            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
-            
-            Assert.AreEqual(x, TopRectangle.x);
-            Assert.AreEqual(x + moduleWidth, RightRectangle.x);
-
-            Assert.AreEqual(y + moduleHeight, TopRectangle.y);
-            Assert.AreEqual(y, RightRectangle.y);
-            
-            Assert.AreEqual(rectangleHeight - moduleHeight, TopRectangle.height);
-            Assert.AreEqual(rectangleHeight, RightRectangle.height);
-
-            Assert.AreEqual(moduleWidth, TopRectangle.width);
-            Assert.AreEqual(rectangleWidth - moduleWidth, RightRectangle.width);
-        }
 
 
         [TestMethod]
-        public void TestSplitIntoSmallerRectanglesSmallHorizontalSegment()
+        public void TestMixer()
         {
-            int rectangleHeight = 10, rectangleWidth = 10;
-            int x = 5, y = 5;
-            int moduleHeight = 4, moduleWidth = 8;
-            Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
-            rectangle.PlaceAt(x, y);
+            DFG<Block> dfg = new DFG<Block>();
+            string op1Name = "op1";
+            string op2Name = "op2";
+            InputDeclaration inputOperation1 = new InputDeclaration("kage", op1Name, 1, "");
+            InputDeclaration inputOperation2 = new InputDeclaration("fisk", op2Name, 1, "");
+            Mixer mixingOperation = new Mixer(new List<FluidInput>() {new BasicInput("", inputOperation1.OriginalOutputVariable, inputOperation1.OriginalOutputVariable, 1, false), new BasicInput("", inputOperation2.OriginalOutputVariable, inputOperation2.OriginalOutputVariable, 1, false) }, "Lagkage", null, "");
+            dfg.AddNode(inputOperation1);
+            dfg.AddNode(inputOperation2);
+            dfg.AddNode(mixingOperation);
+            dfg.FinishDFG();
+            Assay assay = new Assay(dfg);
+            Schedule schedule = new Schedule();
+            Board board = new Board(10, 10);
+            ModuleLibrary library = new ModuleLibrary();
+            schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation1, inputOperation2 }, board, library);
+            schedule.ListScheduling(assay, board, library);
 
-            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
+            Assert.AreEqual(1, schedule.ScheduledOperations.Count);
+            Assert.AreEqual(mixingOperation, schedule.ScheduledOperations[0]);
+            Assert.AreEqual(0, mixingOperation.StartTime);
+            Assert.IsTrue(mixingOperation.StartTime + mixingOperation.BoundModule.OperationTime <= mixingOperation.EndTime);
+            //Two droplets needs to be routed: the routes should be shorter than 10:
+            Assert.IsTrue(mixingOperation.EndTime <= mixingOperation.StartTime + mixingOperation.BoundModule.OperationTime + 10*2);
 
-            Assert.AreEqual(x, TopRectangle.x);
-            Assert.AreEqual(x + moduleWidth, RightRectangle.x);
+            List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
+            Assert.AreEqual(2, boardAtDifferentTimes[0].PlacedModules.Count);
+            Assert.AreEqual(3, boardAtDifferentTimes[1].PlacedModules.Count);
+            Assert.AreEqual(4, boardAtDifferentTimes[2].PlacedModules.Count);
+            Assert.AreEqual(mixingOperation.BoundModule, boardAtDifferentTimes[1].PlacedModules.ToList()[2]);
 
-            Assert.AreEqual(y + moduleHeight, TopRectangle.y);
-            Assert.AreEqual(y, RightRectangle.y);
+            //The routed droplets should be placed at the input/output locations of the mixer
+            Droplet droplet1 = (Droplet) boardAtDifferentTimes[2].PlacedModules.ToList()[2];
+            Droplet droplet2 = (Droplet) boardAtDifferentTimes[2].PlacedModules.ToList()[3];
+            Route route1 = mixingOperation.InputRoutes[op1Name][0];
+            Route route2 = mixingOperation.InputRoutes[op2Name][0];
+            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route1, board, (InputModule)inputOperation1.BoundModule, droplet1));
+            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route2, board, (InputModule)inputOperation2.BoundModule, droplet2));
 
-            Assert.AreEqual(rectangleHeight - moduleHeight, TopRectangle.height);
-            Assert.AreEqual(moduleHeight, RightRectangle.height);
-
-            Assert.AreEqual(rectangleWidth, TopRectangle.width);
-            Assert.AreEqual(rectangleWidth - moduleWidth, RightRectangle.width);
         }
 
         [TestMethod]
-        public void TestSplitIntoSmallerRectanglesNoHorizontalSegment()
+        public void TestFluidTransferFromDroplet()
         {
-            int rectangleHeight = 10, rectangleWidth = 10;
-            int x = 5, y = 5;
-            int moduleHeight = 4, moduleWidth = 10;
-            Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
-            rectangle.PlaceAt(x, y);
+            DFG<Block> dfg = new DFG<Block>();
+            int initialNumberOfDroplets = 10;
+            int numberOfDropletsTransfered = 5;
+            int numberOfDropletsRenamed = 3;
+            string op1Name = "op1";
+            string op2Name = "op2";
+            InputDeclaration inputOperation = new InputDeclaration("kage", "Test", initialNumberOfDroplets, "");
+            //First extracting the droplets:
+            Fluid fluidTransfer1 = new Fluid(new List<FluidInput>() { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfDropletsTransfered, false) }, op1Name, "");
+            //Testing (renaming) droplets:
+            Fluid fluidTransfer2 = new Fluid(new List<FluidInput>() { new BasicInput("", fluidTransfer1.OriginalOutputVariable, fluidTransfer1.OriginalOutputVariable, numberOfDropletsRenamed, false) }, op2Name, "");
+            dfg.AddNode(inputOperation);
+            dfg.AddNode(fluidTransfer1);
+            dfg.AddNode(fluidTransfer2);
+            dfg.FinishDFG();
+            Assay assay = new Assay(dfg);
+            Schedule schedule = new Schedule();
+            Board board = new Board(10, 10);
+            ModuleLibrary library = new ModuleLibrary();
+            schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation }, board, library);
+            schedule.ListScheduling(assay, board, library);
 
-            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
+            Assert.AreEqual(2, schedule.ScheduledOperations.Count);
+            Assert.AreEqual(fluidTransfer1, schedule.ScheduledOperations[0]);
+            Assert.AreEqual(fluidTransfer2, schedule.ScheduledOperations[1]);
+            Assert.AreEqual(0, fluidTransfer1.StartTime);
+            Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 10); //Tranfering one droplet should one average take less than 10 time units.
+            Assert.AreEqual(initialNumberOfDroplets - numberOfDropletsTransfered, ((InputModule)inputOperation.BoundModule).DropletCount);
+            //Renaming them should be really fast (though their is a delay associated with the operation):
+            Assert.AreEqual(fluidTransfer1.EndTime + 1, fluidTransfer2.StartTime);
+            Assert.IsTrue  (fluidTransfer2.EndTime <= fluidTransfer2.StartTime + 5);
 
-            Assert.AreEqual(null, RightRectangle);
-
-            Assert.AreEqual(x, TopRectangle.x);
-            Assert.AreEqual(y + moduleHeight, TopRectangle.y);
-            Assert.AreEqual(rectangleHeight - moduleHeight, TopRectangle.height);
-            Assert.AreEqual(rectangleWidth, TopRectangle.width);
-        }
-
-
-        [TestMethod]
-        public void TestSplitIntoSmallerRectanglesNoVerticalSegment()
-        {
-            int rectangleHeight = 10, rectangleWidth = 10;
-            int x = 5, y = 5;
-            int moduleHeight = 10, moduleWidth = 4;
-            Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
-            rectangle.PlaceAt(x, y);
-
-            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
-
-            Assert.AreEqual(null, TopRectangle);
-
-            Assert.AreEqual(x + moduleWidth, RightRectangle.x);
-            Assert.AreEqual(y, RightRectangle.y);
-            Assert.AreEqual(rectangleHeight, RightRectangle.height);
-            Assert.AreEqual(rectangleWidth - moduleWidth, RightRectangle.width);
-        }
-
-        [TestMethod]
-        public void TestIsAdjacentLeftRectangle()
-        {
-            int rectangleWidth = 10, rectangleHeight = 20;
-            int rectangleXPos =  54, rectangleYPos = 64;
-            Rectangle rectangle = new Rectangle(rectangleWidth, rectangleHeight);
-            rectangle.PlaceAt(rectangleXPos, rectangleYPos);
-
-            int adjacentRectangleWidth = 13, adjacentRectangleHeight = 15;
-            Rectangle adjacentRectangle = new Rectangle(adjacentRectangleWidth, adjacentRectangleHeight);
-
-            for (int x = 0; x < rectangleXPos - adjacentRectangleWidth; x++)
+            List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
+            Assert.AreEqual(1, boardAtDifferentTimes[0].PlacedModules.Count);
+            Assert.AreEqual(1 + numberOfDropletsTransfered, boardAtDifferentTimes[1].PlacedModules.Count);
+            Assert.AreEqual(1 + numberOfDropletsTransfered, boardAtDifferentTimes[2].PlacedModules.Count);
+            //The first couple of droplets should have been renamed:
+            for (int i = 0; i < numberOfDropletsTransfered; i++)
             {
-                for (int y = 0; y < 2*(rectangleYPos + rectangleHeight); y++)
-                {
-                    adjacentRectangle.PlaceAt(x, y);
-                    Boolean isAdjacent = rectangle.IsAdjacent(adjacentRectangle);
-                    if (x + adjacentRectangleWidth != rectangleXPos)
-                    {
-                        Assert.IsFalse(isAdjacent, "Error at x = " + x + ", y = " + y);
-                    } else if (rectangleYPos <= adjacentRectangle.getTopmostYPosition() && y <= rectangle.getTopmostYPosition()) { 
-                        Assert.IsTrue(isAdjacent, "Error at x = " + x + ", y = " + y);
-                    } else
-                    {
-                        Assert.IsFalse(isAdjacent, "Error at x = " + x + ", y = " + y);
-                    }
+                Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.ToList()[i + 1];
+                if (i < numberOfDropletsRenamed) {
+                    Assert.AreEqual(op2Name, droplet.GetFluidType().FluidName);
+                    Assert.IsTrue(schedule.FluidVariableLocations[op2Name].dropletSources.Contains(droplet));
                 }
+                else {
+                    Assert.AreEqual(op1Name, droplet.GetFluidType().FluidName);
+                    Assert.IsTrue(schedule.FluidVariableLocations[op1Name].dropletSources.Contains(droplet));
+                }
+                //Since the droplets have simply been renamed, they should still be placed the same place as before:
+                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
+            }
+            Assert.AreEqual(3, schedule.FluidVariableLocations.Count);
+            Assert.AreEqual(numberOfDropletsTransfered - numberOfDropletsRenamed, schedule.FluidVariableLocations[op1Name].GetNumberOfDropletsAvailable());
+            Assert.AreEqual(numberOfDropletsRenamed, schedule.FluidVariableLocations[op2Name].GetNumberOfDropletsAvailable());
+        }
+
+
+        [TestMethod]
+        public void TestFluidTransferFromInput()
+        {
+            DFG<Block> dfg = new DFG<Block>();
+            int initialNumberOfDroplets = 10;
+            int numberOfDropletsTransfered = 5;
+            InputDeclaration inputOperation = new InputDeclaration("kage", "Test", initialNumberOfDroplets, "");
+            //Testing extracting from an input:
+            Fluid fluidTransfer1 = new Fluid(new List<FluidInput>() { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfDropletsTransfered, false) }, "op1", "");
+            dfg.AddNode(inputOperation);
+            dfg.AddNode(fluidTransfer1);
+            dfg.FinishDFG();
+            Assay assay = new Assay(dfg);
+            Schedule schedule = new Schedule();
+            Board board = new Board(10, 10);
+            ModuleLibrary library = new ModuleLibrary();
+            schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation}, board, library);
+            schedule.ListScheduling(assay, board, library);
+
+            Assert.AreEqual(1, schedule.ScheduledOperations.Count);
+            Assert.AreEqual(fluidTransfer1, schedule.ScheduledOperations[0]);
+            Assert.AreEqual(0, fluidTransfer1.StartTime);
+            Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 10); //Tranfering one droplet should one average take less than 10 time units.
+            Assert.AreEqual(initialNumberOfDroplets - numberOfDropletsTransfered, ((InputModule)inputOperation.BoundModule).DropletCount);
+
+            List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
+            Assert.AreEqual(1, boardAtDifferentTimes[0].PlacedModules.Count);
+            Assert.AreEqual(1 + numberOfDropletsTransfered, boardAtDifferentTimes[1].PlacedModules.Count);
+            for (int i = 0; i < numberOfDropletsTransfered; i++)
+            {
+                Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.ToList()[i + 1];
+                Assert.IsTrue(droplet != null);
+                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
             }
         }
 
-        [TestMethod]
-        public void TestIsAdjacentRightRectangle() {
-            Assert.Fail("Has not been implemented yet");
-        }
 
         [TestMethod]
-        public void TestIsAdjacentTopRectangle()
+        public void TestUnionFromInputs()
         {
-            Assert.Fail("Has not been implemented yet");
-        }
+            DFG<Block> dfg = new DFG<Block>();
+            int initialNumberOfDroplets = 3;
+            int numberOfDropletsTransfered1 = 2;
+            int numberOfDropletsTransfered2 = 3;
+            InputDeclaration inputOperation1 = new InputDeclaration("kage1", "Test1", initialNumberOfDroplets, "");
+            InputDeclaration inputOperation2 = new InputDeclaration("kage2", "Test2", initialNumberOfDroplets, "");
+            //Testing extracting from an input:
+            Union union = new Union(new List<FluidInput>() { new BasicInput("", inputOperation1.OriginalOutputVariable, inputOperation1.OriginalOutputVariable, numberOfDropletsTransfered1, false), new BasicInput("", inputOperation2.OriginalOutputVariable, inputOperation2.OriginalOutputVariable, numberOfDropletsTransfered2, false) }, "op1", null, "");
+            dfg.AddNode(inputOperation1);
+            dfg.AddNode(inputOperation2);
+            dfg.AddNode(union);
+            dfg.FinishDFG();
+            Assay assay = new Assay(dfg);
+            Schedule schedule = new Schedule();
+            Board board = new Board(15, 15);
+            ModuleLibrary library = new ModuleLibrary();
+            schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation1, inputOperation2 }, board, library);
+            schedule.ListScheduling(assay, board, library);
 
-        [TestMethod]
-        public void TestIsAdjacentLowerRectangle()
-        {
-            Assert.Fail("Has not been implemented yet");
-        }
+            Assert.AreEqual(1, schedule.ScheduledOperations.Count);
+            Assert.AreEqual(union, schedule.ScheduledOperations[0]);
+            Assert.AreEqual(0, union.StartTime);
+            /*
+            Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 10); //Tranfering one droplet should one average take less than 10 time units.
+            Assert.AreEqual(initialNumberOfDroplets - numberOfDropletsTransfered, ((InputModule)inputOperation.BoundModule).DropletCount);
 
-        [TestMethod]
-        public void TestSplitIntoSmallerRectanglesCorrectRightRectanglesAdjacencies()
-        {
-            Assert.Fail("Has not been implemented yet");
-        }
-
-
-        [TestMethod]
-        public void TestSplitIntoSmallerRectanglesCorrectLeftRectanglesAdjacencies()
-        {
-            int rectangleHeight = 10, rectangleWidth = 10;
-            int x = 5, y = 5;
-            int moduleHeight = 4, moduleWidth = 6;
-            Rectangle emptyRectangle = new Rectangle(rectangleWidth, rectangleHeight, x, y);
-            Module module = new TestModule(moduleWidth, moduleHeight, 1000);
-
-            for (int i = 0; i < 100; i++)
+            List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
+            Assert.AreEqual(1, boardAtDifferentTimes[0].PlacedModules.Count);
+            Assert.AreEqual(1 + numberOfDropletsTransfered, boardAtDifferentTimes[1].PlacedModules.Count);
+            for (int i = 0; i < numberOfDropletsTransfered; i++)
             {
-                int neighborWidth = 5;
-                Rectangle neighborRectangle = new Rectangle(neighborWidth, rectangleHeight/3, emptyRectangle.x - neighborWidth, y + i);
-                if (neighborRectangle.y <= emptyRectangle.getTopmostYPosition()) //They are adjacent:
-                {
-                    neighborRectangle.AdjacentRectangles.Add(emptyRectangle);
-                    emptyRectangle.AdjacentRectangles.Add(neighborRectangle);
-
-                }
-                //It is a horizontal split.
-                (Rectangle TopRectangle, Rectangle RightRectangle) = emptyRectangle.SplitIntoSmallerRectangles(module.Shape);
-                Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(emptyRectangle));
-                Assert.IsTrue(module.Shape.AdjacentRectangles.Contains(TopRectangle));
-                Assert.IsTrue(module.Shape.AdjacentRectangles.Contains(RightRectangle));
-                Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(module.Shape));
-                Assert.IsTrue(RightRectangle.AdjacentRectangles.Contains(module.Shape));
-                Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(RightRectangle));
-                Assert.IsTrue(RightRectangle.AdjacentRectangles.Contains(TopRectangle));
-
-                if (neighborRectangle.y <= module.Shape.getTopmostYPosition()) //They are adjacent
-                {
-                    Assert.IsTrue(neighborRectangle.AdjacentRectangles.Contains(module.Shape));
-                    Assert.IsTrue(module.Shape.AdjacentRectangles.Contains(neighborRectangle));
-                } else
-                {
-                    Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(module.Shape));
-                    Assert.IsFalse(module.Shape.AdjacentRectangles.Contains(neighborRectangle));
-                }
-
-                if (TopRectangle.y <= neighborRectangle.getTopmostYPosition() && 
-                    neighborRectangle.y <= TopRectangle.getTopmostYPosition()) //They are adjacent
-                {
-                    Assert.IsTrue(neighborRectangle.AdjacentRectangles.Contains(TopRectangle));
-                    Assert.IsTrue(TopRectangle.AdjacentRectangles.Contains(neighborRectangle));
-                } else
-                {
-                    Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(TopRectangle));
-                    Assert.IsFalse(TopRectangle.AdjacentRectangles.Contains(neighborRectangle));
-                }
-
-                //They cannot be adjacent:
-
-                Assert.IsFalse(neighborRectangle.AdjacentRectangles.Contains(RightRectangle));
-                Assert.IsFalse(RightRectangle.AdjacentRectangles.Contains(neighborRectangle));
+                Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.ToList()[i + 1];
+                Assert.IsTrue(droplet != null);
+                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
             }
+            */
+        }
+
+        [TestMethod]
+        public void TestHeater2Droplets()
+        {
+            DFG<Block> dfg = new DFG<Block>();
+            int numberOfDroplets = 1;
+            int time1 = 100;
+            int time2 = 100;
+            string heaterModuleName = "heaterModule";
+            StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
+            HeaterDeclaration heaterDeclaration = new HeaterDeclaration(heaterModuleName, null, "");
+            HeaterUseage heaterOperation1 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfDroplets, false)}, "Fisk", 500, time1, "");
+            HeaterUseage heaterOperation2 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", heaterOperation1.OriginalOutputVariable, heaterOperation1.OriginalOutputVariable, numberOfDroplets, false) }, "Derp", 500, time2, "");
+            dfg.AddNode(inputOperation);
+            dfg.AddNode(heaterDeclaration);
+            dfg.AddNode(heaterOperation1);
+            dfg.AddNode(heaterOperation2);
+            dfg.FinishDFG();
+            Assay assay = new Assay(dfg);
+            Schedule schedule = new Schedule();
+            Board board = new Board(10, 10);
+            ModuleLibrary library = new ModuleLibrary();
+            schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation, heaterDeclaration }, board, library);
+            schedule.ListScheduling(assay, board, library);
+
+
+            //Only two non-static-declaration operation.
+            Assert.AreEqual(2, schedule.ScheduledOperations.Count);
+            Assert.AreEqual(heaterOperation1, schedule.ScheduledOperations[0]);
+            Assert.AreEqual(heaterOperation2, schedule.ScheduledOperations[1]);
+            Assert.IsTrue(heaterOperation1.Time <= heaterOperation1.EndTime);
+            Assert.IsTrue(heaterOperation1.EndTime <= heaterOperation1.Time + 20);
+            Assert.IsTrue(heaterOperation1.EndTime + 1 == heaterOperation2.StartTime);
+            Assert.IsTrue(heaterOperation2.StartTime + heaterOperation2.Time <= heaterOperation2.EndTime);
+            Assert.IsTrue(heaterOperation2.EndTime <= heaterOperation2.StartTime + heaterOperation2.Time + 20);
+            //It should first of all place both the heater and the input. 
+            //Moreover, it should then route to the heater, and then out of the heater, two times:
+            List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
+            Assert.AreEqual(2, boardAtDifferentTimes[0].PlacedModules.Count);
+            for (int i = 1; i < boardAtDifferentTimes.Count; i++)
+            {
+                int isDropletOnTheBoard = (i % 2 == 0)? 1: 0;
+                Assert.AreEqual(2 + isDropletOnTheBoard, boardAtDifferentTimes[i].PlacedModules.Count, "Failure at i=" + i);
+            }
+            Route fromInputToHeater     = heaterOperation1.InputRoutes[inputOperation.OriginalOutputVariable][0];
+            Route fromHeaterToDroplet   = heaterOperation1.OutputRoutes[heaterOperation1.OriginalOutputVariable][0];
+            Route fromDropletToHeater2  = heaterOperation2.InputRoutes[heaterOperation1.OriginalOutputVariable][0];
+            Route fromHeater2ToDroplet  = heaterOperation2.OutputRoutes[heaterOperation2.OriginalOutputVariable][0];
+            Droplet droplet = (Droplet) boardAtDifferentTimes.Last().PlacedModules.Last();
+
+            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fromInputToHeater   , board, (InputModule)inputOperation.BoundModule, heaterOperation1.BoundModule.GetInputLayout().Droplets[0]));
+            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fromHeaterToDroplet , board, (Droplet) heaterOperation1.BoundModule.GetInputLayout().Droplets[0],droplet));
+            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fromDropletToHeater2, board, droplet, heaterOperation2.BoundModule.GetInputLayout().Droplets[0]));
+            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fromHeater2ToDroplet, board, heaterOperation2.BoundModule.GetInputLayout().Droplets[0], droplet));
             
         }
-
     }
 }

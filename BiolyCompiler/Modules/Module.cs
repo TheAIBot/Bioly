@@ -13,12 +13,9 @@ namespace BiolyCompiler.Modules
     {
         public Rectangle Shape;
         public int OperationTime = 1;
-        public Block BindingOperation;
-        //The key is the input fluid name, see the operation/block which the module is bound to.
-        public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
+        //public Block BindingOperation;
         protected ModuleLayout InputLayout;
         protected ModuleLayout OutputLayout;
-        public int StartTime = int.MinValue;
         
 
 
@@ -57,6 +54,7 @@ namespace BiolyCompiler.Modules
             if (RightRectangle != null) emptyRectangles.Add(RightRectangle);
             return new ModuleLayout(rectangle, emptyRectangles, new List<Droplet>() {droplet});
         }
+        
 
         public void RepositionLayout()
         {
@@ -108,7 +106,7 @@ namespace BiolyCompiler.Modules
         public abstract Module GetCopyOf();
 
         //True iff the module is placed permenently on the board.
-        public virtual bool isStaticModule()
+        public virtual bool IsStaticModule()
         {
             return false;
         }
@@ -126,13 +124,10 @@ namespace BiolyCompiler.Modules
             else if (moduleObj.GetType() != this.GetType()) return false;
             else
             {
-                bool sameBindingOperation = (BindingOperation != null && moduleObj.BindingOperation != null && BindingOperation.Equals(moduleObj.BindingOperation)) ||
-                                            (BindingOperation == null && moduleObj.BindingOperation == null);
                 return Shape.Equals(moduleObj.Shape) &&
                         OperationTime == moduleObj.OperationTime &&
-                        getNumberOfInputs()  == moduleObj.getNumberOfInputs() &&
-                        getNumberOfOutputs() == moduleObj.getNumberOfOutputs() &&
-                        sameBindingOperation;
+                        getNumberOfInputs() == moduleObj.getNumberOfInputs() &&
+                        getNumberOfOutputs() == moduleObj.getNumberOfOutputs(); //&& sameBindingOperation;
             }
         }
         
@@ -144,33 +139,8 @@ namespace BiolyCompiler.Modules
                     this.GetType().Equals(operation.getAssociatedModule().GetType());
         }
 
-        protected abstract List<Command> GetModuleCommands(ref int time);
+        public abstract List<Command> GetModuleCommands(ref int time);
 
-        public List<Command> ToCommands()
-        {
-            List<Command> commands = new List<Command>();
-            int time = 0;
-            List<Command> routeCommands = new List<Command>();
-            foreach (List<Route> routes in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
-            {
-                routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
-            }
-            List<Command> moduleCommands = GetModuleCommands(ref time);
-            if (moduleCommands.Count > 0)
-            {
-                //show module on simulator
-                commands.Add(new AreaCommand(Shape, CommandType.SHOW_AREA, 0));
-            }
-            commands.AddRange(routeCommands);
-            commands.AddRange(moduleCommands);
-
-            if (moduleCommands.Count > 0)
-            {
-                //remove module from simulator
-                commands.Add(new AreaCommand(Shape, CommandType.REMOVE_AREA, time));
-            }
-
-            return commands;
-        }
+       
     }
 }

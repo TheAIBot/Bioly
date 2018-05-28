@@ -15,10 +15,12 @@ namespace BiolyCompiler
     {
         public static void makeDebugCorrectnessChecks(Board board, SimplePriorityQueue<FluidBlock> runningOperations, List<Module> usedModules)
         {
-            Debug.WriteLine(board.print(usedModules));
+            #if DEBUG
+                //Debug.WriteLine(board.print(usedModules));
+            #endif
             runningOperations.ToList()
-                             .OrderBy(element => element.startTime)
-                             .ForEach(element => Debug.WriteLine(element.OutputVariable + ", " + element.startTime + ", " + element.endTime));
+                             .OrderBy(element => element.StartTime)
+                             .ForEach(element => Debug.WriteLine(element.OriginalOutputVariable + ", " + element.StartTime + ", " + element.EndTime));
             checkAdjacencyMatrixCorrectness(board);
         }
 
@@ -59,7 +61,7 @@ namespace BiolyCompiler
                 }
             }
 
-            HashSet<Rectangle> placedModuleRectangles = new HashSet<Rectangle>(board.placedModules.Select(module => module.Shape));
+            HashSet<Rectangle> placedModuleRectangles = new HashSet<Rectangle>(board.PlacedModules.Select(module => module.Shape));
 
 
             return isSameSet(emptyVisitedRectangles, board.EmptyRectangles) && isSameSet(moduleVisitedRectangles, placedModuleRectangles);

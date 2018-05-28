@@ -16,7 +16,20 @@ namespace BiolyCompiler.Scheduling
         public Assay(DFG<Block> dfg){
             this.dfg = dfg;
             //Set ready nodes
-            dfg.Nodes.ForEach(node => operationToNode.Add(node.value, node));
+            foreach (Node<Block> node in dfg.Nodes)
+            {
+                if (node.value is VariableBlock varBlock)
+                {
+                    if (varBlock.CanBeScheduled)
+                    {
+                        operationToNode.Add(node.value, node);
+                    }
+                }
+                else
+                {
+                    operationToNode.Add(node.value, node);
+                }
+            }
             readyOperations = dfg.Input.Select(x => x.value).ToList();
         }
 
@@ -30,14 +43,16 @@ namespace BiolyCompiler.Scheduling
         
         public void updateReadyOperations(Block operation)
         {
-            operation.hasBeenScheduled = true;
+            //If it has already been registred as finished, then ignore the operation:
+            if (operation.IsDone) return;
+            operation.IsDone = true;
             readyOperations.Remove(operation);
 
             operationToNode.TryGetValue(operation, out Node<Block> operationNode);
 
             foreach (var successorOperationNode in operationNode.getOutgoingEdges())
             {
-                if (successorOperationNode.getIngoingEdges().All(node => node.value.hasBeenScheduled))
+                if (successorOperationNode.getIngoingEdges().All(node => node.value.IsDone || (node.value is VariableBlock && !((VariableBlock)node.value).CanBeScheduled)))
                 {
                     readyOperations.Add(successorOperationNode.value);
                     //This will not happen multiple times, as once an operation list has been added to the readyOperaition list,
@@ -48,7 +63,7 @@ namespace BiolyCompiler.Scheduling
 
         public bool hasUnfinishedOperations()
         {
-            return readyOperations.Count > 0;
+            return !operationToNode.All(node => node.Key.IsDone || (node.Key is VariableBlock && !((VariableBlock)node.Key).CanBeScheduled));
         }
     }
 }

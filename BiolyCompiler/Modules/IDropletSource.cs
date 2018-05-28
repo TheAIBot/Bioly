@@ -7,10 +7,12 @@ namespace BiolyCompiler.Modules
 {
     public interface IDropletSource
     {
-        BoardFluid getFluidType();
+        BoardFluid GetFluidType();
 
-        (int,int) getMiddleOfSource();
+        void SetFluidType(BoardFluid newFluidType);
 
-        bool isInMiddleOfSource(RoutingInformation location);
+        (int,int) GetMiddleOfSource();
+
+        bool IsInMiddleOfSource(RoutingInformation location);
     }
 }

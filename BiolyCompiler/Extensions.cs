@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -86,12 +87,13 @@ namespace BiolyCompiler
             throw new NotANumberException(id, xmlNode.InnerText);
         }
 
-        internal static XmlNode GetInnerBlockNode(this XmlNode node, string nodeAttribName, ParseException exception)
+        internal static XmlNode GetInnerBlockNode(this XmlNode node, string nodeAttribName, ParserInfo parserInfo, ParseException exception)
         {
             XmlNode innerNode = node.TryGetNodeWithAttributeValue(nodeAttribName);
             if (innerNode == null)
             {
-                throw exception;
+                parserInfo.ParseExceptions.Add(exception);
+                return null;
             }
             return innerNode.FirstChild;
         }

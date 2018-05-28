@@ -41,6 +41,7 @@
 		<script src="blocks_compressed.js"></script>
 		<script src="en.js"></script>
 		<script src="costum_blocks.js"></script>
+		<script src="blockly_events.js"></script>
 		<script src="cytoscape.min.js"></script>
 		<script src="dagre.min.js"></script>
 		<script src="cytoscape-dagre.js"></script>
@@ -63,32 +64,39 @@
 				<category name="Arithmetic">
 					<block type="math_number"></block>
 					<block type="math_arithmetic"></block>
+					<block type="getNumberVariable"></block>
+					<block type="setNumberVariable"></block>
 				</category>
 				<category name="Logic">
 					<block type="logic_compare"></block>
 				</category>
 				<category name="Static modules">
 					<block type="inputDeclaration"></block>
-					<block type="outputDeclaration"></block>				
+					<block type="outputDeclaration"></block>	
+					<block type="heaterDeclaration"></block>							
 				</category>
 				<category name="Fluids">
 					<block type="fluid"></block>
 					<block type="getFluid"></block>
+					<block type="getDropletCount"></block>
 				</category>
 				<category name="Fluid operator">
 					<block type="mixer"></block>
-					<block type="heater"></block>
+					<block type="union"></block>
+					<block type="heaterUseage"></block>
 				</category>
 				<category name="Misc">
 					<block type="start"></block>
 					<block type="waste"></block>
 					<block type="outputUseage"></block>
 					<block type="sensor"></block>
+					<block type="inlineProgram"></block>
 				</category>
 				<category name="Arrays">
 					<block type="fluidArray"></block>
-					<block type="setFLuidArrayIndex"></block>
-					<block type="getFLuidArrayIndex"></block>
+					<block type="setFluidArrayIndex"></block>
+					<block type="getFluidArrayIndex"></block>
+					<block type="getArrayLength"></block>
 				</category>
 				<category name="Variables" custom="VARIABLE"></category>
 			</xml>

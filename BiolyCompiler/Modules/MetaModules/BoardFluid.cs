@@ -21,11 +21,8 @@ namespace BiolyCompiler.Modules
 
         public override bool Equals(object obj)
         {
-            if (obj is BoardFluid fluidObj)
-            {
-                return FluidName == fluidObj.FluidName;
-            }
-            return false;
+            if (obj is BoardFluid fluidObj) return FluidName == fluidObj.FluidName;
+            else return false;
         }
 
         public int GetNumberOfDropletsAvailable()

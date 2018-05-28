@@ -42,9 +42,8 @@ namespace BiolyViewer_Windows
                 }
                 else
                 {
-                    string[] errorInfos = exceptions.DistinctBy(e => e.ID)
-                                                    .Select(e => $"{{id: \"{e.ID}\", message: \"{String.Join(@"\n", exceptions.Where(ee => e.ID == ee.ID).Select(ee => ee.Message))}\"}}")
-                                                    .ToArray();
+                    var errorInfos = exceptions.GroupBy(e => e.ID)
+                                               .Select(e => $"{{id: \"{e.Key}\", message: \"{String.Join(@"\n", e.Select(ee => ee.Message))}\"}}");
                     string ids = string.Join(", ", errorInfos);
                     string js = $"ShowBlocklyErrors([{ids}]);";
                     Browser.ExecuteScriptAsync(js);

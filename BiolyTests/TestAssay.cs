@@ -26,10 +26,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCreateNonEmptyAssay()
         {
-            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation4 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, null, null);
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { }, null, null);
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, null, null);
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, null, null);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -44,10 +44,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCorrectIntialReadyOperationsParallelDFG()
         {
-            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation4 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, null, null);
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { }, null, null);
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, null, null);
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, null, null);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -69,10 +69,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCorrectIntialReadyOperationsNonParallelDFG()
         {
-            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable }, null, null);
-            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation4 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", null);
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1 }, "op2", null);
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", null);
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, "op4", null);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -104,10 +104,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestUpdateReadyOperations1Dependecy()
         {
-            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable }, null, null);
-            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation4 = new TestBlock(new List<string> { operation3.OutputVariable }, null, null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", null);
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1 }, "op2", null);
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", null);
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { operation3 }, "op4", null);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -130,19 +130,19 @@ namespace BiolyTests.AssayTests
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsFalse(dfg.Nodes[0].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.Nodes[1].value.hasBeenScheduled);
-            Assert.IsTrue (dfg.Nodes[2].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.Nodes[3].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[0].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[1].value.IsDone);
+            Assert.IsTrue (dfg.Nodes[2].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[3].value.IsDone);
         }
 
         [TestMethod]
         public void TestUpdateReadyOperationsMultiDependecy()
         {
-            TestBlock operation1 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation3 = new TestBlock(new List<string> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<string> { operation1.OutputVariable, operation3.OutputVariable }, null, null);
-            TestBlock operation4 = new TestBlock(new List<string> { }, null, null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", null);
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", null);
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1, operation3 }, "op2", null);
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, "op4", null);
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -167,10 +167,10 @@ namespace BiolyTests.AssayTests
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsFalse(dfg.Nodes[0].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.Nodes[1].value.hasBeenScheduled);
-            Assert.IsTrue(dfg.Nodes[2].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.Nodes[3].value.hasBeenScheduled);
+            Assert.IsFalse(dfg.Nodes[0].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[1].value.IsDone);
+            Assert.IsTrue(dfg.Nodes[2].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[3].value.IsDone);
 
             //remove last dependecy
             assay.updateReadyOperations(dfg.Nodes[0].value);
@@ -182,13 +182,13 @@ namespace BiolyTests.AssayTests
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[0].value));
             Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
 
-            Assert.IsTrue(dfg.Nodes[0].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.Nodes[1].value.hasBeenScheduled);
-            Assert.IsTrue(dfg.Nodes[2].value.hasBeenScheduled);
-            Assert.IsFalse(dfg.Nodes[3].value.hasBeenScheduled);
+            Assert.IsTrue(dfg.Nodes[0].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[1].value.IsDone);
+            Assert.IsTrue(dfg.Nodes[2].value.IsDone);
+            Assert.IsFalse(dfg.Nodes[3].value.IsDone);
         }
         
-        [TestMethod]
+        //[TestMethod]
         public void TestCalculateCriticalPath()
         {
             Assert.Fail("Have not been implemented yet.");

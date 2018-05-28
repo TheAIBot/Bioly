@@ -19,25 +19,17 @@ Blockly.Blocks["inputDeclaration"] = {
 		this.jsonInit({
 			"message0": "new input",
 			"args0": [
-			],			
-			"message1": "module name %1",
-			"args1": [
-				{
-					"type": "field_variable",
-					"name": "moduleName",
-					"variable": "module_name"
-				}
 			],
-			"message2": "fluid name %1",
-			"args2": [
+			"message1": "fluid name %1",
+			"args1": [
 				{
 					"type": "field_variable",
 					"name": "inputName",
 					"variable": "input_fluid_name"
 				}
 			],
-			"message3": "amount %1 %2",
-			"args3": [
+			"message2": "amount %1 %2",
+			"args2": [
 				{
 					"type": "field_number",
 					"name": "inputAmount",
@@ -82,18 +74,13 @@ Blockly.Blocks["outputDeclaration"] = {
 	}
 };
 
-Blockly.Blocks["outputUseage"] = {
+Blockly.Blocks["heaterDeclaration"] = {
 	init: function() {
 		this.jsonInit({
-			"message0": "output %1",
+			"message0": "new heater",
 			"args0": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],						
-			"message1": "target %1",
+			],			
+			"message1": "module name %1",
 			"args1": [
 				{
 					"type": "field_variable",
@@ -105,7 +92,76 @@ Blockly.Blocks["outputUseage"] = {
 			"nextStatement": null,
 			"colour": 280,
 			"tooltip": "",
+		});
+	}
+};
+
+Blockly.Blocks["outputUseage"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "output",
+			"args0": [
+			],			
+			"message1": "target %1 %2",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				},
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": ["InputType", "FluidType"]
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 280,
+			"tooltip": "",
 			"inputsInline": false
+		});
+	}
+};
+
+Blockly.Blocks["heaterUseage"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "heater %1",
+			"args0": [
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": ["InputType", "FluidType"]
+				}
+			],						
+			"message1": "target heater %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"message2": "temperature %1",
+			"args2": [
+				{
+					"type": "field_number",
+					"name": "temperature",
+					"check": "Number"
+				}
+			],
+			"message3": "time %1",
+			"args3": [
+				{
+					"type": "field_number",
+					"name": "time",
+					"check": "Number"
+				}
+			],
+			"output": "FluidOperator",
+			"colour": 80,
+			"tooltip": ""
 		});
 	}
 };
@@ -170,6 +226,24 @@ Blockly.Blocks["getFluid"] = {
 	}
 };
 
+Blockly.Blocks["getDropletCount"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "droplet count of %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "fluidName",
+					"variable": "fluid_name"
+				}
+			],
+			"output": "Number",
+			"colour": 80,
+			"tooltip": ""
+		});
+	}
+};
+
 Blockly.Blocks["mixer"] = {
 	init: function() {
 		this.jsonInit({
@@ -195,44 +269,6 @@ Blockly.Blocks["mixer"] = {
 			"output": "FluidOperator",
 			"colour": 120,
 			"tooltip": ""
-		});
-	}
-};
-
-Blockly.Blocks["heater"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "heat",
-			"args0": [
-			],
-			"message1": "fluid %1",
-			"args1": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],
-			"message2": "temperature %1",
-			"args2": [
-				{
-					"type": "field_number",
-					"name": "temperature",
-					"check": "Number"
-				}
-			],
-			"message3": "time %1",
-			"args3": [
-				{
-					"type": "field_number",
-					"name": "time",
-					"check": "Number"
-				}
-			],
-			"output": "FluidOperator",
-			"colour": 200,
-			"tooltip": "",
-			"inputsInline": false
 		});
 	}
 };
@@ -307,7 +343,7 @@ Blockly.Blocks["fluidArray"] = {
 		});
 	}
 };
-Blockly.Blocks["setFLuidArrayIndex"] = {
+Blockly.Blocks["setFluidArrayIndex"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "in array %1",
@@ -318,16 +354,20 @@ Blockly.Blocks["setFLuidArrayIndex"] = {
 					"variable": "fluid_array_name"
 				}
 			],
-			"message1": "set index %1 to %2",
+			"message1": "set index %1",
 			"args1": [
 				{
-					"type": "field_number",
-					"name": "arrayName"
-				},
+					"type": "input_value",
+					"name": "index",
+					"check": ["Number"]
+				}
+			],
+			"message2": "to %1",
+			"args2": [
 				{
 					"type": "input_value",
-					"name": "value",
-					"check": ["InputType", "FluidType", "FluidOperator"]
+					"name": "inputFluid",
+					"check": ["FluidType"]
 				}
 			],
 			"previousStatement": null,
@@ -337,7 +377,7 @@ Blockly.Blocks["setFLuidArrayIndex"] = {
 		});
 	}
 };
-Blockly.Blocks["getFLuidArrayIndex"] = {
+Blockly.Blocks["getFluidArrayIndex"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "in array %1",
@@ -351,14 +391,231 @@ Blockly.Blocks["getFLuidArrayIndex"] = {
 			"message1": "get index %1",
 			"args1": [
 				{
+					"type": "input_value",
+					"name": "index",
+					"check": ["Number"]
+				}
+			],
+			"message2": "amount %1 ml",
+			"args2": [
+				{
 					"type": "field_number",
-					"name": "arrayName"
+					"name": "fluidAmount",
+					"check": "Number"
+				}
+			],
+			"message3": "use all fluid %1",
+			"args3": [
+				{
+					"type": "field_checkbox",
+					"name": "useAllFluid",
+					"checked": false
 				}
 			],
 			"output": "FluidType",
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["getArrayLength"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "array length of %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "fluid_array_name"
+				}
+			],
+			"output": "Number",
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["getNumberVariable"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "get value of %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "variableName",
+					"variable": "variable_name"
+				}
+			],
+			"output": "Number",
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["setNumberVariable"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "set %1 to %2",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "variableName",
+					"variable": "variable_name"
+				},
+				{
+					"type": "input_value",
+					"name": "inputVariable",
+					"check": ["Number"]
+				}
+			],
 			"previousStatement": null,
 			"nextStatement": null,
 			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+
+//{
+//	name,
+//	inputs = [],
+//	outputs = [],
+//	programXml
+//}
+var inlineProgramPrograms = [{name: "program name", inputs: [], outputs: []}];
+
+Blockly.Blocks["inlineProgram"] = 
+{
+	init: function() 
+	{
+		this.jsonInit(
+		{
+			"inputsInline": false,
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 40,
+			"tooltip": ""
+		});
+		
+		var items = [];
+		for(var i = 0; i < inlineProgramPrograms.length; i++)
+		{
+			const item = inlineProgramPrograms[i];
+			items.push([item.name, item.name]);
+		}
+		
+		this.appendDummyInput().appendField("program").appendField(new Blockly.FieldDropdown(items), "programsDropdown");
+		this.getField("programsDropdown").setValidator(function(option) 
+		{
+			this.sourceBlock_.updateShape_(option);
+		});
+		
+		this.setMutator(new Blockly.Mutator([]));
+	},
+	mutationToDom: function() 
+	{
+		if(this.program)
+		{
+			const container = document.createElement('mutation');
+			container.setAttribute("program_name", this.program.name);
+			container.setAttribute("input_count" , this.program.inputs.length);
+			container.setAttribute("output_count", this.program.outputs.length);
+			return container;
+		}
+		
+		return null;
+	},
+	domToMutation: function(xmlElement) 
+	{
+		const programName = xmlElement.getAttribute("program_name");
+		this.updateShape_(programName);
+	},
+	updateShape_: function(programName)
+	{
+		//remove previous defined inputs and outputs
+		var inputCounter = 0;
+		while(this.getInput("input-" + inputCounter))
+		{
+			this.removeInput("input-" + inputCounter);
+			inputCounter++;
+		}
+		
+		var outputCounter = 0;
+		while(this.getInput("outputer-" + outputCounter))
+		{
+			this.removeInput("outputer-" + outputCounter);
+		}
+	
+		//find the new program
+		this.program = null;
+		for(var i = 0; i < window.inlineProgramPrograms.length; i++)
+		{
+			const program = window.inlineProgramPrograms[i];
+			if(program.name == programName)
+			{
+				this.program = program;
+				break;
+			}
+		}
+		
+		if(this.program != null)
+		{
+			//add programs inputs and outputs
+			for(var i = 0; i < this.program.inputs.length; i++)
+			{
+				const inputName = this.program.inputs[i];
+				this.appendValueInput("input-" + i).setCheck("FluidType").appendField("input " + inputName);
+			}
+			
+			for(var i = 0; i < this.program.outputs.length; i++)
+			{
+				const outputName = this.program.outputs[i];
+				this.appendDummyInput("outputer-" + i).appendField("output " + outputName).appendField(new Blockly.FieldVariable("output fluid name"), "output-" + i);
+			}
+		}
+	},
+	compose: function(topBlock)
+	{
+		
+	},
+	decompose: function(localWorkspace) 
+	{		
+		if(this.program && this.program.programXml)
+		{
+			const xml = Blockly.Xml.textToDom(this.program.programXml);
+			Blockly.Xml.domToWorkspace(xml, localWorkspace);
+			localWorkspace.options.readOnly = true;
+			
+			return localWorkspace.getTopBlocks[0];
+		}
+	}
+};
+
+Blockly.Blocks["union"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "merge fluids",
+			"args0": [
+			],
+			"message1": "a %1",
+			"args1": [
+				{
+					"type": "input_value",
+					"name": "inputFluidA",
+					"check": ["FluidType"]
+				}
+			],
+			"message2": "b %1",
+			"args2": [
+				{
+					"type": "input_value",
+					"name": "inputFluidB",
+					"check": ["FluidType"]
+				}
+			],
+			"output": "FluidOperator",
+			"colour": 120,
 			"tooltip": ""
 		});
 	}

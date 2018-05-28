@@ -23,6 +23,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MoreLinq;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyViewer_Windows
 {
@@ -51,6 +52,45 @@ namespace BiolyViewer_Windows
             Browser.Load("costum://index.html");
             Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
             Browser.JavascriptObjectRepository.Register("webUpdater", new WebUpdater(Browser), true);
+            //Wait for the MainFrame to finish loading
+            Browser.FrameLoadEnd += (s, args) =>
+            {
+                //Wait for the MainFrame to finish loading
+                if (args.Frame.IsMain)
+                {
+                    CompilerOptions.PROGRAM_FOLDER_PATH = @"../../../../BiolyPrograms";
+                    string[] files = Directory.GetFiles(@"../../../../BiolyPrograms");
+                    List<string> loadedPrograms = new List<string>();
+                    foreach (string file in files)
+                    {
+                        if (System.IO.Path.GetExtension(file) == Saver.DEFAULT_FILE_EXTENSION)
+                        {
+                            try
+                            {
+                                string fileContent = File.ReadAllText(file);
+                                (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(fileContent);
+                                if (exceptions.Count == 0)
+                                {
+                                    string programName = System.IO.Path.GetFileNameWithoutExtension(file);
+                                    (string[] inputStrings, string[] outputStrings, string programXml) = InlineProgram.LoadProgram(programName);
+
+                                    string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
+                                    string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
+                                    programXml = programXml.Replace("\"", "'");
+                                    loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], programXml: \"{programXml}\"}}");
+                                }
+                            }
+                            catch (Exception ee)
+                            {
+                                MessageBox.Show(ee.Message + Environment.NewLine + ee.StackTrace);
+                            }
+                        }
+                    }
+
+                    string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
+                    Browser.ExecuteScriptAsync($"startBlockly({allPrograms});");
+                }
+            };
         }
     }
 }

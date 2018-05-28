@@ -1,17 +1,9 @@
-﻿using System;
-using BiolyCompiler.Graphs;
+﻿using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Modules;
-using BiolyCompiler.Scheduling;
-using BiolyCompiler.Architechtures;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
-using BiolyCompiler.Modules.RectangleSides;
 using System.Linq;
-using BiolyCompiler.Routing;
-using BiolyCompiler.BlocklyParts;
-using BiolyCompiler.BlocklyParts.Sensors;
-using System.Xml;
-using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyTests.TestObjects
 {
@@ -25,13 +17,19 @@ namespace BiolyTests.TestObjects
             this.associatedModule = associatedModule;
         }
 
-        public TestBlock(List<string> inputs, string output, Module associatedModule) : this(inputs.Select(input => new FluidInput(input, 1, true)).ToList(), output, associatedModule)
+        public TestBlock(List<FluidBlock> inputs, string output, Module associatedModule) : this(inputs.Select(input => (FluidInput)new BasicInput("", input.OutputVariable, input.OriginalOutputVariable, 1, true)).ToList(), output, associatedModule)
         {
+
         }
 
         public override Module getAssociatedModule()
         {
             return associatedModule;
+        }
+
+        public override string ToString()
+        {
+            return "Test block";
         }
     }
 }

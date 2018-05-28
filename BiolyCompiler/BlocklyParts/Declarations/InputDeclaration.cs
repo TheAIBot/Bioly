@@ -6,7 +6,7 @@ using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Exceptions.ParserExceptions;
 
-namespace BiolyCompiler.BlocklyParts.Misc
+namespace BiolyCompiler.BlocklyParts.Declarations
 {
     public class InputDeclaration : StaticDeclarationBlock
     {
@@ -17,7 +17,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public readonly float Amount;
         public readonly FluidUnit Unit;
 
-        public InputDeclaration(string moduleName, string output, XmlNode node, string id) : base(moduleName, true, output, id)
+        public InputDeclaration(string output, XmlNode node, string id) : base("moduleName-" + id, true, output, id)
         {
             this.Amount = node.GetNodeWithAttributeValue(INPUT_AMOUNT_FIELD_NAME).TextToFloat(id);
             Validator.ValueWithinRange(id, this.Amount, 0, int.MaxValue);
@@ -31,12 +31,13 @@ namespace BiolyCompiler.BlocklyParts.Misc
             this.Unit = FluidUnit.drops;
         }
 
-        public static Block Parse(XmlNode node)
+        public static InputDeclaration Parse(XmlNode node)
         {
-            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
-            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             string id = node.GetAttributeValue(Block.IDFieldName);
-            return new InputDeclaration(moduleName, output, node, id);
+            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
+            Validator.CheckVariableName(id, output);
+
+            return new InputDeclaration(output, node, id);
         }
 
         public static FluidUnit StringToFluidUnit(string id, string value)
@@ -67,7 +68,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public override Module getAssociatedModule()
         {
-            return new InputModule(new BoardFluid(OutputVariable), (int)Amount);
+            return new InputModule(new BoardFluid(OriginalOutputVariable), (int)Amount);
         }
 
         public override string ToString()

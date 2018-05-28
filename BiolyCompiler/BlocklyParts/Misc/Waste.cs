@@ -1,4 +1,6 @@
-﻿using BiolyCompiler.Exceptions.ParserExceptions;
+﻿using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -17,12 +19,19 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         }
 
-        public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
+            //use when it's converted to a static usage block
+            //string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            //parserInfo.CheckModuleVariable(id, moduleName);
 
-            XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, new MissingBlockException(id, "Waste is missing input fluid block."));
-            FluidInput fluidInput = XmlParser.GetVariablesCorrectedName(inputFluidNode, mostRecentRef);
+            FluidInput fluidInput = null;
+            XmlNode inputFluidNode = node.GetInnerBlockNode(InputFluidFieldName, parserInfo, new MissingBlockException(id, "Waste is missing input fluid block."));
+            if (inputFluidNode != null)
+            {
+                fluidInput = XmlParser.ParseFluidInput(inputFluidNode, dfg, parserInfo);
+            }
 
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);

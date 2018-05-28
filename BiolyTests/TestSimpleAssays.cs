@@ -16,6 +16,8 @@ using BiolyCompiler.BlocklyParts.Misc;
 using System.IO;
 using BiolyCompiler.Parser;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.BlocklyParts.Declarations;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 //using MoreLinq;
 
 namespace BiolyTests.SimpleAssayTests
@@ -29,8 +31,8 @@ namespace BiolyTests.SimpleAssayTests
             DFG<Block> dfg = new DFG<Block>();
             int numberOfInputs = 5;
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
-            StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", "meh", null, "");
-            FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new FluidInput(inputOperation.OutputVariable, numberOfInputs, false) }, "Kage", null, "");
+            StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", null, "");
+            FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfInputs, false) }, "Kage", null, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(outputDeclaration);
             dfg.AddNode(outputOperation);
@@ -41,16 +43,16 @@ namespace BiolyTests.SimpleAssayTests
             ModuleLibrary library = new ModuleLibrary();
             schedule.PlaceStaticModules(new List<StaticDeclarationBlock>() { inputOperation, outputDeclaration }, board,library);
             schedule.ListScheduling(assay, board, library);
-            Assert.AreEqual(1, outputOperation.boundModule.InputRoutes.Count);
-            Assert.AreEqual(5, outputOperation.boundModule.InputRoutes[inputOperation.OutputVariable].Count);
+            Assert.AreEqual(0, inputOperation.InputRoutes.Count);
+            Assert.AreEqual(5, outputOperation.InputRoutes[inputOperation.OriginalOutputVariable].Count);
             int startTime = 0;
             for (int i = 0; i < numberOfInputs; i++)
             {
-                Route route = outputOperation.boundModule.InputRoutes[inputOperation.OutputVariable][i];
+                Route route = outputOperation.InputRoutes[inputOperation.OriginalOutputVariable][i];
                 Assert.AreEqual(startTime, route.startTime);
                 Assert.AreEqual(startTime + 3, route.getEndTime());
                 Assert.IsTrue(RoutingTests.TestRouting.isAnActualRoute(route, board));
-                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route, board, inputOperation.boundModule.GetInputLayout().Droplets[0], outputOperation.boundModule.GetInputLayout().Droplets[0]));
+                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route, board, inputOperation.BoundModule.GetInputLayout().Droplets[0], outputOperation.BoundModule.GetInputLayout().Droplets[0]));
                 startTime += 4;
             }
         }
@@ -63,35 +65,42 @@ namespace BiolyTests.SimpleAssayTests
         }
 
         [TestMethod]
+        public void testReassignFluidToVariableAlreadyUsed()
+        {
+            Schedule schedule = runSelectedProgram("ReassignFluid");
+            Board initialBoard = schedule.boardAtDifferentTimes[0];
+        }
+
+        [TestMethod]
         public void testSequentialMixer()
         {
             Schedule schedule = runSelectedProgram("SequentialMixing");
             Board initialBoard = schedule.boardAtDifferentTimes[0];
-            Assert.AreEqual(3, initialBoard.placedModules.Count);
-            Assert.AreEqual(2, initialBoard.placedModules.Where(module => module is InputModule).ToList().Count);
-            Assert.AreEqual(1, initialBoard.placedModules.Where(module => module is OutputModule).ToList().Count);
+            Assert.AreEqual(3, initialBoard.PlacedModules.Count);
+            Assert.AreEqual(2, initialBoard.PlacedModules.Where(module => module is InputModule).ToList().Count);
+            Assert.AreEqual(1, initialBoard.PlacedModules.Where(module => module is OutputModule).ToList().Count);
             Mixer mixOperation1 = (Mixer) schedule.ScheduledOperations[0];
             Mixer mixOperation2 = (Mixer) schedule.ScheduledOperations[1];
             OutputUseage outputOpereration = (OutputUseage) schedule.ScheduledOperations[2];
 
-            Assert.IsTrue(mixOperation1.startTime == 0);
-            Assert.IsTrue(mixOperation1.boundModule.OperationTime + mixOperation1.startTime + 10*Schedule.DROP_MOVEMENT_TIME <= mixOperation1.endTime);
-            Assert.IsTrue(mixOperation1.endTime   <= mixOperation1.startTime + mixOperation1.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+            Assert.IsTrue(mixOperation1.StartTime == 0);
+            Assert.IsTrue(mixOperation1.BoundModule.OperationTime + mixOperation1.StartTime + 10*Schedule.DROP_MOVEMENT_TIME <= mixOperation1.EndTime);
+            Assert.IsTrue(mixOperation1.EndTime   <= mixOperation1.StartTime + mixOperation1.BoundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
 
-            Assert.IsTrue(mixOperation1.endTime + 1 == mixOperation2.startTime);
-            Assert.IsTrue(mixOperation2.boundModule.OperationTime + mixOperation2.startTime + 10 * Schedule.DROP_MOVEMENT_TIME <= mixOperation2.endTime);
-            Assert.IsTrue(mixOperation2.endTime <= mixOperation2.startTime + mixOperation2.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+            Assert.IsTrue(mixOperation1.EndTime + 1 == mixOperation2.StartTime);
+            Assert.IsTrue(mixOperation2.BoundModule.OperationTime + mixOperation2.StartTime + 10 * Schedule.DROP_MOVEMENT_TIME <= mixOperation2.EndTime);
+            Assert.IsTrue(mixOperation2.EndTime <= mixOperation2.StartTime + mixOperation2.BoundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
 
-            Assert.IsTrue(mixOperation2.endTime + 1 == outputOpereration.startTime);
-            Assert.IsTrue(outputOpereration.boundModule.OperationTime + outputOpereration.startTime + 10 * Schedule.DROP_MOVEMENT_TIME <= outputOpereration.endTime);
-            Assert.IsTrue(outputOpereration.endTime <= outputOpereration.startTime + outputOpereration.boundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
+            Assert.IsTrue(mixOperation2.EndTime + 1 == outputOpereration.StartTime);
+            Assert.IsTrue(outputOpereration.BoundModule.OperationTime + outputOpereration.StartTime + 10 * Schedule.DROP_MOVEMENT_TIME <= outputOpereration.EndTime);
+            Assert.IsTrue(outputOpereration.EndTime <= outputOpereration.StartTime + outputOpereration.BoundModule.OperationTime + 30 * Schedule.DROP_MOVEMENT_TIME);
         }
 
 
         public Schedule runSelectedProgram(String programName)
         {
             //C:\Users\Lombre\Bioly\BiolyTests\BiolyPrograms
-            String xmlAssayCode = File.ReadAllText("../../../BiolyPrograms/" + programName + ".bc.txt");
+            String xmlAssayCode = File.ReadAllText("../../../../BiolyPrograms/" + programName + ".bc");
             (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlAssayCode);
             DFG<Block> runningGraph = graph.StartDFG;
             Assay assay = new Assay(runningGraph);

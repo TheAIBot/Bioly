@@ -42,7 +42,7 @@ namespace BiolyCompiler.Modules
             return mixer;
         }
 
-        protected override List<Command> GetModuleCommands(ref int time)
+        public override List<Command> GetModuleCommands(ref int time)
         {
             int startTime = time;
             List<Command> commands = new List<Command>();

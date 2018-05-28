@@ -2,6 +2,7 @@
 using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -20,36 +21,30 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id) : base(false, input, output, id)
+        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : base(false, input, output, id, canBeScheduled)
         {
             this.OPType = BoolOP.StringToBoolOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
             this.LeftBlock = leftBlock;
             this.RightBlock = rightBlock;
         }
 
-        public static Block Parse(XmlNode node, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
 
             VariableBlock leftBoolBlock = null;
             VariableBlock rightBoolBlock = null;
-            try
+
+            XmlNode leftNode = node.GetInnerBlockNode(LeftBoolFieldName, parserInfo, new MissingBlockException(id, "Left side of boolean operator is missing a block."));
+            if (leftNode != null)
             {
-                XmlNode leftNode = node.GetInnerBlockNode(LeftBoolFieldName, new MissingBlockException(id, "Left side of boolean operator is missing a block."));
-                leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, mostRecentRef, parseExceptions);
+                leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo, false, false);
             }
-            catch (ParseException e)
+
+            XmlNode rightNode = node.GetInnerBlockNode(RightBoolFieldName, parserInfo, new MissingBlockException(id, "Right side of boolean operator is missing a block."));
+            if (rightNode != null)
             {
-                parseExceptions.Add(e);
-            }
-            try
-            {
-                XmlNode rightNode = node.GetInnerBlockNode(RightBoolFieldName, new MissingBlockException(id, "Right side of boolean operator is missing a block."));
-                rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, mostRecentRef, parseExceptions);
-            }
-            catch (ParseException e)
-            {
-                parseExceptions.Add(e);
+                rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo, false, false);
             }
 
             dfg.AddNode(leftBoolBlock);
@@ -59,7 +54,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             inputs.Add(leftBoolBlock?.OutputVariable);
             inputs.Add(rightBoolBlock?.OutputVariable);
 
-            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node, id);
+            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node, id, canBeScheduled);
         }
 
         public static BoolOPTypes StringToBoolOPType(string id, string boolOPAsString)
@@ -104,10 +99,10 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             }
         }
 
-        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            float leftResult = LeftBlock.Run(variables, executor);
-            float rightResult = RightBlock.Run(variables, executor);
+            float leftResult = LeftBlock.Run(variables, executor, dropPositions);
+            float rightResult = RightBlock.Run(variables, executor, dropPositions);
 
             switch (OPType)
             {
@@ -126,6 +121,20 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 default:
                     throw new Exception("Failed to parse the operator type.");
             }
+        }
+
+        public override string ToXml()
+        {
+            return
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
+                $"<field name=\"{OPTypeFieldName}\">{BoolOpTypeToString(OPType)}</field>" +
+                $"<value name=\"{LeftBlock}\">" +
+                    LeftBlock.ToXml() +
+                "</value>" +
+                $"<value name=\"{RightBlock}\">" +
+                    RightBlock.ToXml() +
+                "</value>" +
+            "</block>";
         }
 
         public override string ToString()

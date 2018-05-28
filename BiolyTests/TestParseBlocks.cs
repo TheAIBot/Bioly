@@ -2,6 +2,8 @@
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Arithmetics;
 using BiolyCompiler.BlocklyParts.BoolLogic;
+using BiolyCompiler.BlocklyParts.ControlFlow;
+using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Graphs;
@@ -33,26 +35,47 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", input.OriginalOutputVariable);
             Assert.AreEqual(20, input.Amount);
             Assert.AreEqual(FluidUnit.ml, input.Unit);
         }
 
         [TestMethod]
-        public void ParseHeaterBlock()
+        public void ParseOutputDeclarationBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddHeaterSegment("a", 173, 39, "b", 29, false);
+            program.AddOutputDeclarationBlock("z");
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Heater heater = (Heater)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            OutputDeclaration heater = (OutputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
-            Assert.AreEqual("a", heater.OriginalOutputVariable);
-            Assert.AreEqual(173, heater.Temperature);
-            Assert.AreEqual(39, heater.Time);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
+            Assert.IsTrue(parserInfo.ValidModuleNames.Contains("z"));
+        }
+
+        [TestMethod]
+        public void ParseHeaterDeclarationBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddHeaterDeclarationBlock("z");
+            TestTools.ExecuteJS(program);
+
+            XmlNode node = TestTools.GetWorkspace();
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            HeaterDeclaration heater = (HeaterDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
+
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
+            Assert.IsTrue(parserInfo.ValidModuleNames.Contains("z"));
         }
 
         [TestMethod]
@@ -63,8 +86,14 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
-            
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            parserInfo.AddFluidVariable("b");
+            parserInfo.AddFluidVariable("c");
+            Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, parserInfo);
+
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", mixer.OriginalOutputVariable);
         }
 
@@ -76,8 +105,10 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Constant constant = (Constant)XmlParser.ParseBlock(node, null, TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            Constant constant = (Constant)XmlParser.ParseBlock(node, null, parserInfo);
 
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(210, constant.Value);
         }
 
@@ -91,8 +122,10 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            ArithOP arithOP = (ArithOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            ArithOP arithOP = (ArithOP)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(ArithOPTypes.ADD, arithOP.OPType);
         }
 
@@ -106,8 +139,10 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            BoolOP boolOP = (BoolOP)XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            BoolOP boolOP = (BoolOP)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(BoolOPTypes.EQ, boolOP.OPType);
         }
 
@@ -119,22 +154,128 @@ namespace BiolyTests.ParseBlockTests
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.IsTrue(input is Waste);
+        }
+
+        [TestMethod]
+        public void ParseFluidBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddFluidSegment("k", "a", 10, false);
+            TestTools.ExecuteJS(program);
+
+            XmlNode node = TestTools.GetWorkspace();
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            Fluid input = (Fluid)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
+
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
         }
 
         [TestMethod]
         public void ParseOutputBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddOutputSegment("a", 1249, false);
+            program.AddOutputSegment("a", "z", 1249, false);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), TestTools.GetDefaultRefDictionary(), null);
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("a");
+            parserInfo.AddModuleName("z");
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
-            Assert.IsTrue(input is OutputDeclaration);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
+            Assert.IsTrue(input is OutputUseage);
+        }
+
+        [TestMethod]
+        public void ParseHeaterBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddHeaterSegment("a", "z", 173, 39, "b", 29, false);
+            TestTools.ExecuteJS(program);
+
+            XmlNode node = TestTools.GetWorkspace();
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddFluidVariable("b");
+            parserInfo.AddModuleName("z");
+            HeaterUseage heater = (HeaterUseage)XmlParser.ParseBlock(node, null, parserInfo);
+
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual("a", heater.OriginalOutputVariable);
+            Assert.AreEqual(173, heater.Temperature);
+            Assert.AreEqual(39, heater.Time);
+        }
+
+        [TestMethod]
+        public void ParseIfBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("k", 10, FluidUnit.drops);
+            program.AddOutputDeclarationBlock("z");
+
+            string left = program.AddConstantBlock(3);
+            string right = program.AddConstantBlock(3);
+            string conditionalBlock = program.AddBoolOPBlock(BoolOPTypes.EQ, left, right);
+
+            program.AddScope("a");
+            program.SetScope("a");
+            string guardedBlock = program.AddOutputSegment("k", "z", 1, false);
+            program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
+
+            program.AddIfSegment(conditionalBlock, guardedBlock);
+            program.Finish();
+
+            TestTools.ExecuteJS(program);
+            string xml = TestTools.GetWorkspaceString();
+            (CDFG cdfg, var _) = XmlParser.Parse(xml);
+
+            Assert.AreEqual(2, cdfg.Nodes.Count);
+
+            DFG<Block> firstDFG = cdfg.StartDFG;
+            Assert.AreEqual(5, firstDFG.Nodes.Count);
+
+            (var _, DFG<Block> lastDFG) = cdfg.Nodes.Where(x => x.dfg != firstDFG).Single();
+            Assert.AreEqual(1, lastDFG.Nodes.Count);
+        }
+
+        public void ParseRepeatBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("k", 10, FluidUnit.drops);
+            program.AddOutputDeclarationBlock("z");
+
+            string conditionalBlock = program.AddConstantBlock(3);
+
+            program.AddScope("a");
+            program.SetScope("a");
+            string guardedBlock = program.AddOutputSegment("k", "z", 1, false);
+            program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
+
+            program.AddRepeatSegment(conditionalBlock, guardedBlock);
+            program.Finish();
+
+            TestTools.ExecuteJS(program);
+            string xml = TestTools.GetWorkspaceString();
+            (CDFG cdfg, var _) = XmlParser.Parse(xml);
+
+            Assert.AreEqual(2, cdfg.Nodes.Count);
+
+            DFG<Block> firstDFG = cdfg.StartDFG;
+            Assert.AreEqual(5, firstDFG.Nodes.Count);
+
+            (var _, DFG<Block> lastDFG) = cdfg.Nodes.Where(x => x.dfg != firstDFG).Single();
+            Assert.AreEqual(1, lastDFG.Nodes.Count);
         }
 
         [TestMethod]

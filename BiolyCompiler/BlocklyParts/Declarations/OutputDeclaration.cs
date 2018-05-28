@@ -5,24 +5,25 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace BiolyCompiler.BlocklyParts.Misc
+namespace BiolyCompiler.BlocklyParts.Declarations
 {
     public class OutputDeclaration : StaticDeclarationBlock
     {
-        public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "outputDeclaration";
 
-        public OutputDeclaration(string moduleName, string output, XmlNode node, string id) : base(moduleName, false, output, id)
+        public OutputDeclaration(string moduleName, XmlNode node, string id) : base(moduleName, false, null, id)
         {
 
         }
 
-        public static Block Parse(XmlNode node, Dictionary<string, string> mostRecentRef)
+        public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
-            List<FluidInput> inputs = new List<FluidInput>();
-            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             string id = node.GetAttributeValue(Block.IDFieldName);
-            return new OutputDeclaration(moduleName, null, node, id);
+            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            Validator.CheckVariableName(id, moduleName);
+            parserInfo.AddModuleName(moduleName);
+
+            return new OutputDeclaration(moduleName, node, id);
         }
 
         public override Module getAssociatedModule()

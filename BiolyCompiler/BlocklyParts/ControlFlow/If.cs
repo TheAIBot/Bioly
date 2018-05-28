@@ -13,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         public const string XML_TYPE_NAME = "controls_if";
         public readonly IReadOnlyList<Conditional> IfStatements;
 
-        public If(XmlNode node, CDFG cdfg, DFG<Block> dfg, Dictionary<string, string> mostRecentRef, List<ParseException> parseExceptions)
+        public If(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             List<Conditional> conditionals = new List<Conditional>();
@@ -37,43 +37,46 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             {
                 string exceptionStart = $"{ (ifCounter == 0 ? "If" : "Else if") } statement { (ifCounter == 0 ? String.Empty : $"Number {ifCounter}")}";
 
-                XmlNode ifNode = null;
                 VariableBlock decidingBlock = null;
-                try
+                XmlNode ifNode = node.GetInnerBlockNode(GetIfFieldName(ifCounter), parserInfo, new MissingBlockException(id, $"{exceptionStart} is missing its conditional block."));
+                if (ifNode != null)
                 {
-                    ifNode = node.GetInnerBlockNode($"IF{ifCounter}", new MissingBlockException(id, $"{exceptionStart} is missing its conditional block."));
-                    decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ifNode, dfg, mostRecentRef, parseExceptions);
-                }
-                catch (ParseException e)
-                {
-                    parseExceptions.Add(e);
+                    decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ref ifNode, dfg, parserInfo);
                 }
 
-                XmlNode guardedDFGNode = null;
-                try
+                XmlNode guardedDFGNode = node.GetInnerBlockNode(GetDoFieldName(ifCounter), parserInfo, new MissingBlockException(id, $"{exceptionStart} is missing blocks to execute."));
+                if (guardedDFGNode != null)
                 {
-                    guardedDFGNode = node.GetInnerBlockNode($"DO{ifCounter}", new MissingBlockException(id, $"{exceptionStart} is missing blocks to execute."));
-                    DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg, parseExceptions);
-                    DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg, parseExceptions);
+                    DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, parserInfo);
+                    DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, parserInfo);
 
                     conditionals.Add(new Conditional(decidingBlock, guardedDFG, nextDFG));
-                }
-                catch (ParseException e)
-                {
-                    parseExceptions.Add(e);
                 }
             }
 
             if (hasElse)
             {
-                XmlNode guardedDFGNode = node.GetInnerBlockNode("ELSE", new MissingBlockException(id, "Else statement is missing blocks to execute"));
-                DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, cdfg, parseExceptions);
-                DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, cdfg, parseExceptions);
+                XmlNode guardedDFGNode = node.GetInnerBlockNode("ELSE", parserInfo, new MissingBlockException(id, "Else statement is missing blocks to execute"));
+                if (guardedDFGNode != null)
+                {
+                    DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, parserInfo);
+                    DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, parserInfo);
 
-                conditionals.Add(new Conditional(null, guardedDFG, nextDFG));
+                    conditionals.Add(new Conditional(null, guardedDFG, nextDFG));
+                }
             }
 
             this.IfStatements = conditionals;
+        }
+
+        public static string GetIfFieldName(int ifCounter = 0)
+        {
+            return $"IF{ifCounter}";
+        }
+
+        public static string GetDoFieldName(int ifCounter = 0)
+        {
+            return $"DO{ifCounter}";
         }
     }
 }

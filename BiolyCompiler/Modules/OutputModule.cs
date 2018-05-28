@@ -8,7 +8,7 @@ namespace BiolyCompiler.Modules
     public class OutputModule : Module
     {
 
-        public OutputModule() : base(3, 3, 1, true)
+        public OutputModule() : base(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 1, true)
         {
             OperationTime = 2;
             InputLayout = new InfiniteModuleLayout(InputLayout.width, InputLayout.height, InputLayout.EmptyRectangles, InputLayout.Droplets);
@@ -21,12 +21,12 @@ namespace BiolyCompiler.Modules
         }
 
 
-        public override bool isStaticModule()
+        public override bool IsStaticModule()
         {
             return true;
         }
 
-        protected override List<Command> GetModuleCommands(ref int time)
+        public override List<Command> GetModuleCommands(ref int time)
         {
             time += 1;
             return new List<Command>()

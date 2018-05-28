@@ -20,7 +20,7 @@ namespace BiolyCompiler.Modules
             fluidType.dropletSources.Add(this);
         }
 
-        public BoardFluid getFluidType()
+        public BoardFluid GetFluidType()
         {
             return fluidType;
         }
@@ -52,21 +52,22 @@ namespace BiolyCompiler.Modules
         {
             throw new NotImplementedException();
         }
-        
 
-        protected override List<Command> GetModuleCommands(ref int time)
+
+        public override List<Command> GetModuleCommands(ref int time)
         {
             throw new Exception("Droplet can't be converted into commands");
         }
 
-        public bool isInMiddleOfSource(RoutingInformation location)
+        public bool IsInMiddleOfSource(RoutingInformation location)
         {
             return location.x == Shape.x + DROPLET_WIDTH / 2 &&
                    location.y == Shape.y + DROPLET_HEIGHT / 2;
         }
 
-        public (int, int) getMiddleOfSource() {
+        public (int, int) GetMiddleOfSource() {
             return Shape.getCenterPosition();
         }
+        
     }
 }

@@ -12,6 +12,7 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyTests.TestObjects;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 //using MoreLinq;
 
 namespace BiolyTests.RoutingTests
@@ -22,7 +23,7 @@ namespace BiolyTests.RoutingTests
         [TestMethod]
         public void TestDetermineRouteToModuleNoObstacles()
         {
-            FluidBlock operation = new TestBlock(new List<string>(), null, new TestModule());
+            FluidBlock operation = new TestBlock(new List<FluidBlock>(), null, new TestModule());
             Module sourceModule = new TestModule();
             BoardFluid fluidType = new BoardFluid("test");
             Droplet droplet = new Droplet(fluidType);
@@ -33,14 +34,14 @@ namespace BiolyTests.RoutingTests
             sourceModule.Shape.y = 0;
             droplet.Shape.x = 10;
             droplet.Shape.y = 10;
-            operation.Bind(sourceModule);
+            operation.Bind(sourceModule, null);
             Board board = new Board(20, 20);
             board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
             board.UpdateGridWithModulePlacement(droplet, droplet.Shape);
             //inputLocation shouldn't be placed, as it "inside" the module.
 
             int startTime = 55;
-            Route route = Router.DetermineRouteToModule(fluidType, sourceModule, inputLocation, board, startTime);
+            Route route = Router.DetermineRouteToModule(Router.haveReachedDropletOfTargetType(inputLocation), sourceModule, inputLocation, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Has detected collision while this shouldn't be possible");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
@@ -72,7 +73,7 @@ namespace BiolyTests.RoutingTests
 
 
             int startTime = 55;
-            Route route = Router.DetermineRouteToModule(fluidType, sourceModule, inputLocation, board, startTime);
+            Route route = Router.DetermineRouteToModule(Router.haveReachedDropletOfTargetType(inputLocation), sourceModule, inputLocation, board, startTime);
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Obstacle not avoided: the path has a collisition");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
@@ -109,13 +110,18 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet1, droplet1.Shape);
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            TestBlock testBlock = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, 2, false) }, null, null);
-            testBlock.Bind(sourceModule);
+            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new BasicInput("",  fluidType1.FluidName, fluidType1.FluidName, 2, false) }, null, null);
+            testOperation.Bind(sourceModule, null);
+            sourceModule.RepositionLayout();
+            //A fake empty rectangle is added to the adjacent rectangles of sourceModule,
+            //as the routing requires at least one adjacent empty rectangle: this clearly exists in this case:
+            Rectangle fakeRectangle = new Rectangle(1, 1, 4, 3);
+            Assert.IsTrue(sourceModule.Shape.ConnectIfAdjacent(fakeRectangle));
 
             int startTime = 55;
-            int endtime = Router.RouteDropletsToModule(sourceModule, board, startTime, testBlock);
-            Assert.AreEqual(1, sourceModule.InputRoutes.Count);
-            Assert.IsTrue(sourceModule.InputRoutes.TryGetValue(fluidType1.FluidName, out List<Route> routes));
+            int endtime = Router.RouteDropletsToModule(board, startTime, testOperation);
+            Assert.AreEqual(1, testOperation.InputRoutes.Count);
+            Assert.IsTrue(testOperation.InputRoutes.TryGetValue(fluidType1.FluidName, out List<Route> routes));
             Assert.AreEqual(2, routes.Count);
             //Droplet 2 and 3 should have been routed to the module, as droplet 1 is further away
             Assert.IsFalse(routes.Select(route => route.routedDroplet).Contains(droplet1 as Droplet));
@@ -164,15 +170,20 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet1, droplet1.Shape);
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            TestBlock testBlock = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, 1, false) , new FluidInput(fluidType2.FluidName, 1, false) }, null, null);
-            testBlock.Bind(sourceModule);
+            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new BasicInput("", fluidType1.FluidName, fluidType1.FluidName, 1, false) , new BasicInput("", fluidType2.FluidName, fluidType2.FluidName, 1, false) }, null, null);
+            testOperation.Bind(sourceModule, null);
+            sourceModule.RepositionLayout();
+            //A fake empty rectangle is added to the adjacent rectangles of sourceModule,
+            //as the routing requires at least one adjacent empty rectangle: this clearly exists in this case:
+            Rectangle fakeRectangle = new Rectangle(1, 1, 4, 3);
+            Assert.IsTrue(sourceModule.Shape.ConnectIfAdjacent(fakeRectangle));
 
             int startTime = 55;
-            int endtime = Router.RouteDropletsToModule(sourceModule, board, startTime, testBlock);
-            Assert.AreEqual(2, sourceModule.InputRoutes.Count);
-            Assert.IsTrue(sourceModule.InputRoutes.TryGetValue(fluidType1.FluidName, out List<Route> routes1));
+            int endtime = Router.RouteDropletsToModule(board, startTime, testOperation);
+            Assert.AreEqual(2, testOperation.InputRoutes.Count);
+            Assert.IsTrue(testOperation.InputRoutes.TryGetValue(fluidType1.FluidName, out List<Route> routes1));
             Assert.AreEqual(1, routes1.Count);
-            Assert.IsTrue(sourceModule.InputRoutes.TryGetValue(fluidType2.FluidName, out List<Route> routes2));
+            Assert.IsTrue(testOperation.InputRoutes.TryGetValue(fluidType2.FluidName, out List<Route> routes2));
             Assert.AreEqual(1, routes2.Count);
             //Droplet 1 and 2 should have been routed to the module, as they are of the correct type.
             Assert.IsTrue(routes1.Select(route => route.routedDroplet).Contains(droplet2 as Droplet));
@@ -195,7 +206,7 @@ namespace BiolyTests.RoutingTests
         public  void TestRoutingFromDropletSpawner()
         {
             Board board = new Board(20, 20);
-            FluidBlock operation = new TestBlock(new List<string>(), null, new TestModule());
+            FluidBlock operation = new TestBlock(new List<FluidBlock>(), null, new TestModule());
             int capacity = 5;
             BoardFluid fluidType = new BoardFluid("test");
             Module sourceModule = new TestModule(capacity - 2,0);
@@ -206,19 +217,24 @@ namespace BiolyTests.RoutingTests
             Assert.AreEqual(0, dropletSpawner.Shape.y);
             sourceModule.Shape.x = 10;
             sourceModule.Shape.y = 10;
-            operation.Bind(sourceModule);
+            operation.Bind(sourceModule, null);
             board.UpdateGridWithModulePlacement(sourceModule, sourceModule.Shape);
+            sourceModule.RepositionLayout();
+            //A fake empty rectangle is added to the adjacent rectangles of sourceModule,
+            //as the routing requires at least one adjacent empty rectangle: this clearly exists in this case:
+            Rectangle fakeRectangle = new Rectangle(1, 1, 17, 9);
+            Assert.IsTrue(sourceModule.Shape.ConnectIfAdjacent(fakeRectangle));
 
             int startTime = 55;
             Schedule schedule = new Schedule();
-            int endTime = Router.RouteDropletsToModule(sourceModule, board, startTime, operation);
+            int endTime = Router.RouteDropletsToModule(board, startTime, operation);
             Assert.AreEqual(2, dropletSpawner.DropletCount);
-            Assert.AreEqual(2, board.placedModules.Count);
-            Assert.AreEqual(1, sourceModule.InputRoutes.Count);
-            Assert.AreEqual(capacity - 2, sourceModule.InputRoutes[fluidType.FluidName].Count);
-            for (int i = 0; i < sourceModule.InputRoutes[fluidType.FluidName].Count; i++)
+            Assert.AreEqual(2, board.PlacedModules.Count);
+            Assert.AreEqual(1, operation.InputRoutes.Count);
+            Assert.AreEqual(capacity - 2, operation.InputRoutes[fluidType.FluidName].Count);
+            for (int i = 0; i < operation.InputRoutes[fluidType.FluidName].Count; i++)
             {
-                Route route = sourceModule.InputRoutes[fluidType.FluidName][i];
+                Route route = operation.InputRoutes[fluidType.FluidName][i];
                 Assert.IsTrue(isAnActualRoute(route, board));
                 Assert.IsTrue(hasNoCollisions(route, board, sourceModule, dropletSpawner), "Has detected collision while this shouldn't be possible");
                 Assert.IsTrue(hasCorrectStartAndEnding(route, board, dropletSpawner, sourceModule.GetInputLayout().Droplets[i]));
@@ -241,8 +257,8 @@ namespace BiolyTests.RoutingTests
         public static bool hasCorrectStartAndEnding(Route route, Board board, IDropletSource source, IDropletSource inputLocation)
         {
             RoutingInformation startOfPath = route.route[0];
-            (int sourceX, int sourceY) = source.getMiddleOfSource();
-            (int inputX , int inputY ) = inputLocation.getMiddleOfSource();
+            (int sourceX, int sourceY) = source.GetMiddleOfSource();
+            (int inputX , int inputY ) = inputLocation.GetMiddleOfSource();
             return  sourceX == startOfPath.x &&
                     sourceY == startOfPath.y &&
                     route.route.Last().x == inputX &&
