@@ -7,7 +7,7 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Declarations
 {
-    public class OutputDeclaration : StaticDeclarationBlock
+    public class OutputDeclaration : StaticDeclarationBlock, DeclarationBlock
     {
         public const string XML_TYPE_NAME = "outputDeclaration";
 

@@ -67,7 +67,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             int index = (int)IndexBlock.Run(variables, executor, dropPositions);
             if (index < 0 || index >= arrayLength)
             {
-                throw new ArrayIndexOutOfRange(IDFieldName, ArrayName, arrayLength, index);
+                throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
             }
 
             OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);

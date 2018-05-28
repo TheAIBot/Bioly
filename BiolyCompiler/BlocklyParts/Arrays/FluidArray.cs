@@ -59,7 +59,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             int arrayLength = (int)ArrayLengthBlock.Run(variables, executor, dropPositions);
             if (arrayLength < 0)
             {
-                throw new RuntimeException(IDFieldName, $"Array length can't be set to {arrayLength}. The length has to be positive.");
+                throw new RuntimeException(BlockID, $"Array length can't be set to {arrayLength}. The length has to be positive.");
             }
             
             return (variableName, arrayLength);

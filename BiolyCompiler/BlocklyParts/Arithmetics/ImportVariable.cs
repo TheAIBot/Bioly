@@ -9,7 +9,7 @@ using BiolyCompiler.Parser;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
-    public class ImportVariable : VariableBlock
+    public class ImportVariable : VariableBlock, DeclarationBlock
     {
         public const string VARIABLE_FIELD_NAME = "variableName";
         public const string XML_TYPE_NAME = "importNumberVariable";
@@ -40,7 +40,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override string ToString()
         {
-            return "Import " + ;
+            return "Import " + VariableName;
         }
     }
 }

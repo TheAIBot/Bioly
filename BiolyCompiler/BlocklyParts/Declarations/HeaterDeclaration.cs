@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Declarations
 {
-    public class HeaterDeclaration : StaticDeclarationBlock
+    public class HeaterDeclaration : StaticDeclarationBlock, DeclarationBlock
     {
         public const string XML_TYPE_NAME = "heaterDeclaration";
         public readonly int Temperature;

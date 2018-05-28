@@ -126,7 +126,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         public override string ToXml()
         {
             return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
                 $"<field name=\"{OPTypeFieldName}\">{BoolOpTypeToString(OPType)}</field>" +
                 $"<value name=\"{LeftBlock}\">" +
                     LeftBlock.ToXml() +

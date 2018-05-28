@@ -36,7 +36,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public override string ToXml()
         {
             return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
                 $"<field name=\"{VARIABLE_FIELD_NAME}\">{VariableName}</field>" +
             "</block>";
         }

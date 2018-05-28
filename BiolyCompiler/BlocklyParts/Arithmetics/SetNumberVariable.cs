@@ -50,13 +50,28 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override string ToXml()
         {
-            return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" + 
-                $"<field name=\"{VARIABLE_FIELD_NAME}\">{OriginalOutputVariable}</field>" +
+            return SetNumberVariable.ToXml(BlockID, OriginalOutputVariable, OperandBlock.ToXml(), null);
+        }
+
+        public static string ToXml(string id, string output, string attachedBlocks, string nextBlocks)
+        {
+            string xml =
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{id}\">" +
+                $"<field name=\"{VARIABLE_FIELD_NAME}\">{output}</field>" +
                 $"<value name=\"{INPUT_VARIABLE_FIELD_NAME}\">" +
-                    OperandBlock.ToXml() + 
-                "</value>" +
+                    attachedBlocks +
+                "</value>";
+            if (nextBlocks != null)
+            {
+                xml +=
+                "<next>" +
+                    nextBlocks +
+                "</next>";
+            }
+            xml +=
             "</block>";
+
+            return xml;
         }
 
         public override string ToString()

@@ -119,7 +119,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public override string ToXml()
         {
             return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
                 $"<field name=\"{OPTypeFieldName}\">{ArithOpTypeToString(OPType)}</field>" +
                 $"<value name=\"{LeftArithFieldName}\">" +
                     LeftBlock.ToXml() + 

@@ -33,7 +33,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public override string ToXml()
         {
             return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
                 $"<field name=\"{NumberFieldName}\">{Value}</field>" +
             "</block>";
         }

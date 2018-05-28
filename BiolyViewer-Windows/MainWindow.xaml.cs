@@ -72,12 +72,13 @@ namespace BiolyViewer_Windows
                                 if (exceptions.Count == 0)
                                 {
                                     string programName = System.IO.Path.GetFileNameWithoutExtension(file);
-                                    (string[] inputStrings, string[] outputStrings, string programXml) = InlineProgram.LoadProgram(programName);
+                                    (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml) = InlineProgram.LoadProgram(programName);
 
                                     string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
                                     string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
+                                    string variables = String.Join(", ", variableStrings.Select(x => "\"" + x + "\""));
                                     programXml = programXml.Replace("\"", "'");
-                                    loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], programXml: \"{programXml}\"}}");
+                                    loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], variables: [{variables}], programXml: \"{programXml}\"}}");
                                 }
                             }
                             catch (Exception ee)

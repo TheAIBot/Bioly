@@ -67,7 +67,7 @@ namespace BiolyCompiler.Parser
                     {
                         parserInfo.ParseExceptions.Add(e);
                     }
-                    allowDeclarationBlocks = block is StaticDeclarationBlock && allowDeclarationBlocks;
+                    allowDeclarationBlocks = block is DeclarationBlock && allowDeclarationBlocks;
 
                     //move on to the next node or exit if none
                     node = node.TryGetNodeWithName("next");

@@ -8,7 +8,7 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 
 namespace BiolyCompiler.BlocklyParts.Declarations
 {
-    public class InputDeclaration : StaticDeclarationBlock
+    public class InputDeclaration : StaticDeclarationBlock, DeclarationBlock
     {
         public const string INPUT_FLUID_FIELD_NAME = "inputName";
         public const string INPUT_AMOUNT_FIELD_NAME = "inputAmount";
