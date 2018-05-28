@@ -31,7 +31,7 @@ namespace BiolyCompiler.Modules
                 if (  node.value is FluidBlock operation && 
                     !(node.value is StaticUseageBlock) &&
                     !(node.value is Fluid) &&
-                    !(node.value is SetFluidArray) &&
+                    !(node.value is SetArrayFluid) &&
                     !(node.value is Union) &&
                     !associatedModules.Contains(operation.getAssociatedModule()))
                 {

@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.BlocklyParts.Misc;
+﻿using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Routing;
@@ -9,7 +10,7 @@ using System.Text;
 
 namespace BiolyCompiler.BlocklyParts
 {
-    public class StaticUseageBlock : StaticBlock
+    public abstract class StaticUseageBlock : StaticBlock
     {
         //When the useage of a static module has finished, sometimes droplets needs to be moved out of the module:
         public Dictionary<string, List<Route>> OutputRoutes = new Dictionary<string, List<Route>>();

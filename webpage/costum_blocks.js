@@ -343,7 +343,7 @@ Blockly.Blocks["fluidArray"] = {
 		});
 	}
 };
-Blockly.Blocks["setFLuidArrayIndex"] = {
+Blockly.Blocks["setFluidArrayIndex"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "in array %1",
@@ -377,7 +377,7 @@ Blockly.Blocks["setFLuidArrayIndex"] = {
 		});
 	}
 };
-Blockly.Blocks["getFLuidArrayIndex"] = {
+Blockly.Blocks["getFluidArrayIndex"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "in array %1",

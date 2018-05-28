@@ -8,6 +8,8 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Routing;
 using System.Linq;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -21,16 +23,16 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
         }
 
-        private static Block CreateFluid(string output, XmlNode node, ParserInfo parserInfo)
+        private static Block CreateFluid(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(new FluidInput(node, parserInfo));
+            inputs.Add(XmlParser.ParseFluidInput(node, dfg, parserInfo));
 
             string id = node.GetAttributeValue(Block.IDFieldName);
             return new Fluid(inputs, output, id);
         }
 
-        public static Block Parse(XmlNode node, ParserInfo parserInfo)
+        public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string output = node.GetNodeWithAttributeValue(OUTPUT_FLUID_FIELD_NAME).InnerText;
@@ -41,13 +43,13 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 switch (innerNode.GetAttributeValue(Block.TypeFieldName))
                 {
                     case HeaterUseage.XML_TYPE_NAME:
-                        return HeaterUseage.CreateHeater(output, innerNode, parserInfo);
+                        return HeaterUseage.CreateHeater(output, innerNode, dfg, parserInfo);
                     case Mixer.XmlTypeName:
-                        return Mixer.CreateMixer(output, innerNode, parserInfo);
+                        return Mixer.CreateMixer(output, innerNode, dfg, parserInfo);
                     case Union.XML_TYPE_NAME:
-                        return Union.CreateUnion(output, innerNode, parserInfo);
+                        return Union.CreateUnion(output, innerNode, dfg, parserInfo);
                     default:
-                        return CreateFluid(output, innerNode, parserInfo);
+                        return CreateFluid(output, innerNode, dfg, parserInfo);
                 }
             }
             return null;

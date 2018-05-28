@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 
 namespace BiolyCompiler.Graphs
 {

@@ -13,6 +13,7 @@ using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.Arrays;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -45,7 +46,7 @@ namespace BiolyCompiler.Scheduling
             operation.StartTime = startTime;
             if (operation is VariableBlock || 
                 operation is Fluid || 
-                operation is SetFluidArray ||
+                operation is SetArrayFluid ||
                 operation is Union) {
                 operation.EndTime = currentTime;
                 return;
@@ -322,7 +323,7 @@ namespace BiolyCompiler.Scheduling
                 (readyOperations, currentTime, board) = HandleUnionOperation(assay, board, currentTime, (Union)nextOperation);
             else if (nextOperation is StaticDeclarationBlock)
                 readyOperations = HandleStaticModuleDeclarations(assay, nextOperation);
-            else if (nextOperation is Fluid || nextOperation is SetFluidArray)
+            else if (nextOperation is Fluid || nextOperation is SetArrayFluid)
                 (readyOperations, currentTime, board) = HandleFluidTransfers(assay, board, currentTime, (FluidBlock)nextOperation);
             else throw new Exception("An operation has been categorized as a special operation, but it is not handeled. " +
                                      "The operation is: " + nextOperation.ToString());
@@ -335,7 +336,7 @@ namespace BiolyCompiler.Scheduling
                     nextOperation is Union || 
                     nextOperation is StaticDeclarationBlock || 
                     nextOperation is Fluid ||
-                    nextOperation is SetFluidArray);
+                    nextOperation is SetArrayFluid);
         }
 
         private int RouteDropletsToModuleAndUpdateSchedule(Board board, int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)

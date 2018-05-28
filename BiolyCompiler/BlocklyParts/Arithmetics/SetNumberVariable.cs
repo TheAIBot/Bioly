@@ -5,6 +5,7 @@ using System.Xml;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
@@ -42,9 +43,25 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new SetNumberVariable(operandBlock, inputs, output, id);
         }
 
-        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            return OperandBlock.Run(variables, executor);
+            return OperandBlock.Run(variables, executor, dropPositions);
+        }
+
+        public override string ToXml()
+        {
+            return
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" + 
+                $"<field name=\"{VARIABLE_FIELD_NAME}\">{OriginalOutputVariable}</field>" +
+                $"<value name=\"{INPUT_VARIABLE_FIELD_NAME}\">" +
+                    OperandBlock.ToXml() + 
+                "</value>" +
+            "</block>";
+        }
+
+        public override string ToString()
+        {
+            return "Set " + OriginalOutputVariable;
         }
     }
 }

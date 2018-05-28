@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Modules;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,11 +23,13 @@ namespace BiolyCompiler.BlocklyParts
         {
         }
 
-        public abstract float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor);
+        public abstract float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions);
         
-        public virtual (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public virtual (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            return (OriginalOutputVariable, Run(variables, executor));
+            return (OriginalOutputVariable, Run(variables, executor, dropPositions));
         }
+
+        public abstract string ToXml();
     }
 }

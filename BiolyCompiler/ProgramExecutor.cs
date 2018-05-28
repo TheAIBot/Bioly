@@ -57,7 +57,7 @@ namespace BiolyCompiler
                 //some blocks are able to  change their originaloutputvariable.
                 //Those blocks will always appear at the top of a dfg  so the first
                 //thing that should be done is to update these blocks originaloutputvariable.
-                runningGraph.Nodes.ForEach(node => node.value.UpdateOriginalOutputVariable(variables, Executor));
+                runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, dropPositions));
 
                 List<Module> usedModules;
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, ref staticModules, out usedModules);
@@ -67,13 +67,13 @@ namespace BiolyCompiler
                     firstRun = false;
                 }
 
-                List<Command>[] commandTimeline = CreateCommandTimeline(variables, varScopeStack, scheduledOperations, time);
+                List<Command>[] commandTimeline = CreateCommandTimeline(variables, varScopeStack, scheduledOperations, time, dropPositions);
 
                 SendCommands(commandTimeline);
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
-                runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack, repeatStack);
+                runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack, repeatStack, dropPositions);
             }
         }
 
@@ -90,7 +90,7 @@ namespace BiolyCompiler
             Executor.StartExecutor(inputs, outputs, staticModulesWithoutInputOutputs);
         }
 
-        private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, Stack<List<string>> varScopeStack, List<Block> scheduledOperations, int time)
+        private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, Stack<List<string>> varScopeStack, List<Block> scheduledOperations, int time, Dictionary<string, BoardFluid> dropPositions)
         {
             List<Command>[] commandTimeline = new List<Command>[time + 1];
             foreach (Block operation in scheduledOperations)
@@ -109,7 +109,7 @@ namespace BiolyCompiler
                 }
                 else if (operation is VariableBlock varBlock)
                 {
-                    (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor);
+                    (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor, dropPositions);
                     if (!variables.ContainsKey(variableName))
                     {
                         variables.Add(variableName, value);
@@ -188,7 +188,7 @@ namespace BiolyCompiler
             return (scheduler.ScheduledOperations, time);
         }
 
-        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<(int, DFG<Block>)> repeatStack)
+        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<(int, DFG<Block>)> repeatStack, Dictionary<string, BoardFluid> dropPositions)
         {
             IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
             if (control is If ifControl)
@@ -196,7 +196,7 @@ namespace BiolyCompiler
                 foreach (Conditional conditional in ifControl.IfStatements)
                 {
                     //if result is 1 then take the if block
-                    if (1f == conditional.DecidingBlock.Run(variables, Executor))
+                    if (1f == conditional.DecidingBlock.Run(variables, Executor, dropPositions))
                     {
                         controlStack.Push(conditional);
                         varScopeStack.Push(new List<string>());
@@ -208,7 +208,7 @@ namespace BiolyCompiler
             }
             else if (control is Repeat repeatControl)
             {
-                int loopCount = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor);
+                int loopCount = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor, dropPositions);
                 if (loopCount > 0)
                 {
                     controlStack.Push(repeatControl.Cond);

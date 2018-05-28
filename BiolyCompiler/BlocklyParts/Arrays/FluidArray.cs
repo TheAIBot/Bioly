@@ -6,6 +6,7 @@ using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
@@ -18,7 +19,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock ArrayLengthBlock;
 
-        public FluidArray(string arrayName, VariableBlock arrayLengthBlock, List<string> input, string id) : base(true, input, null, id, true)
+        public FluidArray(string arrayName, VariableBlock arrayLengthBlock, List<string> input, string id) : base(true, input, arrayName, id, true)
         {
             this.ArrayName = arrayName;
             this.ArrayLengthBlock = arrayLengthBlock;
@@ -45,17 +46,17 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new FluidArray(arrayName, arrayLengthBlock, inputs, id);
         }
 
-        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             throw new NotImplementedException();
         }
 
-        public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             string variableName = GetArrayLengthVariable(ArrayName);
             //The value returned from the block can be a fraction and
             //the array length can't be. So convert to int.
-            int arrayLength = (int)ArrayLengthBlock.Run(variables, executor);
+            int arrayLength = (int)ArrayLengthBlock.Run(variables, executor, dropPositions);
             if (arrayLength < 0)
             {
                 throw new RuntimeException(IDFieldName, $"Array length can't be set to {arrayLength}. The length has to be positive.");
@@ -72,6 +73,16 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public static string GetArrayIndexName(string arrayName, int index)
         {
             return $"{arrayName}{Validator.FLUID_ARRAY_SPECIAL_SEPARATOR}Index{index}";
+        }
+
+        public override string ToXml()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string ToString()
+        {
+            return "New array with name " + ArrayName;
         }
     }
 }

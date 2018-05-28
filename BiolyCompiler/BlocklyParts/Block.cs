@@ -48,7 +48,7 @@ namespace BiolyCompiler.BlocklyParts
             this.priority = Int32.MaxValue;
     }
 
-        public virtual void UpdateOriginalOutputVariable<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public virtual void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
 
         }
@@ -67,9 +67,6 @@ namespace BiolyCompiler.BlocklyParts
             return false;
         }
 
-        public override string ToString()
-        {
-            return "Block type: " + this.GetType().ToString() + ", Output name: " + OriginalOutputVariable;
-        }
+        public abstract string ToString();
     }
 }

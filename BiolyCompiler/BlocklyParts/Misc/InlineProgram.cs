@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
@@ -28,7 +29,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public readonly Dictionary<string, string> OutputsFromTo = new Dictionary<string, string>();
         public readonly bool IsValidProgram;
 
-        public InlineProgram(XmlNode node, ParserInfo parserInfo)
+        public InlineProgram(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             this.ID = node.GetAttributeValue(Block.IDFieldName);
 
@@ -51,7 +52,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     XmlNode inputNode = node.GetInnerBlockNode(GetInputFieldName(i), parserInfo, new MissingBlockException(ID, $"Input {Inputs[i]} is missing a fluid block."));
                     if (inputNode != null)
                     {
-                        FluidInput input = new FluidInput(inputNode, parserInfo);
+                        FluidInput input = XmlParser.ParseFluidInput(inputNode, dfg, parserInfo);
                         InputsFromTo.Add(Inputs[i], input);
                     }
                 }
@@ -244,8 +245,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
                         case OutputUseage.XML_TYPE_NAME:
                             {
                                 var splittedXml = SplitBlockXml(blockNode, xml);
-                                OutputUseage output = OutputUseage.Parse(blockNode, dummyParserInfo);
-                                FluidInput fluidInputA = new FluidInput(OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
+                                DFG<Block> dfg = new DFG<Block>();
+                                OutputUseage output = OutputUseage.Parse(blockNode, dfg, dummyParserInfo);
+                                FluidInput fluidInputA = new BasicInput(String.Empty, OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
                                 string unionXml = Union.ToXml(ID, fluidInputA.ToXml(), output.InputVariables[0].ToXml());
                                 string nextXml = splittedXml.nextBlockXml;
                                 if (straightLine && splittedXml.nextBlockXml == null)

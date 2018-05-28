@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
 {
-    public class SetFluidArray : FluidBlock
+    public class SetArrayFluid : FluidBlock
     {
         public const string INDEX_FIELD_NAME = "index";
         public const string ARRAY_NAME_FIELD_NAME = "arrayName";
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
-        public const string XML_TYPE_NAME = "setFLuidArrayIndex";
+        public const string XML_TYPE_NAME = "setFluidArrayIndex";
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public SetFluidArray(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string id) : base(true, input, arrayName, id)
+        public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string id) : base(true, input, arrayName, id)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -45,7 +47,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Mixer is missing input fluid block."));
             if (inputFluidNode != null)
             {
-                fluidInput = new FluidInput(inputFluidNode, parserInfo);
+                fluidInput = XmlParser.ParseFluidInput(inputFluidNode, dfg, parserInfo);
             }
 
 
@@ -54,13 +56,15 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);
 
-            return new SetFluidArray(indexBlock, arrayName, inputs, id);
+            return new SetArrayFluid(indexBlock, arrayName, inputs, id);
         }
 
-        public override void UpdateOriginalOutputVariable<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
+            base.Update(variables, executor, dropPositions);
+
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
-            int index = (int)IndexBlock.Run(variables, executor);
+            int index = (int)IndexBlock.Run(variables, executor, dropPositions);
             if (index < 0 || index >= arrayLength)
             {
                 throw new ArrayIndexOutOfRange(IDFieldName, ArrayName, arrayLength, index);
@@ -78,6 +82,11 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
             }
             return routeCommands;
+        }
+
+        public override string ToString()
+        {
+            return "Set value in the array " + ArrayName;
         }
     }
 }

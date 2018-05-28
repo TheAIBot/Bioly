@@ -12,6 +12,7 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Sensors;
 using BiolyTests.TestObjects;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 //using MoreLinq;
 
 namespace BiolyTests.RoutingTests
@@ -109,7 +110,7 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet1, droplet1.Shape);
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, fluidType1.FluidName, 2, false) }, null, null);
+            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new BasicInput("",  fluidType1.FluidName, fluidType1.FluidName, 2, false) }, null, null);
             testOperation.Bind(sourceModule, null);
             sourceModule.RepositionLayout();
             //A fake empty rectangle is added to the adjacent rectangles of sourceModule,
@@ -169,7 +170,7 @@ namespace BiolyTests.RoutingTests
             board.UpdateGridWithModulePlacement(droplet1, droplet1.Shape);
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new FluidInput(fluidType1.FluidName, fluidType1.FluidName, 1, false) , new FluidInput(fluidType2.FluidName, fluidType2.FluidName, 1, false) }, null, null);
+            TestBlock testOperation = new TestBlock(new List<FluidInput>() { new BasicInput("", fluidType1.FluidName, fluidType1.FluidName, 1, false) , new BasicInput("", fluidType2.FluidName, fluidType2.FluidName, 1, false) }, null, null);
             testOperation.Bind(sourceModule, null);
             sourceModule.RepositionLayout();
             //A fake empty rectangle is added to the adjacent rectangles of sourceModule,

@@ -14,6 +14,7 @@ using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.BlocklyParts.ControlFlow;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.BlocklyParts.Arrays;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 
 namespace BiolyCompiler.Parser
 {
@@ -123,7 +124,7 @@ namespace BiolyCompiler.Parser
             {
                 case If.XML_TYPE_NAME:
                 case Repeat.XML_TYPE_NAME:
-                case SetFluidArray.XML_TYPE_NAME:
+                case SetArrayFluid.XML_TYPE_NAME:
                     //case SensorUsage.XML_TYPE_NAME:
                     return true;
                 default:
@@ -140,7 +141,7 @@ namespace BiolyCompiler.Parser
                     return new If(node, dfg, parserInfo);
                 case Repeat.XML_TYPE_NAME:
                     return new Repeat(node, dfg, parserInfo);
-                case SetFluidArray.XML_TYPE_NAME:
+                case SetArrayFluid.XML_TYPE_NAME:
                     return new Direct(node, dfg, parserInfo);
                 default:
                     throw new Exception("Invalid type: " + blockType);
@@ -173,15 +174,13 @@ namespace BiolyCompiler.Parser
                 case ArithOP.XML_TYPE_NAME:
                     return ArithOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 case Constant.XML_TYPE_NAME:
-                    return Constant.Parse(node);
+                    return Constant.Parse(node, canBeScheduled);
                 case FluidArray.XML_TYPE_NAME:
                     return FluidArray.Parse(node, dfg, parserInfo);
-                case GetFluidArray.XML_TYPE_NAME:
-                    return GetFluidArray.Parse(node, dfg, parserInfo);
-                case SetFluidArray.XML_TYPE_NAME:
-                    return SetFluidArray.Parse(node, dfg, parserInfo);
+                case SetArrayFluid.XML_TYPE_NAME:
+                    return SetArrayFluid.Parse(node, dfg, parserInfo);
                 case Fluid.XML_TYPE_NAME:
-                    return Fluid.Parse(node, parserInfo);
+                    return Fluid.Parse(node, dfg, parserInfo);
                 case InputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
@@ -195,25 +194,44 @@ namespace BiolyCompiler.Parser
                     }
                     return OutputDeclaration.Parse(node, parserInfo);
                 case OutputUseage.XML_TYPE_NAME:
-                    return OutputUseage.Parse(node, parserInfo);
+                    return OutputUseage.Parse(node, dfg, parserInfo);
                 case HeaterDeclaration.XML_TYPE_NAME:
                     return HeaterDeclaration.Parse(node, parserInfo);
                 case Waste.XML_TYPE_NAME:
-                    return Waste.Parse(node, parserInfo);
+                    return Waste.Parse(node, dfg, parserInfo);
                 case BoolOP.XML_TYPE_NAME:
                     return BoolOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 //case Sensor.XmlTypeName:
                 //    return Sensor.Parse(node);
                 case InlineProgram.XML_TYPE_NAME:
                     {
-                        InlineProgram program = new InlineProgram(node, parserInfo);
+                        InlineProgram program = new InlineProgram(node, dfg, parserInfo);
                         program.AppendProgramXml(ref node, parserInfo);
                         return ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks, canBeScheduled);
                     }
                 case GetNumberVariable.XML_TYPE_NAME:
-                    return GetNumberVariable.Parse(node, parserInfo);
+                    return GetNumberVariable.Parse(node, parserInfo, canBeScheduled);
                 case SetNumberVariable.XML_TYPE_NAME:
                     return SetNumberVariable.Parse(node, dfg, parserInfo);
+                case GetDropletCount.XML_TYPE_NAME:
+                    return GetDropletCount.Parser(node, parserInfo, canBeScheduled);
+                case GetArrayLength.XML_TYPE_NAME:
+                    return GetArrayLength.Parse(node, parserInfo, canBeScheduled);
+                default:
+                    throw new UnknownBlockException(id);
+            }
+        }
+
+        public static FluidInput ParseFluidInput(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool doVariableCheck = true)
+        {
+            string id = node.GetAttributeValue(Block.IDFieldName);
+            string blockType = node.GetAttributeValue(Block.TypeFieldName);
+            switch (blockType)
+            {
+                case BasicInput.XML_TYPE_NAME:
+                    return BasicInput.Parse(node, parserInfo, doVariableCheck);
+                case GetArrayFluid.XML_TYPE_NAME:
+                    return GetArrayFluid.Parse(node, dfg, parserInfo, doVariableCheck);
                 default:
                     throw new UnknownBlockException(id);
             }
