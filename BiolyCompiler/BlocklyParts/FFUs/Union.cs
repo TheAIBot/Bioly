@@ -9,6 +9,8 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Routing;
 using System.Linq;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -23,7 +25,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         }
 
-        public static Block CreateUnion(string output, XmlNode node, ParserInfo parserInfo)
+        public static Block CreateUnion(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
 
@@ -34,10 +36,10 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             FluidInput fluidInput2 = null;
 
             if (inputFluidNode1 != null) {
-                fluidInput1 = new FluidInput(inputFluidNode1, parserInfo, false);
+                fluidInput1 = XmlParser.ParseFluidInput(inputFluidNode1, dfg, parserInfo, false);
             }
             if (inputFluidNode2 != null) {
-                fluidInput2 = new FluidInput(inputFluidNode2, parserInfo, false);
+                fluidInput2 = XmlParser.ParseFluidInput(inputFluidNode2, dfg, parserInfo, false);
             }
 
             List<FluidInput> inputs = new List<FluidInput>();

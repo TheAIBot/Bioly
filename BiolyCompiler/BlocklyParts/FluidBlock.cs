@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.BlocklyParts.Misc;
+﻿using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Routing;
@@ -6,10 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MoreLinq;
 
 namespace BiolyCompiler.BlocklyParts
 {
-    public class FluidBlock : Block
+    public abstract class FluidBlock : Block
     {
         public readonly IReadOnlyList<FluidInput> InputVariables;
 
@@ -27,6 +29,11 @@ namespace BiolyCompiler.BlocklyParts
         public FluidBlock(bool canBeOutput, List<FluidInput> input, string output, string id) : base(canBeOutput, output, id)
         {
             InputVariables = input;
+        }
+
+        public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        {
+            InputVariables.ForEach(x => x.Update(variables, executor, dropPositions));
         }
 
         public virtual Module getAssociatedModule()

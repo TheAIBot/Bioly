@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
-using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Modules;
 
 namespace BiolyCompiler.BlocklyParts.Sensors
@@ -23,6 +23,11 @@ namespace BiolyCompiler.BlocklyParts.Sensors
         public override Module getAssociatedModule()
         {
             return new SensorModule();
+        }
+
+        public override string ToString()
+        {
+            return "AKSLDJALSKJDASLKDJSALKDJASLKDJASLKDJASLKDJASDLKASJDLAKSJDASLKDJASLKDJASLKDJASDLKASJDLK";
         }
     }
 }

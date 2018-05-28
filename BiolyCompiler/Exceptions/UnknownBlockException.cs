@@ -6,7 +6,7 @@ namespace BiolyCompiler.Exceptions.ParserExceptions
 {
     public class UnknownBlockException : ParseException
     {
-        public UnknownBlockException(string id) : base(id, "Encountered an unknown block. These blocks can't be used.")
+        public UnknownBlockException(string id) : base(id, "Encountered an unknown block. This block can't be used.")
         {
         }
     }

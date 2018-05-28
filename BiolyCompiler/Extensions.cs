@@ -92,7 +92,7 @@ namespace BiolyCompiler
             XmlNode innerNode = node.TryGetNodeWithAttributeValue(nodeAttribName);
             if (innerNode == null)
             {
-                parserInfo.parseExceptions.Add(exception);
+                parserInfo.ParseExceptions.Add(exception);
                 return null;
             }
             return innerNode.FirstChild;

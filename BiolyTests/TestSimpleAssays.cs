@@ -17,6 +17,7 @@ using System.IO;
 using BiolyCompiler.Parser;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.BlocklyParts.Declarations;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 //using MoreLinq;
 
 namespace BiolyTests.SimpleAssayTests
@@ -31,7 +32,7 @@ namespace BiolyTests.SimpleAssayTests
             int numberOfInputs = 5;
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
             StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", null, "");
-            FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new FluidInput(inputOperation, numberOfInputs, false) }, "Kage", null, "");
+            FluidBlock outputOperation = new OutputUseage("også_kage", new List<FluidInput> { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfInputs, false) }, "Kage", null, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(outputDeclaration);
             dfg.AddNode(outputOperation);

@@ -11,46 +11,74 @@ namespace BiolyCompiler.Parser
     public class ParserInfo
     {
         public readonly CDFG cdfg = new CDFG();
-        public readonly List<ParseException> parseExceptions = new List<ParseException>();
-        public readonly HashSet<string> validModuleNames = new HashSet<string>();
-        public readonly HashSet<string> validFluidVariableNames = new HashSet<string>();
-        public readonly Stack<List<string>> fluidVariableScope = new Stack<List<string>>();
-        public Dictionary<string, string> mostRecentVariableRef;
+        public readonly List<ParseException> ParseExceptions = new List<ParseException>();
+        public readonly HashSet<string> ValidModuleNames = new HashSet<string>();
+        public readonly HashSet<string> ValidFluidVariableNames = new HashSet<string>();
+        public readonly Stack<List<string>> FluidVariableScope = new Stack<List<string>>();
+        public readonly HashSet<string> ValidNumberVariableNames = new HashSet<string>();
+        public readonly Stack<List<string>> NumberVariableScope = new Stack<List<string>>();
+        public readonly HashSet<string> ValidFluidArrayNames = new HashSet<string>();
+        public readonly Stack<List<string>> FluidArrayScope = new Stack<List<string>>();
+        public Dictionary<string, string> MostRecentVariableRef;
         private int Unique = 0;
 
         public void EnterDFG()
         {
-            fluidVariableScope.Push(new List<string>());
-            mostRecentVariableRef = new Dictionary<string, string>();
+            FluidVariableScope.Push(new List<string>());
+            NumberVariableScope.Push(new List<string>());
+            FluidArrayScope.Push(new List<string>());
+            MostRecentVariableRef = new Dictionary<string, string>();
         }
 
         public void LeftDFG()
         {
-            List<string> variablesOutOfScope = fluidVariableScope.Pop();
-            variablesOutOfScope.ForEach(x => validFluidVariableNames.Remove(x));
+            List<string> fluidVariablesOutOfScope = FluidVariableScope.Pop();
+            fluidVariablesOutOfScope.ForEach(x => ValidFluidVariableNames.Remove(x));
 
-            mostRecentVariableRef = null;
+            List<string> numberVariablesOutOfScope = NumberVariableScope.Pop();
+            numberVariablesOutOfScope.ForEach(x => ValidNumberVariableNames.Remove(x));
+
+            List<string> fluidArraysOutOfScope = FluidArrayScope.Pop();
+            fluidArraysOutOfScope.ForEach(x => ValidFluidArrayNames.Remove(x));
+
+            MostRecentVariableRef = null;
         }
 
         public void CheckModuleVariable(string id, string moduleName)
         {
-            if (!validModuleNames.Contains(moduleName))
+            if (!ValidModuleNames.Contains(moduleName))
             {
-                parseExceptions.Add(new ParseException(id, $"Module {moduleName} isn't previously defined."));
+                ParseExceptions.Add(new ParseException(id, $"Module {moduleName} isn't previously defined."));
             }
         }
 
         public void CheckFluidVariable(string id, string variableName)
         {
-            if (!validFluidVariableNames.Contains(variableName))
+            if (!ValidFluidVariableNames.Contains(variableName))
             {
-                parseExceptions.Add(new ParseException(id, $"Fluid variable {variableName} isn't previously defined."));
+                ParseExceptions.Add(new ParseException(id, $"Fluid variable {variableName} isn't previously defined."));
+            }
+        }
+
+        public void CheckNumberVariable(string id, string variableName)
+        {
+            if (!ValidNumberVariableNames.Contains(variableName))
+            {
+                ParseExceptions.Add(new ParseException(id, $"Numeric variable {variableName} isn't previously defined."));
+            }
+        }
+
+        public void CheckFluidArrayVariable(string id, string variableName)
+        {
+            if (!ValidFluidArrayNames.Contains(variableName))
+            {
+                ParseExceptions.Add(new ParseException(id, $"Fluid array {variableName} isn't previously defined."));
             }
         }
 
         public void AddModuleName(string moduleName)
         {
-            validModuleNames.Add(moduleName);
+            ValidModuleNames.Add(moduleName);
         }
 
         public void AddFluidVariable(string variableName)
@@ -61,17 +89,39 @@ namespace BiolyCompiler.Parser
             }
             //fluid variable may have been declared in an earlier scope
             //if that's the case then don't add it to the new scope as well
-            if (fluidVariableScope.All(x => !x.Contains(variableName)))
+            if (FluidVariableScope.All(x => !x.Contains(variableName)))
             {
-                fluidVariableScope.Peek().Add(variableName);
+                FluidVariableScope.Peek().Add(variableName);
             }
-            validFluidVariableNames.Add(variableName);
+            ValidFluidVariableNames.Add(variableName);
+        }
+
+        public void AddNumberVariable(string variableName)
+        {
+            //the variable may have been declared in an earlier scope
+            //if that's the case then don't add it to the new scope as well
+            if (NumberVariableScope.All(x => !x.Contains(variableName)))
+            {
+                NumberVariableScope.Peek().Add(variableName);
+            }
+            ValidNumberVariableNames.Add(variableName);
+        }
+
+        public void AddFluidArrayVariable(string variableName)
+        {
+            //the variable may have been declared in an earlier scope
+            //if that's the case then don't add it to the new scope as well
+            if (FluidArrayScope.All(x => !x.Contains(variableName)))
+            {
+                FluidArrayScope.Peek().Add(variableName);
+            }
+            ValidFluidArrayNames.Add(variableName);
         }
 
         public string GetUniquePostFix()
         {
             Unique++;
-            return $"{Validator.SPECIAL_SEPARATOR}{Unique}";
+            return $"{Validator.INLINE_PROGRAM_SPECIAL_SEPARATOR}{Unique}";
         }
     }
 }

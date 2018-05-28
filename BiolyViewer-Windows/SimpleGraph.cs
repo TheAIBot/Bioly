@@ -87,6 +87,11 @@ namespace BiolyViewer_Windows
                     Conditional conditional = (control as Repeat).Cond;
                     edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
                 }
+                else if (control is Direct)
+                {
+                    Conditional conditional = (control as Direct).Cond;
+                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                }
                 else if (control != null)
                 {
                     throw new Exception("Unknown Conditional type.");
@@ -99,16 +104,22 @@ namespace BiolyViewer_Windows
         private static string CreateConditionalEdges(string edges, Dictionary<DFG<Block>, string> dfgNames, (IControlBlock control, DFG<Block> dfg) node, Conditional conditional)
         {
             //edge from before if to into if
-            edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.GuardedDFG]);
-            edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.GuardedDFG);
+            if (conditional.GuardedDFG != null)
+            {
+                edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.GuardedDFG]);
+                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.GuardedDFG);
+            }
             if (conditional.NextDFG != null)
             {
                 //edge from before if to after if
                 edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.NextDFG]);
                 edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.NextDFG);
                 //edge from inside if to after if
-                edges += CreateEdge(dfgNames[conditional.GuardedDFG], dfgNames[conditional.NextDFG]);
-                edges += CreateHiddenRankEdgesBetweenDFGs(conditional.GuardedDFG, conditional.NextDFG);
+                if (conditional.GuardedDFG != null)
+                {
+                    edges += CreateEdge(dfgNames[conditional.GuardedDFG], dfgNames[conditional.NextDFG]);
+                    edges += CreateHiddenRankEdgesBetweenDFGs(conditional.GuardedDFG, conditional.NextDFG);
+                }
             }
 
             return edges;

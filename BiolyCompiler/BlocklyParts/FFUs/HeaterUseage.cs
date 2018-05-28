@@ -1,6 +1,8 @@
-﻿using BiolyCompiler.BlocklyParts.Misc;
+﻿using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -32,7 +34,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             SetTemperatureAndTime(id, temperature, time);
         }
 
-        public static Block CreateHeater(string output, XmlNode node, ParserInfo parserInfo)
+        public static Block CreateHeater(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
@@ -42,7 +44,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Heater is missing input fluid block."));
             if (inputFluidNode != null)
             {
-                fluidInput = new FluidInput(inputFluidNode, parserInfo);
+                fluidInput = XmlParser.ParseFluidInput(inputFluidNode, dfg, parserInfo);
             }
 
             List<FluidInput> inputs = new List<FluidInput>();
