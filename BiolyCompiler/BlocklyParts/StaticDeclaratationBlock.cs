@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BiolyCompiler.BlocklyParts
 {
-    public class StaticDeclarationBlock : StaticBlock
+    public abstract class StaticDeclarationBlock : StaticBlock
     {
 
         public StaticDeclarationBlock(string moduleName, bool canBeOutput, string output, string id) : base(moduleName, canBeOutput, output, id)
