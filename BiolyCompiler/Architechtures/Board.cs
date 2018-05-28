@@ -13,14 +13,16 @@ namespace BiolyCompiler.Architechtures
     public class Board
     {
         //Dummy class for now.
-        public int heigth, width;
+        public int heigth;
+        public int width;
         public HashSet<Module> PlacedModules        = new HashSet<Module>();
         public HashSet<Rectangle> EmptyRectangles   = new HashSet<Rectangle>();
         public Dictionary<string,BoardFluid> fluids = new Dictionary<string,BoardFluid>();
         public Module[,] grid;
 
 
-        public Board(int width, int heigth){
+        public Board(int width, int heigth)
+        {
             this.width  = width;
             this.heigth = heigth;
             this.grid = new Module[width,heigth];
