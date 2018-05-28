@@ -58,20 +58,20 @@ namespace BiolyViewer_Windows
 
             ExecuteJs($"startSimulator({Width}, {Height}, [{inputString}], [{outputString}]);");
 
-            //for (int i = 0; i < inputs.Count; i++)
-            //{
-            //    QueueCommand(new AreaCommand(inputs[i].Shape, CommandType.SHOW_AREA, 0));
-            //}
+            for (int i = 0; i < inputs.Count; i++)
+            {
+                QueueCommand(new AreaCommand(inputs[i].Shape, CommandType.SHOW_AREA, 0));
+            }
 
-            //for (int i = 0; i < outputs.Count; i++)
-            //{
-            //    QueueCommand(new AreaCommand(outputs[i].Shape, CommandType.SHOW_AREA, 0));
-            //}
+            for (int i = 0; i < outputs.Count; i++)
+            {
+                QueueCommand(new AreaCommand(outputs[i].Shape, CommandType.SHOW_AREA, 0));
+            }
 
-            //for (int i = 0; i < otherStaticModules.Count; i++)
-            //{
-            //    QueueCommand(new AreaCommand(otherStaticModules[i].Shape, CommandType.SHOW_AREA, 0));
-            //}
+            for (int i = 0; i < otherStaticModules.Count; i++)
+            {
+                QueueCommand(new AreaCommand(otherStaticModules[i].Shape, CommandType.SHOW_AREA, 0));
+            }
             SendCommands();
 
             if (REALLY_SLOW_COMPUTER)

@@ -23,6 +23,7 @@ namespace BiolyCompiler
     {
         private readonly CommandExecutor<T> Executor;
         public int TIME_BETWEEN_COMMANDS = 50;
+        public bool ShowEmptyRectangles = true;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -152,25 +153,27 @@ namespace BiolyCompiler
                     }
                 }
 
-                var closestsBoard = boards.MinBy(x => Math.Abs(x.Key - time));
-                if (closestsBoard.Value == null)
+                if (ShowEmptyRectangles)
                 {
+                    var closestsBoard = boards.MinBy(x => Math.Abs(x.Key - time));
+                    if (closestsBoard.Value != oldBoard && closestsBoard.Value != null)
+                    {
+                        var emptyRectanglesToRemove = oldBoard?.EmptyRectangles.Except(closestsBoard.Value.EmptyRectangles);
+                        emptyRectanglesToRemove?.ForEach(x => removeAreaCommands.Add(new AreaCommand(x, CommandType.REMOVE_AREA, 0)));
 
+                        var emptyRectanglesToShow = closestsBoard.Value.EmptyRectangles.Except(oldBoard?.EmptyRectangles ?? new HashSet<Rectangle>());
+                        emptyRectanglesToShow.ForEach(x => showAreaCommands.Add(new AreaCommand(x, CommandType.SHOW_AREA, 0)));
+                    }
+                    oldBoard = closestsBoard.Value ?? oldBoard;
                 }
-                if (closestsBoard.Value != oldBoard && closestsBoard.Value != null)
-                {
-                    oldBoard?.EmptyRectangles.ForEach(x => removeAreaCommands.Add(new AreaCommand(x, CommandType.REMOVE_AREA, 0)));
-                    closestsBoard.Value.EmptyRectangles.ForEach(x => showAreaCommands.Add(new AreaCommand(x, CommandType.SHOW_AREA, 0)));
-                }
-                oldBoard = closestsBoard.Value ?? oldBoard;
 
-                if (showAreaCommands.Count > 0)
-                {
-                    showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
-                }
                 if (removeAreaCommands.Count > 0)
                 {
                     removeAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
+                }
+                if (showAreaCommands.Count > 0)
+                {
+                    showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
                 }
 
                 Executor.SendCommands();
