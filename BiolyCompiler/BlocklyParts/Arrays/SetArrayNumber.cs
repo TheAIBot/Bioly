@@ -20,11 +20,13 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public const string XML_TYPE_NAME = "setNumberArrayIndex";
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
+        public readonly VariableBlock NumberBlock;
 
-        public SetArrayNumber(VariableBlock indexBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : base(true, input, arrayName, id, canBeScheduled)
+        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : base(true, input, arrayName, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
+            this.NumberBlock = numberBlock;
         }
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
@@ -54,10 +56,15 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             inputs.Add(indexBlock?.OutputVariable);
             inputs.Add(numberInput?.OutputVariable);
 
-            return new SetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);
+            return new SetArrayNumber(indexBlock, numberInput, arrayName, inputs, id, canBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             int index = (int)IndexBlock.Run(variables, executor, dropPositions);
@@ -66,8 +73,11 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
             }
 
-            return variables[FluidArray.GetArrayIndexName(ArrayName, index)];
+            string arrayIndexName = FluidArray.GetArrayIndexName(ArrayName, index);
+            return (arrayIndexName, NumberBlock.Run(variables, executor, dropPositions));
         }
+
+
 
         public override string ToXml()
         {

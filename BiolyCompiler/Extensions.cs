@@ -3,6 +3,7 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Xml;
 
@@ -80,7 +81,7 @@ namespace BiolyCompiler
 
         internal static float TextToFloat(this XmlNode xmlNode, string id)
         {
-            if (float.TryParse(xmlNode.InnerText, out float value))
+            if (float.TryParse(xmlNode.InnerText, System.Globalization.NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out float value))
             {
                 return value;
             }

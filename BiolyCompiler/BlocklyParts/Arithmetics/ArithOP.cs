@@ -90,7 +90,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.POW:
                     return "POWER";
                 default:
-                    throw new Exception("Failed to parse the arithmetic operator type.");
+                    throw new Exception("Failed to parse the arithmetic operator type. Type: " + type.ToString());
             }
         }
 

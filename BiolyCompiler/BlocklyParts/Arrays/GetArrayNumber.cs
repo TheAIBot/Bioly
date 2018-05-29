@@ -61,7 +61,14 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            throw new NotImplementedException();
+            int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
+            int index = (int)IndexBlock.Run(variables, executor, dropPositions);
+            if (index < 0 || index >= arrayLength)
+            {
+                throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
+            }
+
+            return variables[FluidArray.GetArrayIndexName(ArrayName, index)];
         }
 
         public override string ToXml()

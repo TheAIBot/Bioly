@@ -95,7 +95,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 case BoolOPTypes.GTE:
                     return "GTE";
                 default:
-                    throw new InternalParseException("Failed to parse the boolean operator type.");
+                    throw new InternalParseException("Failed to parse the boolean operator type. Type: " + type.ToString());
             }
         }
 
@@ -119,7 +119,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 case BoolOPTypes.GTE:
                     return leftResult >= rightResult ? 1 : 0;
                 default:
-                    throw new Exception("Failed to parse the operator type.");
+                    throw new Exception("Failed to parse the operator type. Type: " + OPType.ToString());
             }
         }
 

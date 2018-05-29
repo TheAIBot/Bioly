@@ -52,7 +52,7 @@ namespace BiolyCompiler.Parser
                 var mostRecentRef = new Dictionary<string, string>();
                 while (true)
                 {
-                    if (IsDFGBreaker(node) && canFirstBlockBeControlFlow)
+                    if (IsDFGBreaker(node, dfg) && canFirstBlockBeControlFlow)
                     {
                         controlBlock = ParseDFGBreaker(node, dfg, parserInfo);
                         break;
@@ -116,16 +116,20 @@ namespace BiolyCompiler.Parser
             return block;
         }
 
-        private static bool IsDFGBreaker(XmlNode node)
+        private static bool IsDFGBreaker(XmlNode node, DFG<Block> dfg)
         {
             string blockType = node.GetAttributeValue(Block.TypeFieldName);
             switch (blockType)
             {
                 case If.XML_TYPE_NAME:
                 case Repeat.XML_TYPE_NAME:
-                case SetArrayFluid.XML_TYPE_NAME:
-                    //case SensorUsage.XML_TYPE_NAME:
                     return true;
+                case SetArrayFluid.XML_TYPE_NAME:
+                case SetArrayNumber.XML_TYPE_NAME:
+                    //case SensorUsage.XML_TYPE_NAME:
+                    //these blocks needs to be at the start of a dfg
+                    //so only break if this isn't an empty dfg
+                    return dfg.Nodes.Count > 0;
                 default:
                     return false;
             }
@@ -141,6 +145,8 @@ namespace BiolyCompiler.Parser
                 case Repeat.XML_TYPE_NAME:
                     return new Repeat(node, dfg, parserInfo);
                 case SetArrayFluid.XML_TYPE_NAME:
+                    return new Direct(node, dfg, parserInfo);
+                case SetArrayNumber.XML_TYPE_NAME:
                     return new Direct(node, dfg, parserInfo);
                 default:
                     throw new Exception("Invalid type: " + blockType);
@@ -224,6 +230,8 @@ namespace BiolyCompiler.Parser
                     return GetArrayNumber.Parse(node, dfg, parserInfo, canBeScheduled);
                 case SetArrayNumber.XML_TYPE_NAME:
                     return SetArrayNumber.Parse(node, dfg, parserInfo, canBeScheduled);
+                case RoundOP.XML_TYPE_NAME:
+                    return RoundOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 default:
                     throw new UnknownBlockException(id);
             }

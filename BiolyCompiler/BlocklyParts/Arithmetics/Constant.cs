@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public Constant(XmlNode node, string id, bool canBeScheduled) : base(false, null, null, id, canBeScheduled)
         {
-            Value = node.TextToFloat(id);
+            this.Value = node.TextToFloat(id);
         }
 
         public static Block Parse(XmlNode node, bool canBeScheduled)
