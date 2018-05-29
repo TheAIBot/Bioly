@@ -10,6 +10,7 @@ namespace BiolyCompiler.BlocklyParts.Sensors
     public class Sensor : FluidBlock
     {
         public const string XmlTypeName = "sensor";
+        public static string TypeName => "sensor";
 
         public Sensor(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, output, id)
         {

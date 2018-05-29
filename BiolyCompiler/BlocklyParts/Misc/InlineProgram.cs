@@ -169,8 +169,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             ParserInfo dummyParserInfo = new ParserInfo();
             dummyParserInfo.EnterDFG();
-            variablesFromTo.Where(x => OutputsFromTo.ContainsKey(x.Key)).ToList().ForEach(x => dummyParserInfo.AddModuleName(x.Value));
-            variablesFromTo.ToList().ForEach(x => dummyParserInfo.AddFluidVariable(x.Value));
+            dummyParserInfo.DoTypeChecks = false;
 
             //replace inputs
             //replace outputs
@@ -254,7 +253,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                         case InputDeclaration.XML_TYPE_NAME:
                             {
                                 var splittedXml = SplitBlockXml(blockNode, xml);
-                                InputDeclaration inputBlock = InputDeclaration.Parse(blockNode);
+                                InputDeclaration inputBlock = InputDeclaration.Parse(blockNode, dummyParserInfo);
                                 string fluidInputXml = InputsFromTo[inputBlock.OriginalOutputVariable].ToXml();
                                 string inputXml = Fluid.ToXml(ID, inputBlock.OriginalOutputVariable, fluidInputXml, splittedXml.nextBlockXml);
 

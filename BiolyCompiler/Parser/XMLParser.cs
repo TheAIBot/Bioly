@@ -111,7 +111,6 @@ namespace BiolyCompiler.Parser
             else
             {
                 parserInfo.MostRecentVariableRef.Add(block.OriginalOutputVariable, block.OutputVariable);
-                parserInfo.AddFluidVariable(block.OriginalOutputVariable);
             }
 
             return block;
@@ -186,7 +185,7 @@ namespace BiolyCompiler.Parser
                     {
                         throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
                     }
-                    return InputDeclaration.Parse(node);
+                    return InputDeclaration.Parse(node, parserInfo);
                 case OutputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
@@ -215,10 +214,16 @@ namespace BiolyCompiler.Parser
                     return SetNumberVariable.Parse(node, dfg, parserInfo);
                 case GetDropletCount.XML_TYPE_NAME:
                     return GetDropletCount.Parser(node, parserInfo, canBeScheduled);
-                case GetArrayLength.XML_TYPE_NAME:
-                    return GetArrayLength.Parse(node, parserInfo, canBeScheduled);
+                case GetFluidArrayLength.XML_TYPE_NAME:
+                    return GetFluidArrayLength.Parse(node, parserInfo, canBeScheduled);
                 case ImportVariable.XML_TYPE_NAME:
                     return ImportVariable.Parse(node, parserInfo, canBeScheduled);
+                case NumberArray.XML_TYPE_NAME:
+                    return NumberArray.Parse(node, dfg, parserInfo);
+                case GetArrayNumber.XML_TYPE_NAME:
+                    return GetArrayNumber.Parse(node, dfg, parserInfo, canBeScheduled);
+                case SetArrayNumber.XML_TYPE_NAME:
+                    return SetArrayNumber.Parse(node, dfg, parserInfo, canBeScheduled);
                 default:
                     throw new UnknownBlockException(id);
             }

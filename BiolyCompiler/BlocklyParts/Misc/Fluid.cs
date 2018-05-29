@@ -10,6 +10,7 @@ using BiolyCompiler.Routing;
 using System.Linq;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -37,6 +38,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             string id = node.GetAttributeValue(Block.IDFieldName);
             string output = node.GetNodeWithAttributeValue(OUTPUT_FLUID_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, output);
+            parserInfo.AddVariable(id, VariableType.FLUID, output);
             XmlNode innerNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Fluid is missing fluid definition blocks."));
             if (innerNode != null)
             {

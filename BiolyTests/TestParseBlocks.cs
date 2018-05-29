@@ -8,6 +8,7 @@ using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using System;
@@ -37,7 +38,7 @@ namespace BiolyTests.ParseBlockTests
             XmlNode node = TestTools.GetWorkspace();
             ParserInfo parserInfo = new ParserInfo();
             parserInfo.EnterDFG();
-            parserInfo.AddFluidVariable("a");
+            parserInfo.AddVariable("", VariableType.FLUID, "a");
             InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
@@ -59,7 +60,6 @@ namespace BiolyTests.ParseBlockTests
             OutputDeclaration heater = (OutputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
-            Assert.IsTrue(parserInfo.ValidModuleNames.Contains("z"));
         }
 
         [TestMethod]
@@ -75,7 +75,6 @@ namespace BiolyTests.ParseBlockTests
             HeaterDeclaration heater = (HeaterDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
-            Assert.IsTrue(parserInfo.ValidModuleNames.Contains("z"));
         }
 
         [TestMethod]
@@ -88,9 +87,9 @@ namespace BiolyTests.ParseBlockTests
             XmlNode node = TestTools.GetWorkspace();
             ParserInfo parserInfo = new ParserInfo();
             parserInfo.EnterDFG();
-            parserInfo.AddFluidVariable("a");
-            parserInfo.AddFluidVariable("b");
-            parserInfo.AddFluidVariable("c");
+            parserInfo.AddVariable("", VariableType.FLUID, "a");
+            parserInfo.AddVariable("", VariableType.FLUID, "b");
+            parserInfo.AddVariable("", VariableType.FLUID, "c");
             Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
@@ -156,7 +155,7 @@ namespace BiolyTests.ParseBlockTests
             XmlNode node = TestTools.GetWorkspace();
             ParserInfo parserInfo = new ParserInfo();
             parserInfo.EnterDFG();
-            parserInfo.AddFluidVariable("a");
+            parserInfo.AddVariable("", VariableType.FLUID, "a");
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
@@ -173,7 +172,7 @@ namespace BiolyTests.ParseBlockTests
             XmlNode node = TestTools.GetWorkspace();
             ParserInfo parserInfo = new ParserInfo();
             parserInfo.EnterDFG();
-            parserInfo.AddFluidVariable("a");
+            parserInfo.AddVariable("", VariableType.FLUID, "a");
             Fluid input = (Fluid)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
@@ -189,8 +188,8 @@ namespace BiolyTests.ParseBlockTests
             XmlNode node = TestTools.GetWorkspace();
             ParserInfo parserInfo = new ParserInfo();
             parserInfo.EnterDFG();
-            parserInfo.AddFluidVariable("a");
-            parserInfo.AddModuleName("z");
+            parserInfo.AddVariable("", VariableType.FLUID, "a");
+            parserInfo.AddVariable("", VariableType.OUTPUT, "z");
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
@@ -207,8 +206,8 @@ namespace BiolyTests.ParseBlockTests
             XmlNode node = TestTools.GetWorkspace();
             ParserInfo parserInfo = new ParserInfo();
             parserInfo.EnterDFG();
-            parserInfo.AddFluidVariable("b");
-            parserInfo.AddModuleName("z");
+            parserInfo.AddVariable("", VariableType.FLUID, "b");
+            parserInfo.AddVariable("", VariableType.HEATER, "z");
             HeaterUseage heater = (HeaterUseage)XmlParser.ParseBlock(node, null, parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.Parser
 {
@@ -12,110 +13,77 @@ namespace BiolyCompiler.Parser
     {
         public readonly CDFG cdfg = new CDFG();
         public readonly List<ParseException> ParseExceptions = new List<ParseException>();
-        public readonly HashSet<string> ValidModuleNames = new HashSet<string>();
-        public readonly HashSet<string> ValidFluidVariableNames = new HashSet<string>();
-        public readonly Stack<List<string>> FluidVariableScope = new Stack<List<string>>();
-        public readonly HashSet<string> ValidNumberVariableNames = new HashSet<string>();
-        public readonly Stack<List<string>> NumberVariableScope = new Stack<List<string>>();
-        public readonly HashSet<string> ValidFluidArrayNames = new HashSet<string>();
-        public readonly Stack<List<string>> FluidArrayScope = new Stack<List<string>>();
+        public readonly Dictionary<VariableType, (HashSet<string> validVariables, Stack<List<string>> scopes)> Scopes = new Dictionary<VariableType, (HashSet<string>, Stack<List<string>>)>();
         public Dictionary<string, string> MostRecentVariableRef;
+        public bool DoTypeChecks = true;
         private int Unique = 0;
+
+        public ParserInfo()
+        {
+            foreach (VariableType type in Enum.GetValues(typeof(VariableType)).Cast<VariableType>())
+            {
+                Scopes.Add(type, (new HashSet<string>(), new Stack<List<string>>()));
+            }
+        }
 
         public void EnterDFG()
         {
-            FluidVariableScope.Push(new List<string>());
-            NumberVariableScope.Push(new List<string>());
-            FluidArrayScope.Push(new List<string>());
+            foreach (var scope in Scopes)
+            {
+                scope.Value.scopes.Push(new List<string>());
+            }
+
             MostRecentVariableRef = new Dictionary<string, string>();
         }
 
         public void LeftDFG()
         {
-            List<string> fluidVariablesOutOfScope = FluidVariableScope.Pop();
-            fluidVariablesOutOfScope.ForEach(x => ValidFluidVariableNames.Remove(x));
-
-            List<string> numberVariablesOutOfScope = NumberVariableScope.Pop();
-            numberVariablesOutOfScope.ForEach(x => ValidNumberVariableNames.Remove(x));
-
-            List<string> fluidArraysOutOfScope = FluidArrayScope.Pop();
-            fluidArraysOutOfScope.ForEach(x => ValidFluidArrayNames.Remove(x));
+            foreach (var scope in Scopes)
+            {
+                scope.Value.scopes.Pop().ForEach(x => scope.Value.validVariables.Remove(x));
+            }
 
             MostRecentVariableRef = null;
         }
 
-        public void CheckModuleVariable(string id, string moduleName)
+        public void CheckVariable(string id, VariableType type, string variableName)
         {
-            if (!ValidModuleNames.Contains(moduleName))
-            {
-                ParseExceptions.Add(new ParseException(id, $"Module {moduleName} isn't previously defined."));
-            }
-        }
-
-        public void CheckFluidVariable(string id, string variableName)
-        {
-            if (!ValidFluidVariableNames.Contains(variableName))
-            {
-                ParseExceptions.Add(new ParseException(id, $"Fluid variable {variableName} isn't previously defined."));
-            }
-        }
-
-        public void CheckNumberVariable(string id, string variableName)
-        {
-            if (!ValidNumberVariableNames.Contains(variableName))
-            {
-                ParseExceptions.Add(new ParseException(id, $"Numeric variable {variableName} isn't previously defined."));
-            }
-        }
-
-        public void CheckFluidArrayVariable(string id, string variableName)
-        {
-            if (!ValidFluidArrayNames.Contains(variableName))
-            {
-                ParseExceptions.Add(new ParseException(id, $"Fluid array {variableName} isn't previously defined."));
-            }
-        }
-
-        public void AddModuleName(string moduleName)
-        {
-            ValidModuleNames.Add(moduleName);
-        }
-
-        public void AddFluidVariable(string variableName)
-        {
-            if (variableName == Block.DEFAULT_NAME)
+            //if type checked is disabled then don't type check. duh
+            if (!DoTypeChecks)
             {
                 return;
             }
-            //fluid variable may have been declared in an earlier scope
-            //if that's the case then don't add it to the new scope as well
-            if (FluidVariableScope.All(x => !x.Contains(variableName)))
+
+            if (!Scopes[type].validVariables.Contains(variableName))
             {
-                FluidVariableScope.Peek().Add(variableName);
+                ParseExceptions.Add(new ParseException(id, $"Variable {variableName} of type {type.ToReadableString()} isn't previously defined."));
             }
-            ValidFluidVariableNames.Add(variableName);
         }
 
-        public void AddNumberVariable(string variableName)
+        public void AddVariable(string id, VariableType type, string variableName)
         {
-            //the variable may have been declared in an earlier scope
-            //if that's the case then don't add it to the new scope as well
-            if (NumberVariableScope.All(x => !x.Contains(variableName)))
+            //Not allowed to add the variable if it already 
+            //exists as another type
+            foreach (var scope in Scopes)
             {
-                NumberVariableScope.Peek().Add(variableName);
-            }
-            ValidNumberVariableNames.Add(variableName);
-        }
+                if (scope.Key == type)
+                {
+                    continue;
+                }
 
-        public void AddFluidArrayVariable(string variableName)
-        {
-            //the variable may have been declared in an earlier scope
-            //if that's the case then don't add it to the new scope as well
-            if (FluidArrayScope.All(x => !x.Contains(variableName)))
-            {
-                FluidArrayScope.Peek().Add(variableName);
+                if (scope.Value.validVariables.Contains(variableName))
+                {
+                    throw new ParseException(id, $"Can't create the variable {variableName} of type {type.ToReadableString()} as it already exists as the type {scope.Key.ToReadableString()}.");
+                }
             }
-            ValidFluidArrayNames.Add(variableName);
+
+            //Don't add the variable again if it was
+            //already defined in a previous scope
+            if (Scopes[type].scopes.All(scope => !scope.Contains(variableName)))
+            {
+                Scopes[type].scopes.Peek().Add(variableName);
+                Scopes[type].validVariables.Add(variableName);
+            }
         }
 
         public string GetUniquePostFix()

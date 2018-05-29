@@ -7,6 +7,7 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
@@ -26,7 +27,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string output = node.GetNodeWithAttributeValue(VARIABLE_FIELD_NAME).InnerText;
-            parserInfo.AddNumberVariable(output);
+            parserInfo.AddVariable(id, VariableType.NUMBER, output);
 
             VariableBlock operandBlock = null;
             XmlNode operandNode = node.GetInnerBlockNode(INPUT_VARIABLE_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block to define the variables value."));

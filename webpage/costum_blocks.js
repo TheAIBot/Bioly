@@ -659,6 +659,95 @@ Blockly.Blocks["importNumberVariable"] = {
 	}
 };
 
+Blockly.Blocks["numberArray"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new number array",
+			"args0": [
+			],
+			"message1": "name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "number_array_name"
+				}
+			],
+			"message2": "length %1",
+			"args2": [
+				{
+					"type": "input_value",
+					"name": "arrayLength",
+					"check": "Number"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["setNumberArrayIndex"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "in number array %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "number_array_name"
+				}
+			],
+			"message1": "set index %1",
+			"args1": [
+				{
+					"type": "input_value",
+					"name": "index",
+					"check": ["Number"]
+				}
+			],
+			"message2": "to %1",
+			"args2": [
+				{
+					"type": "input_value",
+					"name": "inputNumber",
+					"check": "Number"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["getNumberArrayIndex"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "in number array %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "number_array_name"
+				}
+			],
+			"message1": "get index %1",
+			"args1": [
+				{
+					"type": "input_value",
+					"name": "index",
+					"check": ["Number"]
+				}
+			],
+			"output": "Number",
+			"colour": 40,
+			"tooltip": ""
+		});
+	}
+};
+
 
 
 

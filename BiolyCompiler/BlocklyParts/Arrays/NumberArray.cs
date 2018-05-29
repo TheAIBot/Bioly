@@ -12,15 +12,15 @@ using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
 {
-    public class FluidArray : VariableBlock
+    public class NumberArray : VariableBlock
     {
         public const string ARRAY_NAME_FIELD_NAME = "arrayName";
         public const string ARRAY_LENGTH_FIELD_NAME = "arrayLength";
-        public const string XML_TYPE_NAME = "fluidArray";
+        public const string XML_TYPE_NAME = "numberArray";
         public readonly string ArrayName;
         public readonly VariableBlock ArrayLengthBlock;
 
-        public FluidArray(string arrayName, VariableBlock arrayLengthBlock, List<string> input, string id) : base(true, input, arrayName, id, true)
+        public NumberArray(string arrayName, VariableBlock arrayLengthBlock, List<string> input, string id) : base(true, input, arrayName, id, true)
         {
             this.ArrayName = arrayName;
             this.ArrayLengthBlock = arrayLengthBlock;
@@ -30,7 +30,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
-            parserInfo.AddVariable(id, VariableType.FLUID_ARRAY, arrayName);
+            parserInfo.AddVariable(id, VariableType.NUMBER_ARRAY, arrayName);
 
             VariableBlock arrayLengthBlock = null;
             XmlNode arrayLengthNode = node.GetInnerBlockNode(ARRAY_LENGTH_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block which define the length of the array."));
@@ -44,7 +44,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             List<string> inputs = new List<string>();
             inputs.Add(arrayLengthBlock?.OutputVariable);
 
-            return new FluidArray(arrayName, arrayLengthBlock, inputs, id);
+            return new NumberArray(arrayName, arrayLengthBlock, inputs, id);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -54,7 +54,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            string variableName = GetArrayLengthVariable(ArrayName);
+            string variableName = FluidArray.GetArrayLengthVariable(ArrayName);
             //The value returned from the block can be a fraction and
             //the array length can't be. So convert to int.
             int arrayLength = (int)ArrayLengthBlock.Run(variables, executor, dropPositions);
@@ -62,18 +62,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             {
                 throw new RuntimeException(BlockID, $"Array length can't be set to {arrayLength}. The length has to be positive.");
             }
-            
+
             return (variableName, arrayLength);
-        }
-
-        public static string GetArrayLengthVariable(string arrayName)
-        {
-            return $"{arrayName}{Validator.FLUID_ARRAY_SPECIAL_SEPARATOR}Length";
-        }
-
-        public static string GetArrayIndexName(string arrayName, int index)
-        {
-            return $"{arrayName}{Validator.FLUID_ARRAY_SPECIAL_SEPARATOR}Index{index}";
         }
 
         public override string ToXml()
@@ -83,7 +73,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override string ToString()
         {
-            return "New fluid array with name " + ArrayName;
+            return "New number array with name " + ArrayName;
         }
     }
 }

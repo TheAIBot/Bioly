@@ -5,6 +5,7 @@ using System.Xml;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
@@ -23,7 +24,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string variableName = node.GetNodeWithAttributeValue(VARIABLE_FIELD_NAME).InnerText;
-            parserInfo.CheckFluidVariable(id, variableName);
+            parserInfo.CheckVariable(id, VariableType.NUMBER, variableName);
             return new GetNumberVariable(variableName, id, canBeScheduled);
         }
 

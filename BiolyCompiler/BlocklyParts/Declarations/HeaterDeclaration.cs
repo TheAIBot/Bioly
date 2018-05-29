@@ -2,6 +2,7 @@
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,8 +30,8 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             string id = node.GetAttributeValue(Block.IDFieldName);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, moduleName);
-            parserInfo.AddModuleName(moduleName);
-            
+            parserInfo.AddVariable(id, VariableType.HEATER, moduleName);
+
             return new HeaterDeclaration(moduleName, node, id);
         }
 

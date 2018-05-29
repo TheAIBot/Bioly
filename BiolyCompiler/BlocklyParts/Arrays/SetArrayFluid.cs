@@ -12,6 +12,7 @@ using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.Routing;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
 {
@@ -34,7 +35,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
-            parserInfo.CheckFluidArrayVariable(id, arrayName);
+            parserInfo.CheckVariable(id, VariableType.FLUID_ARRAY, arrayName);
 
             VariableBlock indexBlock = null;
             XmlNode indexNode = node.GetInnerBlockNode(INDEX_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block to define the variables value."));

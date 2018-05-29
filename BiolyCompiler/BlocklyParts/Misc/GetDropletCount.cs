@@ -5,6 +5,7 @@ using System.Xml;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -23,7 +24,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
             string variableName = node.GetNodeWithAttributeValue(VARIABLE_FIELD_NAME).InnerText;
-            parserInfo.CheckFluidVariable(id, variableName);
+            parserInfo.CheckVariable(id, VariableType.FLUID, variableName);
             return new GetDropletCount(variableName, id, canBeScheduled);
         }
 

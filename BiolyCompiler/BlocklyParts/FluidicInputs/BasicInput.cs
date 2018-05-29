@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,7 +26,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             Validator.CheckVariableName(id, originalFluidName);
             if (doVariableCheck)
             {
-                parserInfo.CheckFluidVariable(id, originalFluidName);
+                parserInfo.CheckVariable(id, VariableType.FLUID, originalFluidName);
             }
             parserInfo.MostRecentVariableRef.TryGetValue(originalFluidName, out string correctedName);
 
