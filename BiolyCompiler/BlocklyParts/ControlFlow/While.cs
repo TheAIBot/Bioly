@@ -10,25 +10,33 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.ControlFlow
 {
-    public class Repeat : IControlBlock
+    public class While : IControlBlock
     {
-        public const string XML_TYPE_NAME = "controls_repeat_ext";
-        public const string TimesBlockFieldName = "TIMES";
-        public const string DoBlockFieldName = "DO";
+        public const string XML_TYPE_NAME = "controls_whileUntil";
+        public const string WHILE_MODE_FIELD_NAME = "MODE";
+        public const string SUPPORTED_MODE = "WHILE";
+        public const string CONDITIONAL_BLOCK_FIELD_NAME = "BOOL";
+        public const string DO_BLOCK_FIELD_NAME = "DO";
         public readonly Conditional Cond;
-        private int LoopCounter = 0;
 
-        public Repeat(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        public While(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
-            XmlNode conditionalNode = node.GetInnerBlockNode(TimesBlockFieldName, parserInfo, new MissingBlockException(id, "Repeat block is missing its conditional block."));
+            string mode = node.GetNodeWithAttributeValue(WHILE_MODE_FIELD_NAME).InnerText;
+            if (mode != SUPPORTED_MODE)
+            {
+                parserInfo.ParseExceptions.Add(new ParseException(id, "While block only support while mode."));
+            }
+
+
+            XmlNode conditionalNode = node.GetInnerBlockNode(CONDITIONAL_BLOCK_FIELD_NAME, parserInfo, new MissingBlockException(id, "While block is missing its conditional block."));
             VariableBlock decidingBlock = null;
             if (conditionalNode != null)
             {
                 decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ref conditionalNode, dfg, parserInfo);
             }
 
-            XmlNode guardedNode = node.GetInnerBlockNode(DoBlockFieldName, parserInfo, new MissingBlockException(id, "Repeat block is missing blocks to execute."));
+            XmlNode guardedNode = node.GetInnerBlockNode(DO_BLOCK_FIELD_NAME, parserInfo, new MissingBlockException(id, "While block is missing blocks to execute."));
             if (guardedNode != null)
             {
                 DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedNode, parserInfo);
@@ -40,10 +48,9 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public DFG<Block> GuardedDFG<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            this.LoopCounter = (int)Cond.DecidingBlock.Run(variables, executor, dropPositions);
-            if (LoopCounter > 0)
+            bool isTrue = Cond.DecidingBlock.Run(variables, executor, dropPositions) == 1f;
+            if (isTrue)
             {
-                LoopCounter--;
                 return Cond.GuardedDFG;
             }
             else
@@ -59,9 +66,9 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public DFG<Block> TryLoop<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            if (LoopCounter > 0)
+            bool isTrue = Cond.DecidingBlock.Run(variables, executor, dropPositions) == 1f;
+            if (isTrue)
             {
-                LoopCounter--;
                 return Cond.GuardedDFG;
             }
             else

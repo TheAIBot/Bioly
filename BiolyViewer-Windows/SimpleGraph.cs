@@ -92,6 +92,11 @@ namespace BiolyViewer_Windows
                     Conditional conditional = (control as Direct).Cond;
                     edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
                 }
+                else if (control is While)
+                {
+                    Conditional conditional = (control as While).Cond;
+                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                }
                 else if (control != null)
                 {
                     throw new Exception("Unknown Conditional type.");

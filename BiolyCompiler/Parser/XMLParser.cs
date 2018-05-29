@@ -123,6 +123,7 @@ namespace BiolyCompiler.Parser
             {
                 case If.XML_TYPE_NAME:
                 case Repeat.XML_TYPE_NAME:
+                case While.XML_TYPE_NAME:
                     return true;
                 case SetArrayFluid.XML_TYPE_NAME:
                 case SetArrayNumber.XML_TYPE_NAME:
@@ -144,6 +145,8 @@ namespace BiolyCompiler.Parser
                     return new If(node, dfg, parserInfo);
                 case Repeat.XML_TYPE_NAME:
                     return new Repeat(node, dfg, parserInfo);
+                case While.XML_TYPE_NAME:
+                    return new While(node, dfg, parserInfo);
                 case SetArrayFluid.XML_TYPE_NAME:
                     return new Direct(node, dfg, parserInfo);
                 case SetArrayNumber.XML_TYPE_NAME:

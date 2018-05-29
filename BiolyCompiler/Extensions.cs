@@ -81,7 +81,7 @@ namespace BiolyCompiler
 
         internal static float TextToFloat(this XmlNode xmlNode, string id)
         {
-            if (float.TryParse(xmlNode.InnerText, System.Globalization.NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out float value))
+            if (float.TryParse(xmlNode.InnerText, NumberStyles.Any, CultureInfo.InvariantCulture, out float value))
             {
                 return value;
             }

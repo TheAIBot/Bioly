@@ -44,16 +44,10 @@ namespace BiolyCompiler
             Dictionary<string, BoardFluid> dropPositions = new Dictionary<string, BoardFluid>();
             Dictionary<string, Module> staticModules = new Dictionary<string, Module>();
             Dictionary<string, float> variables = new Dictionary<string, float>();
-            Stack<List<string>> varScopeStack = new Stack<List<string>>();
-            Stack<Conditional> controlStack = new Stack<Conditional>();
-            Stack<(int, DFG<Block>)> repeatStack = new Stack<(int, DFG<Block>)>();
+            Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Dictionary<int, Board> boards = new Dictionary<int, Board>();
             Board oldBoard = null;
             bool firstRun = true;
-
-            varScopeStack.Push(new List<string>());
-            controlStack.Push(new Conditional(null, null, null));
-            repeatStack.Push((0,null));
 
             while (runningGraph != null)
             {
@@ -70,13 +64,13 @@ namespace BiolyCompiler
                     firstRun = false;
                 }
 
-                List<Command>[] commandTimeline = CreateCommandTimeline(variables, varScopeStack, scheduledOperations, time, dropPositions);
+                List<Command>[] commandTimeline = CreateCommandTimeline(variables, scheduledOperations, time, dropPositions);
 
                 SendCommands(commandTimeline, ref oldBoard, boards);
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
-                runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack, repeatStack, dropPositions);
+                runningGraph = GetNextGraph(graph, runningGraph, variables, controlStack, dropPositions);
             }
         }
 
@@ -93,7 +87,7 @@ namespace BiolyCompiler
             Executor.StartExecutor(inputs, outputs, staticModulesWithoutInputOutputs);
         }
 
-        private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, Stack<List<string>> varScopeStack, List<Block> scheduledOperations, int time, Dictionary<string, BoardFluid> dropPositions)
+        private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, List<Block> scheduledOperations, int time, Dictionary<string, BoardFluid> dropPositions)
         {
             List<Command>[] commandTimeline = new List<Command>[time + 1];
             foreach (Block operation in scheduledOperations)
@@ -116,7 +110,6 @@ namespace BiolyCompiler
                     if (!variables.ContainsKey(variableName))
                     {
                         variables.Add(variableName, value);
-                        varScopeStack.Peek().Add(variableName);
                     }
                     else
                     {
@@ -210,67 +203,44 @@ namespace BiolyCompiler
             return (scheduler.ScheduledOperations, time);
         }
 
-        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<(int, DFG<Block>)> repeatStack, Dictionary<string, BoardFluid> dropPositions)
+        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Dictionary<string, BoardFluid> dropPositions)
         {
-            IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
-            if (control is If ifControl)
             {
-                foreach (Conditional conditional in ifControl.IfStatements)
+                IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
+                if (control != null)
                 {
-                    //if result is 1 then take the if block
-                    if (1f == conditional.DecidingBlock.Run(variables, Executor, dropPositions))
+                    DFG<Block> guardedDFG = control.GuardedDFG(variables, Executor, dropPositions);
+                    if (guardedDFG != null)
                     {
-                        controlStack.Push(conditional);
-                        varScopeStack.Push(new List<string>());
-                        repeatStack.Push((0, conditional.NextDFG));
-                        return conditional.GuardedDFG;
+                        controlStack.Push(control);
+                        return guardedDFG;
+                    }
+
+                    DFG<Block> nextDFG = control.NextDFG(variables, Executor, dropPositions);
+                    if (nextDFG != null)
+                    {
+                        return nextDFG;
                     }
                 }
-                return ifControl.IfStatements.First().NextDFG;
-            }
-            else if (control is Repeat repeatControl)
-            {
-                int loopCount = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor, dropPositions);
-                if (loopCount > 0)
-                {
-                    controlStack.Push(repeatControl.Cond);
-                    varScopeStack.Push(new List<string>());
-                    repeatStack.Push((--loopCount, repeatControl.Cond.GuardedDFG));
-                    return repeatControl.Cond.GuardedDFG;
-                }
-                else
-                {
-                    return repeatControl.Cond.NextDFG;
-                }
-            }
-            else if (control is Direct directControl)
-            {
-                return directControl.Cond.NextDFG;
             }
 
-            while (repeatStack.Count > 0)
+
+            while (controlStack.Count > 0)
             {
-                //if inside repeat block and still
-                //need to repeat
-                if (repeatStack.Peek().Item1 > 0)
+                IControlBlock control = controlStack.Pop();
+
+                DFG<Block> loopDFG = control.TryLoop(variables, Executor, dropPositions);
+                if (loopDFG != null)
                 {
-                    (var repeatCount, var dfg) = repeatStack.Pop();
-                    repeatStack.Push((repeatCount - 1, dfg));
-                    return dfg;
-                } else if (controlStack.Peek().NextDFG != null)
+                    controlStack.Push(control);
+                    return loopDFG;
+                }
+
+                DFG<Block> nextDFG = control.NextDFG(variables, Executor, dropPositions);
+                if (nextDFG != null)
                 {
-                    DFG<Block> nextDFG = controlStack.Peek().NextDFG;
-                    controlStack.Pop();
-                    varScopeStack.Pop();
-                    repeatStack.Pop();
                     return nextDFG;
-                } else
-                {
-                    controlStack.Pop();
-                    varScopeStack.Pop();
-                    repeatStack.Pop();
                 }
-
             }
 
             return null;
