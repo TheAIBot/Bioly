@@ -180,7 +180,7 @@ namespace BiolyCompiler.Scheduling
 
         private void SortScheduledOperations()
         {
-            ScheduledOperations.Sort((x, y) => (x.StartTime < y.StartTime || (x.StartTime == y.StartTime && x.EndTime <= y.EndTime)) ? 0 : 1);
+            ScheduledOperations = ScheduledOperations.OrderBy(x => x.StartTime).ThenBy(x => x.EndTime).ToList();
         }
 
         private (List<Block>, int, Board) ExtractAndReassignDroplets(Assay assay, Board board, int currentTime, FluidBlock nextOperation, int requiredDroplets, BoardFluid targetFluidType, BoardFluid inputFluid)
