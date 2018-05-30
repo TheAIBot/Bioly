@@ -4,6 +4,7 @@ using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.BlocklyParts.ControlFlow;
 using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.BlocklyParts.Misc;
 using System;
 using System.Collections.Generic;
@@ -103,12 +104,12 @@ namespace BiolyTests
             return a;
         }
 
-        public void AddFluidInputBlock(string blockName, string fluidName, int amount, bool useAllFluid)
+        public void AddBasicInputBlock(string blockName, string fluidName, int amount, bool useAllFluid)
         {
-            AddBlock(blockName, FluidInput.XML_TYPE_NAME);
-            SetField(blockName, FluidInput.FLUID_NAME_FIELD_NAME, fluidName);
-            SetField(blockName, FluidInput.FLUID_AMOUNT_FIELD_NAME, amount);
-            SetField(blockName, FluidInput.USE_ALL_FLUID_FIELD_NAME, FluidInput.BoolToString(useAllFluid));
+            AddBlock(blockName, BasicInput.XML_TYPE_NAME);
+            SetField(blockName, BasicInput.FLUID_NAME_FIELD_NAME, fluidName);
+            SetField(blockName, BasicInput.FLUID_AMOUNT_FIELD_NAME, amount);
+            SetField(blockName, BasicInput.USE_ALL_FLUID_FIELD_NAME, FluidInput.BoolToString(useAllFluid));
         }
 
         public string AddFluidSegment(string outputName, string inputName, int amount, bool useAllFluid)
@@ -117,7 +118,7 @@ namespace BiolyTests
             string b = GetUniqueName();
             AddBlock(a, Fluid.XML_TYPE_NAME);
             SetField(a, Fluid.OUTPUT_FLUID_FIELD_NAME, outputName);
-            AddFluidInputBlock(b, inputName, amount, useAllFluid);
+            AddBasicInputBlock(b, inputName, amount, useAllFluid);
             AddConnection(a, Fluid.INPUT_FLUID_FIELD_NAME, b);
 
             CurrentScope.Add(a);
@@ -131,7 +132,7 @@ namespace BiolyTests
             string c = GetUniqueName();
             AddBlock(a, Fluid.XML_TYPE_NAME);
             AddBlock(b, HeaterUseage.XML_TYPE_NAME);
-            AddFluidInputBlock(c, inputFluidName, fluidAmount, useAllFluid);
+            AddBasicInputBlock(c, inputFluidName, fluidAmount, useAllFluid);
             SetField(a, Fluid.OUTPUT_FLUID_FIELD_NAME, outputName);
             SetField(b, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
             SetField(b, HeaterUseage.TEMPERATURE_FIELD_NAME, temperature);
@@ -151,8 +152,8 @@ namespace BiolyTests
             string d = GetUniqueName();
             AddBlock(a, Fluid.XML_TYPE_NAME);
             AddBlock(b, Mixer.XmlTypeName);
-            AddFluidInputBlock(c, inputNameA, amountA, useAllFluidA);
-            AddFluidInputBlock(d, inputNameB, amountB, useAllFluidB);
+            AddBasicInputBlock(c, inputNameA, amountA, useAllFluidA);
+            AddBasicInputBlock(d, inputNameB, amountB, useAllFluidB);
             SetField(a, Fluid.OUTPUT_FLUID_FIELD_NAME, outputName);
             AddConnection(a, Fluid.INPUT_FLUID_FIELD_NAME, b);
             AddConnection(b, Mixer.FirstInputFieldName , c);
@@ -199,7 +200,7 @@ namespace BiolyTests
             string b = GetUniqueName();
             AddBlock(a, Waste.XML_TYPE_NAME);
             //SetField(a, Waste.MODULE_NAME_FIELD_NAME, moduleName);
-            AddFluidInputBlock(b, fluidName, amount, useAllFluid);
+            AddBasicInputBlock(b, fluidName, amount, useAllFluid);
             AddConnection(a, Waste.InputFluidFieldName, b);
 
             CurrentScope.Add(a);
@@ -212,7 +213,7 @@ namespace BiolyTests
             string b = GetUniqueName();
             AddBlock(a, OutputUseage.XML_TYPE_NAME);
             SetField(a, OutputUseage.MODULE_NAME_FIELD_NAME, moduleName);
-            AddFluidInputBlock(b, fluidName, amount, useAllFluid);
+            AddBasicInputBlock(b, fluidName, amount, useAllFluid);
             AddConnection(a, OutputUseage.INPUT_FLUID_FIELD_NAME, b);
 
             CurrentScope.Add(a);

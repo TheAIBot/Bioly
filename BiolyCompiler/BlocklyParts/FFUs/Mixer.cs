@@ -6,6 +6,8 @@ using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -20,7 +22,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         }
 
-        public static Block CreateMixer(string output, XmlNode node, ParserInfo parserInfo)
+        public static Block CreateMixer(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.IDFieldName);
 
@@ -32,11 +34,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
             if (inputFluidNode1 != null)
             {
-                fluidInput1 = new FluidInput(inputFluidNode1, parserInfo);
+                fluidInput1 = XmlParser.ParseFluidInput(inputFluidNode1, dfg, parserInfo);
             }
             if (inputFluidNode2 != null)
             {
-                fluidInput2 = new FluidInput(inputFluidNode2, parserInfo);
+                fluidInput2 = XmlParser.ParseFluidInput(inputFluidNode2, dfg, parserInfo);
             }
 
             List<FluidInput> inputs = new List<FluidInput>();

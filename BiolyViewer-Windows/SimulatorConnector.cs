@@ -89,8 +89,11 @@ namespace BiolyViewer_Windows
 
         public override void SendCommands()
         {
-            ExecuteJs(String.Join(String.Empty, QueuedCommands));
-            QueuedCommands.Clear();
+            if (QueuedCommands.Count > 0)
+            {
+                ExecuteJs(String.Join(String.Empty, QueuedCommands));
+                QueuedCommands.Clear();
+            }
         }
 
         private async void ExecuteJs(string js)

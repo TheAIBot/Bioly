@@ -2,6 +2,7 @@
 using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -98,10 +99,10 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             }
         }
 
-        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor)
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            float leftResult = LeftBlock.Run(variables, executor);
-            float rightResult = RightBlock.Run(variables, executor);
+            float leftResult = LeftBlock.Run(variables, executor, dropPositions);
+            float rightResult = RightBlock.Run(variables, executor, dropPositions);
 
             switch (OPType)
             {
@@ -120,6 +121,20 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 default:
                     throw new Exception("Failed to parse the operator type.");
             }
+        }
+
+        public override string ToXml()
+        {
+            return
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
+                $"<field name=\"{OPTypeFieldName}\">{BoolOpTypeToString(OPType)}</field>" +
+                $"<value name=\"{LeftBlock}\">" +
+                    LeftBlock.ToXml() +
+                "</value>" +
+                $"<value name=\"{RightBlock}\">" +
+                    RightBlock.ToXml() +
+                "</value>" +
+            "</block>";
         }
 
         public override string ToString()

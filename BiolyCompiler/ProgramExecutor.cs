@@ -23,6 +23,7 @@ namespace BiolyCompiler
     {
         private readonly CommandExecutor<T> Executor;
         public int TIME_BETWEEN_COMMANDS = 50;
+        public bool ShowEmptyRectangles = true;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -46,6 +47,8 @@ namespace BiolyCompiler
             Stack<List<string>> varScopeStack = new Stack<List<string>>();
             Stack<Conditional> controlStack = new Stack<Conditional>();
             Stack<(int, DFG<Block>)> repeatStack = new Stack<(int, DFG<Block>)>();
+            Dictionary<int, Board> boards = new Dictionary<int, Board>();
+            Board oldBoard = null;
             bool firstRun = true;
 
             varScopeStack.Push(new List<string>());
@@ -54,21 +57,26 @@ namespace BiolyCompiler
 
             while (runningGraph != null)
             {
+                //some blocks are able to  change their originaloutputvariable.
+                //Those blocks will always appear at the top of a dfg  so the first
+                //thing that should be done is to update these blocks originaloutputvariable.
+                runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, dropPositions));
+
                 List<Module> usedModules;
-                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, library, ref dropPositions, ref staticModules, out usedModules);
+                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules, out usedModules);
                 if (firstRun)
                 {
                     StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
                     firstRun = false;
                 }
 
-                List<Command>[] commandTimeline = CreateCommandTimeline(variables, varScopeStack, scheduledOperations, time);
+                List<Command>[] commandTimeline = CreateCommandTimeline(variables, varScopeStack, scheduledOperations, time, dropPositions);
 
-                SendCommands(commandTimeline);
+                SendCommands(commandTimeline, ref oldBoard, boards);
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
-                runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack, repeatStack);
+                runningGraph = GetNextGraph(graph, runningGraph, variables, varScopeStack, controlStack, repeatStack, dropPositions);
             }
         }
 
@@ -85,7 +93,7 @@ namespace BiolyCompiler
             Executor.StartExecutor(inputs, outputs, staticModulesWithoutInputOutputs);
         }
 
-        private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, Stack<List<string>> varScopeStack, List<Block> scheduledOperations, int time)
+        private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, Stack<List<string>> varScopeStack, List<Block> scheduledOperations, int time, Dictionary<string, BoardFluid> dropPositions)
         {
             List<Command>[] commandTimeline = new List<Command>[time + 1];
             foreach (Block operation in scheduledOperations)
@@ -104,7 +112,7 @@ namespace BiolyCompiler
                 }
                 else if (operation is VariableBlock varBlock)
                 {
-                    (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor);
+                    (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor, dropPositions);
                     if (!variables.ContainsKey(variableName))
                     {
                         variables.Add(variableName, value);
@@ -120,17 +128,20 @@ namespace BiolyCompiler
             return commandTimeline;
         }
 
-        private void SendCommands(List<Command>[] commandTimeline)
+        private void SendCommands(List<Command>[] commandTimeline, ref Board oldBoard, Dictionary<int, Board> boards)
         {
             int time = 0;
             foreach (List<Command> commands in commandTimeline)
             {
+                List<Command> showAreaCommands = new List<Command>();
+                List<Command> removeAreaCommands = new List<Command>();
+
                 if (commands != null)
                 {
                     List<Command> onCommands = commands.Where(x => x.Type == CommandType.ELECTRODE_ON).ToList();
                     List<Command> offCommands = commands.Where(x => x.Type == CommandType.ELECTRODE_OFF).ToList();
-                    List<Command> showAreaCommands = commands.Where(x => x.Type == CommandType.SHOW_AREA).ToList();
-                    List<Command> removeAreaCommands = commands.Where(x => x.Type == CommandType.REMOVE_AREA).ToList();
+                    showAreaCommands.AddRange(commands.Where(x => x.Type == CommandType.SHOW_AREA));
+                    removeAreaCommands.AddRange(commands.Where(x => x.Type == CommandType.REMOVE_AREA));
 
                     if (offCommands.Count > 0)
                     {
@@ -140,17 +151,32 @@ namespace BiolyCompiler
                     {
                         Executor.QueueCommands(onCommands);
                     }
-                    if (showAreaCommands.Count > 0)
-                    {
-                        Executor.QueueCommands(showAreaCommands);
-                    }
-                    if (removeAreaCommands.Count > 0)
-                    {
-                        Executor.QueueCommands(removeAreaCommands);
-                    }
-
-                    Executor.SendCommands();
                 }
+
+                if (ShowEmptyRectangles)
+                {
+                    var closestsBoard = boards.MinBy(x => Math.Abs(x.Key - time));
+                    if (closestsBoard.Value != oldBoard && closestsBoard.Value != null)
+                    {
+                        var emptyRectanglesToRemove = oldBoard?.EmptyRectangles.Except(closestsBoard.Value.EmptyRectangles);
+                        emptyRectanglesToRemove?.ForEach(x => removeAreaCommands.Add(new AreaCommand(x, CommandType.REMOVE_AREA, 0)));
+
+                        var emptyRectanglesToShow = closestsBoard.Value.EmptyRectangles.Except(oldBoard?.EmptyRectangles ?? new HashSet<Rectangle>());
+                        emptyRectanglesToShow.ForEach(x => showAreaCommands.Add(new AreaCommand(x, CommandType.SHOW_AREA, 0)));
+                    }
+                    oldBoard = closestsBoard.Value ?? oldBoard;
+                }
+
+                if (removeAreaCommands.Count > 0)
+                {
+                    removeAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
+                }
+                if (showAreaCommands.Count > 0)
+                {
+                    showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
+                }
+
+                Executor.SendCommands();
 
                 if (TIME_BETWEEN_COMMANDS > 0)
                 {
@@ -160,7 +186,7 @@ namespace BiolyCompiler
             }
         }
 
-        private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out List<Module> usedModules)
+        private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out List<Module> usedModules)
         {
             Schedule scheduler = new Schedule();
             scheduler.TransferFluidVariableLocationInformation(dropPositions);
@@ -176,6 +202,7 @@ namespace BiolyCompiler
             int time = scheduler.ListScheduling(assay, board, library);
 
             board = scheduler.boardAtDifferentTimes.MaxBy(x => x.Key).Value;
+            boards = scheduler.boardAtDifferentTimes;
             dropPositions = scheduler.FluidVariableLocations;
             staticModules = scheduler.StaticModules;
 
@@ -183,7 +210,7 @@ namespace BiolyCompiler
             return (scheduler.ScheduledOperations, time);
         }
 
-        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<(int, DFG<Block>)> repeatStack)
+        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<List<string>> varScopeStack, Stack<Conditional> controlStack, Stack<(int, DFG<Block>)> repeatStack, Dictionary<string, BoardFluid> dropPositions)
         {
             IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
             if (control is If ifControl)
@@ -191,7 +218,7 @@ namespace BiolyCompiler
                 foreach (Conditional conditional in ifControl.IfStatements)
                 {
                     //if result is 1 then take the if block
-                    if (1f == conditional.DecidingBlock.Run(variables, Executor))
+                    if (1f == conditional.DecidingBlock.Run(variables, Executor, dropPositions))
                     {
                         controlStack.Push(conditional);
                         varScopeStack.Push(new List<string>());
@@ -203,7 +230,7 @@ namespace BiolyCompiler
             }
             else if (control is Repeat repeatControl)
             {
-                int loopCount = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor);
+                int loopCount = (int)repeatControl.Cond.DecidingBlock.Run(variables, Executor, dropPositions);
                 if (loopCount > 0)
                 {
                     controlStack.Push(repeatControl.Cond);
@@ -215,6 +242,10 @@ namespace BiolyCompiler
                 {
                     return repeatControl.Cond.NextDFG;
                 }
+            }
+            else if (control is Direct directControl)
+            {
+                return directControl.Cond.NextDFG;
             }
 
             while (repeatStack.Count > 0)

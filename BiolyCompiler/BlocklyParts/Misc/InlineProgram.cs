@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
@@ -28,7 +29,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public readonly Dictionary<string, string> OutputsFromTo = new Dictionary<string, string>();
         public readonly bool IsValidProgram;
 
-        public InlineProgram(XmlNode node, ParserInfo parserInfo)
+        public InlineProgram(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             this.ID = node.GetAttributeValue(Block.IDFieldName);
 
@@ -51,7 +52,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     XmlNode inputNode = node.GetInnerBlockNode(GetInputFieldName(i), parserInfo, new MissingBlockException(ID, $"Input {Inputs[i]} is missing a fluid block."));
                     if (inputNode != null)
                     {
-                        FluidInput input = new FluidInput(inputNode, parserInfo);
+                        FluidInput input = XmlParser.ParseFluidInput(inputNode, dfg, parserInfo);
                         InputsFromTo.Add(Inputs[i], input);
                     }
                 }
@@ -113,7 +114,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             if (!IsValidProgram)
             {
-                parserInfo.parseExceptions.Add(new ParseException(ID, "The program can't be parsed."));
+                parserInfo.ParseExceptions.Add(new ParseException(ID, "The program can't be parsed."));
                 return;
             }
 
@@ -146,13 +147,20 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //replace inputs
             //replace outputs
             var splittedXml = SplitBlockXml(currentProgramXml, currentProgramXml.OwnerDocument.OuterXml);
-            string xmlWithReplacedBlock = ReplaceBlocks(newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild, dummyParserInfo, newXmlDoc.OuterXml, splittedXml.nextBlockXml);
+            string textToRepresentTheNextBlock = "<to_be_replaced>90234LKASJDW8U923RJJOMFN2978RF30FJ28</to_be_replaced>";
+            string xmlWithReplacedBlock = ReplaceBlocks(newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild, dummyParserInfo, newXmlDoc.OuterXml, textToRepresentTheNextBlock);
             newXmlDoc.LoadXml(xmlWithReplacedBlock);
 
             //rename the id of all the blocks in the inline program
             //so any errors in the inline program is shown on the 
             //inline program block.
             ReplaceIDAttribute(newXmlDoc.FirstChild);
+
+            string xmlWithReplacedIDs = newXmlDoc.OuterXml;
+            string xmlWithNextPartOfProgramInserted = xmlWithReplacedIDs.Replace(textToRepresentTheNextBlock, splittedXml.nextBlockXml);
+            newXmlDoc.LoadXml(xmlWithNextPartOfProgramInserted);
+
+
 
             InsertProgram(ref currentProgramXml, newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild.OuterXml);
         }
@@ -237,8 +245,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
                         case OutputUseage.XML_TYPE_NAME:
                             {
                                 var splittedXml = SplitBlockXml(blockNode, xml);
-                                OutputUseage output = OutputUseage.Parse(blockNode, dummyParserInfo);
-                                FluidInput fluidInputA = new FluidInput(OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
+                                DFG<Block> dfg = new DFG<Block>();
+                                OutputUseage output = OutputUseage.Parse(blockNode, dfg, dummyParserInfo);
+                                FluidInput fluidInputA = new BasicInput(String.Empty, OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
                                 string unionXml = Union.ToXml(ID, fluidInputA.ToXml(), output.InputVariables[0].ToXml());
                                 string nextXml = splittedXml.nextBlockXml;
                                 if (straightLine && splittedXml.nextBlockXml == null)

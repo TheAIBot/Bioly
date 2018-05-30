@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.BlocklyParts.Misc;
+﻿using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Modules;
 using System;
 using System.Collections.Generic;

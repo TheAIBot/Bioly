@@ -12,6 +12,8 @@ using System.Diagnostics;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Declarations;
+using BiolyCompiler.BlocklyParts.Arrays;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -42,7 +44,10 @@ namespace BiolyCompiler.Scheduling
         {
             ScheduledOperations.Add(operation);
             operation.StartTime = startTime;
-            if (operation is VariableBlock || operation is Fluid || operation is Union) {
+            if (operation is VariableBlock || 
+                operation is Fluid || 
+                operation is SetArrayFluid ||
+                operation is Union) {
                 operation.EndTime = currentTime;
                 return;
             }            
@@ -244,7 +249,7 @@ namespace BiolyCompiler.Scheduling
             return (readyOperations, currentTime, board);
         }
 
-        private (List<Block>, int, Board) HandleFluidTransfers(Assay assay, Board board, int currentTime, Fluid nextOperation)
+        private (List<Block>, int, Board) HandleFluidTransfers(Assay assay, Board board, int currentTime, FluidBlock nextOperation)
         {
             FluidInput input = nextOperation.InputVariables[0];
             int requiredDroplets = input.GetAmountInDroplets(FluidVariableLocations);
@@ -315,11 +320,11 @@ namespace BiolyCompiler.Scheduling
             if (nextOperation is VariableBlock)
                 readyOperations = HandleVariableOperation(assay, currentTime, nextOperation);
             else if (nextOperation is Union)
-                (readyOperations, currentTime, board) = HandleUnionOperation(assay, board, currentTime, nextOperation as Union);
+                (readyOperations, currentTime, board) = HandleUnionOperation(assay, board, currentTime, (Union)nextOperation);
             else if (nextOperation is StaticDeclarationBlock)
                 readyOperations = HandleStaticModuleDeclarations(assay, nextOperation);
-            else if (nextOperation is Fluid)
-                (readyOperations, currentTime, board) = HandleFluidTransfers(assay, board, currentTime, nextOperation as Fluid);
+            else if (nextOperation is Fluid || nextOperation is SetArrayFluid)
+                (readyOperations, currentTime, board) = HandleFluidTransfers(assay, board, currentTime, (FluidBlock)nextOperation);
             else throw new Exception("An operation has been categorized as a special operation, but it is not handeled. " +
                                      "The operation is: " + nextOperation.ToString());
             return (readyOperations, currentTime, board);
@@ -327,7 +332,11 @@ namespace BiolyCompiler.Scheduling
 
         public static bool IsSpecialCaseOperation(Block nextOperation)
         {
-            return (nextOperation is VariableBlock || nextOperation is Union || nextOperation is StaticDeclarationBlock|| nextOperation is Fluid);
+            return (nextOperation is VariableBlock || 
+                    nextOperation is Union || 
+                    nextOperation is StaticDeclarationBlock || 
+                    nextOperation is Fluid ||
+                    nextOperation is SetArrayFluid);
         }
 
         private int RouteDropletsToModuleAndUpdateSchedule(Board board, int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)

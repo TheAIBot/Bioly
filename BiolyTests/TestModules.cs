@@ -5,6 +5,7 @@ using BiolyCompiler.Architechtures;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
@@ -28,7 +29,7 @@ namespace BiolyTests.ModulesTests
             string op2Name = "op2";
             InputDeclaration inputOperation1 = new InputDeclaration("kage", op1Name, 1, "");
             InputDeclaration inputOperation2 = new InputDeclaration("fisk", op2Name, 1, "");
-            Mixer mixingOperation = new Mixer(new List<FluidInput>() {new FluidInput(inputOperation1, 1, false), new FluidInput(inputOperation2, 1, false) }, "Lagkage", null, "");
+            Mixer mixingOperation = new Mixer(new List<FluidInput>() {new BasicInput("", inputOperation1.OriginalOutputVariable, inputOperation1.OriginalOutputVariable, 1, false), new BasicInput("", inputOperation2.OriginalOutputVariable, inputOperation2.OriginalOutputVariable, 1, false) }, "Lagkage", null, "");
             dfg.AddNode(inputOperation1);
             dfg.AddNode(inputOperation2);
             dfg.AddNode(mixingOperation);
@@ -74,9 +75,9 @@ namespace BiolyTests.ModulesTests
             string op2Name = "op2";
             InputDeclaration inputOperation = new InputDeclaration("kage", "Test", initialNumberOfDroplets, "");
             //First extracting the droplets:
-            Fluid fluidTransfer1 = new Fluid(new List<FluidInput>() { new FluidInput(inputOperation, numberOfDropletsTransfered, false) }, op1Name, "");
+            Fluid fluidTransfer1 = new Fluid(new List<FluidInput>() { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfDropletsTransfered, false) }, op1Name, "");
             //Testing (renaming) droplets:
-            Fluid fluidTransfer2 = new Fluid(new List<FluidInput>() { new FluidInput(fluidTransfer1, numberOfDropletsRenamed, false) }, op2Name, "");
+            Fluid fluidTransfer2 = new Fluid(new List<FluidInput>() { new BasicInput("", fluidTransfer1.OriginalOutputVariable, fluidTransfer1.OriginalOutputVariable, numberOfDropletsRenamed, false) }, op2Name, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(fluidTransfer1);
             dfg.AddNode(fluidTransfer2);
@@ -131,7 +132,7 @@ namespace BiolyTests.ModulesTests
             int numberOfDropletsTransfered = 5;
             InputDeclaration inputOperation = new InputDeclaration("kage", "Test", initialNumberOfDroplets, "");
             //Testing extracting from an input:
-            Fluid fluidTransfer1 = new Fluid(new List<FluidInput>() { new FluidInput(inputOperation, numberOfDropletsTransfered, false) }, "op1", "");
+            Fluid fluidTransfer1 = new Fluid(new List<FluidInput>() { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfDropletsTransfered, false) }, "op1", "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(fluidTransfer1);
             dfg.FinishDFG();
@@ -170,7 +171,7 @@ namespace BiolyTests.ModulesTests
             InputDeclaration inputOperation1 = new InputDeclaration("kage1", "Test1", initialNumberOfDroplets, "");
             InputDeclaration inputOperation2 = new InputDeclaration("kage2", "Test2", initialNumberOfDroplets, "");
             //Testing extracting from an input:
-            Union union = new Union(new List<FluidInput>() { new FluidInput(inputOperation1, numberOfDropletsTransfered1, false), new FluidInput(inputOperation2, numberOfDropletsTransfered2, false) }, "op1", null, "");
+            Union union = new Union(new List<FluidInput>() { new BasicInput("", inputOperation1.OriginalOutputVariable, inputOperation1.OriginalOutputVariable, numberOfDropletsTransfered1, false), new BasicInput("", inputOperation2.OriginalOutputVariable, inputOperation2.OriginalOutputVariable, numberOfDropletsTransfered2, false) }, "op1", null, "");
             dfg.AddNode(inputOperation1);
             dfg.AddNode(inputOperation2);
             dfg.AddNode(union);
@@ -211,8 +212,8 @@ namespace BiolyTests.ModulesTests
             string heaterModuleName = "heaterModule";
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
             HeaterDeclaration heaterDeclaration = new HeaterDeclaration(heaterModuleName, null, "");
-            HeaterUseage heaterOperation1 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new FluidInput(inputOperation, numberOfDroplets, false)}, "Fisk", 500, time1, "");
-            HeaterUseage heaterOperation2 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new FluidInput(heaterOperation1, numberOfDroplets, false) }, "Derp", 500, time2, "");
+            HeaterUseage heaterOperation1 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfDroplets, false)}, "Fisk", 500, time1, "");
+            HeaterUseage heaterOperation2 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", heaterOperation1.OriginalOutputVariable, heaterOperation1.OriginalOutputVariable, numberOfDroplets, false) }, "Derp", 500, time2, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(heaterDeclaration);
             dfg.AddNode(heaterOperation1);

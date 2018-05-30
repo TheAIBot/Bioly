@@ -40,7 +40,7 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.AddFluidVariable("a");
             InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", input.OriginalOutputVariable);
             Assert.AreEqual(20, input.Amount);
             Assert.AreEqual(FluidUnit.ml, input.Unit);
@@ -58,8 +58,8 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.EnterDFG();
             OutputDeclaration heater = (OutputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
-            Assert.IsTrue(parserInfo.validModuleNames.Contains("z"));
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
+            Assert.IsTrue(parserInfo.ValidModuleNames.Contains("z"));
         }
 
         [TestMethod]
@@ -74,8 +74,8 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.EnterDFG();
             HeaterDeclaration heater = (HeaterDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
-            Assert.IsTrue(parserInfo.validModuleNames.Contains("z"));
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
+            Assert.IsTrue(parserInfo.ValidModuleNames.Contains("z"));
         }
 
         [TestMethod]
@@ -93,7 +93,7 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.AddFluidVariable("c");
             Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, parserInfo);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", mixer.OriginalOutputVariable);
         }
 
@@ -108,7 +108,7 @@ namespace BiolyTests.ParseBlockTests
             ParserInfo parserInfo = new ParserInfo();
             Constant constant = (Constant)XmlParser.ParseBlock(node, null, parserInfo);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(210, constant.Value);
         }
 
@@ -125,7 +125,7 @@ namespace BiolyTests.ParseBlockTests
             ParserInfo parserInfo = new ParserInfo();
             ArithOP arithOP = (ArithOP)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(ArithOPTypes.ADD, arithOP.OPType);
         }
 
@@ -142,7 +142,7 @@ namespace BiolyTests.ParseBlockTests
             ParserInfo parserInfo = new ParserInfo();
             BoolOP boolOP = (BoolOP)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual(BoolOPTypes.EQ, boolOP.OPType);
         }
 
@@ -159,7 +159,7 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.AddFluidVariable("a");
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.IsTrue(input is Waste);
         }
 
@@ -176,7 +176,7 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.AddFluidVariable("a");
             Fluid input = (Fluid)XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
         }
 
         [TestMethod]
@@ -193,7 +193,7 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.AddModuleName("z");
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.IsTrue(input is OutputUseage);
         }
 
@@ -211,7 +211,7 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.AddModuleName("z");
             HeaterUseage heater = (HeaterUseage)XmlParser.ParseBlock(node, null, parserInfo);
 
-            Assert.AreEqual(0, parserInfo.parseExceptions.Count, parserInfo.parseExceptions.FirstOrDefault()?.Message);
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", heater.OriginalOutputVariable);
             Assert.AreEqual(173, heater.Temperature);
             Assert.AreEqual(39, heater.Time);
