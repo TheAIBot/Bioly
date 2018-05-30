@@ -32,6 +32,9 @@ namespace BiolyViewer_Windows
     /// </summary>
     public partial class MainWindow : Window
     {
+        public const string SETTINGS_FILE_PATH = "settings.stx";
+        private const string PROGRAMS_FOLDER_PATH = @"../../../../BiolyPrograms";
+
         public MainWindow()
         {
             var settings = new CefSettings();
@@ -48,31 +51,36 @@ namespace BiolyViewer_Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
+            SettingsInfo settings = new SettingsInfo();
+            settings.LoadSettings(SETTINGS_FILE_PATH);
+
             Browser.Load("costum://index.html");
             Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
-            Browser.JavascriptObjectRepository.Register("webUpdater", new WebUpdater(Browser), true);
+            Browser.JavascriptObjectRepository.Register("webUpdater", new WebUpdater(Browser, settings), true);
             //Wait for the MainFrame to finish loading
             Browser.FrameLoadEnd += (s, args) =>
             {
                 //Wait for the MainFrame to finish loading
                 if (args.Frame.IsMain)
                 {
-                    GiveSettingsToJS();
+                    GiveSettingsToJS(settings);
                     GiveProgramsToJS();
                 }
             };
         }
 
-        private void GiveSettingsToJS()
+        private void GiveSettingsToJS(SettingsInfo settings)
         {
+            var settingStrings = settings.Settings.Select(x => $"{{id: \"{x.Key}\", value: {x.Value.ToString().ToLower()}}}");
+            string settingsString = $"[{String.Join(", ", settingStrings)}]";
 
+            Browser.ExecuteScriptAsync($"setSettings({settingsString});");
         }
 
         private void GiveProgramsToJS()
         {
-            CompilerOptions.PROGRAM_FOLDER_PATH = @"../../../../BiolyPrograms";
-            string[] files = Directory.GetFiles(@"../../../../BiolyPrograms");
+            CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
+            string[] files = Directory.GetFiles(PROGRAMS_FOLDER_PATH);
             List<string> loadedPrograms = new List<string>();
             foreach (string file in files)
             {

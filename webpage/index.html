@@ -119,27 +119,31 @@
 					<div>
 						<div class="settingsPlacement">
 							<span>Board width</span>
-							<input class="settingInput" id="boardWidthSetting" type="number" oninput="webUpdater.settingsChanged();">
+							<input class="settingInput" id="boardWidthSetting" type="number" oninput="webUpdater.settingsChanged(getSettings());">
 						</div>
 						<div class="settingsPlacement">
 							<span>Board height</span>
-							<input class="settingInput" id="boardHeightSetting" type="number" oninput="webUpdater.settingsChanged();">
+							<input class="settingInput" id="boardHeightSetting" type="number" oninput="webUpdater.settingsChanged(getSettings());">
 						</div>
 						<div class="settingsPlacement">
 							<span>Command frequency</span>
-							<input class="settingInput" id="commandFrequencySetting" type="number" oninput="webUpdater.settingsChanged();">
+							<input class="settingInput" id="commandFrequencySetting" type="number" oninput="webUpdater.settingsChanged(getSettings());">
 						</div>
 						<div class="settingsPlacement">
 							<span>Droplet speed(cm/s)</span>
-							<input class="settingInput" id="dropletSpeedSetting" type="number" oninput="webUpdater.settingsChanged();">
+							<input class="settingInput" id="dropletSpeedSetting" type="number" oninput="webUpdater.settingsChanged(getSettings());">
 						</div>
 						<div class="settingsPlacement">
 							<span>Droplet size(cm)</span>
-							<input class="settingInput" id="dropletSizeSetting" type="number" oninput="webUpdater.settingsChanged();">
+							<input class="settingInput" id="dropletSizeSetting" type="number" oninput="webUpdater.settingsChanged(getSettings());">
 						</div>
 						<div class="settingsPlacement">
 							<span>Electrode size(cm)</span>
-							<input class="settingInput" id="electrodeSizeSetting" type="number" oninput="webUpdater.settingsChanged();">
+							<input class="settingInput" id="electrodeSizeSetting" type="number" oninput="webUpdater.settingsChanged(getSettings());">
+						</div>
+						<div class="settingsPlacement">
+							<span>Show empty rectangles</span>
+							<input class="settingInput" id="emptyRectanglesSetting" type="checkbox" onclick="webUpdater.settingsChanged(getSettings());">
 						</div>
 					</div>
 				</div>

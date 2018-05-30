@@ -4,7 +4,14 @@ function getSettings()
 	const settings = [];
 	for(var i = 0; i < settingsElements.length; i++)
 	{
-		settings.push(settingsElements[i].id + " = " + settingsElements[i].value);
+		if(settingsElements[i].type == "number")
+		{
+			settings.push(settingsElements[i].id + " = " + settingsElements[i].value);
+		}
+		else
+		{
+			settings.push(settingsElements[i].id + " = " + settingsElements[i].checked);
+		}
 	}
 	
 	return settings.join("\n");
@@ -20,6 +27,26 @@ function setSettings(settings)
 	{
 		const setting = settings[i];
 		const settingElement = document.getElementById(setting.id);
-		settingElement.value = setting.value;
+		if(setting.value === true || setting.value === false)
+		{
+			settingElement.checked = setting.value;
+		}
+		else
+		{
+			settingElement.value = setting.value;
+		}
 	}
+}
+
+function getDropletSpeedSetting()
+{
+	return document.getElementById("dropletSpeedSetting").value;
+}
+function getDropletSizeSetting()
+{
+	return document.getElementById("dropletSizeSetting").value;
+}
+function getElectrodeSizeSetting()
+{
+	return document.getElementById("electrodeSizeSetting").value;
 }

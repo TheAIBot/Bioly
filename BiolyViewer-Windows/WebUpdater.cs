@@ -18,13 +18,13 @@ namespace BiolyViewer_Windows
 {
     public class WebUpdater
     {
-        int BOARD_WIDTH = 20;
-        int BOARD_HEIGHT = 50;
         private readonly ChromiumWebBrowser Browser;
+        private readonly SettingsInfo Settings;
 
-        public WebUpdater(ChromiumWebBrowser browser)
+        public WebUpdater(ChromiumWebBrowser browser, SettingsInfo settings)
         {
             this.Browser = browser;
+            this.Settings = settings;
         }
 
         public void Update(string xml)
@@ -71,9 +71,15 @@ namespace BiolyViewer_Windows
                 {
                     try
                     {
-                        CommandExecutor<string> executor = new SimulatorConnector(Browser, BOARD_WIDTH, BOARD_HEIGHT);
+                        int boardWidth = Settings.BoardWidth;
+                        int boardHeight = Settings.BoardHeight;
+                        int timeBetweenCommands = (int)((1f / Settings.CommandFrequency) * 1000);
+                        bool showEmptyRectangles = Settings.ShowEmptyRectangles;
+                        CommandExecutor<string> executor = new SimulatorConnector(Browser, boardWidth, boardHeight);
                         ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-                        programExecutor.Run(BOARD_WIDTH, BOARD_HEIGHT, xml);
+                        programExecutor.TimeBetweenCommands = timeBetweenCommands;
+                        programExecutor.ShowEmptyRectangles = showEmptyRectangles;
+                        programExecutor.Run(boardWidth, boardHeight, xml);
                     }
                     catch (Exception e)
                     {
@@ -84,9 +90,10 @@ namespace BiolyViewer_Windows
             }
         }
 
-        public void SettingsChanged()
+        public void SettingsChanged(string settingsString)
         {
-
+            Settings.UpdateSettingsFromString(settingsString);
+            Settings.SaveSettings(settingsString, MainWindow.SETTINGS_FILE_PATH);
         }
     }
 }

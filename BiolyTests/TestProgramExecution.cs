@@ -84,7 +84,7 @@ namespace BiolyTests
             string xml = TestTools.GetWorkspaceString();
             TestCommandExecutor executor = new TestCommandExecutor();
             ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-            programExecutor.TIME_BETWEEN_COMMANDS = 0;
+            programExecutor.TimeBetweenCommands = 0;
             programExecutor.ShowEmptyRectangles = false;
             programExecutor.Run(10, 10, xml);
 
