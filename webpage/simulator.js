@@ -23,6 +23,7 @@ const BELOW_NEIGHBOR_INDEX = 3;
 var ELECTRODE_SIZE_IN_CM = 1;
 var DROP_DISTANCE_PER_SEC_IN_CM = 600;
 var DEFAULT_DROP_SIZE_IN_CM = 1;
+var ADDITIONAL_ERROR_DETECTION = false;
 const UPDATES_PER_SECOND = 60;
 
 //setel 1 2 3 4 5 6 7  8 9 10
@@ -432,13 +433,30 @@ function updateDropPositions()
 	for(var i = 0; i < drops.length; i++)
 	{
 		const drop = drops[i];
-		const nearbyDistance = electrodeSize * 2;//don't do this for now * drop.size;
-		const nearbyElectrode = getSingleNearbyOnElectrode(drop.position, nearbyDistance);
+		const nearbyDistance = electrodeSize * (drop.size + (ratioForSpace * 1.1));
+		const nearbyElectrodes = getNearbyOnElectrodes(drop.position, nearbyDistance);
 		
-		if (nearbyElectrode)
+		if (ADDITIONAL_ERROR_DETECTION && nearbyElectrodes.length > 1)
 		{
-			let dx = nearbyElectrode.position[0] - drop.position[0];
-			let dy = nearbyElectrode.position[1] - drop.position[1];
+			throw "Two or more electrodes are turned on near a drop";
+		}
+		
+		if (nearbyElectrodes.length > 0)
+		{
+			let centerX = 0;
+			let centerY = 0;
+			for(var k = 0; k < nearbyElectrodes.length; k++)
+			{
+				const electrode = nearbyElectrodes[k];
+				centerX += electrode.position[0];
+				centerY += electrode.position[1];
+			}
+			
+			centerX /= nearbyElectrodes.length;
+			centerY /= nearbyElectrodes.length;
+			
+			let dx = centerX - drop.position[0];
+			let dy = centerY - drop.position[1];
 			const dVectorLength = Math.sqrt(dx * dx + dy * dy);
 			
 			if (dVectorLength > distancePerUpdate)
@@ -450,8 +468,27 @@ function updateDropPositions()
 			drop.position[0] += dx;
 			drop.position[1] += dy;
 		}
-		
 	}
+}
+
+function getNearbyOnElectrodes(position, nearbyDistance)
+{
+	let nearbyElectrodes = [];
+	for(var i = 0; i < electrodes.length; i++)
+	{
+		const electrode = electrodes[i];
+		
+		if (electrode.isOn)
+		{
+			const distance = distanceAB(position, electrode.position);
+			if (distance <= nearbyDistance)
+			{
+				nearbyElectrodes.push(electrode);
+			}
+		}
+	}
+	
+	return nearbyElectrodes;
 }
 
 function getSingleNearbyOnElectrode(position, nearbyDistance)
