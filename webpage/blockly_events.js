@@ -31,7 +31,10 @@ function onWorkspaceChanged(event)
 	const currentTime = new Date();
 	//if(lastUpdateTime.getMilliseconds() + 50 < currentTime.getMilliseconds())
 	//{
-		webUpdater.update(getWorkspaceAsXml());
+	if (typeof(webUpdater) != "undefined")
+	{
+		webUpdater.update(getWorkspaceAsXml());	
+	}
 	//}
 	lastUpdateTime = new Date();
 }

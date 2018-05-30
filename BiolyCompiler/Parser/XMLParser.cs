@@ -57,6 +57,7 @@ namespace BiolyCompiler.Parser
                         controlBlock = ParseDFGBreaker(node, dfg, parserInfo);
                         break;
                     }
+                    canFirstBlockBeControlFlow = true;
 
                     Block block = null;
                     try
@@ -214,6 +215,10 @@ namespace BiolyCompiler.Parser
                 case InlineProgram.XML_TYPE_NAME:
                     {
                         InlineProgram program = new InlineProgram(node, dfg, parserInfo);
+                        if (!program.IsValidProgram)
+                        {
+                            throw new ParseException(id, "asdasas");
+                        }
                         program.AppendProgramXml(ref node, parserInfo);
                         return ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks, canBeScheduled);
                     }

@@ -73,7 +73,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 }
                 for (int i = 0; i < variableCount; i++)
                 {
-                    XmlNode variableNode = node.GetNodeWithAttributeValue(GetVariableFieldName(i));
+                    XmlNode variableNode = node.GetInnerBlockNode(GetVariableFieldName(i), parserInfo, new MissingBlockException(ID, ""));
                     if (variableNode != null)
                     {
                         VariableBlock varBlock = (VariableBlock)XmlParser.ParseBlock(variableNode, dfg, parserInfo);
@@ -83,7 +83,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
                 this.IsValidProgram = true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 this.IsValidProgram = false;
             }
@@ -134,7 +134,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         private static string GetVariableFieldName(int index)
         {
-            return $"variable.{index}";
+            return $"variable-{index}";
         }
 
         public void AppendProgramXml(ref XmlNode currentProgramXml, ParserInfo parserInfo)

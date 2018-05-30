@@ -439,7 +439,7 @@ Blockly.Blocks["getArrayLength"] = {
 Blockly.Blocks["getNumberVariable"] = {
 	init: function() {
 		this.jsonInit({
-			"message0": "get value of %1",
+			"message0": "value of %1",
 			"args0": [
 				{
 					"type": "field_variable",
