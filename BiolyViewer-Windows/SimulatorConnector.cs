@@ -104,7 +104,12 @@ namespace BiolyViewer_Windows
             {
                 //Debug.WriteLine("await sleep(500);");
             }
-            await Browser.GetMainFrame().EvaluateScriptAsync(js, null);
+            try
+            {
+                await Browser.GetMainFrame().EvaluateScriptAsync(js, null);
+            }
+            catch (Exception) { }
+
         }
 
         public override V WaitForResponse<V>()
