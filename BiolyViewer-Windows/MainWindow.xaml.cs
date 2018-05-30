@@ -71,7 +71,7 @@ namespace BiolyViewer_Windows
 
         private void GiveSettingsToJS(SettingsInfo settings)
         {
-            var settingStrings = settings.Settings.Select(x => $"{{id: \"{x.Key}\", value: {x.Value.ToString().ToLower()}}}");
+            var settingStrings = settings.Settings.Select(x => $"{{id: \"{x.Key}\", value: {x.Value.ToString().Replace(',','.').ToLower()}}}");
             string settingsString = $"[{String.Join(", ", settingStrings)}]";
 
             Browser.ExecuteScriptAsync($"setSettings({settingsString});");
