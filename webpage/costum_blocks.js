@@ -46,7 +46,7 @@ Blockly.Blocks["inputDeclaration"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 180,
 			"tooltip": ""
 		});
 	}
@@ -68,7 +68,7 @@ Blockly.Blocks["outputDeclaration"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 280,
+			"colour": 180,
 			"tooltip": "",
 		});
 	}
@@ -90,7 +90,7 @@ Blockly.Blocks["heaterDeclaration"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 280,
+			"colour": 180,
 			"tooltip": "",
 		});
 	}
@@ -117,7 +117,7 @@ Blockly.Blocks["outputUseage"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 280,
+			"colour": 150,
 			"tooltip": "",
 			"inputsInline": false
 		});
@@ -160,7 +160,7 @@ Blockly.Blocks["heaterUseage"] = {
 				}
 			],
 			"output": "FluidOperator",
-			"colour": 80,
+			"colour": 150,
 			"tooltip": ""
 		});
 	}
@@ -187,7 +187,7 @@ Blockly.Blocks["fluid"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 80,
+			"colour": 150,
 			"tooltip": ""
 		});
 	}
@@ -220,7 +220,7 @@ Blockly.Blocks["getFluid"] = {
 				}
 			],
 			"output": "FluidType",
-			"colour": 80,
+			"colour": 150,
 			"tooltip": ""
 		});
 	}
@@ -238,7 +238,7 @@ Blockly.Blocks["getDropletCount"] = {
 				}
 			],
 			"output": "Number",
-			"colour": 80,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -267,7 +267,7 @@ Blockly.Blocks["mixer"] = {
 				}
 			],
 			"output": "FluidOperator",
-			"colour": 120,
+			"colour": 150,
 			"tooltip": ""
 		});
 	}
@@ -286,7 +286,7 @@ Blockly.Blocks["waste"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 240,
+			"colour": 150,
 			"tooltip": "",
 			"inputsInline": false
 		});
@@ -307,7 +307,7 @@ Blockly.Blocks["sensor"] = {
 				}
 			],
 			"output": "Number",
-			"colour": 320,
+			"colour": 240,
 			"tooltip": "",
 			"inputsInline": false
 		});
@@ -338,7 +338,7 @@ Blockly.Blocks["fluidArray"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 120,
 			"tooltip": ""
 		});
 	}
@@ -372,7 +372,7 @@ Blockly.Blocks["setFluidArrayIndex"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 120,
 			"tooltip": ""
 		});
 	}
@@ -413,7 +413,7 @@ Blockly.Blocks["getFluidArrayIndex"] = {
 				}
 			],
 			"output": "FluidType",
-			"colour": 40,
+			"colour": 120,
 			"tooltip": ""
 		});
 	}
@@ -421,7 +421,7 @@ Blockly.Blocks["getFluidArrayIndex"] = {
 Blockly.Blocks["getArrayLength"] = {
 	init: function() {
 		this.jsonInit({
-			"message0": "array length of %1",
+			"message0": "fluid array length %1",
 			"args0": [
 				{
 					"type": "field_variable",
@@ -430,7 +430,7 @@ Blockly.Blocks["getArrayLength"] = {
 				}
 			],
 			"output": "Number",
-			"colour": 40,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -448,7 +448,7 @@ Blockly.Blocks["getNumberVariable"] = {
 				}
 			],
 			"output": "Number",
-			"colour": 40,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -471,7 +471,7 @@ Blockly.Blocks["setNumberVariable"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -631,7 +631,7 @@ Blockly.Blocks["union"] = {
 				}
 			],
 			"output": "FluidOperator",
-			"colour": 120,
+			"colour": 150,
 			"tooltip": ""
 		});
 	}
@@ -653,7 +653,7 @@ Blockly.Blocks["importNumberVariable"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -683,7 +683,7 @@ Blockly.Blocks["numberArray"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 280,
 			"tooltip": ""
 		});
 	}
@@ -717,7 +717,7 @@ Blockly.Blocks["setNumberArrayIndex"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 280,
 			"tooltip": ""
 		});
 	}
@@ -742,7 +742,7 @@ Blockly.Blocks["getNumberArrayIndex"] = {
 				}
 			],
 			"output": "Number",
-			"colour": 40,
+			"colour": 280,
 			"tooltip": ""
 		});
 	}
