@@ -50,3 +50,19 @@ function getElectrodeSizeSetting()
 {
 	return document.getElementById("electrodeSizeSetting").value;
 }
+function getUseSimulatorStrictModeSetting()
+{
+	return document.getElementById("useSimulatorStrictMode").checked;
+}
+
+
+
+
+
+
+
+
+
+
+
+
