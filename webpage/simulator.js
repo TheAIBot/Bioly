@@ -20,8 +20,9 @@ const RIGHT_NEIGHBOR_INDEX = 1;
 const ABOVE_NEIGHBOR_INDEX = 2;
 const BELOW_NEIGHBOR_INDEX = 3;
 
-const ELECTRODE_SIZE_IN_CM = 1;
-const DROP_DISTANCE_PER_SEC_IN_CM = 600;
+var ELECTRODE_SIZE_IN_CM = 1;
+var DROP_DISTANCE_PER_SEC_IN_CM = 600;
+var DEFAULT_DROP_SIZE_IN_CM = 1;
 const UPDATES_PER_SECOND = 60;
 
 //setel 1 2 3 4 5 6 7  8 9 10
@@ -33,6 +34,10 @@ const UPDATES_PER_SECOND = 60;
 
 function startSimulator(width, height, inputs, outputs)
 {
+	ELECTRODE_SIZE_IN_CM        = getElectrodeSizeSetting();
+	DROP_DISTANCE_PER_SEC_IN_CM = getDropletSpeedSetting();
+	DEFAULT_DROP_SIZE_IN_CM     = getDropletSizeSetting();
+	
 	newCommands = [];
 	errorMessages = [];
 	
@@ -361,7 +366,7 @@ function isElectrodeOn(electrode)
 
 function getDropSize(amount)
 {
-	return Math.sqrt(amount);
+	return Math.sqrt(amount) * (DEFAULT_DROP_SIZE_IN_CM / ELECTRODE_SIZE_IN_CM);
 }
 
 function getClosestElectrode(position)

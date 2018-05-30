@@ -83,5 +83,10 @@ namespace BiolyViewer_Windows
                 simulatorThread.Start();
             }
         }
+
+        public void SettingsChanged()
+        {
+
+        }
     }
 }

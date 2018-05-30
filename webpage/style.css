@@ -48,7 +48,6 @@ body
 }
 .tab
 {
-	width: 50%;
 	height: 30px;
 	position: absolute;
     background-color: f1f1f1;
@@ -60,14 +59,34 @@ body
 	z-index: 2;
 }
 
-#leftTab
+#graphTab
 {
 	left: 0%;
+	width: 40%;
 }
 
-#rightTab
+#simulatorTab
 {
-	left: 50%;
+	left: 40%;
+	width: 40%;
+}
+
+#settingsTab
+{
+	left: 80%;
+	width: 20%;
+}
+
+.settingsPlacement
+{
+	padding: 5px;
+	width: 250px;
+}
+
+.settingInput
+{
+	width: 80px;
+	float: right;
 }
 
 .tab:hover

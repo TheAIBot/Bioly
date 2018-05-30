@@ -58,40 +58,51 @@ namespace BiolyViewer_Windows
                 //Wait for the MainFrame to finish loading
                 if (args.Frame.IsMain)
                 {
-                    CompilerOptions.PROGRAM_FOLDER_PATH = @"../../../../BiolyPrograms";
-                    string[] files = Directory.GetFiles(@"../../../../BiolyPrograms");
-                    List<string> loadedPrograms = new List<string>();
-                    foreach (string file in files)
-                    {
-                        if (System.IO.Path.GetExtension(file) == Saver.DEFAULT_FILE_EXTENSION)
-                        {
-                            try
-                            {
-                                string fileContent = File.ReadAllText(file);
-                                (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(fileContent);
-                                if (exceptions.Count == 0)
-                                {
-                                    string programName = System.IO.Path.GetFileNameWithoutExtension(file);
-                                    (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml) = InlineProgram.LoadProgram(programName);
-
-                                    string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
-                                    string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
-                                    string variables = String.Join(", ", variableStrings.Select(x => "\"" + x + "\""));
-                                    programXml = programXml.Replace("\"", "'");
-                                    loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], variables: [{variables}], programXml: \"{programXml}\"}}");
-                                }
-                            }
-                            catch (Exception ee)
-                            {
-                                MessageBox.Show(ee.Message + Environment.NewLine + ee.StackTrace);
-                            }
-                        }
-                    }
-
-                    string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
-                    Browser.ExecuteScriptAsync($"startBlockly({allPrograms});");
+                    GiveSettingsToJS();
+                    GiveProgramsToJS();
                 }
             };
+        }
+
+        private void GiveSettingsToJS()
+        {
+
+        }
+
+        private void GiveProgramsToJS()
+        {
+            CompilerOptions.PROGRAM_FOLDER_PATH = @"../../../../BiolyPrograms";
+            string[] files = Directory.GetFiles(@"../../../../BiolyPrograms");
+            List<string> loadedPrograms = new List<string>();
+            foreach (string file in files)
+            {
+                if (System.IO.Path.GetExtension(file) == Saver.DEFAULT_FILE_EXTENSION)
+                {
+                    try
+                    {
+                        string fileContent = File.ReadAllText(file);
+                        (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(fileContent);
+                        if (exceptions.Count == 0)
+                        {
+                            string programName = System.IO.Path.GetFileNameWithoutExtension(file);
+                            (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml) = InlineProgram.LoadProgram(programName);
+
+                            string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
+                            string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
+                            string variables = String.Join(", ", variableStrings.Select(x => "\"" + x + "\""));
+                            programXml = programXml.Replace("\"", "'");
+                            loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], variables: [{variables}], programXml: \"{programXml}\"}}");
+                        }
+                    }
+                    catch (Exception ee)
+                    {
+                        MessageBox.Show(ee.Message + Environment.NewLine + ee.StackTrace);
+                    }
+                }
+            }
+
+            string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
+            Browser.ExecuteScriptAsync($"startBlockly({allPrograms});");
         }
     }
 }

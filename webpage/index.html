@@ -31,6 +31,7 @@
 			}
 		</script>
 		
+		<script src="settings.js"></script>
 		<script src="WebGL/angelCommon/initShaders.js"></script>
 		<script src="WebGL/angelCommon/webgl-utils.js"></script>
 		<script src="WebGL/angelCommon/MV.js"></script>
@@ -108,15 +109,44 @@
 			</xml>
 		</div>
 		<div class="side" id="rightSide">
-			<button class="tab tabLink" id="leftTab"  onclick="openTab(event, 'graphDiv'); return false;">Graph</button>
-			<button class="tab tabLink" id="rightTab" onclick="openTab(event, 'simulatorCanvas'); return false;">Simulator</button>
+			<button class="tab tabLink" id="graphTab"     onclick="openTab(event, 'graphDiv');        return false;">Graph</button>
+			<button class="tab tabLink" id="simulatorTab" onclick="openTab(event, 'simulatorCanvas'); return false;">Simulator</button>
+			<button class="tab tabLink" id="settingsTab"  onclick="openTab(event, 'settingsDiv');     return false;">Settings</button>
 			<div class="tabContent">
 				<div    class="tabItemContent" id="graphDiv"></div>
 				<canvas class="tabItemContent" id="simulatorCanvas"></canvas>
+				<div    class="tabItemContent" id="settingsDiv">
+					<div>
+						<div class="settingsPlacement">
+							<span>Board width</span>
+							<input class="settingInput" id="boardWidthSetting" type="number" oninput="webUpdater.settingsChanged();">
+						</div>
+						<div class="settingsPlacement">
+							<span>Board height</span>
+							<input class="settingInput" id="boardHeightSetting" type="number" oninput="webUpdater.settingsChanged();">
+						</div>
+						<div class="settingsPlacement">
+							<span>Command frequency</span>
+							<input class="settingInput" id="commandFrequencySetting" type="number" oninput="webUpdater.settingsChanged();">
+						</div>
+						<div class="settingsPlacement">
+							<span>Droplet speed(cm/s)</span>
+							<input class="settingInput" id="dropletSpeedSetting" type="number" oninput="webUpdater.settingsChanged();">
+						</div>
+						<div class="settingsPlacement">
+							<span>Droplet size(cm)</span>
+							<input class="settingInput" id="dropletSizeSetting" type="number" oninput="webUpdater.settingsChanged();">
+						</div>
+						<div class="settingsPlacement">
+							<span>Electrode size(cm)</span>
+							<input class="settingInput" id="electrodeSizeSetting" type="number" oninput="webUpdater.settingsChanged();">
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 		<script src="helperFunctions.js"></script>
-		<script>document.getElementById("rightTab").click();</script>
+		<script>document.getElementById("settingsTab").click();</script>
 		<script src="simulator_events.js"></script>
 	</body>
 </html>
