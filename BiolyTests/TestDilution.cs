@@ -187,7 +187,7 @@ namespace BiolyTests.Dilution
                 while (i < numDropletsToMix)
                 {
                     float extraFluid = mix(leftFluid,rightFluid);
-                    mixedFluid = union(extraFluid, MixedFluid);
+                    mixedFluid = union(extraFluid, (int) MixedFluid);
                 }
                 if (mixingSequence[NumOfSteps * groupElements + 0] == 0)
                 {
@@ -208,14 +208,14 @@ namespace BiolyTests.Dilution
             return mixingSequence;
         }
 
-        private int union(float fluid1, float fluid2)
+        private int union(float fluid1, int fluid2)
         {
             return fluid2 + 2;
         }
 
         private int mix(float leftFluid, float rightFluid)
         {
-            return (leftFluid + rightFluid) / 2;
+            return (int) (leftFluid + rightFluid) / 2;
         }
         
     }
