@@ -188,6 +188,7 @@ namespace BiolyTests.Dilution
                 {
                     float extraFluid = mix(leftFluid,rightFluid);
                     mixedFluid = union(extraFluid, (int) MixedFluid);
+                    i++;
                 }
                 if (mixingSequence[NumOfSteps * groupElements + 0] == 0)
                 {
