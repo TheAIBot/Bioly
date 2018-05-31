@@ -77,25 +77,62 @@ namespace BiolyCompiler.Architechtures
 
         public bool PlaceBufferedModule(Module module, List<Rectangle> candidateRectangles)
         {
-            //The intention is that it should have a one wide buffer on each side,
-            //so that droplets always can be routed around the module.
-            //This would make the rectangles unable to block any routing between modules.
+            //It is neccessary to buffer the module, so that droplets can be routed around it.
+            //First it will try with a smaller buffering area just above the module,
+            //and if this does not suffice, it will try with buffers around the whole module.
             candidateRectangles.Sort((x, y) => RectangleCost(x, module) <= RectangleCost(y, module) ? 0 : 1);
-            Rectangle bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
+
+            Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
             for (int i = 0; i < candidateRectangles.Count; i++)
             {
                 Rectangle current = candidateRectangles[i];
                 if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
                 {
-                    return PlaceBufferedModuleInRectangle(module, bufferedRectangle, current);
+                    return PlaceBottomBufferedModuleInRectangle(module, bufferedRectangle, current);
+                }
+            }
+
+            //Bigger buffer in the case it failed:
+
+            //The intention is that it should have a one wide buffer on each side,
+            //so that droplets always can be routed around the module.
+            //This would make the rectangles unable to block any routing between modules.
+            bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
+            for (int i = 0; i < candidateRectangles.Count; i++)
+            {
+                Rectangle current = candidateRectangles[i];
+                if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
+                {
+                    return PlaceCompletlyBufferedModuleInRectangle(module, bufferedRectangle, current);
                 }
             }
             //If the module can't be placed, even with some buffer space, then it can't be placed at all:
             return false;
         }
 
-        private bool PlaceBufferedModuleInRectangle(Module module, Rectangle bufferedRectangle, Rectangle current)
+
+        private bool PlaceBottomBufferedModuleInRectangle(Module module, Rectangle bufferedRectangle, Rectangle current)
         {
+            //It reserves/places the area for the whole buffered rectangle
+            (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
+            EmptyRectangles.Remove(current);
+            if (topRectangle != null) EmptyRectangles.Add(topRectangle);
+            if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
+
+            //The placed buffered rectangle is divided up into smaller empty rectangles, that can be used for routing.
+            //Here a thin slice is cut off from the bottom, for the purpose of routing
+            Rectangle lowerBufferingRectangle = new Rectangle(bufferedRectangle.width, 1, bufferedRectangle.x, bufferedRectangle.y);
+            Rectangle remainingUpperRectangle = new Rectangle(bufferedRectangle.width, bufferedRectangle.height - 1, bufferedRectangle.x, bufferedRectangle.y + 1);
+            bufferedRectangle.splitRectangleInTwo(lowerBufferingRectangle, remainingUpperRectangle);
+            EmptyRectangles.Add(lowerBufferingRectangle);
+            
+            PlaceModuleInRectangle(module, remainingUpperRectangle);
+            return true;
+        }
+
+        private bool PlaceCompletlyBufferedModuleInRectangle(Module module, Rectangle bufferedRectangle, Rectangle current)
+        {
+            //It reserves/places the area for the whole buffered rectangle
             (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
             EmptyRectangles.Remove(current);
             if (topRectangle != null) EmptyRectangles.Add(topRectangle);
