@@ -35,7 +35,8 @@ namespace BiolyViewer_Windows
                 if (exceptions.Count == 0)
                 {
                     (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
-                    string js = $"setGraph({nodes}, {edges});ClearErrors();";
+                    //string js = $"setGraph({nodes}, {edges});ClearErrors();";
+                    string js = $"ClearErrors();";
                     Browser.ExecuteScriptAsync(js);
 
                     RunSimulator(xml);

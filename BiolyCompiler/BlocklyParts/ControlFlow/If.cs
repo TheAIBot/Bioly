@@ -85,6 +85,12 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         {
             foreach (Conditional cond in IfStatements)
             {
+                //deciding block is only null for the else statment
+                if (cond.DecidingBlock == null)
+                {
+                    return cond.GuardedDFG;
+                }
+
                 bool isTrue = cond.DecidingBlock.Run(variables, executor, dropPositions) == 1f;
                 if (isTrue)
                 {
