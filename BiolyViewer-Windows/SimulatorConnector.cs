@@ -9,22 +9,66 @@ using BiolyCompiler.Modules;
 using System.Globalization;
 using System.Diagnostics;
 using CefSharp.WinForms;
+using System.IO.Ports;
+using System.Threading;
+using System.Collections.Concurrent;
 
 namespace BiolyViewer_Windows
 {
-    class SimulatorConnector : CommandExecutor<string>
+    class SimulatorConnector : CommandExecutor<string>, IDisposable
     {
         private readonly ChromiumWebBrowser Browser;
         private readonly int Width;
         private readonly int Height;
         private readonly Random Rando = new Random(237842);
         private bool REALLY_SLOW_COMPUTER = false;
+        private ConcurrentQueue<string> PortStrings = new ConcurrentQueue<string>();
+        private SerialPort Port;
+        private Thread SerialSendThread;
+
 
         public SimulatorConnector(ChromiumWebBrowser browser, int width, int height)
         {
+            //need these commands to start the high voltage things
+            PortStrings.Enqueue("shv 1 290\r");
+            PortStrings.Enqueue("hvpoe 1 1\r");
+
+            Port = new SerialPort("COM3", 115200);
+            Port.Open();
+            if (Port == null)
+            {
+                throw new Exception("Unable to connect to serial port.");
+            }
+            SerialSendThread = new Thread(() => SendCommandsToSerialPort());
+            SerialSendThread.Start();
             Browser = browser;
             Width = width;
             Height = height;
+        }
+
+        private void SendCommandsToSerialPort()
+        {
+            try
+            {
+                while (true)
+                {
+                    PortStrings.TryDequeue(out string command);
+                    if (command == null)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
+                    byte[] bytes = Encoding.ASCII.GetBytes(command);
+                    Port.Write(bytes, 0, bytes.Length);
+                    Debug.WriteLine(command);
+                    Thread.Sleep(500);
+                    //Debug.WriteLine(Port.ReadLine());
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public override void StartExecutor(List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules)
@@ -123,9 +167,17 @@ namespace BiolyViewer_Windows
             switch (commands.First().Type)
             {
                 case CommandType.ELECTRODE_ON:
-                    return $"setel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
+
+                    {
+                        PortStrings.Enqueue($"setel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y)))}\r");
+                        return $"setel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
+                    }
+
                 case CommandType.ELECTRODE_OFF:
-                    return $"clrel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
+                    {
+                        PortStrings.Enqueue($"clrel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y)))}\r");
+                        return $"clrel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
+                    }
                 case CommandType.SHOW_AREA:
                     return $"show_area {areaCommand.ID} {areaCommand.X} {areaCommand.Y} {areaCommand.Width} {areaCommand.Height} {areaCommand.R.ToString("N3", CultureInfo.InvariantCulture)} {areaCommand.G.ToString("N3", CultureInfo.InvariantCulture)} {areaCommand.B.ToString("N3", CultureInfo.InvariantCulture)}";
                 case CommandType.REMOVE_AREA:
@@ -133,6 +185,29 @@ namespace BiolyViewer_Windows
                 default:
                     throw new Exception($"Can't convert command type {commands.First().Type.ToString()}");
             }
+        }
+
+        private int ConvertElectrodeIndex(int col, int row)
+        {
+            col++;
+            if (row < 5)
+            {
+                return col + (row * 4);
+            }
+            else
+            {
+                return ((64 + (15 - row) * 4) + col - 4);
+            }
+        }
+
+        public void Dispose()
+        {
+            SerialSendThread.Interrupt();
+            SerialSendThread.Join();
+
+            byte[] bytes = Encoding.ASCII.GetBytes("hvpoe 1 0\r");
+            Port?.Write(bytes, 0, bytes.Length);
+            Port?.Close();
         }
     }
 }

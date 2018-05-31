@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace BiolyViewer_Windows
 {
-    public class WebUpdater
+    public class WebUpdater : IDisposable
     {
         private readonly ChromiumWebBrowser Browser;
         private readonly SettingsInfo Settings;
@@ -76,11 +76,13 @@ namespace BiolyViewer_Windows
                         int boardHeight = Settings.BoardHeight;
                         int timeBetweenCommands = (int)((1f / Settings.CommandFrequency) * 1000);
                         bool showEmptyRectangles = Settings.ShowEmptyRectangles;
-                        CommandExecutor<string> executor = new SimulatorConnector(Browser, boardWidth, boardHeight);
-                        ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-                        programExecutor.TimeBetweenCommands = timeBetweenCommands;
-                        programExecutor.ShowEmptyRectangles = showEmptyRectangles;
-                        programExecutor.Run(boardWidth, boardHeight, xml);
+                        using (SimulatorConnector executor = new SimulatorConnector(Browser, boardWidth, boardHeight))
+                        {
+                            ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
+                            programExecutor.TimeBetweenCommands = timeBetweenCommands;
+                            programExecutor.ShowEmptyRectangles = showEmptyRectangles;
+                            programExecutor.Run(boardWidth, boardHeight, xml);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -95,6 +97,15 @@ namespace BiolyViewer_Windows
         {
             Settings.UpdateSettingsFromString(settingsString);
             Settings.SaveSettings(settingsString, MainWindow.SETTINGS_FILE_PATH);
+        }
+
+        public void Dispose()
+        {
+            lock (simulatorLocker)
+            {
+                simulatorThread?.Interrupt();
+                simulatorThread?.Join();
+            }
         }
     }
 }

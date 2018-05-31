@@ -125,7 +125,7 @@ namespace BiolyCompiler.Scheduling
             int currentTime = 0;
             board = ListSchedulingSetup(assay, board, library, currentTime);
             List<Block> readyOperations = assay.getReadyOperations();
-            currentTime = 0;
+            //currentTime = 0;
 
             //Continue until all operations have been scheduled:
             while (assay.hasUnfinishedOperations() && CanExecuteMoreOperations(readyOperations))

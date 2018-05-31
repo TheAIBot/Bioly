@@ -26,7 +26,7 @@ namespace BiolyViewer_Windows
 
         public int BoardWidth => (int)(float)Settings[BOARD_WIDTH_SETTING_NAME];
         public int BoardHeight => (int)(float)Settings[BOARD_HEIGHT_SETTING_NAME];
-        public float CommandFrequency => (int)(float)Settings[COMMAND_FREQUENCY_SETTING_NAME];
+        public float CommandFrequency => (float)Settings[COMMAND_FREQUENCY_SETTING_NAME];
         public float DropletSpeed => (float)Settings[DROPLET_SPEED_SETTING_NAME];
         public float DropletSize => (float)Settings[DROPLET_SIZE_SETTING_NAME];
         public float ElectrodeSize => (float)Settings[ELECTRODE_SIZE_SETTING_NAME];

@@ -34,6 +34,7 @@ namespace BiolyViewer_Windows
     {
         public const string SETTINGS_FILE_PATH = "settings.stx";
         private const string PROGRAMS_FOLDER_PATH = @"../../../../BiolyPrograms";
+        private WebUpdater Updater;
 
         public MainWindow()
         {
@@ -54,9 +55,11 @@ namespace BiolyViewer_Windows
             SettingsInfo settings = new SettingsInfo();
             settings.LoadSettings(SETTINGS_FILE_PATH);
 
+            this.Updater = new WebUpdater(Browser, settings);
+
             Browser.Load("costum://index.html");
             Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
-            Browser.JavascriptObjectRepository.Register("webUpdater", new WebUpdater(Browser, settings), true);
+            Browser.JavascriptObjectRepository.Register("webUpdater", Updater, true);
             //Wait for the MainFrame to finish loading
             Browser.FrameLoadEnd += (s, args) =>
             {
@@ -111,6 +114,11 @@ namespace BiolyViewer_Windows
 
             string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
             Browser.ExecuteScriptAsync($"startBlockly({allPrograms});");
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Updater.Dispose();
         }
     }
 }
