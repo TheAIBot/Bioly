@@ -25,6 +25,7 @@ namespace BiolyViewer_Windows
         private ConcurrentQueue<string> PortStrings = new ConcurrentQueue<string>();
         private SerialPort Port;
         private Thread SerialSendThread;
+        private bool SEND_TO_PORT = false;
 
 
         public SimulatorConnector(ChromiumWebBrowser browser, int width, int height)
@@ -33,14 +34,17 @@ namespace BiolyViewer_Windows
             PortStrings.Enqueue("shv 1 290\r");
             PortStrings.Enqueue("hvpoe 1 1\r");
 
-            Port = new SerialPort("COM3", 115200);
-            Port.Open();
-            if (Port == null)
+            if (SEND_TO_PORT)
             {
-                throw new Exception("Unable to connect to serial port.");
+                Port = new SerialPort("COM3", 115200);
+                Port.Open();
+                if (Port == null)
+                {
+                    throw new Exception("Unable to connect to serial port.");
+                }
+                SerialSendThread = new Thread(() => SendCommandsToSerialPort());
+                SerialSendThread.Start();
             }
-            SerialSendThread = new Thread(() => SendCommandsToSerialPort());
-            SerialSendThread.Start();
             Browser = browser;
             Width = width;
             Height = height;
