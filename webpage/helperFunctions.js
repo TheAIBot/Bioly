@@ -18,6 +18,7 @@ function setGraph(nodes, edges)
 				selector: 'node',
 				style: 
 				{
+					'min-zoomed-font-size': 5,
 					'content': 'data(label)',
 					'text-opacity': 0.5,
 					'text-valign': 'center',
@@ -37,6 +38,7 @@ function setGraph(nodes, edges)
 				selector: 'edge',
 				style: 
 				{
+					'min-zoomed-font-size': 5,
 					'content': 'data(label)',
 					'curve-style': 'bezier',
 					'width': 4,
