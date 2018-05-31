@@ -3,6 +3,7 @@ using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Xml;
 
@@ -34,7 +35,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         {
             return
             $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
-                $"<field name=\"{NumberFieldName}\">{Value}</field>" +
+                $"<field name=\"{NumberFieldName}\">{Value.ToString(CultureInfo.InvariantCulture)}</field>" +
             "</block>";
         }
 
