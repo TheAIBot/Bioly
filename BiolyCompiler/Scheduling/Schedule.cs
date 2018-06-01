@@ -125,6 +125,7 @@ namespace BiolyCompiler.Scheduling
             int currentTime = 0;
             board = ListSchedulingSetup(assay, board, library, currentTime);
             List<Block> readyOperations = assay.getReadyOperations();
+            Console.Write("");
             //currentTime = 0;
 
             //Continue until all operations have been scheduled:
