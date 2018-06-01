@@ -4,6 +4,7 @@ using System.Text;
 using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
+using BiolyCompiler.Modules.RectangleSides;
 using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
 using MoreLinq;
@@ -77,25 +78,120 @@ namespace BiolyCompiler.Architechtures
 
         public bool PlaceBufferedModule(Module module, List<Rectangle> candidateRectangles)
         {
-            //The intention is that it should have a one wide buffer on each side,
-            //so that droplets always can be routed around the module.
-            //This would make the rectangles unable to block any routing between modules.
+            //It is neccessary to buffer the module, so that droplets can be routed around it.
+            //First it will try with a smaller buffering area just above the module,
+            //and if this does not suffice, it will try with buffers around the whole module.
             candidateRectangles.Sort((x, y) => RectangleCost(x, module) <= RectangleCost(y, module) ? 0 : 1);
-            Rectangle bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
+
+            Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
             for (int i = 0; i < candidateRectangles.Count; i++)
             {
                 Rectangle current = candidateRectangles[i];
                 if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
                 {
-                    return PlaceBufferedModuleInRectangle(module, bufferedRectangle, current);
+                    (bool couldBePlaced, Rectangle newCurrentRectangle) = PlaceBottomBufferedModuleInRectangle(module, current);
+                    if (couldBePlaced) return true;
+                    else candidateRectangles[i] = newCurrentRectangle; //Necessary, as current has been replaced internally in the system with newCurrentRectangle.
+
                 }
             }
+            DebugTools.checkAdjacencyMatrixCorrectness(this);
+
+            //Bigger buffer in the case it failed:
+
+            //The intention is that it should have a one wide buffer on each side,
+            //so that droplets always can be routed around the module.
+            //This would make the rectangles unable to block any routing between modules.
+            bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
+            for (int i = 0; i < candidateRectangles.Count; i++)
+            {
+                Rectangle current = candidateRectangles[i];
+                if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
+                {
+                    return PlaceCompletlyBufferedModuleInRectangle(module, current);
+                }
+            }
+            DebugTools.checkAdjacencyMatrixCorrectness(this);
             //If the module can't be placed, even with some buffer space, then it can't be placed at all:
             return false;
         }
 
-        private bool PlaceBufferedModuleInRectangle(Module module, Rectangle bufferedRectangle, Rectangle current)
+
+        public (bool, Rectangle) PlaceBottomBufferedModuleInRectangle(Module module, Rectangle current)
         {
+            Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
+            //It reserves/places the area for the whole buffered rectangle
+            (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
+            EmptyRectangles.Remove(current);
+            if (topRectangle != null) EmptyRectangles.Add(topRectangle);
+            if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
+
+            //The placed buffered rectangle is divided up into smaller empty rectangles, that can be used for routing.
+            //Here a thin slice is cut off from the bottom, for the purpose of routing
+            Rectangle lowerBufferingRectangle = new Rectangle(bufferedRectangle.width, 1, bufferedRectangle.x, bufferedRectangle.y);
+            Rectangle remainingUpperRectangle = new Rectangle(bufferedRectangle.width, bufferedRectangle.height - 1, bufferedRectangle.x, bufferedRectangle.y + 1);
+            bufferedRectangle.splitRectangleInTwo(lowerBufferingRectangle, remainingUpperRectangle);
+            EmptyRectangles.Add(remainingUpperRectangle);
+            EmptyRectangles.Add(lowerBufferingRectangle);
+            //It needs to be checked, if with the buffer, one can still route to all other rectangles.
+            //If not, then one should fail.
+            if (DoesNotBlockRouteToAnyModuleOrEmptyRectangle(remainingUpperRectangle, module, EmptyRectangles, PlacedModules))
+            {
+                PlaceModuleInRectangle(module, remainingUpperRectangle);
+                return (true, null);
+            }
+            else
+            {
+                //Everything is returned to the same state as before:
+                //This must be done in a certain order, to avoid error cases, where one do not return to the original board.
+                Rectangle intermediateCurrent = remainingUpperRectangle.MergeWithRectangle(RectangleSide.Bottom, lowerBufferingRectangle);
+                EmptyRectangles.Remove(remainingUpperRectangle);
+                EmptyRectangles.Remove(lowerBufferingRectangle);
+
+                //A lot of conditionals, depending on the original splitting of topRectangle and rightRectangle:
+                if (topRectangle != null)
+                {
+                    (RectangleSide side, bool canMerge) = intermediateCurrent.CanMerge(topRectangle);
+                    if (canMerge)
+                    {
+                        intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
+                        if (rightRectangle != null)
+                        {
+                            //It should then be able to merge
+                            (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
+                            if (!canTotallyMerge) throw new Exception("Logic error");
+                            intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
+
+                        }
+                    }
+                    else
+                    { //Then the right rectangle must exists, and it can be merged with first
+                        (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
+                        if (!canTotallyMerge) throw new Exception("Logic error");
+                        intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
+                        intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
+                    }
+                }
+                else if (rightRectangle != null)
+                {
+                    //It should then be able to merge
+                    (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
+                    if (!canTotallyMerge) throw new Exception("Logic error");
+                }
+
+                if (topRectangle != null)   EmptyRectangles.Remove(topRectangle);
+                if (rightRectangle != null) EmptyRectangles.Remove(rightRectangle);
+                EmptyRectangles.Add(intermediateCurrent);
+                return (false, intermediateCurrent);
+            }
+
+            
+        }
+
+        public bool PlaceCompletlyBufferedModuleInRectangle(Module module, Rectangle current)
+        {
+            Rectangle bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
+            //It reserves/places the area for the whole buffered rectangle
             (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
             EmptyRectangles.Remove(current);
             if (topRectangle != null) EmptyRectangles.Add(topRectangle);

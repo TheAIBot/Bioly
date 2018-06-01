@@ -228,7 +228,8 @@ namespace BiolyCompiler.Scheduling
                         inputModule.DecrementDropletCount();
                         Droplet droplet = new Droplet(targetFluidType);
                         AllUsedModules.Add(droplet);
-                        board.FastTemplatePlace(droplet);
+                        bool couldPlace = board.FastTemplatePlace(droplet);
+                        if (!couldPlace) throw new Exception("Not enough space for the fluid transfer.");
                         Route route = Router.RouteDropletToNewPosition(inputModule, droplet, board, currentTime);
                         currentTime = route.getEndTime() + 1;
                         dropletRoutes.Add(route);
@@ -268,6 +269,7 @@ namespace BiolyCompiler.Scheduling
             (readyOperations, currentTime, board) = ExtractAndReassignDroplets(assay, board, currentTime, nextOperation, requiredDroplets, targetFluidType, inputFluid);
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
             currentTime++;
+            //DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             return (readyOperations, currentTime, board);
         }
 

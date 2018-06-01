@@ -77,7 +77,7 @@ namespace BiolyTests.ScheduleTests
             //should only be a bit bigger than the operation times. At the same time it must be larger:
 
             Assert.IsTrue(module.OperationTime < completionTime);
-            Assert.IsTrue(completionTime <= module.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30);
+            Assert.IsTrue(completionTime <= module.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30*2);
 
             Assert.AreEqual(2, schedule.ScheduledOperations.Count);
             Assert.AreEqual(schedule.ScheduledOperations.Max(operation => operation.EndTime), completionTime);
@@ -200,7 +200,7 @@ namespace BiolyTests.ScheduleTests
             int sequentialOperationLineLenght = (dfg.Nodes.Count - numberOfInputs)/2;
 
             Assert.IsTrue(module.OperationTime * sequentialOperationLineLenght < completionTime);
-            Assert.IsTrue(completionTime <= module.OperationTime * sequentialOperationLineLenght + Schedule.DROP_MOVEMENT_TIME * sequentialOperationLineLenght * 30);
+            Assert.IsTrue(completionTime <= module.OperationTime * sequentialOperationLineLenght + Schedule.DROP_MOVEMENT_TIME * sequentialOperationLineLenght * 50);
 
             Assert.AreEqual(dfg.Nodes.Count - numberOfInputs, schedule.ScheduledOperations.Count);
             Assert.AreEqual(schedule.ScheduledOperations.Max(operation => operation.EndTime), completionTime);
@@ -210,7 +210,7 @@ namespace BiolyTests.ScheduleTests
                 Block operation = schedule.ScheduledOperations[i];
                 //+2 instead of +1, as there are two parallel rows of sequentiel operations running
                 Block nextOperation = schedule.ScheduledOperations[i + 2];
-                Assert.IsTrue(Math.Abs(nextOperation.StartTime - operation.EndTime) <= Schedule.DROP_MOVEMENT_TIME * 30);
+                Assert.IsTrue(Math.Abs(nextOperation.StartTime - operation.EndTime) <= Schedule.DROP_MOVEMENT_TIME * 50);
                 Assert.IsTrue(operation.EndTime < nextOperation.StartTime);
             }
 
@@ -331,7 +331,7 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(operation1, schedule.ScheduledOperations[0]);
             Assert.IsTrue(module.OperationTime <= completionTime);
             //Two droplets are routed, and they should for such a simple board, take at most 20 movements.
-            Assert.IsTrue(completionTime <= module.OperationTime + Schedule.DROP_MOVEMENT_TIME * 20 * 2);
+            Assert.IsTrue(completionTime <= module.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30 * 2);
             Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
             Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
         }
@@ -390,13 +390,13 @@ namespace BiolyTests.ScheduleTests
             int estimatedCompletionTimeFinalMixing = Math.Max(estimatedCompletionTimeFirstRouteMixing, operation12.associatedModule.OperationTime +
                                                                                                        operation22.associatedModule.OperationTime +
                                                                                                        operation32.associatedModule.OperationTime) + operationLast.associatedModule.OperationTime;
-            Assert.IsTrue(estimatedCompletionTimeFinalMixing <= completionTime && completionTime <= estimatedCompletionTimeFinalMixing + Schedule.DROP_MOVEMENT_TIME * 30 * 6);
-            Assert.IsTrue(sequentialModule2.OperationTime <= operation11.EndTime && operation11.EndTime <= sequentialModule2.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30);
-            Assert.IsTrue(sequentialModule1.OperationTime <= operation21.EndTime && operation11.EndTime <= sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30);
-            Assert.IsTrue(estimatedCompletionTimeFirstRouteMixing <= operation31.EndTime && operation31.EndTime <= estimatedCompletionTimeFirstRouteMixing + Schedule.DROP_MOVEMENT_TIME * 30 * 3);
-            Assert.IsTrue(sequentialModule1.OperationTime <= operation12.EndTime && operation12.EndTime <= 2 * sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30 * 3);
-            Assert.IsTrue(2 * sequentialModule1.OperationTime <= operation22.EndTime && operation22.EndTime <= 2 * sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30 * 4);
-            Assert.IsTrue(2 * sequentialModule1.OperationTime + sequentialModule2.OperationTime <= operation32.EndTime && operation32.EndTime <= 2 * sequentialModule1.OperationTime + sequentialModule2.OperationTime + Schedule.DROP_MOVEMENT_TIME * 30 * 5);
+            Assert.IsTrue(estimatedCompletionTimeFinalMixing <= completionTime && completionTime <= estimatedCompletionTimeFinalMixing + Schedule.DROP_MOVEMENT_TIME * 50 * 6);
+            Assert.IsTrue(sequentialModule2.OperationTime <= operation11.EndTime && operation11.EndTime <= sequentialModule2.OperationTime + Schedule.DROP_MOVEMENT_TIME * 50);
+            Assert.IsTrue(sequentialModule1.OperationTime <= operation21.EndTime && operation11.EndTime <= sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 50);
+            Assert.IsTrue(estimatedCompletionTimeFirstRouteMixing <= operation31.EndTime && operation31.EndTime <= estimatedCompletionTimeFirstRouteMixing + Schedule.DROP_MOVEMENT_TIME * 50 * 3);
+            Assert.IsTrue(sequentialModule1.OperationTime <= operation12.EndTime && operation12.EndTime <= 2 * sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 50 * 3);
+            Assert.IsTrue(2 * sequentialModule1.OperationTime <= operation22.EndTime && operation22.EndTime <= 2 * sequentialModule1.OperationTime + Schedule.DROP_MOVEMENT_TIME * 50 * 4);
+            Assert.IsTrue(2 * sequentialModule1.OperationTime + sequentialModule2.OperationTime <= operation32.EndTime && operation32.EndTime <= 2 * sequentialModule1.OperationTime + sequentialModule2.OperationTime + Schedule.DROP_MOVEMENT_TIME * 50 * 5);
 
             Assert.AreEqual(dfg.Nodes.Count, schedule.ScheduledOperations.Count + numberOfInputes);
             Assert.AreEqual(operation11, schedule.ScheduledOperations[0]);
