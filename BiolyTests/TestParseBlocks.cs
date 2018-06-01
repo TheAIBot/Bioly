@@ -25,7 +25,7 @@ namespace BiolyTests.ParseBlockTests
     [TestClass]
     public class TestParseBlocks
     {
-        [TestInitialize()]
+        [TestInitialize]
         public void ClearWorkspace() => TestTools.ClearWorkspace();
 
         [TestMethod]

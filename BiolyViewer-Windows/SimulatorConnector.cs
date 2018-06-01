@@ -22,7 +22,7 @@ namespace BiolyViewer_Windows
         private readonly int Height;
         private readonly Random Rando = new Random(237842);
         private bool REALLY_SLOW_COMPUTER = false;
-        private ConcurrentQueue<string> PortStrings = new ConcurrentQueue<string>();
+        private BlockingCollection<string> PortStrings = new BlockingCollection<string>(new ConcurrentQueue<string>());
         private SerialPort Port;
         private Thread SerialSendThread;
 
@@ -30,15 +30,12 @@ namespace BiolyViewer_Windows
         public SimulatorConnector(ChromiumWebBrowser browser, int width, int height)
         {
             //need these commands to start the high voltage things
-            PortStrings.Enqueue("shv 1 290\r");
-            PortStrings.Enqueue("hvpoe 1 1\r");
+            PortStrings.Add("shv 1 290\r");
+            PortStrings.Add("hvpoe 1 1\r");
+            PortStrings.Add("clra\r");
 
             Port = new SerialPort("COM3", 115200);
             Port.Open();
-            if (Port == null)
-            {
-                throw new Exception("Unable to connect to serial port.");
-            }
             SerialSendThread = new Thread(() => SendCommandsToSerialPort());
             SerialSendThread.Start();
             Browser = browser;
@@ -52,12 +49,7 @@ namespace BiolyViewer_Windows
             {
                 while (true)
                 {
-                    PortStrings.TryDequeue(out string command);
-                    if (command == null)
-                    {
-                        Thread.Sleep(100);
-                        continue;
-                    }
+                    string command = PortStrings.Take();
 
                     byte[] bytes = Encoding.ASCII.GetBytes(command);
                     Port.Write(bytes, 0, bytes.Length);
@@ -169,13 +161,13 @@ namespace BiolyViewer_Windows
                 case CommandType.ELECTRODE_ON:
 
                     {
-                        PortStrings.Enqueue($"setel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y)))}\r");
+                        PortStrings.Add($"setel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y)))}\r");
                         return $"setel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
                     }
 
                 case CommandType.ELECTRODE_OFF:
                     {
-                        PortStrings.Enqueue($"clrel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y)))}\r");
+                        PortStrings.Add($"clrel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y)))}\r");
                         return $"clrel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
                     }
                 case CommandType.SHOW_AREA:
