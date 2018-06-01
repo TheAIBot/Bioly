@@ -197,9 +197,12 @@ namespace BiolyViewer_Windows
             SerialSendThread?.Interrupt();
             SerialSendThread?.Join();
 
-            byte[] bytes = Encoding.ASCII.GetBytes("hvpoe 1 0\r");
-            Port?.Write(bytes, 0, bytes.Length);
-            Port?.Close();
+            if (Port != null && Port.IsOpen)
+            {
+                byte[] bytes = Encoding.ASCII.GetBytes("hvpoe 1 0\r");
+                Port.Write(bytes, 0, bytes.Length);
+                Port.Close();
+            }
         }
     }
 }
