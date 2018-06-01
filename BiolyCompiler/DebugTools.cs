@@ -15,12 +15,12 @@ namespace BiolyCompiler
     {
         public static void makeDebugCorrectnessChecks(Board board, SimplePriorityQueue<FluidBlock> runningOperations, List<Module> usedModules)
         {
-            #if DEBUG
-                Debug.WriteLine(board.print(usedModules));
-            #endif
-            runningOperations.ToList()
-                             .OrderBy(element => element.StartTime)
-                             .ForEach(element => Debug.WriteLine(element.OriginalOutputVariable + ", " + element.StartTime + ", " + element.EndTime));
+            //#if DEBUG
+            //    Debug.WriteLine(board.print(usedModules));
+            //#endif
+            //runningOperations.ToList()
+            //                 .OrderBy(element => element.StartTime)
+            //                 .ForEach(element => Debug.WriteLine(element.OriginalOutputVariable + ", " + element.StartTime + ", " + element.EndTime));
             checkAdjacencyMatrixCorrectness(board);
         }
 
