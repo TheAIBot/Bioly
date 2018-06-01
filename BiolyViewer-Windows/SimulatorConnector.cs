@@ -161,13 +161,13 @@ namespace BiolyViewer_Windows
                 case CommandType.ELECTRODE_ON:
 
                     {
-                        PortStrings.Add($"setel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y)))}\r");
+                        PortStrings.Add($"setel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y, Width, Height)))}\r");
                         return $"setel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
                     }
 
                 case CommandType.ELECTRODE_OFF:
                     {
-                        PortStrings.Add($"clrel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y)))}\r");
+                        PortStrings.Add($"clrel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y, Width, Height)))}\r");
                         return $"clrel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
                     }
                 case CommandType.SHOW_AREA:
@@ -179,17 +179,9 @@ namespace BiolyViewer_Windows
             }
         }
 
-        private int ConvertElectrodeIndex(int col, int row)
+        private int ConvertElectrodeIndex(int col, int row, int width, int height)
         {
-            col++;
-            if (row < 5)
-            {
-                return col + (row * 4);
-            }
-            else
-            {
-                return ((64 + (15 - row) * 4) + col - 4);
-            }
+            return ((col / 4) * height * 4) + (col % 4) + (row * 4) + 1;
         }
 
         public void Dispose()
