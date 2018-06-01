@@ -23,8 +23,8 @@ namespace BiolyViewer_Windows
         private readonly Random Rando = new Random(237842);
         private bool REALLY_SLOW_COMPUTER = false;
         private BlockingCollection<string> PortStrings = new BlockingCollection<string>(new ConcurrentQueue<string>());
-        private SerialPort Port;
-        private Thread SerialSendThread;
+        private SerialPort Port = null;
+        private Thread SerialSendThread = null;
 
 
         public SimulatorConnector(ChromiumWebBrowser browser, int width, int height)

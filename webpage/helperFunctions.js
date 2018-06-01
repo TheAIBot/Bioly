@@ -67,8 +67,14 @@ function setGraph(nodes, edges)
 }
 
 function loadWorkspace(xmlText) {
+	workspace.removeChangeListener(onWorkspaceChanged);
+	
 	const xml = Blockly.Xml.textToDom(xmlText);
 	Blockly.Xml.domToWorkspace(xml, workspace);
+	
+	setTimeout(function() {
+		workspace.addChangeListener(onWorkspaceChanged);
+	}, 100);
 }
 
 function getWorkspaceAsXml()
