@@ -189,6 +189,10 @@ namespace BiolyViewer_Windows
 
         private int ConvertElectrodeIndex(int col, int row, int width, int height)
         {
+            if (col > 3)
+            {
+                row = height - row - 1;
+            }
             return ((col / 4) * height * 4) + (col % 4) + (row * 4) + 1;
         }
 
