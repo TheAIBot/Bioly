@@ -20,7 +20,7 @@ namespace BiolyViewer_Windows
         private const string DROPLET_SIZE_SETTING_NAME = "dropletSizeSetting";
         private const string ELECTRODE_SIZE_SETTING_NAME = "electrodeSizeSetting";
         private const string EMPTY_RECTANGLES_SETTING_NAME = "emptyRectanglesSetting";
-        private const string USE_SIMULATOR_STRICT_MODE = "useSimulatorStrictMode";
+        private const string USE_SIMULATOR_STRICT_MODE_SETTING_NAME = "useSimulatorStrictModeSetting";
 
         public Dictionary<string, object> Settings = new Dictionary<string, object>();
 
@@ -31,7 +31,7 @@ namespace BiolyViewer_Windows
         public float DropletSize => (float)Settings[DROPLET_SIZE_SETTING_NAME];
         public float ElectrodeSize => (float)Settings[ELECTRODE_SIZE_SETTING_NAME];
         public bool ShowEmptyRectangles => (bool)Settings[EMPTY_RECTANGLES_SETTING_NAME];
-        public bool UseSimulatorStrictMode => (bool)Settings[USE_SIMULATOR_STRICT_MODE];
+        public bool UseSimulatorStrictMode => (bool)Settings[USE_SIMULATOR_STRICT_MODE_SETTING_NAME];
 
         public SettingsInfo()
         {
@@ -43,7 +43,7 @@ namespace BiolyViewer_Windows
             Settings.Add(DROPLET_SIZE_SETTING_NAME     , 1f);
             Settings.Add(ELECTRODE_SIZE_SETTING_NAME   , 1f);
             Settings.Add(EMPTY_RECTANGLES_SETTING_NAME , true);
-            Settings.Add(USE_SIMULATOR_STRICT_MODE, true);
+            Settings.Add(USE_SIMULATOR_STRICT_MODE_SETTING_NAME, true);
         }
 
         public void LoadSettings(string path)

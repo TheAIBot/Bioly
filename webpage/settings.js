@@ -52,8 +52,23 @@ function getElectrodeSizeSetting()
 }
 function getUseSimulatorStrictModeSetting()
 {
-	return document.getElementById("useSimulatorStrictMode").checked;
+	return document.getElementById("useSimulatorStrictModeSetting").checked;
 }
+
+/*
+function updateAvailableComPorts(comPorts)
+{
+	const combobox = document.getElementById("comPortSetting");
+	const options = combobox.options;
+	const currentSelectedOptionName = options[options.selectedIndex].name;
+	
+	//remove existing options
+	for(var i = options.length - 1; i >= 0; i--)
+	{
+		options.remove(i);
+	}
+}
+*/
 
 
 
