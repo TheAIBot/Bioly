@@ -34,10 +34,18 @@ namespace BiolyViewer_Windows
             PortStrings.Add("hvpoe 1 1\r");
             PortStrings.Add("clra\r");
 
-            Port = new SerialPort("COM3", 115200);
-            Port.Open();
-            SerialSendThread = new Thread(() => SendCommandsToSerialPort());
-            SerialSendThread.Start();
+            try
+            {
+                Port = new SerialPort("COM3", 115200);
+                Port.Open();
+                SerialSendThread = new Thread(() => SendCommandsToSerialPort());
+                SerialSendThread.Start();
+            }
+            catch (Exception)
+            {
+                Debug.WriteLine("Failed to establish a connection to port COM3.");
+            }
+
             Browser = browser;
             Width = width;
             Height = height;
@@ -186,8 +194,8 @@ namespace BiolyViewer_Windows
 
         public void Dispose()
         {
-            SerialSendThread.Interrupt();
-            SerialSendThread.Join();
+            SerialSendThread?.Interrupt();
+            SerialSendThread?.Join();
 
             byte[] bytes = Encoding.ASCII.GetBytes("hvpoe 1 0\r");
             Port?.Write(bytes, 0, bytes.Length);
