@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using BiolyCompiler.Modules.RectangleSides;
 using System.Linq;
 using BiolyTests.TestObjects;
+using BiolyCompiler;
 //using MoreLinq;
 
 namespace BiolyTests.PlacementTests
@@ -69,13 +70,13 @@ namespace BiolyTests.PlacementTests
 
 
         [TestMethod]
-        public void TestPlaceModuleWithBufferEmptyBoard()
+        public void TestPlaceModuleWithCompleteBufferEmptyBoard()
         {
             int boardHeight = 20, boardWidth = 20;
             Board board = new Board(boardWidth, boardHeight);
             int width = 4, heigth = 4;
             Module module = new TestModule(width, heigth, 2000);
-            board.PlaceBufferedModule(module, new List<Rectangle>(board.EmptyRectangles));
+            Assert.IsTrue(board.PlaceCompletlyBufferedModuleInRectangle(module, board.EmptyRectangles.First()));
 
             //The division of the empty rectangles should be very specific:
 
@@ -128,7 +129,7 @@ namespace BiolyTests.PlacementTests
             board.FastTemplatePlace(module); //It only fits in one rectangle, where it needs to be buffered.
 
             //The division of the empty rectangles should be very specific:
-
+            DebugTools.checkAdjacencyMatrixCorrectness(board);
             Assert.AreEqual((4 + 2) + 1, board.EmptyRectangles.Count);
             Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(width + 2, 1, 0, 3)));
             Assert.IsTrue(board.EmptyRectangles.Contains(new Rectangle(1, heigth + 1, 0, 4)));
