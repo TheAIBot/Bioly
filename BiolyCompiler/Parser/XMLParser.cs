@@ -54,7 +54,7 @@ namespace BiolyCompiler.Parser
                 {
                     if (IsDFGBreaker(node, dfg) && canFirstBlockBeControlFlow)
                     {
-                        controlBlock = ParseDFGBreaker(node, dfg, parserInfo);
+                        controlBlock = ParseDFGBreaker(ref node, dfg, parserInfo);
                         break;
                     }
                     canFirstBlockBeControlFlow = true;
@@ -125,9 +125,9 @@ namespace BiolyCompiler.Parser
                 case If.XML_TYPE_NAME:
                 case Repeat.XML_TYPE_NAME:
                 case While.XML_TYPE_NAME:
+                case InlineProgram.XML_TYPE_NAME:
                     return true;
                 case SetArrayFluid.XML_TYPE_NAME:
-                case SetArrayNumber.XML_TYPE_NAME:
                     //case SensorUsage.XML_TYPE_NAME:
                     //these blocks needs to be at the start of a dfg
                     //so only break if this isn't an empty dfg
@@ -137,7 +137,7 @@ namespace BiolyCompiler.Parser
             }
         }
 
-        private static IControlBlock ParseDFGBreaker(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        private static IControlBlock ParseDFGBreaker(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string blockType = node.Attributes[Block.TYPE_FIELD_NAME].Value;
             switch (blockType)
@@ -151,6 +151,14 @@ namespace BiolyCompiler.Parser
                 case SetArrayFluid.XML_TYPE_NAME:
                     return new Direct(node, dfg, parserInfo);
                 case SetArrayNumber.XML_TYPE_NAME:
+                    return new Direct(node, dfg, parserInfo);
+                case InlineProgram.XML_TYPE_NAME:
+                    InlineProgram program = new InlineProgram(node, dfg, parserInfo);
+                    if (!program.IsValidProgram)
+                    {
+                        throw new ParseException(program.ID, "asdasas");
+                    }
+                    program.AppendProgramXml(ref node, parserInfo);
                     return new Direct(node, dfg, parserInfo);
                 default:
                     throw new Exception("Invalid type: " + blockType);
@@ -212,16 +220,6 @@ namespace BiolyCompiler.Parser
                     return BoolOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 //case Sensor.XmlTypeName:
                 //    return Sensor.Parse(node);
-                case InlineProgram.XML_TYPE_NAME:
-                    {
-                        InlineProgram program = new InlineProgram(node, dfg, parserInfo);
-                        if (!program.IsValidProgram)
-                        {
-                            throw new ParseException(id, "asdasas");
-                        }
-                        program.AppendProgramXml(ref node, parserInfo);
-                        return ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks, canBeScheduled);
-                    }
                 case GetNumberVariable.XML_TYPE_NAME:
                     return GetNumberVariable.Parse(node, parserInfo, canBeScheduled);
                 case SetNumberVariable.XML_TYPE_NAME:
