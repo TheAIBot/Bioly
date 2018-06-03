@@ -20,7 +20,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public Repeat(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             XmlNode conditionalNode = node.GetInnerBlockNode(TimesBlockFieldName, parserInfo, new MissingBlockException(id, "Repeat block is missing its conditional block."));
             VariableBlock decidingBlock = null;
             if (conditionalNode != null)

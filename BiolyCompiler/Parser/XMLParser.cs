@@ -119,7 +119,7 @@ namespace BiolyCompiler.Parser
 
         private static bool IsDFGBreaker(XmlNode node, DFG<Block> dfg)
         {
-            string blockType = node.GetAttributeValue(Block.TypeFieldName);
+            string blockType = node.GetAttributeValue(Block.TYPE_FIELD_NAME);
             switch (blockType)
             {
                 case If.XML_TYPE_NAME:
@@ -139,7 +139,7 @@ namespace BiolyCompiler.Parser
 
         private static IControlBlock ParseDFGBreaker(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string blockType = node.Attributes[Block.TypeFieldName].Value;
+            string blockType = node.Attributes[Block.TYPE_FIELD_NAME].Value;
             switch (blockType)
             {
                 case If.XML_TYPE_NAME:
@@ -176,8 +176,8 @@ namespace BiolyCompiler.Parser
 
         public static Block ParseBlock(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false, bool canBeScheduled = true)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
-            string blockType = node.GetAttributeValue(Block.TypeFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
+            string blockType = node.GetAttributeValue(Block.TYPE_FIELD_NAME);
             switch (blockType)
             {
                 case ArithOP.XML_TYPE_NAME:
@@ -247,8 +247,8 @@ namespace BiolyCompiler.Parser
 
         public static FluidInput ParseFluidInput(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool doVariableCheck = true)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
-            string blockType = node.GetAttributeValue(Block.TypeFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
+            string blockType = node.GetAttributeValue(Block.TYPE_FIELD_NAME);
             switch (blockType)
             {
                 case BasicInput.XML_TYPE_NAME:

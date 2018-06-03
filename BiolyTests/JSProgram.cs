@@ -18,7 +18,6 @@ namespace BiolyTests
     {
         StringBuilder Builder = new StringBuilder();
         int nameID = 0;
-        //List<string> Segments = new List<string>();
         Dictionary<string, List<string>> Scopes = new Dictionary<string, List<string>>();
         List<string> CurrentScope = null;
         public const string DEFAULT_SCOPE_NAME = "default scope";
@@ -242,6 +241,56 @@ namespace BiolyTests
             return a;
         }
 
+        public string AddWhileSegment(string conditionalBlock, string guardedBlock)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, While.XML_TYPE_NAME);
+            AddConnection(a, While.CONDITIONAL_BLOCK_FIELD_NAME, conditionalBlock);
+            Builder.Append($"{a}.getInput(\"{While.DO_BLOCK_FIELD_NAME}\").connection.connect({guardedBlock}.previousConnection);");
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddSetNumberSegment(string variableName, string inputBlockName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, SetNumberVariable.XML_TYPE_NAME);
+            SetField(a, SetNumberVariable.VARIABLE_FIELD_NAME, variableName);
+            AddConnection(a, SetNumberVariable.INPUT_VARIABLE_FIELD_NAME, inputBlockName);
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddGetNumberBlock(string variableName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, GetNumberVariable.XML_TYPE_NAME);
+            SetField(a, GetNumberVariable.VARIABLE_FIELD_NAME, variableName);
+
+            return a;
+        }
+
+        public string AddRoundBlock(RoundOPTypes roundType, string inputBlockName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, RoundOP.XML_TYPE_NAME);
+            SetField(a, RoundOP.OPTypeFieldName, RoundOP.RoundOpTypeToString(roundType));
+            AddConnection(a, RoundOP.NUMBER_FIELD_NAME, inputBlockName);
+
+            return a;
+        }
+
+        public string AddImportVariableSegment(string variableName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, ImportVariable.XML_TYPE_NAME);
+            SetField(a, ImportVariable.VARIABLE_FIELD_NAME, variableName);
+
+            return a;
+        }
+
         public void CreateRandomDFG(int size, Random random = null)
         {
             List<string> fluidNames = new List<string>();
@@ -342,11 +391,6 @@ namespace BiolyTests
 
         public override string ToString()
         {
-            //if (Render)
-            //{
-            //    Blocks.Reverse();
-            //    Blocks.ForEach(x => RenderBlock(x));
-            //}
             foreach (List<string> segments in Scopes.Values)
             {
                 for (int i = 1; i < segments.Count; i++)

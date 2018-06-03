@@ -17,7 +17,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public If(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             List<Conditional> conditionals = new List<Conditional>();
 
             int IfBlocksCount = 1;

@@ -27,7 +27,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
 
         public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, moduleName);
             parserInfo.AddVariable(id, VariableType.HEATER, moduleName);

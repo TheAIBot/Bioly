@@ -21,7 +21,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public While(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string mode = node.GetNodeWithAttributeValue(WHILE_MODE_FIELD_NAME).InnerText;
             if (mode != SUPPORTED_MODE)
             {

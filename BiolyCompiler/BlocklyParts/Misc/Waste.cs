@@ -21,7 +21,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             //use when it's converted to a static usage block
             //string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             //parserInfo.CheckModuleVariable(id, moduleName);

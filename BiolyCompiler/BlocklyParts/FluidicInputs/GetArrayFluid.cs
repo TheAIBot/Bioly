@@ -31,7 +31,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
         public static FluidInput Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool doVariableCheck = true)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
             if (doVariableCheck)
             {
