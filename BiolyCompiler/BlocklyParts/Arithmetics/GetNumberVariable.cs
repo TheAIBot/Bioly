@@ -42,6 +42,10 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
+            if (!variables.ContainsKey(VariableName))
+            {
+                Console.Write("");
+            }
             return variables[VariableName];
         }
 

@@ -24,7 +24,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public DFG<Block> GuardedDFG<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            return Cond.NextDFG;
+            return null;
         }
 
         public DFG<Block> NextDFG<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

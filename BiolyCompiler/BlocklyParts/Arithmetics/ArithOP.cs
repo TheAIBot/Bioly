@@ -104,11 +104,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.ADD:
                     return leftResult + rightResult;
                 case ArithOPTypes.SUB:
-                    return leftResult + rightResult;
+                    return leftResult - rightResult;
                 case ArithOPTypes.MUL:
-                    return leftResult + rightResult;
+                    return leftResult * rightResult;
                 case ArithOPTypes.DIV:
-                    return leftResult + rightResult;
+                    return leftResult / rightResult;
                 case ArithOPTypes.POW:
                     return (float)Math.Pow(leftResult, rightResult);
                 default:

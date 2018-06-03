@@ -174,7 +174,15 @@ namespace BiolyCompiler.Scheduling
             }
             if (assay.hasUnfinishedOperations())
             {
-                throw new Exception("There were operations that couldn't be scheduled.");
+                //There might be some operations that still needs to be finished/are currently running.
+                //This if there are no opertions that there are depending on them, and there are variable operations.
+                //In this case, they need to be "finished"
+                (currentTime, board) = HandleFinishingOperations(currentTime, assay, board);
+                if (assay.hasUnfinishedOperations())
+                {
+                    //Now its definetly an error:
+                    throw new Exception("There were operations that couldn't be scheduled.");
+                }
             }
             SortScheduledOperations();
             return GetCompletionTime();
