@@ -62,7 +62,7 @@ namespace BiolyViewer_Windows
                     byte[] bytes = Encoding.ASCII.GetBytes(command);
                     Port.Write(bytes, 0, bytes.Length);
                     Debug.WriteLine(command);
-                    Thread.Sleep(500);
+                    Thread.Sleep(150);
                     //Debug.WriteLine(Port.ReadLine());
                 }
             }
@@ -204,6 +204,9 @@ namespace BiolyViewer_Windows
             if (Port != null && Port.IsOpen)
             {
                 byte[] bytes = Encoding.ASCII.GetBytes("hvpoe 1 0\r");
+                Port.Write(bytes, 0, bytes.Length);
+                Thread.Sleep(200);
+                bytes = Encoding.ASCII.GetBytes("clra\r\r");
                 Port.Write(bytes, 0, bytes.Length);
                 Port.Close();
             }
