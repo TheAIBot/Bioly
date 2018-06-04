@@ -81,28 +81,28 @@ namespace BiolyCompiler.Architechtures
             //It is neccessary to buffer the module, so that droplets can be routed around it.
             //First it will try with a smaller buffering area just above the module,
             //and if this does not suffice, it will try with buffers around the whole module.
-            candidateRectangles.Sort((x, y) => RectangleCost(x, module) <= RectangleCost(y, module) ? 0 : 1);
+            //candidateRectangles.Sort((x, y) => RectangleCost(x, module) <= RectangleCost(y, module) ? 0 : 1);
 
-            Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
-            for (int i = 0; i < candidateRectangles.Count; i++)
-            {
-                Rectangle current = candidateRectangles[i];
-                if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
-                {
-                    (bool couldBePlaced, Rectangle newCurrentRectangle) = PlaceBottomBufferedModuleInRectangle(module, current);
-                    if (couldBePlaced) return true;
-                    else candidateRectangles[i] = newCurrentRectangle; //Necessary, as current has been replaced internally in the system with newCurrentRectangle.
+            //Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
+            //for (int i = 0; i < candidateRectangles.Count; i++)
+            //{
+            //    Rectangle current = candidateRectangles[i];
+            //    if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
+            //    {
+            //        (bool couldBePlaced, Rectangle newCurrentRectangle) = PlaceBottomBufferedModuleInRectangle(module, current);
+            //        if (couldBePlaced) return true;
+            //        else candidateRectangles[i] = newCurrentRectangle; //Necessary, as current has been replaced internally in the system with newCurrentRectangle.
 
-                }
-            }
-            DebugTools.checkAdjacencyMatrixCorrectness(this);
+            //    }
+            //}
+            //DebugTools.checkAdjacencyMatrixCorrectness(this);
 
             //Bigger buffer in the case it failed:
 
             //The intention is that it should have a one wide buffer on each side,
             //so that droplets always can be routed around the module.
             //This would make the rectangles unable to block any routing between modules.
-            bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
+            Rectangle bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
             for (int i = 0; i < candidateRectangles.Count; i++)
             {
                 Rectangle current = candidateRectangles[i];

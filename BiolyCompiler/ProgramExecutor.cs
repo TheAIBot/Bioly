@@ -66,7 +66,7 @@ namespace BiolyCompiler
 
                 List<Command>[] commandTimeline = CreateCommandTimeline(variables, scheduledOperations, time, dropPositions);
 
-                //SendCommands(commandTimeline, ref oldBoard, boards);
+                SendCommands(commandTimeline, ref oldBoard, boards);
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 

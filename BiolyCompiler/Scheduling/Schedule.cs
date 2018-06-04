@@ -30,7 +30,7 @@ namespace BiolyCompiler.Scheduling
         public List<Block> ScheduledOperations = new List<Block>();
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
         public const int IGNORED_TIME_DIFFERENCE = 100; 
-
+        private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
         public Schedule(){
 
         }
@@ -95,7 +95,11 @@ namespace BiolyCompiler.Scheduling
 
         private BoardFluid RecordNewFluidType(FluidBlock operation)
         {
-            string fluidName = operation.OriginalOutputVariable;
+            return RecordNewFluidType(operation.OriginalOutputVariable);
+        }
+
+        private BoardFluid RecordNewFluidType(string fluidName)
+        {
             if (FluidVariableLocations.ContainsKey(fluidName))
             {
                 //If there already are droplets associated with the fluid name,
@@ -110,7 +114,7 @@ namespace BiolyCompiler.Scheduling
                     dropletSource.SetFluidType(overwrittingFluidType);
                 }
             }
-            BoardFluid fluidType = new BoardFluid(operation.OriginalOutputVariable);
+            BoardFluid fluidType = new BoardFluid(fluidName);
             FluidVariableLocations[fluidName] = fluidType;
             return fluidType;
         }
@@ -297,7 +301,10 @@ namespace BiolyCompiler.Scheduling
             int requiredDroplets2 = input2.GetAmountInDroplets(FluidVariableLocations);
             int originalStartTime = currentTime;
 
-            BoardFluid targetFluidType = RecordNewFluidType(nextOperation);
+            //First all the droplets are assigned to an intermediate fluidtype,
+            //and then to the actual target fluidtype. This is necessary for the case of an union,
+            //where the target is also the input.
+            BoardFluid intermediateFluidtype = RecordNewFluidType(RENAME_FLUIDNAME_STRING);
 
             BoardFluid inputFluid1;
             FluidVariableLocations.TryGetValue(input1.OriginalFluidName, out inputFluid1);
@@ -309,8 +316,12 @@ namespace BiolyCompiler.Scheduling
 
 
             List<Block> readyOperations;
-            (readyOperations, currentTime, board) = ExtractAndReassignDroplets(assay, board, currentTime, nextOperation, requiredDroplets1, targetFluidType, inputFluid1);
-            (readyOperations, currentTime, board) = ExtractAndReassignDroplets(assay, board, currentTime, nextOperation, requiredDroplets2, targetFluidType, inputFluid2);
+            (readyOperations, currentTime, board) = ExtractAndReassignDroplets(assay, board, currentTime, nextOperation, requiredDroplets1, intermediateFluidtype, inputFluid1);
+            (readyOperations, currentTime, board) = ExtractAndReassignDroplets(assay, board, currentTime, nextOperation, requiredDroplets2, intermediateFluidtype, inputFluid2);
+            BoardFluid targetFluidtype = RecordNewFluidType(nextOperation);
+            int targetRequiredDroplets = requiredDroplets1 + requiredDroplets2;
+            (readyOperations, currentTime, board) = ExtractAndReassignDroplets(assay, board, currentTime, nextOperation, targetRequiredDroplets, targetFluidtype, intermediateFluidtype);
+
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
             return (readyOperations, currentTime, board);
         }
