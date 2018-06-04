@@ -16,7 +16,7 @@ namespace BiolyCompiler
         public static void makeDebugCorrectnessChecks(Board board, SimplePriorityQueue<FluidBlock> runningOperations, List<Module> usedModules)
         {
             #if DEBUG
-                Debug.WriteLine(board.print(usedModules));
+                //Debug.WriteLine(board.print(usedModules));
             //  runningOperations.ToList()
             //                 .ForEach(element => Debug.WriteLine(element.OriginalOutputVariable + ", " + element.StartTime + ", " + element.EndTime));
             //                 .OrderBy(element => element.StartTime)

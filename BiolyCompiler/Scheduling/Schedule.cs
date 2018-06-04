@@ -158,31 +158,19 @@ namespace BiolyCompiler.Scheduling
                     //and so it will always be possible for this routing to be done:
                     currentTime = RouteDropletsToModuleAndUpdateSchedule(board, currentTime, topPriorityOperation, operationExecutingModule);
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-
-                    //When operations finishes, while the routing associated with nextOperation was performed, 
-                    //this needs to be handled. Note that handleFinishingOperations will also wait for operations to finish, 
-                    //in the case that there are no more operations that can be executed, before this happen:
-                    (currentTime, board) = HandleFinishingOperations(currentTime, assay, board);
-                    readyOperations = assay.getReadyOperations();
-                    DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                }
-                else
-                {
-                    throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
-                                         "The operation is: " + nextOperation.ToString());
-                }
+                } else  throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
+                                            "The operation is: " + nextOperation.ToString());
+                
+                //When operations finishes, while the routing associated with nextOperation was performed, 
+                //this needs to be handled. Note that handleFinishingOperations will also wait for operations to finish, 
+                //in the case that there are no more operations that can be executed, before this happen:
+                (currentTime, board) = HandleFinishingOperations(currentTime, assay, board);
+                readyOperations = assay.getReadyOperations();
+                DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             }
             if (assay.hasUnfinishedOperations())
             {
-                //There might be some operations that still needs to be finished/are currently running.
-                //This if there are no opertions that there are depending on them, and there are variable operations.
-                //In this case, they need to be "finished"
-                (currentTime, board) = HandleFinishingOperations(currentTime, assay, board);
-                if (assay.hasUnfinishedOperations())
-                {
-                    //Now its definetly an error:
-                    throw new Exception("There were operations that couldn't be scheduled.");
-                }
+                throw new Exception("There were operations that couldn't be scheduled.");
             }
             SortScheduledOperations();
             return GetCompletionTime();
@@ -367,8 +355,11 @@ namespace BiolyCompiler.Scheduling
             library.sortLibrary();
             AllUsedModules.AddRange(board.PlacedModules);
             boardAtDifferentTimes.Add(startTime, board);
-            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-            board = board.Copy();
+            if (!assay.dfg.Nodes.Select(node => node.value).All(operation => operation is VariableBlock))
+            {
+                DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+                board = board.Copy();
+            }
             return board;
         }
         
