@@ -21,7 +21,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
         public static FluidInput Parse(XmlNode node, ParserInfo parserInfo, bool doVariableCheck = true)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string originalFluidName = node.GetNodeWithAttributeValue(FLUID_NAME_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, originalFluidName);
             if (doVariableCheck)

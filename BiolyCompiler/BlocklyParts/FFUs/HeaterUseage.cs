@@ -37,7 +37,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public static Block CreateHeater(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             parserInfo.CheckVariable(id, VariableType.HEATER, moduleName);
 

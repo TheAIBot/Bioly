@@ -35,7 +35,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public InlineProgram(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            this.ID = node.GetAttributeValue(Block.IDFieldName);
+            this.ID = node.GetAttributeValue(Block.ID_FIELD_NAME);
 
             XmlNode mutatorNode = node.TryGetNodeWithName("mutation");
             if (mutatorNode == null)
@@ -198,7 +198,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             {
                 foreach (XmlAttribute attribute in node.Attributes)
                 {
-                    if (attribute.Name == Block.IDFieldName)
+                    if (attribute.Name == Block.ID_FIELD_NAME)
                     {
                         attribute.Value = this.ID;
                     }
@@ -245,7 +245,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             if (blockNode.Attributes != null)
             {
-                string blockType = blockNode.Attributes[Block.TypeFieldName]?.Value;
+                string blockType = blockNode.Attributes[Block.TYPE_FIELD_NAME]?.Value;
                 if (blockType != null)
                 {
                     switch (blockType)
@@ -332,7 +332,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         private void InsertProgram(ref XmlNode node, string modifiedXml)
         {
             var splittedXml = SplitBlockXml(node, node.OwnerDocument.OuterXml);
-            string address = node.ParentNode.ParentNode.Attributes[Block.IDFieldName].Value;
+            string address = node.ParentNode.ParentNode.Attributes[Block.ID_FIELD_NAME].Value;
 
             string combinedXml = splittedXml.beforeBlockXml + modifiedXml + splittedXml.afterBlockXml;
 
@@ -347,7 +347,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             if (node.Attributes != null)
             {
-                if (node.Attributes[Block.IDFieldName]?.Value == id)
+                if (node.Attributes[Block.ID_FIELD_NAME]?.Value == id)
                 {
                     return node;
                 }

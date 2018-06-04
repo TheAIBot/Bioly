@@ -28,7 +28,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
             parserInfo.AddVariable(id, VariableType.NUMBER_ARRAY, arrayName);
 

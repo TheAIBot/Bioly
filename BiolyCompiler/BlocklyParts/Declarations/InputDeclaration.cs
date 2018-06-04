@@ -34,7 +34,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
 
         public static InputDeclaration Parse(XmlNode node, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, output);
             parserInfo.AddVariable(id, VariableType.FLUID, output);

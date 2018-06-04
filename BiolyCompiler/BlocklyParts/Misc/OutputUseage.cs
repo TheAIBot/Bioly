@@ -23,7 +23,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public static OutputUseage Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             parserInfo.CheckVariable(id, VariableType.OUTPUT, moduleName);
 

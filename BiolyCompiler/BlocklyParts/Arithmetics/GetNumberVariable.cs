@@ -22,7 +22,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public static Block Parse(XmlNode node, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string variableName = node.GetNodeWithAttributeValue(VARIABLE_FIELD_NAME).InnerText;
             parserInfo.CheckVariable(id, VariableType.NUMBER, variableName);
 

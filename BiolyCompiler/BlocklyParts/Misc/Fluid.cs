@@ -29,20 +29,20 @@ namespace BiolyCompiler.BlocklyParts.Misc
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(XmlParser.ParseFluidInput(node, dfg, parserInfo));
 
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             return new Fluid(inputs, output, id);
         }
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string output = node.GetNodeWithAttributeValue(OUTPUT_FLUID_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, output);
             parserInfo.AddVariable(id, VariableType.FLUID, output);
             XmlNode innerNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Fluid is missing fluid definition blocks."));
             if (innerNode != null)
             {
-                switch (innerNode.GetAttributeValue(Block.TypeFieldName))
+                switch (innerNode.GetAttributeValue(Block.TYPE_FIELD_NAME))
                 {
                     case HeaterUseage.XML_TYPE_NAME:
                         return HeaterUseage.CreateHeater(output, innerNode, dfg, parserInfo);
