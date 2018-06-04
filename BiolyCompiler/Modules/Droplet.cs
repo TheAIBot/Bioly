@@ -8,7 +8,7 @@ namespace BiolyCompiler.Modules
     public class Droplet : Module, IDropletSource
     {
         private BoardFluid fluidType;
-        public const int DROPLET_WIDTH = 3, DROPLET_HEIGHT = 4;
+        public const int DROPLET_WIDTH = 4, DROPLET_HEIGHT = 4;
 
         public Droplet() : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, false)
         {

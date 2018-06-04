@@ -47,16 +47,17 @@ namespace BiolyCompiler.Modules
             int startTime = time;
             List<Command> commands = new List<Command>();
             int middleOfComponentYValue = Shape.y + Droplet.DROPLET_HEIGHT / 2;
-            int leftDropletInitialXPosition = Shape.x + 1;
-            int rightDropletInitialXPosition = Shape.x + Shape.width - 2;
+            int leftDropletInitialXPosition = Shape.x + Droplet.DROPLET_WIDTH/2;
+            int rightDropletInitialXPosition = leftDropletInitialXPosition + Droplet.DROPLET_WIDTH;
 
             //Moving the two droplets together to the right:
             commands.AddRange(MoveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition, ref time));
             
             //The merged droplet is now at the right side. It needs to be moved back and forth:
-            int numberOfCommandsToMergeDroplet = 12;
-            int numberOfCommandsToMoveBackAndForth = 6;
-            int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
+            int numberOfCommandsToMoveCompletlyOneDirection = 2 * Droplet.DROPLET_WIDTH + 1;
+            int numberOfCommandsToMoveBackAndForth = 2*numberOfCommandsToMoveCompletlyOneDirection;
+            int numberOfCommandsToMergeDroplet = 2*numberOfCommandsToMoveCompletlyOneDirection + 4;
+            int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet) / numberOfCommandsToMoveBackAndForth;
             //int numberOfForwardBackwardMovements = 1;
             for (int i = 0; i < numberOfForwardBackwardMovements; i++)
             {
@@ -77,10 +78,12 @@ namespace BiolyCompiler.Modules
             commands.Add(new Command(rightDropletInitialXPosition    , middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
             commands.Add(new Command(rightDropletInitialXPosition - 2, middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
             time++;
+            //The droplets have been split. Now the left droplet needs to be moved back to its original position.
 
-            commands.Add(new Command(leftDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
-            time++;
+            commands.AddRange(MoveDropletsToTheLeft(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition - 2, ref time));
+            
             int restTime = OperationTime - (time - startTime);
+            if (restTime < 0) throw new Exception("Reaming waiting time for mixing should not be negative: it is "  + restTime);
             time += restTime;
             commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
 

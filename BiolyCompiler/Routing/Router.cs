@@ -21,6 +21,7 @@ namespace BiolyCompiler.Routing
         public static int RouteDropletsToModule(Board board, int currentTime, FluidBlock operation)
         {
             int originalStartTime = currentTime;
+            //The order in which to route droplets to the module (where possible deadlocks are avoided)
             List<Droplet> internalDropletRoutingOrder = GetModulesDropletRoutingOrder(operation, board);
 
             foreach (var dropletInput in internalDropletRoutingOrder)
