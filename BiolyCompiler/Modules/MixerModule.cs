@@ -54,7 +54,7 @@ namespace BiolyCompiler.Modules
             commands.AddRange(MoveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition, ref time));
             
             //The merged droplet is now at the right side. It needs to be moved back and forth:
-            int numberOfCommandsToMergeDroplet = 6;
+            int numberOfCommandsToMergeDroplet = 12;
             int numberOfCommandsToMoveBackAndForth = 6;
             int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
             //int numberOfForwardBackwardMovements = 1;
@@ -92,31 +92,51 @@ namespace BiolyCompiler.Modules
             return commands;
         }
 
-        private List<Command> MoveDropletsToTheRight(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition, ref int time)
+        private List<Command> MoveDropletsToTheRight(int middleOfComponentYValue, int xPos, int rightDropletInitialXPosition, ref int time)
         {
             List<Command> commands = new List<Command>();
-            int xPos = leftDropletInitialXPosition;
+
+            (int x, int y) toTurnOff = (xPos, middleOfComponentYValue);
+            commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_ON, time));
+            time++;
+
             do
             {
                 xPos++;
                 commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
                 time++;
-                commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
+                commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+                commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
+                time++;
+                toTurnOff = (xPos, middleOfComponentYValue);
             } while (xPos != rightDropletInitialXPosition);
+
+            commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+
             return commands;
         }
 
-        private List<Command> MoveDropletsToTheLeft(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition, ref int time)
+        private List<Command> MoveDropletsToTheLeft(int middleOfComponentYValue, int leftDropletInitialXPosition, int xPos, ref int time)
         {
             List<Command> commands = new List<Command>();
-            int xPos = rightDropletInitialXPosition;
+
+            (int x, int y) toTurnOff = (xPos, middleOfComponentYValue);
+            commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_ON, time));
+            time++;
+
             do
             {
                 xPos--;
                 commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
                 time++;
-                commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
+                commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+                commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
+                time++;
+                toTurnOff = (xPos, middleOfComponentYValue);
             } while (xPos != leftDropletInitialXPosition);
+
+            commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+
             return commands;
         }
     }
