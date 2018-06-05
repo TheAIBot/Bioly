@@ -169,13 +169,13 @@ namespace BiolyViewer_Windows
                 case CommandType.ELECTRODE_ON:
 
                     {
-                        PortStrings.Add($"setel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y, Width, Height)))}\r");
+                        PortStrings.Add($"setel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y, 8, 16)))}\r");
                         return $"setel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
                     }
 
                 case CommandType.ELECTRODE_OFF:
                     {
-                        PortStrings.Add($"clrel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y, Width, Height)))}\r");
+                        PortStrings.Add($"clrel {String.Join(" ", commands.Select(x => ConvertElectrodeIndex(x.X, x.Y, 8, 16)))}\r");
                         return $"clrel {String.Join(" ", commands.Select(x => x.Y * Width + x.X + 1))}";
                     }
                 case CommandType.SHOW_AREA:

@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.Commands;
 
 namespace BiolyCompiler.Modules
 {
-    public class MixerModule : Module
+    public class WeirdMixerModule : Module
     {
-        public MixerModule(int operationTime) : base(2*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, operationTime, false)
+        public WeirdMixerModule(int operationTime) : base(2*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, operationTime, false)
         {
-            InputLayout  = GetDefaultLayout(Shape);
+            InputLayout  = MixerModule.GetDefaultLayout(Shape);
             OutputLayout = GetDefaultLayout(Shape);
         }
 
@@ -24,18 +25,17 @@ namespace BiolyCompiler.Modules
             List<Rectangle> EmptyRectangles = new List<Rectangle>();
             List<Droplet> OutputLocations  = new List<Droplet>();
             Droplet output1 = new Droplet();
-            Droplet output2 = new Droplet();
-            output1.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0);
-            output2.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, Droplet.DROPLET_WIDTH, 0);
+            output1.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, Droplet.DROPLET_WIDTH, 0);
+            Rectangle emptyRectangle = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0); 
             OutputLocations.Add(output1);
-            OutputLocations.Add(output2);
+            EmptyRectangles.Add(emptyRectangle);
             return new ModuleLayout(Shape, EmptyRectangles, OutputLocations);
         }
         
 
         public override Module GetCopyOf()
         {
-            MixerModule mixer  = new MixerModule(OperationTime);
+            WeirdMixerModule mixer  = new WeirdMixerModule(OperationTime);
             mixer.Shape = new Rectangle(this.Shape);
             mixer.InputLayout  = this.InputLayout? .GetCopy();
             mixer.OutputLayout = this.OutputLayout?.GetCopy();
@@ -65,22 +65,8 @@ namespace BiolyCompiler.Modules
                 commands.AddRange(MoveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition, ref time));
             }
 
-            //Splitting the droplets:
-            commands.Add(new Command(rightDropletInitialXPosition - 1, middleOfComponentYValue, CommandType.ELECTRODE_ON , time));
-            time++;
-            commands.Add(new Command(rightDropletInitialXPosition - 1, middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
-            time++;
-
-            commands.Add(new Command(rightDropletInitialXPosition    , middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
-            commands.Add(new Command(rightDropletInitialXPosition - 2, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
-            time++;
-
-            commands.Add(new Command(rightDropletInitialXPosition    , middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
-            commands.Add(new Command(rightDropletInitialXPosition - 2, middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
-            time++;
-            //The droplets have been split. Now the left droplet needs to be moved back to its original position.
-
-            commands.AddRange(MoveDropletsToTheLeft(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition - 2, ref time));
+            
+            //The merged droplet is now at the right position, where they should stay.
             
             int restTime = OperationTime - (time - startTime);
             if (restTime < 0) throw new Exception("Reaming waiting time for mixing should not be negative: it is "  + restTime);

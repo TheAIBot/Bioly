@@ -510,7 +510,7 @@ function mergeDrops()
 					const distance = distanceAB(drop.position, otherDrop.position);
 					if (distance - dropRadius - otherDropRadius < electrodeSize / 2)
 					{
-						if (drop.amount + otherDrop.amount > 2)
+						if (STRICT_MODE_ENABLED && drop.amount + otherDrop.amount > 2)
 						{
 							throw "Can't marge two drops where the resulting drop will have 3 or more drops worth of fluid.";
 						}
