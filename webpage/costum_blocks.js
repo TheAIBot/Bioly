@@ -52,6 +52,28 @@ Blockly.Blocks["inputDeclaration"] = {
 	}
 };
 
+Blockly.Blocks["dropletDeclaration"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new Droplet",
+			"args0": [
+			],
+			"message1": "fluid name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "dropletName",
+					"variable": "input_fluid_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 180,
+			"tooltip": ""
+		});
+	}
+};
+
 Blockly.Blocks["outputDeclaration"] = {
 	init: function() {
 		this.jsonInit({

@@ -74,7 +74,15 @@ namespace BiolyCompiler.Scheduling
         {
             foreach (var staticDeclaration in staticDeclarations)
             {
-                if (staticDeclaration is InputDeclaration input)
+                if (staticDeclaration is DropletDeclaration dropletDeclaration)
+                {
+                    BoardFluid fluidType = RecordNewFluidType(dropletDeclaration);
+                    Droplet droplet = (Droplet) dropletDeclaration.getAssociatedModule();
+                    bool couldBePlaced = board.FastTemplatePlace(droplet);
+                    if (!couldBePlaced) throw new Exception("The input module couldn't be placed. The module is: " + droplet.ToString());
+                    //It is not really static, and thus must does not need to be registered as such.
+                }
+                else if (staticDeclaration is InputDeclaration input)
                 {
                     BoardFluid fluidType = RecordNewFluidType(input);
                     InputModule inputModule = new InputModule(fluidType, (int)input.Amount);
@@ -308,12 +316,11 @@ namespace BiolyCompiler.Scheduling
 
             BoardFluid inputFluid1;
             FluidVariableLocations.TryGetValue(input1.OriginalFluidName, out inputFluid1);
-            if (inputFluid1 == null) throw new Exception("Fluid of type \"" + input1.FluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
+            if (inputFluid1 == null) inputFluid1 = RecordNewFluidType(input1.OriginalFluidName);
 
             BoardFluid inputFluid2;
             FluidVariableLocations.TryGetValue(input2.OriginalFluidName, out inputFluid2);
-            if (inputFluid2 == null) throw new Exception("Fluid of type \"" + input2.FluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
-
+            if (inputFluid2 == null) inputFluid2 = RecordNewFluidType(input2.OriginalFluidName);
 
             List<Block> readyOperations;
             (readyOperations, currentTime, board) = ExtractAndReassignDroplets(assay, board, currentTime, nextOperation, requiredDroplets1, intermediateFluidtype, inputFluid1);

@@ -214,6 +214,8 @@ namespace BiolyCompiler.Parser
                     return OutputUseage.Parse(node, dfg, parserInfo);
                 case HeaterDeclaration.XML_TYPE_NAME:
                     return HeaterDeclaration.Parse(node, parserInfo);
+                case DropletDeclaration.XML_TYPE_NAME:
+                    return DropletDeclaration.Parse(node, parserInfo);
                 case Waste.XML_TYPE_NAME:
                     return Waste.Parse(node, dfg, parserInfo);
                 case BoolOP.XML_TYPE_NAME:

@@ -82,8 +82,9 @@ namespace BiolyCompiler.Architechtures
             //First it will try with a smaller buffering area just above the module,
             //and if this does not suffice, it will try with buffers around the whole module.
             candidateRectangles.Sort((x, y) => RectangleCost(x, module) <= RectangleCost(y, module) ? 0 : 1);
-
-            Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
+            Rectangle bufferedRectangle;
+            /*
+            bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
             for (int i = 0; i < candidateRectangles.Count; i++)
             {
                 Rectangle current = candidateRectangles[i];
@@ -96,7 +97,7 @@ namespace BiolyCompiler.Architechtures
                 }
             }
             DebugTools.checkAdjacencyMatrixCorrectness(this);
-
+            */
             //Bigger buffer in the case it failed:
 
             //The intention is that it should have a one wide buffer on each side,

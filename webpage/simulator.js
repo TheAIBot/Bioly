@@ -130,7 +130,7 @@ function addCommand(command)
 {
 	newCommands.push(command);
 }
-
+var shouldUpdate = 1;
 function updateLoop(version)
 {
 	if(newestVersion != version)
@@ -160,10 +160,13 @@ function updateLoop(version)
 		return;
 	}
 	
-	updateDropData(drops);
-	updateAreaData(areas);
-	render(drops.length, areas.length);
-	
+	shouldUpdate++;
+	if (shouldUpdate % 2 == 0)
+	{
+		updateDropData(drops);
+		updateAreaData(areas);
+		render(drops.length, areas.length);
+	}
 	window.requestAnimFrame(function()
 	{
 		updateLoop(version);
