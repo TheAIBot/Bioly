@@ -20,6 +20,7 @@ namespace BiolyViewer_Windows
     {
         private readonly ChromiumWebBrowser Browser;
         private readonly SettingsInfo Settings;
+        private const bool SHOW_GRAPH = false;
 
         public WebUpdater(ChromiumWebBrowser browser, SettingsInfo settings)
         {
@@ -34,9 +35,13 @@ namespace BiolyViewer_Windows
                 (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(xml);
                 if (exceptions.Count == 0)
                 {
-                    (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
-                    //string js = $"setGraph({nodes}, {edges});ClearErrors();";
-                    string js = $"ClearErrors();";
+                    string js = String.Empty;
+                    if (SHOW_GRAPH)
+                    {
+                        (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
+                        js = $"setGraph({nodes}, {edges});";
+                    }
+                    js += $"ClearErrors();";
                     Browser.ExecuteScriptAsync(js);
 
                     RunSimulator(xml);

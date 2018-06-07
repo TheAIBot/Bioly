@@ -72,6 +72,7 @@ namespace BiolyCompiler
 
                 runningGraph = GetNextGraph(graph, runningGraph, variables, controlStack, dropPositions);
             }
+            Console.Write("");
         }
 
         private void StartExecutor(CDFG graph, List<Module> staticModules)

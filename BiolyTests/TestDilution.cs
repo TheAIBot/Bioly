@@ -28,7 +28,7 @@ namespace BiolyTests.Dilution
 
         [TestMethod]
         public void testDMRW() {
-            int[] mixingSequence = DMRW(0, 313 / (float)1024, 1, 1 / (float) 1024);
+            int[] mixingSequence = DMRW(0, 313 / (float)1024, 1, 1 / (float) 10000000);
 
             //Initial left source
             Assert.AreEqual(0, mixingSequence[0]); //isAssignedRight
@@ -115,11 +115,13 @@ namespace BiolyTests.Dilution
             int indexNumberOfDroplets = 3;
             int leftChildPosition = 0;
             int rightChildPosition = 1;
-            //Groups of three numbers -> (isAssignedRight, LeftChildIndex, RightChildIndex, numberOfDroplets)
+            //Groups of four numbers -> (isAssignedRight, LeftChildIndex, RightChildIndex, numberOfDroplets)
             int[] mixingSequence = new int[groupElements * 100];
+            mixingSequence[3] = 0;
+            mixingSequence[7] = 0;
             
             int NumOfSteps = 1;
-            while (error >= toleratedError)
+            while (error > toleratedError)
             {
                 //New iteration
                 NumOfSteps = NumOfSteps + 1;
@@ -134,6 +136,7 @@ namespace BiolyTests.Dilution
                 //For backtracking:
                 mixingSequence[NumOfSteps * groupElements + 1] = leftChildPosition;
                 mixingSequence[NumOfSteps * groupElements + 2] = rightChildPosition;
+                mixingSequence[NumOfSteps * groupElements + 3] = 0;
 
                 if (MiddleValue < Ch)
                 {
