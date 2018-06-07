@@ -62,7 +62,7 @@ namespace BiolyViewer_Windows
                     }
                     else if (edgeNode.value is FluidBlock fluidBlock)
                     {
-                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable, null, fluidBlock.InputVariables.Single(x => x.FluidName == node.value.OutputVariable).ToString());
+                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable, null, fluidBlock.InputVariables.First(x => x.FluidName == node.value.OutputVariable).ToString());
                     }
                 }
             }

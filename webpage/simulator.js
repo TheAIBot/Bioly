@@ -498,7 +498,7 @@ function getNearbyOnElectrodes(position, nearbyDistance)
 function mergeDrops()
 {
 	const dropCount = drops.length;
-	for(var i = 0; i < dropCount / 2; i++)
+	for(var i = 0; i < dropCount; i++)
 	{
 		const drop = drops[i];
 		if(drop)
