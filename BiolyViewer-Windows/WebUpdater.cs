@@ -20,7 +20,7 @@ namespace BiolyViewer_Windows
     {
         private readonly ChromiumWebBrowser Browser;
         private readonly SettingsInfo Settings;
-        private const bool SHOW_GRAPH = false;
+        private const bool SHOW_GRAPH = true;
 
         public WebUpdater(ChromiumWebBrowser browser, SettingsInfo settings)
         {

@@ -150,8 +150,6 @@ namespace BiolyCompiler.Parser
                     return new While(node, dfg, parserInfo);
                 case SetArrayFluid.XML_TYPE_NAME:
                     return new Direct(node, dfg, parserInfo);
-                case SetArrayNumber.XML_TYPE_NAME:
-                    return new Direct(node, dfg, parserInfo);
                 case InlineProgram.XML_TYPE_NAME:
                     InlineProgram program = new InlineProgram(node, dfg, parserInfo);
                     if (!program.IsValidProgram)
