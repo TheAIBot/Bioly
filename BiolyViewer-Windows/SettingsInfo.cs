@@ -46,6 +46,7 @@ namespace BiolyViewer_Windows
             Settings.Add(ELECTRODE_SIZE_SETTING_NAME   , 1f);
             Settings.Add(EMPTY_RECTANGLES_SETTING_NAME , true);
             Settings.Add(USE_SIMULATOR_STRICT_MODE_SETTING_NAME, true);
+            Settings.Add(SIMULATOR_UPS_SETTING_NAME, 60f);
         }
 
         public void LoadSettings(string path)
@@ -75,35 +76,28 @@ namespace BiolyViewer_Windows
 
                 string[] splittedSetting = settingKeyValue.Split(SETTING_KEY_VALUE_DELIMITER);
                 string key = splittedSetting[0].Trim();
+                string value = splittedSetting[1].Trim();
 
+                if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out float numberValue))
                 {
-                    bool couldConvert = float.TryParse(splittedSetting[1].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out float value);
-                    if (couldConvert)
+                    if (Settings.ContainsKey(key))
                     {
-                        if (Settings.ContainsKey(key))
-                        {
-                            Settings[key] = value;
-                        }
-                        else
-                        {
-                            Settings.Add(key, value);
-                        }
-                        continue;
+                        Settings[key] = numberValue;
+                    }
+                    else
+                    {
+                        Settings.Add(key, numberValue);
                     }
                 }
+                else if (bool.TryParse(value, out bool boolValue))
                 {
-                    bool couldConvert = bool.TryParse(splittedSetting[1].Trim(), out bool value);
-                    if (couldConvert)
+                    if (Settings.ContainsKey(key))
                     {
-                        if (Settings.ContainsKey(key))
-                        {
-                            Settings[key] = value;
-                        }
-                        else
-                        {
-                            Settings.Add(key, value);
-                        }
-                        continue;
+                        Settings[key] = boolValue;
+                    }
+                    else
+                    {
+                        Settings.Add(key, boolValue);
                     }
                 }
             }
