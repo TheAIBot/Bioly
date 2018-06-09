@@ -54,6 +54,10 @@ function getUseSimulatorStrictModeSetting()
 {
 	return document.getElementById("useSimulatorStrictModeSetting").checked;
 }
+function getSimulatorUPSSetting()
+{
+	return document.getElementById("simulatorUPSSetting").value;
+}
 
 /*
 function updateAvailableComPorts(comPorts)

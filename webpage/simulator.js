@@ -24,7 +24,7 @@ var ELECTRODE_SIZE_IN_CM = 1;
 var DROP_DISTANCE_PER_SEC_IN_CM = 600;
 var DEFAULT_DROP_SIZE_IN_CM = 1;
 var STRICT_MODE_ENABLED = true;
-const UPDATES_PER_SECOND = 60;
+var UPDATES_PER_SECOND = 60;
 
 //setel 1 2 3 4 5 6 7  8 9 10
 //clrel 1 2 3 4 5  6 7 8 9 10
@@ -39,6 +39,7 @@ function startSimulator(width, height, inputs, outputs)
 	DROP_DISTANCE_PER_SEC_IN_CM = getDropletSpeedSetting();
 	DEFAULT_DROP_SIZE_IN_CM     = getDropletSizeSetting();
 	STRICT_MODE_ENABLED         = getUseSimulatorStrictModeSetting();
+	UPDATES_PER_SECOND          = getSimulatorUPSSetting();
 	
 	newCommands = [];
 	errorMessages = [];

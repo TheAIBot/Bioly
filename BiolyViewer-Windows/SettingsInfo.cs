@@ -21,6 +21,7 @@ namespace BiolyViewer_Windows
         private const string ELECTRODE_SIZE_SETTING_NAME = "electrodeSizeSetting";
         private const string EMPTY_RECTANGLES_SETTING_NAME = "emptyRectanglesSetting";
         private const string USE_SIMULATOR_STRICT_MODE_SETTING_NAME = "useSimulatorStrictModeSetting";
+        private const string SIMULATOR_UPS_SETTING_NAME = "simulatorUPSSetting";
 
         public Dictionary<string, object> Settings = new Dictionary<string, object>();
 
@@ -32,6 +33,7 @@ namespace BiolyViewer_Windows
         public float ElectrodeSize => (float)Settings[ELECTRODE_SIZE_SETTING_NAME];
         public bool ShowEmptyRectangles => (bool)Settings[EMPTY_RECTANGLES_SETTING_NAME];
         public bool UseSimulatorStrictMode => (bool)Settings[USE_SIMULATOR_STRICT_MODE_SETTING_NAME];
+        public float SimulatorUPS => (float)Settings[SIMULATOR_UPS_SETTING_NAME];
 
         public SettingsInfo()
         {
