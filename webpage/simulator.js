@@ -24,6 +24,8 @@ var ELECTRODE_SIZE_IN_CM = 1;
 var DROP_DISTANCE_PER_SEC_IN_CM = 600;
 var DEFAULT_DROP_SIZE_IN_CM = 1;
 var STRICT_MODE_ENABLED = true;
+var didGraphicsChange = false;
+var runningSimulatorIntervalID = null;
 var UPDATES_PER_SECOND = 60;
 
 //setel 1 2 3 4 5 6 7  8 9 10
@@ -58,8 +60,12 @@ function startSimulator(width, height, inputs, outputs)
 	drops = [];
 	areas = [];
 	
-	newestVersion = newestVersion + 1;
-	updateLoop(newestVersion);
+	if (runningSimulatorIntervalID != null)
+	{
+		clearInterval(runningSimulatorIntervalID);
+	}
+	
+	runningSimulatorIntervalID = setInterval(updateLoop, 1000 / UPDATES_PER_SECOND);
 }
 
 function prepareElectrodes(width, height, electrodePositions)
@@ -131,14 +137,9 @@ function addCommand(command)
 {
 	newCommands.push(command);
 }
-var shouldUpdate = 1;
-function updateLoop(version)
-{
-	if(newestVersion != version)
-	{
-		return;
-	}
-	
+
+function updateLoop()
+{	
 	if(newCommands.length > 0)
 	{
 		executeCommand(newCommands[0]);
@@ -146,33 +147,40 @@ function updateLoop(version)
 	}
 	try
 	{
-	spawnInputDrops();
-	splitDrops();
-	removeDrops();
-	updateDropPositions();
-	mergeDrops();
+		spawnInputDrops();
+		splitDrops();
+		removeDrops();
+		updateDropPositions();
+		mergeDrops();
 	}
-	catch(err)
+	catch(error)
 	{
-		console.log(err);
-		updateDropData(drops);
-		updateAreaData(areas);
-		render(drops.length, areas.length);
+		console.log(error);
 		return;
 	}
-	
-	shouldUpdate++;
-	if (shouldUpdate % 2 == 0)
-	{
-		updateDropData(drops);
-		updateAreaData(areas);
-		render(drops.length, areas.length);
-	}
-	window.requestAnimFrame(function()
-	{
-		updateLoop(version);
-	});
 }
+
+function updateGraphics()
+{	
+	if (didGraphicsChange)
+	{
+		didGraphicsChange = false;
+		
+		try
+		{
+			updateDropData(drops);
+			updateAreaData(areas);
+			render(drops.length, areas.length);
+		}
+		catch(error) 
+		{
+			console.log(error);
+		}
+	}
+	
+	window.requestAnimFrame(updateGraphics);
+}
+window.requestAnimFrame(updateGraphics);
 
 function executeCommand(command)
 {
@@ -185,6 +193,7 @@ function executeCommand(command)
 			let number = parseInt(splittedCommand[i]);
 			turnElectrodeOn(number);
 		}
+		didGraphicsChange = true;
 	}
 	else if(commandType == "clrel")
 	{
@@ -193,6 +202,7 @@ function executeCommand(command)
 			let number = parseInt(splittedCommand[i]);
 			turnElectrodeOff(number);
 		}
+		didGraphicsChange = true;
 	}
 	else if(commandType == "clra")
 	{
@@ -200,6 +210,7 @@ function executeCommand(command)
 		{
 			turnElectrodeOff(i);
 		}
+		didGraphicsChange = true;
 	}
 	else if(commandType == "show_area")
 	{
@@ -212,11 +223,13 @@ function executeCommand(command)
 		const g      = parseFloat(splittedCommand[7]);
 		const b      = parseFloat(splittedCommand[8]);
 		addArea(id, x, y, width, height, r, b, g);
+		didGraphicsChange = true;
 	}
 	else if(commandType == "remove_area")
 	{
 		const id = splittedCommand[1];
 		removeArea(id);
+		didGraphicsChange = true;
 	}
 	else
 	{
@@ -293,6 +306,7 @@ function spawnInputDrops()
 				{
 					spawnDrop(neighbors[k].position, 1, input.color);
 					input.canSpawn[k] = false;
+					didGraphicsChange = true;
 				}
 			}
 			else
@@ -361,6 +375,7 @@ function splitDrops()
 			
 			//delete drop that was splitted
 			drops.splice(i, 1);
+			didGraphicsChange = true;
 		}
 	}
 }
@@ -414,6 +429,7 @@ function removeDrops()
 			{
 				drops.splice(dropIndex, 1);
 				dropsRemovedCount++;
+				didGraphicsChange = true;
 			}
 		}
 		
@@ -472,6 +488,11 @@ function updateDropPositions()
 			
 			drop.position[0] += dx;
 			drop.position[1] += dy;
+			
+			if (dx != 0 || dy != 0)
+			{
+				didGraphicsChange = true;
+			}
 		}
 	}
 }
@@ -529,6 +550,7 @@ function mergeDrops()
 						
 						drops[i] = null;
 						drops[k] = null;
+						didGraphicsChange = true;
 						break;
 					}
 				}
