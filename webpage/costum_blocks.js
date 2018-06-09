@@ -96,6 +96,50 @@ Blockly.Blocks["outputDeclaration"] = {
 	}
 };
 
+Blockly.Blocks["wasteDeclaration"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new waste",
+			"args0": [
+			],			
+			"message1": "module name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 180,
+			"tooltip": "",
+		});
+	}
+};
+
+Blockly.Blocks["sensorDeclaration"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new sensor",
+			"args0": [
+			],			
+			"message1": "module name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 180,
+			"tooltip": "",
+		});
+	}
+};
+
 Blockly.Blocks["heaterDeclaration"] = {
 	init: function() {
 		this.jsonInit({
@@ -118,7 +162,7 @@ Blockly.Blocks["heaterDeclaration"] = {
 	}
 };
 
-Blockly.Blocks["outputUseage"] = {
+Blockly.Blocks["outputUsage"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "output",
@@ -140,13 +184,72 @@ Blockly.Blocks["outputUseage"] = {
 			"previousStatement": null,
 			"nextStatement": null,
 			"colour": 150,
-			"tooltip": "",
-			"inputsInline": false
+			"tooltip": ""
 		});
 	}
 };
 
-Blockly.Blocks["heaterUseage"] = {
+Blockly.Blocks["wasteUsage"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "waste",
+			"args0": [
+			],			
+			"message1": "target %1 %2",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				},
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": ["InputType", "FluidType"]
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 150,
+			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["sensorUsage"] = {
+	init: function() 
+	{
+		this.jsonInit({
+			"message0": "sensor",
+			"args0": [
+			],	
+			"message1": "target %1 %2",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				},
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": "FluidType"
+				}
+			],
+			"output": "Number",
+			"colour": 240,
+			"tooltip": ""
+		});
+		const sensorBlock = this;
+		setTimeout(function()
+		{
+			const blockSvg = sensorBlock.getSvgRoot().getElementsByClassName("blocklyPath")[0];
+			blockSvg.setAttribute("fill", "url('#sensorGradient')");
+		}, 50);
+	}
+};
+
+Blockly.Blocks["heaterUsage"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "heater %1",
@@ -291,47 +394,6 @@ Blockly.Blocks["mixer"] = {
 			"output": "FluidOperator",
 			"colour": 150,
 			"tooltip": ""
-		});
-	}
-};
-
-Blockly.Blocks["waste"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "waste %1",
-			"args0": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],
-			"previousStatement": null,
-			"nextStatement": null,
-			"colour": 150,
-			"tooltip": "",
-			"inputsInline": false
-		});
-	}
-};
-
-
-
-Blockly.Blocks["sensor"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "sensor %1",
-			"args0": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],
-			"output": "Number",
-			"colour": 240,
-			"tooltip": "",
-			"inputsInline": false
 		});
 	}
 };

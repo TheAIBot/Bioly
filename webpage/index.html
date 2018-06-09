@@ -70,7 +70,7 @@
 					<block type="getNumberVariable"></block>
 					<block type="setNumberVariable"></block>
 					<block type="importNumberVariable"></block>
-					<block type="sensor"></block>
+					<block type="sensorUsage"></block>
 					<block type="getDropletCount"></block>
 					<block type="getArrayLength"></block>
 				</category>
@@ -80,7 +80,9 @@
 				<category name="Static modules">
 					<block type="dropletDeclaration"></block>
 					<block type="inputDeclaration"></block>
-					<block type="outputDeclaration"></block>	
+					<block type="outputDeclaration"></block>
+					<block type="wasteDeclaration"></block>
+					<block type="sensorDeclaration"></block>
 					<block type="heaterDeclaration"></block>
 				</category>
 				<category name="Fluids">
@@ -88,9 +90,9 @@
 					<block type="getFluid"></block>
 					<block type="mixer"></block>
 					<block type="union"></block>
-					<block type="heaterUseage"></block>
-					<block type="outputUseage"></block>
-					<block type="waste"></block>
+					<block type="heaterUsage"></block>
+					<block type="outputUsage"></block>
+					<block type="wasteUsage"></block>
 				</category>
 				<category name="Misc">
 					<block type="start"></block>
@@ -162,5 +164,13 @@
 		<script src="helperFunctions.js"></script>
 		<script>document.getElementById("simulatorTab").click();</script>
 		<script src="simulator_events.js"></script>
+		<svg>
+			<defs>
+				<linearGradient id="sensorGradient">
+					<stop offset="30%" stop-color="#5B5EA5"/>
+					<stop offset="70%" stop-color="#5BA57D"/>
+				</linearGradient>
+			</defs>
+		</svg>
 	</body>
 </html>
