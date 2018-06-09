@@ -32,6 +32,10 @@ namespace BiolyViewer_Windows
     /// </summary>
     public partial class MainWindow : Window
     {
+        public const string SETTINGS_FILE_PATH = "settings.stx";
+        private const string PROGRAMS_FOLDER_PATH = @"../../../../BiolyPrograms";
+        private WebUpdater Updater;
+
         public MainWindow()
         {
             var settings = new CefSettings();
@@ -48,49 +52,86 @@ namespace BiolyViewer_Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
+            SettingsInfo settings = new SettingsInfo();
+            settings.LoadSettings(SETTINGS_FILE_PATH);
+
+            this.Updater = new WebUpdater(Browser, settings);
+
             Browser.Load("costum://index.html");
             Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
-            Browser.JavascriptObjectRepository.Register("webUpdater", new WebUpdater(Browser), true);
+            Browser.JavascriptObjectRepository.Register("webUpdater", Updater, true);
             //Wait for the MainFrame to finish loading
             Browser.FrameLoadEnd += (s, args) =>
             {
                 //Wait for the MainFrame to finish loading
                 if (args.Frame.IsMain)
                 {
-                    CompilerOptions.PROGRAM_FOLDER_PATH = @"../../../../BiolyPrograms";
-                    string[] files = Directory.GetFiles(@"../../../../BiolyPrograms");
-                    List<string> loadedPrograms = new List<string>();
-                    foreach (string file in files)
-                    {
-                        if (System.IO.Path.GetExtension(file) == Saver.DEFAULT_FILE_EXTENSION)
-                        {
-                            try
-                            {
-                                string fileContent = File.ReadAllText(file);
-                                (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(fileContent);
-                                if (exceptions.Count == 0)
-                                {
-                                    string programName = System.IO.Path.GetFileNameWithoutExtension(file);
-                                    (string[] inputStrings, string[] outputStrings, string programXml) = InlineProgram.LoadProgram(programName);
+                    //string xmlProgram = File.ReadAllText(System.IO.Path.Combine(PROGRAMS_FOLDER_PATH, "UsinDiluter2.bc"));
 
-                                    string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
-                                    string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
-                                    programXml = programXml.Replace("\"", "'");
-                                    loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], programXml: \"{programXml}\"}}");
-                                }
-                            }
-                            catch (Exception ee)
-                            {
-                                MessageBox.Show(ee.Message + Environment.NewLine + ee.StackTrace);
-                            }
-                        }
-                    }
+                    //for (int i = 0; i < 100; i++)
+                    //{
+                    //    SimulatorConnector connector = new SimulatorConnector(Browser, 20, 20);
+                    //    ProgramExecutor<string> executor = new ProgramExecutor<string>(connector);
+                    //    executor.TimeBetweenCommands = 0;
+                    //    executor.ShowEmptyRectangles = false;
+                    //    executor.Run(20, 20, xmlProgram);
+                    //}
 
-                    string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
-                    Browser.ExecuteScriptAsync($"startBlockly({allPrograms});");
+                    //MessageBox.Show("Done");
+
+                    GiveSettingsToJS(settings);
+                    GiveProgramsToJS();
                 }
             };
+        }
+
+        private void GiveSettingsToJS(SettingsInfo settings)
+        {
+            var settingStrings = settings.Settings.Select(x => $"{{id: \"{x.Key}\", value: {x.Value.ToString().Replace(',','.').ToLower()}}}");
+            string settingsString = $"[{String.Join(", ", settingStrings)}]";
+
+            Browser.ExecuteScriptAsync($"setSettings({settingsString});");
+        }
+
+        private void GiveProgramsToJS()
+        {
+            CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
+            string[] files = Directory.GetFiles(PROGRAMS_FOLDER_PATH);
+            List<string> loadedPrograms = new List<string>();
+            foreach (string file in files)
+            {
+                if (System.IO.Path.GetExtension(file) == Saver.DEFAULT_FILE_EXTENSION)
+                {
+                    try
+                    {
+                        string fileContent = File.ReadAllText(file);
+                        (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(fileContent);
+                        if (exceptions.Count == 0)
+                        {
+                            string programName = System.IO.Path.GetFileNameWithoutExtension(file);
+                            (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml) = InlineProgram.LoadProgram(programName);
+
+                            string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
+                            string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
+                            string variables = String.Join(", ", variableStrings.Select(x => "\"" + x + "\""));
+                            programXml = programXml.Replace("\"", "'");
+                            loadedPrograms.Add($"{{name: \"{programName}\", inputs: [{inputs}], outputs: [{outputs}], variables: [{variables}], programXml: \"{programXml}\"}}");
+                        }
+                    }
+                    catch (Exception ee)
+                    {
+                        MessageBox.Show(ee.Message + Environment.NewLine + ee.StackTrace);
+                    }
+                }
+            }
+
+            string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
+            Browser.ExecuteScriptAsync($"startBlockly({allPrograms});");
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Updater.Dispose();
         }
     }
 }

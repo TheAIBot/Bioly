@@ -4,6 +4,7 @@ using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -36,9 +37,9 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public static Block CreateHeater(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
-            parserInfo.CheckModuleVariable(id, moduleName);
+            parserInfo.CheckVariable(id, VariableType.HEATER, moduleName);
 
             FluidInput fluidInput = null;
             XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Heater is missing input fluid block."));

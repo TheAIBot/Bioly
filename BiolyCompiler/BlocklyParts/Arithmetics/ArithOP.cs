@@ -29,7 +29,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
 
             VariableBlock leftArithBlock = null;
             VariableBlock rightArithBlock = null;
@@ -90,7 +90,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.POW:
                     return "POWER";
                 default:
-                    throw new Exception("Failed to parse the arithmetic operator type.");
+                    throw new Exception("Failed to parse the arithmetic operator type. Type: " + type.ToString());
             }
         }
 
@@ -104,11 +104,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.ADD:
                     return leftResult + rightResult;
                 case ArithOPTypes.SUB:
-                    return leftResult + rightResult;
+                    return leftResult - rightResult;
                 case ArithOPTypes.MUL:
-                    return leftResult + rightResult;
+                    return leftResult * rightResult;
                 case ArithOPTypes.DIV:
-                    return leftResult + rightResult;
+                    return leftResult / rightResult;
                 case ArithOPTypes.POW:
                     return (float)Math.Pow(leftResult, rightResult);
                 default:
@@ -119,7 +119,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public override string ToXml()
         {
             return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
                 $"<field name=\"{OPTypeFieldName}\">{ArithOpTypeToString(OPType)}</field>" +
                 $"<value name=\"{LeftArithFieldName}\">" +
                     LeftBlock.ToXml() + 

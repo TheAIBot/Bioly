@@ -27,7 +27,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public static Block CreateUnion(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
 
             XmlNode inputFluidNode1 = node.GetInnerBlockNode(FIRST_INPUT_FIELD_NAME , parserInfo, new MissingBlockException(id, "Union is missing input fluid block."));
             XmlNode inputFluidNode2 = node.GetInnerBlockNode(SECOND_INPUT_FIELD_NAME, parserInfo, new MissingBlockException(id, "Union is missing input fluid block."));

@@ -24,7 +24,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public static Block CreateMixer(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
 
             XmlNode inputFluidNode1 = node.GetInnerBlockNode(FirstInputFieldName , parserInfo, new MissingBlockException(id, "Mixer is missing input fluid block."));
             XmlNode inputFluidNode2 = node.GetInnerBlockNode(SecondInputFieldName, parserInfo, new MissingBlockException(id, "Mixer is missing input fluid block."));

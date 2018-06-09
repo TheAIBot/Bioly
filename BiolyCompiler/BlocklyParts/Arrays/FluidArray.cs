@@ -8,6 +8,7 @@ using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
 {
@@ -27,9 +28,9 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
-            parserInfo.AddFluidArrayVariable(arrayName);
+            parserInfo.AddVariable(id, VariableType.FLUID_ARRAY, arrayName);
 
             VariableBlock arrayLengthBlock = null;
             XmlNode arrayLengthNode = node.GetInnerBlockNode(ARRAY_LENGTH_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block which define the length of the array."));
@@ -59,7 +60,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             int arrayLength = (int)ArrayLengthBlock.Run(variables, executor, dropPositions);
             if (arrayLength < 0)
             {
-                throw new RuntimeException(IDFieldName, $"Array length can't be set to {arrayLength}. The length has to be positive.");
+                throw new RuntimeException(BlockID, $"Array length can't be set to {arrayLength}. The length has to be positive.");
             }
             
             return (variableName, arrayLength);
@@ -82,7 +83,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override string ToString()
         {
-            return "New array with name " + ArrayName;
+            return "New fluid array with name " + ArrayName;
         }
     }
 }

@@ -16,15 +16,16 @@ using System.Threading.Tasks;
 
 namespace BiolyViewer_Windows
 {
-    public class WebUpdater
+    public class WebUpdater : IDisposable
     {
-        int BOARD_WIDTH = 20;
-        int BOARD_HEIGHT = 50;
         private readonly ChromiumWebBrowser Browser;
+        private readonly SettingsInfo Settings;
+        private const bool SHOW_GRAPH = true;
 
-        public WebUpdater(ChromiumWebBrowser browser)
+        public WebUpdater(ChromiumWebBrowser browser, SettingsInfo settings)
         {
             this.Browser = browser;
+            this.Settings = settings;
         }
 
         public void Update(string xml)
@@ -34,8 +35,13 @@ namespace BiolyViewer_Windows
                 (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(xml);
                 if (exceptions.Count == 0)
                 {
-                    (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
-                    string js = $"setGraph({nodes}, {edges});ClearErrors();";
+                    string js = String.Empty;
+                    if (SHOW_GRAPH)
+                    {
+                        (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
+                        js = $"setGraph({nodes}, {edges});";
+                    }
+                    js += $"ClearErrors();";
                     Browser.ExecuteScriptAsync(js);
 
                     RunSimulator(xml);
@@ -71,9 +77,17 @@ namespace BiolyViewer_Windows
                 {
                     try
                     {
-                        CommandExecutor<string> executor = new SimulatorConnector(Browser, BOARD_WIDTH, BOARD_HEIGHT);
-                        ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-                        programExecutor.Run(BOARD_WIDTH, BOARD_HEIGHT, xml);
+                        int boardWidth = Settings.BoardWidth;
+                        int boardHeight = Settings.BoardHeight;
+                        int timeBetweenCommands = (int)((1f / Settings.CommandFrequency) * 1000);
+                        bool showEmptyRectangles = Settings.ShowEmptyRectangles;
+                        using (SimulatorConnector executor = new SimulatorConnector(Browser, boardWidth, boardHeight))
+                        {
+                            ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
+                            programExecutor.TimeBetweenCommands = timeBetweenCommands;
+                            programExecutor.ShowEmptyRectangles = showEmptyRectangles;
+                            programExecutor.Run(boardWidth, boardHeight, xml);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -81,6 +95,21 @@ namespace BiolyViewer_Windows
                     }
                 });
                 simulatorThread.Start();
+            }
+        }
+
+        public void SettingsChanged(string settingsString)
+        {
+            Settings.UpdateSettingsFromString(settingsString);
+            Settings.SaveSettings(settingsString, MainWindow.SETTINGS_FILE_PATH);
+        }
+
+        public void Dispose()
+        {
+            lock (simulatorLocker)
+            {
+                simulatorThread?.Interrupt();
+                simulatorThread?.Join();
             }
         }
     }

@@ -5,10 +5,11 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Declarations
 {
-    public class InputDeclaration : StaticDeclarationBlock
+    public class InputDeclaration : StaticDeclarationBlock, DeclarationBlock
     {
         public const string INPUT_FLUID_FIELD_NAME = "inputName";
         public const string INPUT_AMOUNT_FIELD_NAME = "inputAmount";
@@ -31,11 +32,12 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             this.Unit = FluidUnit.drops;
         }
 
-        public static InputDeclaration Parse(XmlNode node)
+        public static InputDeclaration Parse(XmlNode node, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, output);
+            parserInfo.AddVariable(id, VariableType.FLUID, output);
 
             return new InputDeclaration(output, node, id);
         }

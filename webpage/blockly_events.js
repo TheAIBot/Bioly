@@ -25,13 +25,27 @@ function startBlockly(programs)
 	workspace.addChangeListener(onWorkspaceChanged);
 }
 
-var lastUpdateTime = new Date();
+var alreadyWaitingForUpdate = false
 function onWorkspaceChanged(event)
 {
+	if (alreadyWaitingForUpdate)
+	{
+		return;
+	}
+	
 	const currentTime = new Date();
 	//if(lastUpdateTime.getMilliseconds() + 50 < currentTime.getMilliseconds())
 	//{
-		webUpdater.update(getWorkspaceAsXml());
+	if (typeof(webUpdater) != "undefined")
+	{
+		alreadyWaitingForUpdate = true;
+		new Promise(resolve => 
+		{
+			webUpdater.update(getWorkspaceAsXml());
+			alreadyWaitingForUpdate = false;
+		});
+
+	}
 	//}
 	lastUpdateTime = new Date();
 }

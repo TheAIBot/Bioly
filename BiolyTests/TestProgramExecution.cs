@@ -84,7 +84,8 @@ namespace BiolyTests
             string xml = TestTools.GetWorkspaceString();
             TestCommandExecutor executor = new TestCommandExecutor();
             ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-            programExecutor.TIME_BETWEEN_COMMANDS = 0;
+            programExecutor.TimeBetweenCommands = 0;
+            programExecutor.ShowEmptyRectangles = false;
             programExecutor.Run(10, 10, xml);
 
             return executor.Commands;
@@ -230,14 +231,10 @@ namespace BiolyTests
             List<Command> program4Commands = GetProgramCommands(program4);
             Assert.IsTrue(program3Commands.SequenceEqual(program4Commands));
 
-            JSProgram program5 = CreateProgramWithRepeatStatement(new int[][] { new int[] { 2, -1 } }); // new int[] { 10 }
+            JSProgram program5 = CreateProgramWithRepeatStatement(new int[][] { new int[] { 2, -1 } });
             JSProgram program6 = CreateProgramWithoutRepeatStatement(5);
             List<Command> program5Commands = GetProgramCommands(program5);
             List<Command> program6Commands = GetProgramCommands(program6);
-            for (int i = 0; i < Math.Max(program5Commands.Count, program6Commands.Count); i++)
-            {
-                Assert.IsTrue(program5Commands[i].Equals(program6Commands[i]));
-            }
             Assert.IsTrue(program5Commands.SequenceEqual(program6Commands));
         }
 
@@ -245,13 +242,39 @@ namespace BiolyTests
         public void ProgramWithNestedRepeatStatements()
         {
             JSProgram program1 = CreateProgramWithRepeatStatement(new int[][] { new int[] { 10, 1, 5 }, new int[] { -1, 10000, 10000 }, new int[] { 10, 10, 10 } });
-            int numberOfRuns = 10 * (1 * (5 * (1) + 2) + 2) + 1 + 1 + 10 * (10 * (10 * (1) + 2) + 2) + 1;
-            Console.WriteLine("Number of runs = " + numberOfRuns);
-            JSProgram program2 = CreateProgramWithoutRepeatStatement(numberOfRuns);
+            JSProgram program2 = CreateProgramWithoutRepeatStatement(1313);
             List<Command> program1Commands = GetProgramCommands(program1);
             List<Command> program2Commands = GetProgramCommands(program2);
-            Console.WriteLine("Kage. " + program1Commands.Count + ", " + program2Commands.Count);
-            Assert.IsTrue(program1Commands.SequenceEqual(program2Commands)); //1313
+            Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
+        }
+
+        private JSProgram CreateProgramWithWhileStatement(int whileTimes)
+        {
+            JSProgram program = new JSProgram();
+            program.Render = true;
+            program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddHeaterDeclarationBlock("z");
+
+            string times = program.AddConstantBlock(whileTimes);
+            string zero = program.AddConstantBlock(whileTimes);
+            string logicCheck = program.AddBoolOPBlock(BoolOPTypes.EQ, times, zero);
+
+            string scopeName = program.GetUniqueName();
+            program.AddScope(scopeName);
+            program.SetScope(scopeName);
+            string guardedBlock = AddFluidBlock(program);
+            program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
+
+            program.AddRepeatSegment(times, guardedBlock);
+            AddFluidBlock(program);
+
+            program.Finish();
+            return program;
+        }
+
+        public void ProgramWithDisabledWithStatement()
+        {
+
         }
     }
 }

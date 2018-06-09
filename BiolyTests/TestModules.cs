@@ -93,7 +93,7 @@ namespace BiolyTests.ModulesTests
             Assert.AreEqual(fluidTransfer1, schedule.ScheduledOperations[0]);
             Assert.AreEqual(fluidTransfer2, schedule.ScheduledOperations[1]);
             Assert.AreEqual(0, fluidTransfer1.StartTime);
-            Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 10); //Tranfering one droplet should one average take less than 10 time units.
+            Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 20); //Tranfering one droplet should one average take less than 10 time units.
             Assert.AreEqual(initialNumberOfDroplets - numberOfDropletsTransfered, ((InputModule)inputOperation.BoundModule).DropletCount);
             //Renaming them should be really fast (though their is a delay associated with the operation):
             Assert.AreEqual(fluidTransfer1.EndTime + 1, fluidTransfer2.StartTime);
@@ -146,7 +146,7 @@ namespace BiolyTests.ModulesTests
             Assert.AreEqual(1, schedule.ScheduledOperations.Count);
             Assert.AreEqual(fluidTransfer1, schedule.ScheduledOperations[0]);
             Assert.AreEqual(0, fluidTransfer1.StartTime);
-            Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 10); //Tranfering one droplet should one average take less than 10 time units.
+            Assert.IsTrue(fluidTransfer1.EndTime <= numberOfDropletsTransfered * 20); //Tranfering one droplet should one average take less than 20 time units.
             Assert.AreEqual(initialNumberOfDroplets - numberOfDropletsTransfered, ((InputModule)inputOperation.BoundModule).DropletCount);
 
             List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
@@ -212,8 +212,8 @@ namespace BiolyTests.ModulesTests
             string heaterModuleName = "heaterModule";
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
             HeaterDeclaration heaterDeclaration = new HeaterDeclaration(heaterModuleName, null, "");
-            HeaterUseage heaterOperation1 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfDroplets, false)}, "Fisk", 500, time1, "");
-            HeaterUseage heaterOperation2 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", heaterOperation1.OriginalOutputVariable, heaterOperation1.OriginalOutputVariable, numberOfDroplets, false) }, "Derp", 500, time2, "");
+            HeaterUseage heaterOperation1 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", inputOperation.OutputVariable, inputOperation.OriginalOutputVariable, numberOfDroplets, false)}, "Fisk", 500, time1, "");
+            HeaterUseage heaterOperation2 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", heaterOperation1.OutputVariable, heaterOperation1.OriginalOutputVariable, numberOfDroplets, false) }, "Derp", 500, time2, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(heaterDeclaration);
             dfg.AddNode(heaterOperation1);

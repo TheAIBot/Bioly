@@ -30,7 +30,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
 
             VariableBlock leftBoolBlock = null;
             VariableBlock rightBoolBlock = null;
@@ -95,7 +95,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 case BoolOPTypes.GTE:
                     return "GTE";
                 default:
-                    throw new InternalParseException("Failed to parse the boolean operator type.");
+                    throw new InternalParseException("Failed to parse the boolean operator type. Type: " + type.ToString());
             }
         }
 
@@ -119,14 +119,14 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 case BoolOPTypes.GTE:
                     return leftResult >= rightResult ? 1 : 0;
                 default:
-                    throw new Exception("Failed to parse the operator type.");
+                    throw new Exception("Failed to parse the operator type. Type: " + OPType.ToString());
             }
         }
 
         public override string ToXml()
         {
             return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
                 $"<field name=\"{OPTypeFieldName}\">{BoolOpTypeToString(OPType)}</field>" +
                 $"<value name=\"{LeftBlock}\">" +
                     LeftBlock.ToXml() +

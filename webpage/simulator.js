@@ -20,8 +20,10 @@ const RIGHT_NEIGHBOR_INDEX = 1;
 const ABOVE_NEIGHBOR_INDEX = 2;
 const BELOW_NEIGHBOR_INDEX = 3;
 
-const ELECTRODE_SIZE_IN_CM = 1;
-const DROP_DISTANCE_PER_SEC_IN_CM = 600;
+var ELECTRODE_SIZE_IN_CM = 1;
+var DROP_DISTANCE_PER_SEC_IN_CM = 600;
+var DEFAULT_DROP_SIZE_IN_CM = 1;
+var STRICT_MODE_ENABLED = true;
 const UPDATES_PER_SECOND = 60;
 
 //setel 1 2 3 4 5 6 7  8 9 10
@@ -33,6 +35,11 @@ const UPDATES_PER_SECOND = 60;
 
 function startSimulator(width, height, inputs, outputs)
 {
+	ELECTRODE_SIZE_IN_CM        = getElectrodeSizeSetting();
+	DROP_DISTANCE_PER_SEC_IN_CM = getDropletSpeedSetting();
+	DEFAULT_DROP_SIZE_IN_CM     = getDropletSizeSetting();
+	STRICT_MODE_ENABLED         = getUseSimulatorStrictModeSetting();
+	
 	newCommands = [];
 	errorMessages = [];
 	
@@ -123,7 +130,7 @@ function addCommand(command)
 {
 	newCommands.push(command);
 }
-
+var shouldUpdate = 1;
 function updateLoop(version)
 {
 	if(newestVersion != version)
@@ -153,10 +160,13 @@ function updateLoop(version)
 		return;
 	}
 	
-	updateDropData(drops);
-	updateAreaData(areas);
-	render(drops.length, areas.length);
-	
+	shouldUpdate++;
+	if (shouldUpdate % 2 == 0)
+	{
+		updateDropData(drops);
+		updateAreaData(areas);
+		render(drops.length, areas.length);
+	}
 	window.requestAnimFrame(function()
 	{
 		updateLoop(version);
@@ -317,7 +327,7 @@ function splitDrops()
 		const drop = drops[i];
 		const electrode = getClosestElectrode(drop.position);
 		
-		if (electrode.isOn)
+		if (STRICT_MODE_ENABLED && electrode.isOn)
 		{
 			continue;
 		}
@@ -339,7 +349,7 @@ function splitDrops()
 		{
 			if (drop.amount <= 1)
 			{
-				throw "Trying to split a drop that only has " + drop.amount + " drops in it";
+				throw "Trying to split a drop that only has " + drop.amount + " drops in it. Atleast 2 drops woth of fluid is required before a drop can be splitted";
 			}
 			
 			const electrodeA = horizontalSplit ? leftElectrode  : aboveElectrode;
@@ -361,7 +371,7 @@ function isElectrodeOn(electrode)
 
 function getDropSize(amount)
 {
-	return Math.sqrt(amount);
+	return Math.sqrt(amount) * (DEFAULT_DROP_SIZE_IN_CM / ELECTRODE_SIZE_IN_CM);
 }
 
 function getClosestElectrode(position)
@@ -427,13 +437,30 @@ function updateDropPositions()
 	for(var i = 0; i < drops.length; i++)
 	{
 		const drop = drops[i];
-		const nearbyDistance = electrodeSize * 2;//don't do this for now * drop.size;
-		const nearbyElectrode = getSingleNearbyOnElectrode(drop.position, nearbyDistance);
+		const nearbyDistance = electrodeSize * (drop.size + (ratioForSpace * 1.1));
+		const nearbyElectrodes = getNearbyOnElectrodes(drop.position, nearbyDistance);
 		
-		if (nearbyElectrode)
+		if (STRICT_MODE_ENABLED && nearbyElectrodes.length > 1)
 		{
-			let dx = nearbyElectrode.position[0] - drop.position[0];
-			let dy = nearbyElectrode.position[1] - drop.position[1];
+			throw "Two or more electrodes are turned on near a drop";
+		}
+		
+		if (nearbyElectrodes.length > 0)
+		{
+			let centerX = 0;
+			let centerY = 0;
+			for(var k = 0; k < nearbyElectrodes.length; k++)
+			{
+				const electrode = nearbyElectrodes[k];
+				centerX += electrode.position[0];
+				centerY += electrode.position[1];
+			}
+			
+			centerX /= nearbyElectrodes.length;
+			centerY /= nearbyElectrodes.length;
+			
+			let dx = centerX - drop.position[0];
+			let dy = centerY - drop.position[1];
 			const dVectorLength = Math.sqrt(dx * dx + dy * dy);
 			
 			if (dVectorLength > distancePerUpdate)
@@ -445,13 +472,12 @@ function updateDropPositions()
 			drop.position[0] += dx;
 			drop.position[1] += dy;
 		}
-		
 	}
 }
 
-function getSingleNearbyOnElectrode(position, nearbyDistance)
+function getNearbyOnElectrodes(position, nearbyDistance)
 {
-	let nearbyElectrode = null;
+	let nearbyElectrodes = [];
 	for(var i = 0; i < electrodes.length; i++)
 	{
 		const electrode = electrodes[i];
@@ -461,25 +487,18 @@ function getSingleNearbyOnElectrode(position, nearbyDistance)
 			const distance = distanceAB(position, electrode.position);
 			if (distance <= nearbyDistance)
 			{
-				if (nearbyElectrode == null)
-				{
-					nearbyElectrode = electrode;	
-				}
-				else 
-				{
-					throw "Two or more electrodes are turned on near a drop";
-				}
+				nearbyElectrodes.push(electrode);
 			}
 		}
 	}
 	
-	return nearbyElectrode;
+	return nearbyElectrodes;
 }
 
 function mergeDrops()
 {
 	const dropCount = drops.length;
-	for(var i = 0; i < dropCount / 2; i++)
+	for(var i = 0; i < dropCount; i++)
 	{
 		const drop = drops[i];
 		if(drop)
@@ -491,24 +510,26 @@ function mergeDrops()
 				if(otherDrop)
 				{
 					const otherDropRadius = (electrodeSize / 2) * otherDrop.size;
-					if(otherDrop)
+					const distance = distanceAB(drop.position, otherDrop.position);
+					if (distance - dropRadius - otherDropRadius < electrodeSize / 2)
 					{
-						const distance = distanceAB(drop.position, otherDrop.position);
-						if (distance - dropRadius - otherDropRadius < electrodeSize / 2)
+						if (STRICT_MODE_ENABLED && drop.amount + otherDrop.amount > 2)
 						{
-							const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
-													(drop.position[1] + otherDrop.position[1]) / 2);
-							const newDropColor = vec4((drop.color[0] + otherDrop.color[0]) / 2, 
-													  (drop.color[1] + otherDrop.color[1]) / 2, 
-													  (drop.color[2] + otherDrop.color[2]) / 2, 
-													  (drop.color[3] + otherDrop.color[3]) / 2);
-							spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropColor);
-							
-							drops[i] = null;
-							drops[k] = null;
-							break;
+							throw "Can't marge two drops where the resulting drop will have 3 or more drops worth of fluid.";
 						}
-					}	
+						
+						const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
+												(drop.position[1] + otherDrop.position[1]) / 2);
+						const newDropColor = vec4((drop.color[0] + otherDrop.color[0]) / 2, 
+												  (drop.color[1] + otherDrop.color[1]) / 2, 
+												  (drop.color[2] + otherDrop.color[2]) / 2, 
+												  (drop.color[3] + otherDrop.color[3]) / 2);
+						spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropColor);
+						
+						drops[i] = null;
+						drops[k] = null;
+						break;
+					}
 				}
 			}
 		}

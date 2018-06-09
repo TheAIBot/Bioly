@@ -21,6 +21,7 @@ namespace BiolyCompiler.Routing
         public static int RouteDropletsToModule(Board board, int currentTime, FluidBlock operation)
         {
             int originalStartTime = currentTime;
+            //The order in which to route droplets to the module (where possible deadlocks are avoided)
             List<Droplet> internalDropletRoutingOrder = GetModulesDropletRoutingOrder(operation, board);
 
             foreach (var dropletInput in internalDropletRoutingOrder)
@@ -165,11 +166,13 @@ namespace BiolyCompiler.Routing
             switch (route.routedDroplet)
             {
                 case Droplet dropletSource:
+                    dropletSource.GetFluidType().dropletSources.Remove(dropletSource);
                     board.FastTemplateRemove(dropletSource);
                     break;
                 case InputModule dropletSource:
                     if (1 < dropletSource.DropletCount) dropletSource.DecrementDropletCount();
                     else if (dropletSource.DropletCount == 1) {
+                        dropletSource.GetFluidType().dropletSources.Remove(dropletSource);
                         dropletSource.DecrementDropletCount();
                         //board.FastTemplateRemove(dropletSource); 
                     }

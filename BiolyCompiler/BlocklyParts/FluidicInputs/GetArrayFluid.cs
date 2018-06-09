@@ -9,6 +9,7 @@ using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.FluidicInputs
 {
@@ -30,11 +31,11 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
         public static FluidInput Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool doVariableCheck = true)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
             if (doVariableCheck)
             {
-                parserInfo.CheckFluidVariable(id, arrayName);
+                parserInfo.CheckVariable(id, VariableType.FLUID_ARRAY, arrayName);
             }
             parserInfo.MostRecentVariableRef.TryGetValue(arrayName, out string correctedName);
 

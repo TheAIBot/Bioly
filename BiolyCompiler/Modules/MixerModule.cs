@@ -9,8 +9,8 @@ namespace BiolyCompiler.Modules
     {
         public MixerModule(int operationTime) : base(2*Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, operationTime, false)
         {
-            InputLayout  = GetDefaultLayout();
-            OutputLayout = GetDefaultLayout();
+            InputLayout  = GetDefaultLayout(Shape);
+            OutputLayout = GetDefaultLayout(Shape);
         }
 
         /*
@@ -19,7 +19,7 @@ namespace BiolyCompiler.Modules
         }
         */
 
-        public ModuleLayout GetDefaultLayout()
+        public static ModuleLayout GetDefaultLayout(Rectangle Shape)
         {
             List<Rectangle> EmptyRectangles = new List<Rectangle>();
             List<Droplet> OutputLocations  = new List<Droplet>();
@@ -47,16 +47,17 @@ namespace BiolyCompiler.Modules
             int startTime = time;
             List<Command> commands = new List<Command>();
             int middleOfComponentYValue = Shape.y + Droplet.DROPLET_HEIGHT / 2;
-            int leftDropletInitialXPosition = Shape.x + 1;
-            int rightDropletInitialXPosition = Shape.x + Shape.width - 2;
+            int leftDropletInitialXPosition = Shape.x + Droplet.DROPLET_WIDTH/2;
+            int rightDropletInitialXPosition = leftDropletInitialXPosition + Droplet.DROPLET_WIDTH;
 
             //Moving the two droplets together to the right:
             commands.AddRange(MoveDropletsToTheRight(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition, ref time));
             
             //The merged droplet is now at the right side. It needs to be moved back and forth:
-            int numberOfCommandsToMergeDroplet = 6;
-            int numberOfCommandsToMoveBackAndForth = 6;
-            int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet * 2) / numberOfCommandsToMoveBackAndForth;
+            int numberOfCommandsToMoveCompletlyOneDirection = 2 * Droplet.DROPLET_WIDTH + 1;
+            int numberOfCommandsToMoveBackAndForth = 2*numberOfCommandsToMoveCompletlyOneDirection;
+            int numberOfCommandsToMergeDroplet = 2*numberOfCommandsToMoveCompletlyOneDirection + 4;
+            int numberOfForwardBackwardMovements = (OperationTime - numberOfCommandsToMergeDroplet) / numberOfCommandsToMoveBackAndForth;
             //int numberOfForwardBackwardMovements = 1;
             for (int i = 0; i < numberOfForwardBackwardMovements; i++)
             {
@@ -77,10 +78,12 @@ namespace BiolyCompiler.Modules
             commands.Add(new Command(rightDropletInitialXPosition    , middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
             commands.Add(new Command(rightDropletInitialXPosition - 2, middleOfComponentYValue, CommandType.ELECTRODE_OFF, time));
             time++;
+            //The droplets have been split. Now the left droplet needs to be moved back to its original position.
 
-            commands.Add(new Command(leftDropletInitialXPosition, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
-            time++;
+            commands.AddRange(MoveDropletsToTheLeft(middleOfComponentYValue, leftDropletInitialXPosition, rightDropletInitialXPosition - 2, ref time));
+            
             int restTime = OperationTime - (time - startTime);
+            if (restTime < 0) throw new Exception("Reaming waiting time for mixing should not be negative: it is "  + restTime);
             time += restTime;
             commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
 
@@ -92,31 +95,51 @@ namespace BiolyCompiler.Modules
             return commands;
         }
 
-        private List<Command> MoveDropletsToTheRight(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition, ref int time)
+        private List<Command> MoveDropletsToTheRight(int middleOfComponentYValue, int xPos, int rightDropletInitialXPosition, ref int time)
         {
             List<Command> commands = new List<Command>();
-            int xPos = leftDropletInitialXPosition;
+
+            (int x, int y) toTurnOff = (xPos, middleOfComponentYValue);
+            commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_ON, time));
+            time++;
+
             do
             {
                 xPos++;
                 commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
                 time++;
-                commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
+                commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+                commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
+                time++;
+                toTurnOff = (xPos, middleOfComponentYValue);
             } while (xPos != rightDropletInitialXPosition);
+
+            commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+
             return commands;
         }
 
-        private List<Command> MoveDropletsToTheLeft(int middleOfComponentYValue, int leftDropletInitialXPosition, int rightDropletInitialXPosition, ref int time)
+        private List<Command> MoveDropletsToTheLeft(int middleOfComponentYValue, int leftDropletInitialXPosition, int xPos, ref int time)
         {
             List<Command> commands = new List<Command>();
-            int xPos = rightDropletInitialXPosition;
+
+            (int x, int y) toTurnOff = (xPos, middleOfComponentYValue);
+            commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_ON, time));
+            time++;
+
             do
             {
                 xPos--;
                 commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
                 time++;
-                commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
+                commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+                commands.Add(new Command(xPos, middleOfComponentYValue, CommandType.ELECTRODE_ON, time));
+                time++;
+                toTurnOff = (xPos, middleOfComponentYValue);
             } while (xPos != leftDropletInitialXPosition);
+
+            commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+
             return commands;
         }
     }

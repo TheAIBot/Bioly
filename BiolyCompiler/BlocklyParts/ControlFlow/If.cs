@@ -1,5 +1,7 @@
-﻿using BiolyCompiler.Exceptions.ParserExceptions;
+﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public If(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             List<Conditional> conditionals = new List<Conditional>();
 
             int IfBlocksCount = 1;
@@ -77,6 +79,36 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         public static string GetDoFieldName(int ifCounter = 0)
         {
             return $"DO{ifCounter}";
+        }
+
+        public DFG<Block> GuardedDFG<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        {
+            foreach (Conditional cond in IfStatements)
+            {
+                //deciding block is only null for the else statment
+                if (cond.DecidingBlock == null)
+                {
+                    return cond.GuardedDFG;
+                }
+
+                bool isTrue = cond.DecidingBlock.Run(variables, executor, dropPositions) == 1f;
+                if (isTrue)
+                {
+                    return cond.GuardedDFG;
+                }
+            }
+
+            return null;
+        }
+
+        public DFG<Block> NextDFG<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        {
+            return IfStatements[0].NextDFG;
+        }
+
+        public DFG<Block> TryLoop<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        {
+            return null;
         }
     }
 }
