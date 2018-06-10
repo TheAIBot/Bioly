@@ -33,19 +33,14 @@ function onWorkspaceChanged(event)
 		return;
 	}
 	
-	const currentTime = new Date();
-	//if(lastUpdateTime.getMilliseconds() + 50 < currentTime.getMilliseconds())
-	//{
 	if (typeof(webUpdater) != "undefined")
 	{
 		alreadyWaitingForUpdate = true;
-		new Promise(resolve => 
+		new Promise(async resolve => 
 		{
-			webUpdater.update(getWorkspaceAsXml());
+			await webUpdater.update(getWorkspaceAsXml());
 			alreadyWaitingForUpdate = false;
 		});
 
 	}
-	//}
-	lastUpdateTime = new Date();
 }
