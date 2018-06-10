@@ -20,7 +20,6 @@ namespace BiolyViewer_Windows
     {
         private readonly ChromiumWebBrowser Browser;
         private readonly SettingsInfo Settings;
-        private const bool SHOW_GRAPH = false;
 
         public WebUpdater(ChromiumWebBrowser browser, SettingsInfo settings)
         {
@@ -36,7 +35,7 @@ namespace BiolyViewer_Windows
                 if (exceptions.Count == 0)
                 {
                     string js = String.Empty;
-                    if (SHOW_GRAPH)
+                    if (Settings.CreateGraph)
                     {
                         (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
                         js = $"setGraph({nodes}, {edges});";

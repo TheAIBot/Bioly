@@ -22,6 +22,7 @@ namespace BiolyViewer_Windows
         private const string EMPTY_RECTANGLES_SETTING_NAME = "emptyRectanglesSetting";
         private const string USE_SIMULATOR_STRICT_MODE_SETTING_NAME = "useSimulatorStrictModeSetting";
         private const string SIMULATOR_UPS_SETTING_NAME = "simulatorUPSSetting";
+        private const string CREATE_GRAPH_SETTING_NAME = "createGraphSettingSetting";
 
         public Dictionary<string, object> Settings = new Dictionary<string, object>();
 
@@ -34,6 +35,7 @@ namespace BiolyViewer_Windows
         public bool ShowEmptyRectangles => (bool)Settings[EMPTY_RECTANGLES_SETTING_NAME];
         public bool UseSimulatorStrictMode => (bool)Settings[USE_SIMULATOR_STRICT_MODE_SETTING_NAME];
         public float SimulatorUPS => (float)Settings[SIMULATOR_UPS_SETTING_NAME];
+        public bool CreateGraph => (bool)Settings[CREATE_GRAPH_SETTING_NAME];
 
         public SettingsInfo()
         {
@@ -47,6 +49,7 @@ namespace BiolyViewer_Windows
             Settings.Add(EMPTY_RECTANGLES_SETTING_NAME , true);
             Settings.Add(USE_SIMULATOR_STRICT_MODE_SETTING_NAME, true);
             Settings.Add(SIMULATOR_UPS_SETTING_NAME, 60f);
+            Settings.Add(CREATE_GRAPH_SETTING_NAME, true);
         }
 
         public void LoadSettings(string path)
