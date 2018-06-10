@@ -133,14 +133,15 @@ namespace BiolyViewer_Windows
         private static string CreateHiddenRankEdgesBetweenDFGs(DFG<Block> source, DFG<Block> target)
         {
             string edges = "";
-            source.Nodes.Where(x => x.value is VariableBlock)
-                        .Where(x => source.Nodes.Where(k => k.value is VariableBlock).All(y => !((VariableBlock)y.value).InputVariables.Contains(x.value.OutputVariable)))
-                        .ToList()
-                        .ForEach(x => target.Input.ForEach(y => edges+= CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
-            source.Nodes.Where(x => x.value is FluidBlock)
-                        .Where(x => source.Nodes.Where(k => k.value is FluidBlock).All(y => !((FluidBlock)y.value).InputVariables.Any(z => z.FluidName == x.value.OutputVariable)))
-                        .ToList()
-                        .ForEach(x => target.Input.ForEach(y => edges += CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
+
+            foreach (var output in source.Nodes.Where(x => x.getOutgoingEdges().Count == 0))
+            {
+                foreach (var input in target.Nodes.Where(y => y.getIngoingEdges().Count == 0))
+                {
+                    edges += CreateEdge(output.value.OutputVariable, input.value.OutputVariable, "haystack");
+                }
+            }
+
             return edges;
         }
 
