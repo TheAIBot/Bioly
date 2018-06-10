@@ -208,8 +208,8 @@ namespace BiolyCompiler.Parser
                         throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
                     }
                     return OutputDeclaration.Parse(node, parserInfo);
-                case OutputUseage.XML_TYPE_NAME:
-                    return OutputUseage.Parse(node, dfg, parserInfo);
+                case OutputUsage.XML_TYPE_NAME:
+                    return OutputUsage.Parse(node, dfg, parserInfo);
                 case HeaterDeclaration.XML_TYPE_NAME:
                     return HeaterDeclaration.Parse(node, parserInfo);
                 case DropletDeclaration.XML_TYPE_NAME:

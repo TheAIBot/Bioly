@@ -11,17 +11,17 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
-    public class OutputUseage : StaticUseageBlock
+    public class OutputUsage : StaticUseageBlock
     {
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
-        public const string XML_TYPE_NAME = "outputUseage";
+        public const string XML_TYPE_NAME = "outputUsage";
 
-        public OutputUseage(string moduleName, List<FluidInput> input, string output, XmlNode node, string id) : base(moduleName, input, false, output, id)
+        public OutputUsage(string moduleName, List<FluidInput> input, string output, XmlNode node, string id) : base(moduleName, input, false, output, id)
         {
 
         }
 
-        public static OutputUseage Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        public static OutputUsage Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
@@ -37,7 +37,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);
 
-            return new OutputUseage(moduleName, inputs, null, node, id);
+            return new OutputUsage(moduleName, inputs, null, node, id);
         }
 
         public override void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)

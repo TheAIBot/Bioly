@@ -87,7 +87,7 @@ namespace BiolyTests
         {
             string a = GetUniqueName();
             AddBlock(a, HeaterDeclaration.XML_TYPE_NAME);
-            SetField(a, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
+            SetField(a, HeaterUsage.MODULE_NAME_FIELD_NAME, moduleName);
 
             CurrentScope.Add(a);
             return a;
@@ -130,14 +130,14 @@ namespace BiolyTests
             string b = GetUniqueName();
             string c = GetUniqueName();
             AddBlock(a, Fluid.XML_TYPE_NAME);
-            AddBlock(b, HeaterUseage.XML_TYPE_NAME);
+            AddBlock(b, HeaterUsage.XML_TYPE_NAME);
             AddBasicInputBlock(c, inputFluidName, fluidAmount, useAllFluid);
             SetField(a, Fluid.OUTPUT_FLUID_FIELD_NAME, outputName);
-            SetField(b, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
-            SetField(b, HeaterUseage.TEMPERATURE_FIELD_NAME, temperature);
-            SetField(b, HeaterUseage.TIME_FIELD_NAME, time);
+            SetField(b, HeaterUsage.MODULE_NAME_FIELD_NAME, moduleName);
+            SetField(b, HeaterUsage.TEMPERATURE_FIELD_NAME, temperature);
+            SetField(b, HeaterUsage.TIME_FIELD_NAME, time);
             AddConnection(a, Fluid.INPUT_FLUID_FIELD_NAME, b);
-            AddConnection(b, HeaterUseage.INPUT_FLUID_FIELD_NAME, c);
+            AddConnection(b, HeaterUsage.INPUT_FLUID_FIELD_NAME, c);
 
             CurrentScope.Add(a);
             return a;
@@ -210,10 +210,10 @@ namespace BiolyTests
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
-            AddBlock(a, OutputUseage.XML_TYPE_NAME);
-            SetField(a, OutputUseage.MODULE_NAME_FIELD_NAME, moduleName);
+            AddBlock(a, OutputUsage.XML_TYPE_NAME);
+            SetField(a, OutputUsage.MODULE_NAME_FIELD_NAME, moduleName);
             AddBasicInputBlock(b, fluidName, amount, useAllFluid);
-            AddConnection(a, OutputUseage.INPUT_FLUID_FIELD_NAME, b);
+            AddConnection(a, OutputUsage.INPUT_FLUID_FIELD_NAME, b);
 
             CurrentScope.Add(a);
             return a;

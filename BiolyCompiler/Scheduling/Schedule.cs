@@ -360,8 +360,8 @@ namespace BiolyCompiler.Scheduling
         private int RouteDropletsToModuleAndUpdateSchedule(Board board, int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)
         {
             int finishedRoutingTime;
-            if (topPriorityOperation is OutputUseage)
-                finishedRoutingTime = Router.RouteDropletsToOutput(board, startTime, (OutputUseage) topPriorityOperation, FluidVariableLocations);
+            if (topPriorityOperation is OutputUsage)
+                finishedRoutingTime = Router.RouteDropletsToOutput(board, startTime, (OutputUsage) topPriorityOperation, FluidVariableLocations);
             else finishedRoutingTime = Router.RouteDropletsToModule(board, startTime, topPriorityOperation);
             UpdateSchedule(topPriorityOperation, finishedRoutingTime, startTime);
             return finishedRoutingTime;
@@ -419,7 +419,7 @@ namespace BiolyCompiler.Scheduling
                         AllUsedModules.AddRange(replacingDroplets);
                     }
                     else {
-                        if (finishedOperation is HeaterUseage heaterOperation)
+                        if (finishedOperation is HeaterUsage heaterOperation)
                         {
                             //When a heater operation has finished, the droplets inside the heater needs to be moved out of the module,
                             //so that it can be used again, by other droplets:

@@ -269,11 +269,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
                                 xml = splittedXml.beforeBlockXml + (splittedXml.nextBlockXml ?? String.Empty) + splittedXml.afterBlockXml;
                                 break;
                             }
-                        case OutputUseage.XML_TYPE_NAME:
+                        case OutputUsage.XML_TYPE_NAME:
                             {
                                 var splittedXml = SplitBlockXml(blockNode, xml);
                                 DFG<Block> dfg = new DFG<Block>();
-                                OutputUseage output = OutputUseage.Parse(blockNode, dfg, dummyParserInfo);
+                                OutputUsage output = OutputUsage.Parse(blockNode, dfg, dummyParserInfo);
                                 FluidInput fluidInputA = new BasicInput(String.Empty, OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
                                 string unionXml = Union.ToXml(ID, fluidInputA.ToXml(), output.InputVariables[0].ToXml());
                                 string nextXml = splittedXml.nextBlockXml;

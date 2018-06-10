@@ -44,8 +44,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
             {
                 switch (innerNode.GetAttributeValue(Block.TYPE_FIELD_NAME))
                 {
-                    case HeaterUseage.XML_TYPE_NAME:
-                        return HeaterUseage.CreateHeater(output, innerNode, dfg, parserInfo);
+                    case HeaterUsage.XML_TYPE_NAME:
+                        return HeaterUsage.CreateHeater(output, innerNode, dfg, parserInfo);
                     case Mixer.XmlTypeName:
                         return Mixer.CreateMixer(output, innerNode, dfg, parserInfo);
                     case Union.XML_TYPE_NAME:

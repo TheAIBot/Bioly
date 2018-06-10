@@ -212,8 +212,8 @@ namespace BiolyTests.ModulesTests
             string heaterModuleName = "heaterModule";
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
             HeaterDeclaration heaterDeclaration = new HeaterDeclaration(heaterModuleName, null, "");
-            HeaterUseage heaterOperation1 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", inputOperation.OutputVariable, inputOperation.OriginalOutputVariable, numberOfDroplets, false)}, "Fisk", 500, time1, "");
-            HeaterUseage heaterOperation2 = new HeaterUseage(heaterModuleName, new List<FluidInput>() { new BasicInput("", heaterOperation1.OutputVariable, heaterOperation1.OriginalOutputVariable, numberOfDroplets, false) }, "Derp", 500, time2, "");
+            HeaterUsage heaterOperation1 = new HeaterUsage(heaterModuleName, new List<FluidInput>() { new BasicInput("", inputOperation.OutputVariable, inputOperation.OriginalOutputVariable, numberOfDroplets, false)}, "Fisk", 500, time1, "");
+            HeaterUsage heaterOperation2 = new HeaterUsage(heaterModuleName, new List<FluidInput>() { new BasicInput("", heaterOperation1.OutputVariable, heaterOperation1.OriginalOutputVariable, numberOfDroplets, false) }, "Derp", 500, time2, "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(heaterDeclaration);
             dfg.AddNode(heaterOperation1);

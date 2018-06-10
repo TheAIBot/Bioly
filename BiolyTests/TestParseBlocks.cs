@@ -193,7 +193,7 @@ namespace BiolyTests.ParseBlockTests
             Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
-            Assert.IsTrue(input is OutputUseage);
+            Assert.IsTrue(input is OutputUsage);
         }
 
         [TestMethod]
@@ -208,7 +208,7 @@ namespace BiolyTests.ParseBlockTests
             parserInfo.EnterDFG();
             parserInfo.AddVariable("", VariableType.FLUID, "b");
             parserInfo.AddVariable("", VariableType.HEATER, "z");
-            HeaterUseage heater = (HeaterUseage)XmlParser.ParseBlock(node, null, parserInfo);
+            HeaterUsage heater = (HeaterUsage)XmlParser.ParseBlock(node, null, parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", heater.OriginalOutputVariable);
