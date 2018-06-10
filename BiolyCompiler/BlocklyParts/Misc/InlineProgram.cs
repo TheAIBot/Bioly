@@ -161,8 +161,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //it should be converted into.
             string postfix = parserInfo.GetUniquePostFix();
             Dictionary<string, string> variablesFromTo = new Dictionary<string, string>();
-            variables.ForEach(x => variablesFromTo.Add(x, x + postfix));
-            variablesFromTo.Where(x => InputsFromTo   .ContainsKey(x.Key)).ToList().ForEach(x => InputsFromTo   .Add(x.Value, InputsFromTo   [x.Key]));
+            
+            InputsFromTo.ToList().ForEach(x => variablesFromTo.Add(x.Key, x.Value.OriginalFluidName));
+            variables.Where(x => !variablesFromTo.ContainsKey(x)).ToList().ForEach(x => variablesFromTo.Add(x, x + postfix));
             variablesFromTo.Where(x => OutputsFromTo  .ContainsKey(x.Key)).ToList().ForEach(x => OutputsFromTo  .Add(x.Value, OutputsFromTo  [x.Key]));
             variablesFromTo.Where(x => VariablesFromTo.ContainsKey(x.Key)).ToList().ForEach(x => VariablesFromTo.Add(x.Value, VariablesFromTo[x.Key]));
 
@@ -262,15 +263,6 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     switch (blockType)
                     {
                         case InputDeclaration.XML_TYPE_NAME:
-                            {
-                                var splittedXml = SplitBlockXml(blockNode, xml);
-                                InputDeclaration inputBlock = InputDeclaration.Parse(blockNode, dummyParserInfo);
-                                string fluidInputXml = InputsFromTo[inputBlock.OriginalOutputVariable].ToXml();
-                                string inputXml = Fluid.ToXml(ID, inputBlock.OriginalOutputVariable, fluidInputXml, splittedXml.nextBlockXml);
-
-                                xml = splittedXml.beforeBlockXml + inputXml + splittedXml.afterBlockXml;
-                                break;
-                            }
                         case OutputDeclaration.XML_TYPE_NAME:
                         //case WasteDeclaration.XML_TYPE_NAME:
                         case HeaterDeclaration.XML_TYPE_NAME:

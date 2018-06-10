@@ -84,18 +84,18 @@ namespace BiolyCompiler.Architechtures
             candidateRectangles.Sort((x, y) => RectangleCost(x, module) <= RectangleCost(y, module) ? 0 : 1);
             Rectangle bufferedRectangle;
             
-            bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
-            for (int i = 0; i < candidateRectangles.Count; i++)
-            {
-                Rectangle current = candidateRectangles[i];
-                if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
-                {
-                    (bool couldBePlaced, Rectangle newCurrentRectangle) = PlaceBottomBufferedModuleInRectangle(module, current);
-                    if (couldBePlaced) return true;
-                    else candidateRectangles[i] = newCurrentRectangle; //Necessary, as current has been replaced internally in the system with newCurrentRectangle.
+            //bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
+            //for (int i = 0; i < candidateRectangles.Count; i++)
+            //{
+            //    Rectangle current = candidateRectangles[i];
+            //    if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
+            //    {
+            //        (bool couldBePlaced, Rectangle newCurrentRectangle) = PlaceBottomBufferedModuleInRectangle(module, current);
+            //        if (couldBePlaced) return true;
+            //        else candidateRectangles[i] = newCurrentRectangle; //Necessary, as current has been replaced internally in the system with newCurrentRectangle.
 
-                }
-            }
+            //    }
+            //}
             //DebugTools.checkAdjacencyMatrixCorrectness(this);
             
             //Bigger buffer in the case it failed:
