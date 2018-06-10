@@ -66,6 +66,7 @@ function startSimulator(width, height, inputs, outputs)
 	}
 	
 	runningSimulatorIntervalID = setInterval(updateLoop, 1000 / UPDATES_PER_SECOND);
+	didGraphicsChange = true;
 }
 
 function prepareElectrodes(width, height, electrodePositions)
@@ -156,6 +157,7 @@ function updateLoop()
 	catch(error)
 	{
 		console.log(error);
+		clearInterval(runningSimulatorIntervalID);
 		return;
 	}
 }
@@ -322,15 +324,42 @@ function spawnInputDrops()
 	}
 }
 
-function spawnDrop(position, amount, color)
+function spawnDrop(position, amount, hue)
 {
 	const newDrop = {};
 	newDrop.position = vec2(position[0], position[1]);
 	newDrop.amount = amount;
 	newDrop.size = getDropSize(newDrop.amount);
-	newDrop.color = color;
+	newDrop.color = HSVtoRGB(hue, 0.45, 0.65, 0.5);
+	newDrop.hue = hue;
 	
 	drops.push(newDrop);
+}
+
+//derived from https://stackoverflow.com/a/17243070
+function HSVtoRGB(h, s, v, a)
+{	
+    let i = Math.floor(h * 6);
+    let f = h * 6 - i;
+    let p = v * (1 - s);
+    let q = v * (1 - f * s);
+    let t = v * (1 - (1 - f) * s);
+	
+    switch (i % 6)
+	{
+        case 0:
+			return vec4(v, t, p, a);
+        case 1:
+			return vec4(q, v, p, a);
+        case 2:
+			return vec4(p, v, t, a);
+        case 3:
+			return vec4(p, q, v, a);
+        case 4:
+			return vec4(t, p, v, a);
+        case 5:
+			return vec4(v, p, q, a);
+    }
 }
 
 function splitDrops()
@@ -370,8 +399,8 @@ function splitDrops()
 			const electrodeA = horizontalSplit ? leftElectrode  : aboveElectrode;
 			const electrodeB = horizontalSplit ? rightElectrode : belowElectrode;
 			
-			spawnDrop(electrodeA.position, drop.amount / 2, drop.color);
-			spawnDrop(electrodeB.position, drop.amount / 2, drop.color);
+			spawnDrop(electrodeA.position, drop.amount / 2, drop.hue);
+			spawnDrop(electrodeB.position, drop.amount / 2, drop.hue);
 			
 			//delete drop that was splitted
 			drops.splice(i, 1);
@@ -542,11 +571,8 @@ function mergeDrops()
 						
 						const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
 												(drop.position[1] + otherDrop.position[1]) / 2);
-						const newDropColor = vec4((drop.color[0] + otherDrop.color[0]) / 2, 
-												  (drop.color[1] + otherDrop.color[1]) / 2, 
-												  (drop.color[2] + otherDrop.color[2]) / 2, 
-												  (drop.color[3] + otherDrop.color[3]) / 2);
-						spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropColor);
+						const newDropHue = MixHues(drop.hue, otherDrop.hue);
+						spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropHue);
 						
 						drops[i] = null;
 						drops[k] = null;
@@ -568,6 +594,18 @@ function mergeDrops()
 	}
 }
 
+function MixHues(hueA, hueB)
+{
+	if (Math.abs(hueA - hueB) < 0.5)
+	{
+		return (hueA + hueB) / 2;
+	}
+	else
+	{
+		return ((hueA + hueB + 1) / 2) % 1;
+	}
+}
+
 //electrode
 //{
 //	position
@@ -580,14 +618,15 @@ function mergeDrops()
 //	position
 //	amount
 //	size
-//	color
+//	color // rgba
+//	hue
 //}
 
 //inputs
 //{
 //	index
 //	canSpawn
-//	color
+//	color // a hue
 //}
 
 //outputs

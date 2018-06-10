@@ -78,10 +78,8 @@ namespace BiolyViewer_Windows
             {
                 (int centerX, int centerY) = input.Shape.getCenterPosition();
                 int electrodeIndex = centerY * Width + centerX;
-                string r = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
-                string g = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
-                string b = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
-                inputBuilder.Append($"{{index: {electrodeIndex}, color: vec4({r}, {g}, {b}, 0.5)}},");
+                string hue = Rando.NextDouble().ToString("N3", CultureInfo.InvariantCulture);
+                inputBuilder.Append($"{{index: {electrodeIndex}, color: {hue}}},");
             }
             string inputString = inputBuilder.ToString();
 
