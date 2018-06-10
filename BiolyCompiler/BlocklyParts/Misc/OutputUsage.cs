@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "outputUsage";
 
-        public OutputUsage(string moduleName, List<FluidInput> input, string output, XmlNode node, string id) : base(moduleName, input, false, output, id)
+        public OutputUsage(string moduleName, List<FluidInput> input, string output, XmlNode node, string id) : base(moduleName, input, true, output, id)
         {
 
         }
