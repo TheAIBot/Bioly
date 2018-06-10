@@ -43,6 +43,7 @@ namespace BiolyViewer_Windows
             }
             catch (Exception)
             {
+                Port = null;
                 Debug.WriteLine("Failed to establish a connection to port COM3.");
             }
 
@@ -140,7 +141,7 @@ namespace BiolyViewer_Windows
 
         private async void ExecuteJs(string js)
         {
-            Debug.WriteLine(js);
+            //Debug.WriteLine(js);
             
             if (REALLY_SLOW_COMPUTER)
             {
