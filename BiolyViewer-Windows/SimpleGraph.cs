@@ -79,23 +79,23 @@ namespace BiolyViewer_Windows
                 {
                     foreach (Conditional conditional in (control as If).IfStatements)
                     {
-                        edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                        edges = CreateConditionalEdges(edges, dfgNames, node, conditional, edgesAlreadyCreated);
                     }
                 }
                 else if (control is Repeat)
                 {
                     Conditional conditional = (control as Repeat).Cond;
-                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional, edgesAlreadyCreated);
                 }
                 else if (control is Direct)
                 {
                     Conditional conditional = (control as Direct).Cond;
-                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional, edgesAlreadyCreated);
                 }
                 else if (control is While)
                 {
                     Conditional conditional = (control as While).Cond;
-                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional, edgesAlreadyCreated);
                 }
                 else if (control != null)
                 {
@@ -106,7 +106,7 @@ namespace BiolyViewer_Windows
             return edges;
         }
 
-        private static string CreateConditionalEdges(string edges, Dictionary<DFG<Block>, string> dfgNames, (IControlBlock control, DFG<Block> dfg) node, Conditional conditional)
+        private static string CreateConditionalEdges(string edges, Dictionary<DFG<Block>, string> dfgNames, (IControlBlock control, DFG<Block> dfg) node, Conditional conditional, List<(DFG<Block>, DFG<Block>)> edgesAlreadyCreated)
         {
             //edge from before if to into if
             if (conditional.GuardedDFG != null)
@@ -116,9 +116,13 @@ namespace BiolyViewer_Windows
             }
             if (conditional.NextDFG != null)
             {
-                //edge from before if to after if
-                edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.NextDFG]);
-                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.NextDFG);
+                if (!edgesAlreadyCreated.Any(x => x.Item1 == node.dfg && x.Item2 == conditional.NextDFG))
+                {
+                    //edge from before if to after if
+                    edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.NextDFG]);
+                    edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.NextDFG);
+                    edgesAlreadyCreated.Add((node.dfg, conditional.NextDFG));
+                }
                 //edge from inside if to after if
                 if (conditional.GuardedDFG != null)
                 {
