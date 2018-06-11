@@ -221,6 +221,67 @@ namespace BiolyTests.PlacementTests
             Assert.AreEqual(0, rectangle.AdjacentRectangles.Count);
         }
 
+        [TestMethod]
+        public void TestSplitMergeLeftTallerRectangle()
+        {
+            int boardWidth = 20;
+            int boardHeigth = 20;
+            Board board = new Board(boardWidth, boardHeigth);
+
+            int rec1Width = boardWidth / 3, rec1Height = (3*boardHeigth) / 4, rec1x = boardWidth/2, rec1y = boardWidth / 2;
+            int rec2Width = boardWidth / 4, rec2Height = boardHeigth/2;
+
+            for (int x = 0; x <= (boardWidth/2)/2; x++)
+            {
+                for (int y = 10; y < boardHeigth + rec1Height + rec2Height + 5; y++)
+                {
+                    Rectangle rectangle1 = new Rectangle(rec1Width, rec1Height, rec1x, rec1y);
+                    Rectangle rectangle2 = new Rectangle(rec2Width, rec2Height, x, y);
+                    board.EmptyRectangles.Clear();
+                    board.EmptyRectangles.Add(rectangle1);
+                    board.EmptyRectangles.Add(rectangle2);
+                    if (rectangle1.ConnectIfAdjacent(rectangle2))
+                    {
+                        bool didSplit = rectangle1.SplitMerge(board);
+                        if (didSplit)
+                        {
+                            Assert.AreEqual(boardWidth / 4, x);
+                            Assert.AreEqual(2, board.EmptyRectangles.Count());
+                            Assert.IsTrue(board.EmptyRectangles.Contains(rectangle1));
+                            Assert.IsTrue(board.EmptyRectangles.Contains(rectangle2));
+                            if ((y == rec1y))
+                            {
+                                Assert.AreEqual(rec1Height - rec2Height, rectangle1.height);
+                                Assert.AreEqual(rec1Width, rectangle1.width);
+                                Assert.AreEqual(rec1x, rectangle1.x);
+                                Assert.AreEqual(rec1y + rec2Height, rectangle1.y);
+
+                                Assert.AreEqual(rec2Height, rectangle2.height);
+                                Assert.AreEqual(rec2Width + rec1Width, rectangle2.width);
+                                Assert.AreEqual(x, rectangle2.x);
+                                Assert.AreEqual(y, rectangle2.y);
+                            }
+                            else if (y + rec2Height == rec1y + rec1Height)
+                            {
+                                Assert.AreEqual(rec1Height - rec2Height, rectangle1.height);
+                                Assert.AreEqual(rec1Width, rectangle1.width);
+                                Assert.AreEqual(rec1x, rectangle1.x);
+                                Assert.AreEqual(rec1y, rectangle1.x);
+
+                                Assert.AreEqual(rec2Height, rectangle2.height);
+                                Assert.AreEqual(rec2Width + rec1Width, rectangle2.width);
+                                Assert.AreEqual(x, rectangle2.x);
+                                Assert.AreEqual(y, rectangle2.y);
+                            }
+                            else Assert.Fail();
+                        } else
+                        {
+                            Assert.IsTrue( !((boardWidth / 4 == x) && (y == boardWidth / 2 || y + rectangle2.height == rectangle1.y + rectangle1.height)) );
+                        }
+                    }
+                }
+            }
+        }
 
 
         [TestMethod]

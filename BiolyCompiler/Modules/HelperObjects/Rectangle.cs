@@ -268,7 +268,7 @@ namespace BiolyCompiler.Modules
             }
         }
 
-        private bool SplitMerge(Board board)
+        public bool SplitMerge(Board board)
         {
             foreach (var adjacentRectangle in AdjacentRectangles) {
                 if (!adjacentRectangle.isEmpty) continue;
@@ -389,7 +389,7 @@ namespace BiolyCompiler.Modules
 
 
                 //Split matters, if a split is favored one way, and not the other.
-                bool doesSplitMatter = (ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment) && !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment)) ||
+                bool doesSplitMatter = (ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment) && !ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment)) ||
                                        (ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment) && !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment));
                 bool isAlreadyOptimallySplit = !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment);
                 if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);

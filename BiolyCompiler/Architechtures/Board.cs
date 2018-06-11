@@ -69,7 +69,7 @@ namespace BiolyCompiler.Architechtures
             //Else, it might be neccessary to "buffer" the module, by placing empty space around it, 
             //so that it doesn't block routing to other modules.
             if (bestFitRectangle != null){
-                PlaceModuleInRectangle(module, bestFitRectangle);
+                PlaceModuleInRectangle(module, bestFitRectangle, this);
                 return true;
             }
             else return PlaceBufferedModule(module, candidateBufferedRectangles);
@@ -211,7 +211,7 @@ namespace BiolyCompiler.Architechtures
             remainingUpperRectangle.splitRectangleInTwo(leftBufferingRectangle, remainingRightRectangle);
             EmptyRectangles.Add(leftBufferingRectangle);
 
-            PlaceModuleInRectangle(module, remainingRightRectangle);
+            PlaceModuleInRectangle(module, remainingRightRectangle, this);
             return true;
         }
 
@@ -365,14 +365,20 @@ namespace BiolyCompiler.Architechtures
             //ClearBoard(originalRectangle);
         }
 
-        public (Rectangle, Rectangle) PlaceModuleInRectangle(Module module, Rectangle bestFitRectangle)
+        public void PlaceModuleInRectangle(Module module, Rectangle bestFitRectangle, Board board)
         {
             EmptyRectangles.Remove(bestFitRectangle);
             UpdateGridWithModulePlacement(module, bestFitRectangle);            
             (Rectangle topRectangle, Rectangle rightRectangle) = bestFitRectangle.SplitIntoSmallerRectangles(module.Shape);
-            if (topRectangle != null) EmptyRectangles.Add(topRectangle);
-            if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
-            return (topRectangle, rightRectangle);
+            bool hasBeenMerged = false; //Extra step where we just try to merge the two new rectangles with their adjacent rectangles:
+            if (topRectangle != null) {
+                EmptyRectangles.Add(topRectangle);
+                hasBeenMerged = topRectangle.MergeWithOtherRectangles(board);
+            }
+            if (rightRectangle != null) {
+                EmptyRectangles.Add(rightRectangle);
+                if (!hasBeenMerged) rightRectangle.MergeWithOtherRectangles(board);
+            }
         }
 
         public void FastTemplateRemove(Module module)

@@ -22,6 +22,12 @@ namespace BiolyCompiler
             //                 .OrderBy(element => element.StartTime)
             #endif
             checkAdjacencyMatrixCorrectness(board);
+            checkIsBoardPerfectlyPartitioned(board);
+        }
+
+        private static void checkIsBoardPerfectlyPartitioned(Board board)
+        {
+            //throw new NotImplementedException();
         }
 
         public static void checkAdjacencyMatrixCorrectness(Board board)
