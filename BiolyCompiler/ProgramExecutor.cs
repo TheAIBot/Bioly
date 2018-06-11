@@ -149,7 +149,7 @@ namespace BiolyCompiler
 
                 if (ShowEmptyRectangles)
                 {
-                    List<(int, int, int, int)> closestBoardData = boards.MinBy(x => Math.Abs(x.Key - time))
+                    List<(int, int, int, int)> closestBoardData = boards.MinBy(x => x.Key - time < 0 ? int.MaxValue : x.Key - time)
                                                                         .Value.EmptyRectangles
                                                                         .Select(x => (x.x, x.y, x.width, x.height))
                                                                         .ToList();
@@ -157,11 +157,6 @@ namespace BiolyCompiler
                     {
                         var rectanglesToRemove = oldRectangles?.Except(closestBoardData);
                         rectanglesToRemove?.ForEach(x => removeAreaCommands.Add(new AreaCommand(x.Item1, x.Item2, x.Item3, x.Item4, CommandType.REMOVE_AREA, 0)));
-                        //var emptyRectanglesToRemove = oldBoard?.EmptyRectangles.Except(closestsBoard.Value.EmptyRectangles);
-                        //emptyRectanglesToRemove?.ForEach(x => removeAreaCommands.Add(new AreaCommand(x, CommandType.REMOVE_AREA, 0)));
-
-                        //var emptyRectanglesToShow = closestsBoard.Value.EmptyRectangles.Except(oldBoard?.EmptyRectangles ?? new HashSet<Rectangle>());
-                        //emptyRectanglesToShow.ForEach(x => showAreaCommands.Add(new AreaCommand(x, CommandType.SHOW_AREA, 0)));
 
                         var rectanglesToShow = closestBoardData.Except(oldRectangles ?? new List<(int, int, int, int)>());
                         rectanglesToShow.ForEach(x => showAreaCommands.Add(new AreaCommand(x.Item1, x.Item2, x.Item3, x.Item4, CommandType.SHOW_AREA, 0)));
