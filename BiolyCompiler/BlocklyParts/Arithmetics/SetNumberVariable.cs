@@ -7,6 +7,7 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Arithmetics
 {
@@ -24,9 +25,9 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string output = node.GetNodeWithAttributeValue(VARIABLE_FIELD_NAME).InnerText;
-            parserInfo.AddNumberVariable(output);
+            parserInfo.AddVariable(id, VariableType.NUMBER, output);
 
             VariableBlock operandBlock = null;
             XmlNode operandNode = node.GetInnerBlockNode(INPUT_VARIABLE_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block to define the variables value."));
@@ -50,13 +51,28 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override string ToXml()
         {
-            return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" + 
-                $"<field name=\"{VARIABLE_FIELD_NAME}\">{OriginalOutputVariable}</field>" +
+            return SetNumberVariable.ToXml(BlockID, OriginalOutputVariable, OperandBlock.ToXml(), null);
+        }
+
+        public static string ToXml(string id, string output, string attachedBlocks, string nextBlocks)
+        {
+            string xml =
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{id}\">" +
+                $"<field name=\"{VARIABLE_FIELD_NAME}\">{output}</field>" +
                 $"<value name=\"{INPUT_VARIABLE_FIELD_NAME}\">" +
-                    OperandBlock.ToXml() + 
-                "</value>" +
+                    attachedBlocks +
+                "</value>";
+            if (nextBlocks != null)
+            {
+                xml +=
+                "<next>" +
+                    nextBlocks +
+                "</next>";
+            }
+            xml +=
             "</block>";
+
+            return xml;
         }
 
         public override string ToString()

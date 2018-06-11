@@ -60,7 +60,7 @@ namespace BiolyViewer_Windows
 
         private void LoadFileToBrowser(string xml)
         {
-            string js = $"loadWorkspace('{xml}');";
+            string js = $"Blockly.mainWorkspace.clear();loadWorkspace('{xml}');";
             Browser.ExecuteScriptAsync(js);
         }
     }

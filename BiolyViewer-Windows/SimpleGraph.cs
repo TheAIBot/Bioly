@@ -17,7 +17,7 @@ namespace BiolyViewer_Windows
             string edges = "";
             Dictionary<DFG<Block>, string> dfgNames = CreateNodesAndEdgesForEachDFGInCDFG(cdfg, ref nodes, ref edges);
 
-            edges = CreateEdgesBetweenDFGs(cdfg, edges, dfgNames);
+            edges = CreateEdgesBetweenDFGs(cdfg.StartDFG, cdfg, edges, dfgNames, new List<(DFG<Block>, DFG<Block>)>(), new Stack<DFG<Block>>());
 
             nodes = "[" + nodes + "]";
             edges = "[" + edges + "]";
@@ -62,84 +62,137 @@ namespace BiolyViewer_Windows
                     }
                     else if (edgeNode.value is FluidBlock fluidBlock)
                     {
-                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable, null, fluidBlock.InputVariables.Single(x => x.FluidName == node.value.OutputVariable).ToString());
+                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable, null, fluidBlock.InputVariables.First(x => x.FluidName == node.value.OutputVariable).ToString());
                     }
                 }
+            }
+
+            nodes += CreateNode(dfgName + "-input", String.Empty, dfgName, "hidden");
+            nodes += CreateNode(dfgName + "-output", String.Empty, dfgName, "hidden");
+            foreach (var node in dfg.Nodes.Where(x => x.getIngoingEdges().Count == 0))
+            {
+                edges += CreateEdge(dfgName + "-input", node.value.OutputVariable, "haystack");
+            }
+            foreach (var node in dfg.Nodes.Where(x => x.getOutgoingEdges().Count == 0))
+            {
+                edges += CreateEdge(node.value.OutputVariable, dfgName + "-output", "haystack");
             }
 
             return (nodes, edges);
         }
 
-        private static string CreateEdgesBetweenDFGs(CDFG cdfg, string edges, Dictionary<DFG<Block>, string> dfgNames)
+        private static string CreateEdgesBetweenDFGs(DFG<Block> dfg, CDFG cdfg, string edges, Dictionary<DFG<Block>, string> dfgNames, List<(DFG<Block>, DFG<Block>)> edgesAlreadyCreated, Stack<DFG<Block>> nextDFGStack)
         {
-            foreach (var node in cdfg.Nodes)
+            var node = cdfg.Nodes.Single(x => x.dfg == dfg);
+            IControlBlock control = node.control;
+
+            //edge from control to after control
+            if (control == null && nextDFGStack.Count > 0)
             {
-                IControlBlock control = node.control;
-                if (control is If)
+                DFG<Block> nextDFG = nextDFGStack.Peek();
+                edges += CreateEdge(dfgNames[dfg], dfgNames[nextDFG]);
+                edges += CreateHiddenRankEdgesBetweenDFGs(dfg, nextDFG, dfgNames);
+            }
+            else if (control is If)
+            {
+                foreach (Conditional conditional in (control as If).IfStatements)
                 {
-                    foreach (Conditional conditional in (control as If).IfStatements)
+                    if (conditional.NextDFG != null)
                     {
-                        edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                        nextDFGStack.Push(conditional.NextDFG);
                     }
+                    edges = CreateEdgesBetweenDFGs(conditional.GuardedDFG, cdfg, edges, dfgNames, edgesAlreadyCreated, nextDFGStack);
+                    if (conditional.NextDFG != null)
+                    {
+                        nextDFGStack.Pop();
+                        edges = CreateEdgesBetweenDFGs(conditional.NextDFG, cdfg, edges, dfgNames, edgesAlreadyCreated, nextDFGStack);
+                    }
+                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional, edgesAlreadyCreated, nextDFGStack);
                 }
-                else if (control is Repeat)
+            }
+            else if (control is Repeat)
+            {
+                Conditional conditional = (control as Repeat).Cond;
+                if (conditional.NextDFG != null)
                 {
-                    Conditional conditional = (control as Repeat).Cond;
-                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                    nextDFGStack.Push(conditional.NextDFG);
                 }
-                else if (control is Direct)
+                edges = CreateEdgesBetweenDFGs(conditional.GuardedDFG, cdfg, edges, dfgNames, edgesAlreadyCreated, nextDFGStack);
+                if (conditional.NextDFG != null)
                 {
-                    Conditional conditional = (control as Direct).Cond;
-                    edges = CreateConditionalEdges(edges, dfgNames, node, conditional);
+                    nextDFGStack.Pop();
+                    edges = CreateEdgesBetweenDFGs(conditional.NextDFG, cdfg, edges, dfgNames, edgesAlreadyCreated, nextDFGStack);
                 }
-                else if (control != null)
+                edges = CreateConditionalEdges(edges, dfgNames, node, conditional, edgesAlreadyCreated, nextDFGStack);
+            }
+            else if (control is Direct)
+            {
+                Conditional conditional = (control as Direct).Cond;
+                if (conditional.NextDFG != null)
                 {
-                    throw new Exception("Unknown Conditional type.");
+                    edges = CreateEdgesBetweenDFGs(conditional.NextDFG, cdfg, edges, dfgNames, edgesAlreadyCreated, nextDFGStack);
                 }
+                edges = CreateConditionalEdges(edges, dfgNames, node, conditional, edgesAlreadyCreated, nextDFGStack);
+            }
+            else if (control is While)
+            {
+                Conditional conditional = (control as While).Cond;
+                if (conditional.NextDFG != null)
+                {
+                    nextDFGStack.Push(conditional.NextDFG);
+                }
+                edges = CreateEdgesBetweenDFGs(conditional.GuardedDFG, cdfg, edges, dfgNames, edgesAlreadyCreated, nextDFGStack);
+                if (conditional.NextDFG != null)
+                {
+                    nextDFGStack.Pop();
+                    edges = CreateEdgesBetweenDFGs(conditional.NextDFG, cdfg, edges, dfgNames, edgesAlreadyCreated, nextDFGStack);
+                }
+                edges = CreateConditionalEdges(edges, dfgNames, node, conditional, edgesAlreadyCreated, nextDFGStack);
+            }
+            else if (control != null)
+            {
+                throw new Exception("Unknown Conditional type.");
             }
 
             return edges;
         }
 
-        private static string CreateConditionalEdges(string edges, Dictionary<DFG<Block>, string> dfgNames, (IControlBlock control, DFG<Block> dfg) node, Conditional conditional)
+        private static string CreateConditionalEdges(string edges, Dictionary<DFG<Block>, string> dfgNames, (IControlBlock control, DFG<Block> dfg) node, Conditional conditional, List<(DFG<Block>, DFG<Block>)> edgesAlreadyCreated, Stack<DFG<Block>> nextDFGStack)
         {
             //edge from before if to into if
             if (conditional.GuardedDFG != null)
             {
                 edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.GuardedDFG]);
-                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.GuardedDFG);
+                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.GuardedDFG, dfgNames);
             }
-            if (conditional.NextDFG != null)
+            if (conditional.NextDFG != null && !edgesAlreadyCreated.Any(x => x.Item1 == node.dfg && x.Item2 == conditional.NextDFG))
             {
                 //edge from before if to after if
                 edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.NextDFG]);
-                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.NextDFG);
-                //edge from inside if to after if
-                if (conditional.GuardedDFG != null)
+                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.NextDFG, dfgNames);
+                edgesAlreadyCreated.Add((node.dfg, conditional.NextDFG));
+            }
+            //edge from control to after control
+            if (conditional.NextDFG == null && nextDFGStack.Count > 0)
+            {
+                DFG<Block> nextDFG = nextDFGStack.Peek();
+                if (!edgesAlreadyCreated.Any(x => x.Item1 == node.dfg && x.Item2 == nextDFG))
                 {
-                    edges += CreateEdge(dfgNames[conditional.GuardedDFG], dfgNames[conditional.NextDFG]);
-                    edges += CreateHiddenRankEdgesBetweenDFGs(conditional.GuardedDFG, conditional.NextDFG);
+                    edges += CreateEdge(dfgNames[node.dfg], dfgNames[nextDFG]);
+                    edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, nextDFG, dfgNames);
+                    edgesAlreadyCreated.Add((node.dfg, nextDFG));
                 }
             }
 
             return edges;
         }
 
-        private static string CreateHiddenRankEdgesBetweenDFGs(DFG<Block> source, DFG<Block> target)
+        private static string CreateHiddenRankEdgesBetweenDFGs(DFG<Block> source, DFG<Block> target, Dictionary<DFG<Block>, string> dfgNames)
         {
-            string edges = "";
-            source.Nodes.Where(x => x.value is VariableBlock)
-                        .Where(x => source.Nodes.Where(k => k.value is VariableBlock).All(y => !((VariableBlock)y.value).InputVariables.Contains(x.value.OutputVariable)))
-                        .ToList()
-                        .ForEach(x => target.Input.ForEach(y => edges+= CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
-            source.Nodes.Where(x => x.value is FluidBlock)
-                        .Where(x => source.Nodes.Where(k => k.value is FluidBlock).All(y => !((FluidBlock)y.value).InputVariables.Any(z => z.FluidName == x.value.OutputVariable)))
-                        .ToList()
-                        .ForEach(x => target.Input.ForEach(y => edges += CreateEdge(x.value.OutputVariable, y.value.OutputVariable, "haystack")));
-            return edges;
+            return CreateEdge(dfgNames[source] + "-output", dfgNames[target] + "-input");
         }
 
-        private static string CreateNode(string id, string label, string parent = null)
+        private static string CreateNode(string id, string label, string parent = null, string classTarget = null)
         {
             StringBuilder sBuilder = new StringBuilder();
             sBuilder.Append("{ data: { id: '");
@@ -151,7 +204,14 @@ namespace BiolyViewer_Windows
                 sBuilder.Append("', parent: '");
                 sBuilder.Append(parent);
             }
-            sBuilder.Append("' } },");
+            sBuilder.Append("' }");
+            if (classTarget != null)
+            {
+                sBuilder.Append(", classes: '");
+                sBuilder.Append(classTarget);
+                sBuilder.Append("'");
+            }
+            sBuilder.Append(" },");
 
             return sBuilder.ToString();
         }

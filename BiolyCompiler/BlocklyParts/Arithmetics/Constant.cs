@@ -3,6 +3,7 @@ using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Xml;
 
@@ -16,12 +17,12 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public Constant(XmlNode node, string id, bool canBeScheduled) : base(false, null, null, id, canBeScheduled)
         {
-            Value = node.TextToFloat(id);
+            this.Value = node.TextToFloat(id);
         }
 
         public static Block Parse(XmlNode node, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             return new Constant(node, id, canBeScheduled);
         }
 
@@ -33,8 +34,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public override string ToXml()
         {
             return
-            $"<block type=\"{XML_TYPE_NAME}\" id=\"{IDFieldName}\">" +
-                $"<field name=\"{NumberFieldName}\">{Value}</field>" +
+            $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
+                $"<field name=\"{NumberFieldName}\">{Value.ToString(CultureInfo.InvariantCulture)}</field>" +
             "</block>";
         }
 

@@ -24,8 +24,9 @@ namespace BiolyCompiler.Routing
 
         public int getEndTime()
         {
+            int temp = startTime;
             //Minus 1 to route.Count, as the initial position of the drop is included in the route.
-            return startTime + (route.Count - 1) * Schedule.DROP_MOVEMENT_TIME;
+            return ToCommands(ref temp).Last().Time;
         }
 
         public override string ToString()
@@ -49,11 +50,23 @@ namespace BiolyCompiler.Routing
         public List<Command> ToCommands(ref int time)
         {
             List<Command> commands = new List<Command>();
-            for (int i = 1; i < route.Count; i++)
+            if (route.Count > 0)
             {
-                commands.Add(new Command(route[i].x, route[i].y, CommandType.ELECTRODE_ON, time));
+                RoutingInformation toTurnOff = route[0];
+                commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_ON, time));
                 time++;
-                commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
+
+                for (int i = 1; i < route.Count; i++)
+                {
+                    commands.Add(new Command(route[i].x, route[i].y, CommandType.ELECTRODE_ON, time));
+                    time++;
+                    commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
+                    commands.Add(new Command(route[i].x, route[i].y, CommandType.ELECTRODE_ON, time));
+                    time++;
+                    toTurnOff = route[i];
+                }
+
+                commands.Add(new Command(toTurnOff.x, toTurnOff.y, CommandType.ELECTRODE_OFF, time));
             }
 
             return commands;

@@ -25,13 +25,22 @@ function startBlockly(programs)
 	workspace.addChangeListener(onWorkspaceChanged);
 }
 
-var lastUpdateTime = new Date();
+var alreadyWaitingForUpdate = false
 function onWorkspaceChanged(event)
 {
-	const currentTime = new Date();
-	//if(lastUpdateTime.getMilliseconds() + 50 < currentTime.getMilliseconds())
-	//{
-		webUpdater.update(getWorkspaceAsXml());
-	//}
-	lastUpdateTime = new Date();
+	if (alreadyWaitingForUpdate)
+	{
+		return;
+	}
+	
+	if (typeof(webUpdater) != "undefined")
+	{
+		alreadyWaitingForUpdate = true;
+		new Promise(async resolve => 
+		{
+			await webUpdater.update(getWorkspaceAsXml());
+			alreadyWaitingForUpdate = false;
+		});
+
+	}
 }

@@ -46,7 +46,29 @@ Blockly.Blocks["inputDeclaration"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 180,
+			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["dropletDeclaration"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new Droplet",
+			"args0": [
+			],
+			"message1": "fluid name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "dropletName",
+					"variable": "input_fluid_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 180,
 			"tooltip": ""
 		});
 	}
@@ -68,7 +90,51 @@ Blockly.Blocks["outputDeclaration"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 280,
+			"colour": 180,
+			"tooltip": "",
+		});
+	}
+};
+
+Blockly.Blocks["wasteDeclaration"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new waste",
+			"args0": [
+			],			
+			"message1": "module name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 180,
+			"tooltip": "",
+		});
+	}
+};
+
+Blockly.Blocks["sensorDeclaration"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new sensor",
+			"args0": [
+			],			
+			"message1": "module name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 180,
 			"tooltip": "",
 		});
 	}
@@ -90,13 +156,13 @@ Blockly.Blocks["heaterDeclaration"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 280,
+			"colour": 180,
 			"tooltip": "",
 		});
 	}
 };
 
-Blockly.Blocks["outputUseage"] = {
+Blockly.Blocks["outputUsage"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "output",
@@ -117,14 +183,73 @@ Blockly.Blocks["outputUseage"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 280,
-			"tooltip": "",
-			"inputsInline": false
+			"colour": 150,
+			"tooltip": ""
 		});
 	}
 };
 
-Blockly.Blocks["heaterUseage"] = {
+Blockly.Blocks["wasteUsage"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "waste",
+			"args0": [
+			],			
+			"message1": "target %1 %2",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				},
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": ["InputType", "FluidType"]
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 150,
+			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["sensorUsage"] = {
+	init: function() 
+	{
+		this.jsonInit({
+			"message0": "sensor",
+			"args0": [
+			],	
+			"message1": "target %1 %2",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "moduleName",
+					"variable": "module_name"
+				},
+				{
+					"type": "input_value",
+					"name": "inputFluid",
+					"check": "FluidType"
+				}
+			],
+			"output": "Number",
+			"colour": 240,
+			"tooltip": ""
+		});
+		const sensorBlock = this;
+		setTimeout(function()
+		{
+			const blockSvg = sensorBlock.getSvgRoot().getElementsByClassName("blocklyPath")[0];
+			blockSvg.setAttribute("fill", "url('#sensorGradient')");
+		}, 50);
+	}
+};
+
+Blockly.Blocks["heaterUsage"] = {
 	init: function() {
 		this.jsonInit({
 			"message0": "heater %1",
@@ -160,7 +285,7 @@ Blockly.Blocks["heaterUseage"] = {
 				}
 			],
 			"output": "FluidOperator",
-			"colour": 80,
+			"colour": 150,
 			"tooltip": ""
 		});
 	}
@@ -187,7 +312,7 @@ Blockly.Blocks["fluid"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 80,
+			"colour": 150,
 			"tooltip": ""
 		});
 	}
@@ -220,7 +345,7 @@ Blockly.Blocks["getFluid"] = {
 				}
 			],
 			"output": "FluidType",
-			"colour": 80,
+			"colour": 150,
 			"tooltip": ""
 		});
 	}
@@ -238,7 +363,7 @@ Blockly.Blocks["getDropletCount"] = {
 				}
 			],
 			"output": "Number",
-			"colour": 80,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -267,49 +392,8 @@ Blockly.Blocks["mixer"] = {
 				}
 			],
 			"output": "FluidOperator",
-			"colour": 120,
+			"colour": 150,
 			"tooltip": ""
-		});
-	}
-};
-
-Blockly.Blocks["waste"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "waste %1",
-			"args0": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],
-			"previousStatement": null,
-			"nextStatement": null,
-			"colour": 240,
-			"tooltip": "",
-			"inputsInline": false
-		});
-	}
-};
-
-
-
-Blockly.Blocks["sensor"] = {
-	init: function() {
-		this.jsonInit({
-			"message0": "sensor %1",
-			"args0": [
-				{
-					"type": "input_value",
-					"name": "inputFluid",
-					"check": ["InputType", "FluidType"]
-				}
-			],
-			"output": "Number",
-			"colour": 320,
-			"tooltip": "",
-			"inputsInline": false
 		});
 	}
 };
@@ -338,7 +422,7 @@ Blockly.Blocks["fluidArray"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 120,
 			"tooltip": ""
 		});
 	}
@@ -372,7 +456,7 @@ Blockly.Blocks["setFluidArrayIndex"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 120,
 			"tooltip": ""
 		});
 	}
@@ -413,7 +497,7 @@ Blockly.Blocks["getFluidArrayIndex"] = {
 				}
 			],
 			"output": "FluidType",
-			"colour": 40,
+			"colour": 120,
 			"tooltip": ""
 		});
 	}
@@ -421,7 +505,7 @@ Blockly.Blocks["getFluidArrayIndex"] = {
 Blockly.Blocks["getArrayLength"] = {
 	init: function() {
 		this.jsonInit({
-			"message0": "array length of %1",
+			"message0": "fluid array length %1",
 			"args0": [
 				{
 					"type": "field_variable",
@@ -430,7 +514,7 @@ Blockly.Blocks["getArrayLength"] = {
 				}
 			],
 			"output": "Number",
-			"colour": 40,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -439,7 +523,7 @@ Blockly.Blocks["getArrayLength"] = {
 Blockly.Blocks["getNumberVariable"] = {
 	init: function() {
 		this.jsonInit({
-			"message0": "get value of %1",
+			"message0": "value of %1",
 			"args0": [
 				{
 					"type": "field_variable",
@@ -448,7 +532,7 @@ Blockly.Blocks["getNumberVariable"] = {
 				}
 			],
 			"output": "Number",
-			"colour": 40,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -471,7 +555,7 @@ Blockly.Blocks["setNumberVariable"] = {
 			],
 			"previousStatement": null,
 			"nextStatement": null,
-			"colour": 40,
+			"colour": 240,
 			"tooltip": ""
 		});
 	}
@@ -481,9 +565,10 @@ Blockly.Blocks["setNumberVariable"] = {
 //	name,
 //	inputs = [],
 //	outputs = [],
+//	variables = [],
 //	programXml
 //}
-var inlineProgramPrograms = [{name: "program name", inputs: [], outputs: []}];
+var inlineProgramPrograms = [{name: "program name", inputs: [], outputs: [], variables: []}];
 
 Blockly.Blocks["inlineProgram"] = 
 {
@@ -518,9 +603,10 @@ Blockly.Blocks["inlineProgram"] =
 		if(this.program)
 		{
 			const container = document.createElement('mutation');
-			container.setAttribute("program_name", this.program.name);
-			container.setAttribute("input_count" , this.program.inputs.length);
-			container.setAttribute("output_count", this.program.outputs.length);
+			container.setAttribute("program_name"  , this.program.name);
+			container.setAttribute("input_count"   , this.program.inputs.length);
+			container.setAttribute("output_count"  , this.program.outputs.length);
+			container.setAttribute("variable_count", this.program.variables.length);
 			return container;
 		}
 		
@@ -545,6 +631,14 @@ Blockly.Blocks["inlineProgram"] =
 		while(this.getInput("outputer-" + outputCounter))
 		{
 			this.removeInput("outputer-" + outputCounter);
+			outputCounter++;
+		}
+		
+		var variableCounter = 0;
+		while(this.getInput("variable-" + variableCounter))
+		{
+			this.removeInput("variable-" + variableCounter);
+			variableCounter++;
 		}
 	
 		//find the new program
@@ -561,11 +655,17 @@ Blockly.Blocks["inlineProgram"] =
 		
 		if(this.program != null)
 		{
-			//add programs inputs and outputs
+			//add programs inputs, outputs, variables
 			for(var i = 0; i < this.program.inputs.length; i++)
 			{
 				const inputName = this.program.inputs[i];
 				this.appendValueInput("input-" + i).setCheck("FluidType").appendField("input " + inputName);
+			}
+			
+			for(var i = 0; i < this.program.variables.length; i++)
+			{
+				const variableName = this.program.variables[i];
+				this.appendValueInput("variable-" + i).setCheck("Number").appendField("variable " + variableName);
 			}
 			
 			for(var i = 0; i < this.program.outputs.length; i++)
@@ -615,7 +715,118 @@ Blockly.Blocks["union"] = {
 				}
 			],
 			"output": "FluidOperator",
-			"colour": 120,
+			"colour": 150,
+			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["importNumberVariable"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "import variable",
+			"args0": [
+			],
+			"message1": "import as %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "variableName",
+					"variable": "variable_name"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 240,
+			"tooltip": ""
+		});
+	}
+};
+
+Blockly.Blocks["numberArray"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "new number array",
+			"args0": [
+			],
+			"message1": "name %1",
+			"args1": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "number_array_name"
+				}
+			],
+			"message2": "length %1",
+			"args2": [
+				{
+					"type": "input_value",
+					"name": "arrayLength",
+					"check": "Number"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 280,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["setNumberArrayIndex"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "in number array %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "number_array_name"
+				}
+			],
+			"message1": "set index %1",
+			"args1": [
+				{
+					"type": "input_value",
+					"name": "index",
+					"check": ["Number"]
+				}
+			],
+			"message2": "to %1",
+			"args2": [
+				{
+					"type": "input_value",
+					"name": "inputNumber",
+					"check": "Number"
+				}
+			],
+			"previousStatement": null,
+			"nextStatement": null,
+			"colour": 280,
+			"tooltip": ""
+		});
+	}
+};
+Blockly.Blocks["getNumberArrayIndex"] = {
+	init: function() {
+		this.jsonInit({
+			"message0": "in number array %1",
+			"args0": [
+				{
+					"type": "field_variable",
+					"name": "arrayName",
+					"variable": "number_array_name"
+				}
+			],
+			"message1": "get index %1",
+			"args1": [
+				{
+					"type": "input_value",
+					"name": "index",
+					"check": ["Number"]
+				}
+			],
+			"output": "Number",
+			"colour": 280,
 			"tooltip": ""
 		});
 	}

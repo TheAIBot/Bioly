@@ -19,8 +19,8 @@ namespace BiolyCompiler.BlocklyParts
         //first symbol is important because it makes it an invalid name to parse
         //but that's okay here because this is after the parser step
         public const string DEFAULT_NAME = "@anonymous var";
-        public const string TypeFieldName = "type";
-        public const string IDFieldName = "id";
+        public const string TYPE_FIELD_NAME = "type";
+        public const string ID_FIELD_NAME = "id";
 
         //For the scheduling:
         public bool IsDone = false;

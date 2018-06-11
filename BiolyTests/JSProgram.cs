@@ -18,7 +18,6 @@ namespace BiolyTests
     {
         StringBuilder Builder = new StringBuilder();
         int nameID = 0;
-        //List<string> Segments = new List<string>();
         Dictionary<string, List<string>> Scopes = new Dictionary<string, List<string>>();
         List<string> CurrentScope = null;
         public const string DEFAULT_SCOPE_NAME = "default scope";
@@ -88,7 +87,7 @@ namespace BiolyTests
         {
             string a = GetUniqueName();
             AddBlock(a, HeaterDeclaration.XML_TYPE_NAME);
-            SetField(a, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
+            SetField(a, HeaterUsage.MODULE_NAME_FIELD_NAME, moduleName);
 
             CurrentScope.Add(a);
             return a;
@@ -131,14 +130,14 @@ namespace BiolyTests
             string b = GetUniqueName();
             string c = GetUniqueName();
             AddBlock(a, Fluid.XML_TYPE_NAME);
-            AddBlock(b, HeaterUseage.XML_TYPE_NAME);
+            AddBlock(b, HeaterUsage.XML_TYPE_NAME);
             AddBasicInputBlock(c, inputFluidName, fluidAmount, useAllFluid);
             SetField(a, Fluid.OUTPUT_FLUID_FIELD_NAME, outputName);
-            SetField(b, HeaterUseage.MODULE_NAME_FIELD_NAME, moduleName);
-            SetField(b, HeaterUseage.TEMPERATURE_FIELD_NAME, temperature);
-            SetField(b, HeaterUseage.TIME_FIELD_NAME, time);
+            SetField(b, HeaterUsage.MODULE_NAME_FIELD_NAME, moduleName);
+            SetField(b, HeaterUsage.TEMPERATURE_FIELD_NAME, temperature);
+            SetField(b, HeaterUsage.TIME_FIELD_NAME, time);
             AddConnection(a, Fluid.INPUT_FLUID_FIELD_NAME, b);
-            AddConnection(b, HeaterUseage.INPUT_FLUID_FIELD_NAME, c);
+            AddConnection(b, HeaterUsage.INPUT_FLUID_FIELD_NAME, c);
 
             CurrentScope.Add(a);
             return a;
@@ -211,10 +210,10 @@ namespace BiolyTests
         {
             string a = GetUniqueName();
             string b = GetUniqueName();
-            AddBlock(a, OutputUseage.XML_TYPE_NAME);
-            SetField(a, OutputUseage.MODULE_NAME_FIELD_NAME, moduleName);
+            AddBlock(a, OutputUsage.XML_TYPE_NAME);
+            SetField(a, OutputUsage.MODULE_NAME_FIELD_NAME, moduleName);
             AddBasicInputBlock(b, fluidName, amount, useAllFluid);
-            AddConnection(a, OutputUseage.INPUT_FLUID_FIELD_NAME, b);
+            AddConnection(a, OutputUsage.INPUT_FLUID_FIELD_NAME, b);
 
             CurrentScope.Add(a);
             return a;
@@ -239,6 +238,56 @@ namespace BiolyTests
             Builder.Append($"{a}.getInput(\"{Repeat.DoBlockFieldName}\").connection.connect({guardedBlock}.previousConnection);");
 
             CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddWhileSegment(string conditionalBlock, string guardedBlock)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, While.XML_TYPE_NAME);
+            AddConnection(a, While.CONDITIONAL_BLOCK_FIELD_NAME, conditionalBlock);
+            Builder.Append($"{a}.getInput(\"{While.DO_BLOCK_FIELD_NAME}\").connection.connect({guardedBlock}.previousConnection);");
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddSetNumberSegment(string variableName, string inputBlockName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, SetNumberVariable.XML_TYPE_NAME);
+            SetField(a, SetNumberVariable.VARIABLE_FIELD_NAME, variableName);
+            AddConnection(a, SetNumberVariable.INPUT_VARIABLE_FIELD_NAME, inputBlockName);
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddGetNumberBlock(string variableName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, GetNumberVariable.XML_TYPE_NAME);
+            SetField(a, GetNumberVariable.VARIABLE_FIELD_NAME, variableName);
+
+            return a;
+        }
+
+        public string AddRoundBlock(RoundOPTypes roundType, string inputBlockName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, RoundOP.XML_TYPE_NAME);
+            SetField(a, RoundOP.OPTypeFieldName, RoundOP.RoundOpTypeToString(roundType));
+            AddConnection(a, RoundOP.NUMBER_FIELD_NAME, inputBlockName);
+
+            return a;
+        }
+
+        public string AddImportVariableSegment(string variableName)
+        {
+            string a = GetUniqueName();
+            AddBlock(a, ImportVariable.XML_TYPE_NAME);
+            SetField(a, ImportVariable.VARIABLE_FIELD_NAME, variableName);
+
             return a;
         }
 
@@ -342,11 +391,6 @@ namespace BiolyTests
 
         public override string ToString()
         {
-            //if (Render)
-            //{
-            //    Blocks.Reverse();
-            //    Blocks.ForEach(x => RenderBlock(x));
-            //}
             foreach (List<string> segments in Scopes.Values)
             {
                 for (int i = 1; i < segments.Count; i++)

@@ -20,9 +20,13 @@ const RIGHT_NEIGHBOR_INDEX = 1;
 const ABOVE_NEIGHBOR_INDEX = 2;
 const BELOW_NEIGHBOR_INDEX = 3;
 
-const ELECTRODE_SIZE_IN_CM = 1;
-const DROP_DISTANCE_PER_SEC_IN_CM = 600;
-const UPDATES_PER_SECOND = 60;
+var ELECTRODE_SIZE_IN_CM = 1;
+var DROP_DISTANCE_PER_SEC_IN_CM = 600;
+var DEFAULT_DROP_SIZE_IN_CM = 1;
+var STRICT_MODE_ENABLED = true;
+var didGraphicsChange = false;
+var runningSimulatorIntervalID = null;
+var UPDATES_PER_SECOND = 60;
 
 //setel 1 2 3 4 5 6 7  8 9 10
 //clrel 1 2 3 4 5  6 7 8 9 10
@@ -33,6 +37,12 @@ const UPDATES_PER_SECOND = 60;
 
 function startSimulator(width, height, inputs, outputs)
 {
+	ELECTRODE_SIZE_IN_CM        = getElectrodeSizeSetting();
+	DROP_DISTANCE_PER_SEC_IN_CM = getDropletSpeedSetting();
+	DEFAULT_DROP_SIZE_IN_CM     = getDropletSizeSetting();
+	STRICT_MODE_ENABLED         = getUseSimulatorStrictModeSetting();
+	UPDATES_PER_SECOND          = getSimulatorUPSSetting();
+	
 	newCommands = [];
 	errorMessages = [];
 	
@@ -50,8 +60,13 @@ function startSimulator(width, height, inputs, outputs)
 	drops = [];
 	areas = [];
 	
-	newestVersion = newestVersion + 1;
-	updateLoop(newestVersion);
+	if (runningSimulatorIntervalID != null)
+	{
+		clearInterval(runningSimulatorIntervalID);
+	}
+	
+	runningSimulatorIntervalID = setInterval(updateLoop, 1000 / UPDATES_PER_SECOND);
+	didGraphicsChange = true;
 }
 
 function prepareElectrodes(width, height, electrodePositions)
@@ -124,13 +139,8 @@ function addCommand(command)
 	newCommands.push(command);
 }
 
-function updateLoop(version)
-{
-	if(newestVersion != version)
-	{
-		return;
-	}
-	
+function updateLoop()
+{	
 	if(newCommands.length > 0)
 	{
 		executeCommand(newCommands[0]);
@@ -138,30 +148,41 @@ function updateLoop(version)
 	}
 	try
 	{
-	spawnInputDrops();
-	splitDrops();
-	removeDrops();
-	updateDropPositions();
-	mergeDrops();
+		spawnInputDrops();
+		splitDrops();
+		removeDrops();
+		updateDropPositions();
+		mergeDrops();
 	}
-	catch(err)
+	catch(error)
 	{
-		console.log(err);
-		updateDropData(drops);
-		updateAreaData(areas);
-		render(drops.length, areas.length);
+		console.log(error);
+		clearInterval(runningSimulatorIntervalID);
 		return;
 	}
-	
-	updateDropData(drops);
-	updateAreaData(areas);
-	render(drops.length, areas.length);
-	
-	window.requestAnimFrame(function()
-	{
-		updateLoop(version);
-	});
 }
+
+function updateGraphics()
+{	
+	if (didGraphicsChange)
+	{
+		didGraphicsChange = false;
+		
+		try
+		{
+			updateDropData(drops);
+			updateAreaData(areas);
+			render(drops.length, areas.length);
+		}
+		catch(error) 
+		{
+			console.log(error);
+		}
+	}
+	
+	window.requestAnimFrame(updateGraphics);
+}
+window.requestAnimFrame(updateGraphics);
 
 function executeCommand(command)
 {
@@ -174,6 +195,7 @@ function executeCommand(command)
 			let number = parseInt(splittedCommand[i]);
 			turnElectrodeOn(number);
 		}
+		didGraphicsChange = true;
 	}
 	else if(commandType == "clrel")
 	{
@@ -182,6 +204,7 @@ function executeCommand(command)
 			let number = parseInt(splittedCommand[i]);
 			turnElectrodeOff(number);
 		}
+		didGraphicsChange = true;
 	}
 	else if(commandType == "clra")
 	{
@@ -189,6 +212,7 @@ function executeCommand(command)
 		{
 			turnElectrodeOff(i);
 		}
+		didGraphicsChange = true;
 	}
 	else if(commandType == "show_area")
 	{
@@ -201,11 +225,13 @@ function executeCommand(command)
 		const g      = parseFloat(splittedCommand[7]);
 		const b      = parseFloat(splittedCommand[8]);
 		addArea(id, x, y, width, height, r, b, g);
+		didGraphicsChange = true;
 	}
 	else if(commandType == "remove_area")
 	{
 		const id = splittedCommand[1];
 		removeArea(id);
+		didGraphicsChange = true;
 	}
 	else
 	{
@@ -282,6 +308,7 @@ function spawnInputDrops()
 				{
 					spawnDrop(neighbors[k].position, 1, input.color);
 					input.canSpawn[k] = false;
+					didGraphicsChange = true;
 				}
 			}
 			else
@@ -297,15 +324,42 @@ function spawnInputDrops()
 	}
 }
 
-function spawnDrop(position, amount, color)
+function spawnDrop(position, amount, hue)
 {
 	const newDrop = {};
 	newDrop.position = vec2(position[0], position[1]);
 	newDrop.amount = amount;
 	newDrop.size = getDropSize(newDrop.amount);
-	newDrop.color = color;
+	newDrop.color = HSVtoRGB(hue, 0.45, 0.65, 0.5);
+	newDrop.hue = hue;
 	
 	drops.push(newDrop);
+}
+
+//derived from https://stackoverflow.com/a/17243070
+function HSVtoRGB(h, s, v, a)
+{	
+    let i = Math.floor(h * 6);
+    let f = h * 6 - i;
+    let p = v * (1 - s);
+    let q = v * (1 - f * s);
+    let t = v * (1 - (1 - f) * s);
+	
+    switch (i % 6)
+	{
+        case 0:
+			return vec4(v, t, p, a);
+        case 1:
+			return vec4(q, v, p, a);
+        case 2:
+			return vec4(p, v, t, a);
+        case 3:
+			return vec4(p, q, v, a);
+        case 4:
+			return vec4(t, p, v, a);
+        case 5:
+			return vec4(v, p, q, a);
+    }
 }
 
 function splitDrops()
@@ -317,7 +371,7 @@ function splitDrops()
 		const drop = drops[i];
 		const electrode = getClosestElectrode(drop.position);
 		
-		if (electrode.isOn)
+		if (STRICT_MODE_ENABLED && electrode.isOn)
 		{
 			continue;
 		}
@@ -339,17 +393,18 @@ function splitDrops()
 		{
 			if (drop.amount <= 1)
 			{
-				throw "Trying to split a drop that only has " + drop.amount + " drops in it";
+				throw "Trying to split a drop that only has " + drop.amount + " drops in it. Atleast 2 drops woth of fluid is required before a drop can be splitted";
 			}
 			
 			const electrodeA = horizontalSplit ? leftElectrode  : aboveElectrode;
 			const electrodeB = horizontalSplit ? rightElectrode : belowElectrode;
 			
-			spawnDrop(electrodeA.position, drop.amount / 2, drop.color);
-			spawnDrop(electrodeB.position, drop.amount / 2, drop.color);
+			spawnDrop(electrodeA.position, drop.amount / 2, drop.hue);
+			spawnDrop(electrodeB.position, drop.amount / 2, drop.hue);
 			
 			//delete drop that was splitted
 			drops.splice(i, 1);
+			didGraphicsChange = true;
 		}
 	}
 }
@@ -361,7 +416,7 @@ function isElectrodeOn(electrode)
 
 function getDropSize(amount)
 {
-	return Math.sqrt(amount);
+	return Math.sqrt(amount) * (DEFAULT_DROP_SIZE_IN_CM / ELECTRODE_SIZE_IN_CM);
 }
 
 function getClosestElectrode(position)
@@ -403,6 +458,7 @@ function removeDrops()
 			{
 				drops.splice(dropIndex, 1);
 				dropsRemovedCount++;
+				didGraphicsChange = true;
 			}
 		}
 		
@@ -427,13 +483,30 @@ function updateDropPositions()
 	for(var i = 0; i < drops.length; i++)
 	{
 		const drop = drops[i];
-		const nearbyDistance = electrodeSize * 2;//don't do this for now * drop.size;
-		const nearbyElectrode = getSingleNearbyOnElectrode(drop.position, nearbyDistance);
+		const nearbyDistance = electrodeSize * (drop.size + (ratioForSpace * 1.1));
+		const nearbyElectrodes = getNearbyOnElectrodes(drop.position, nearbyDistance);
 		
-		if (nearbyElectrode)
+		if (STRICT_MODE_ENABLED && nearbyElectrodes.length > 1)
 		{
-			let dx = nearbyElectrode.position[0] - drop.position[0];
-			let dy = nearbyElectrode.position[1] - drop.position[1];
+			throw "Two or more electrodes are turned on near a drop";
+		}
+		
+		if (nearbyElectrodes.length > 0)
+		{
+			let centerX = 0;
+			let centerY = 0;
+			for(var k = 0; k < nearbyElectrodes.length; k++)
+			{
+				const electrode = nearbyElectrodes[k];
+				centerX += electrode.position[0];
+				centerY += electrode.position[1];
+			}
+			
+			centerX /= nearbyElectrodes.length;
+			centerY /= nearbyElectrodes.length;
+			
+			let dx = centerX - drop.position[0];
+			let dy = centerY - drop.position[1];
 			const dVectorLength = Math.sqrt(dx * dx + dy * dy);
 			
 			if (dVectorLength > distancePerUpdate)
@@ -444,14 +517,18 @@ function updateDropPositions()
 			
 			drop.position[0] += dx;
 			drop.position[1] += dy;
+			
+			if (dx != 0 || dy != 0)
+			{
+				didGraphicsChange = true;
+			}
 		}
-		
 	}
 }
 
-function getSingleNearbyOnElectrode(position, nearbyDistance)
+function getNearbyOnElectrodes(position, nearbyDistance)
 {
-	let nearbyElectrode = null;
+	let nearbyElectrodes = [];
 	for(var i = 0; i < electrodes.length; i++)
 	{
 		const electrode = electrodes[i];
@@ -461,25 +538,18 @@ function getSingleNearbyOnElectrode(position, nearbyDistance)
 			const distance = distanceAB(position, electrode.position);
 			if (distance <= nearbyDistance)
 			{
-				if (nearbyElectrode == null)
-				{
-					nearbyElectrode = electrode;	
-				}
-				else 
-				{
-					throw "Two or more electrodes are turned on near a drop";
-				}
+				nearbyElectrodes.push(electrode);
 			}
 		}
 	}
 	
-	return nearbyElectrode;
+	return nearbyElectrodes;
 }
 
 function mergeDrops()
 {
 	const dropCount = drops.length;
-	for(var i = 0; i < dropCount / 2; i++)
+	for(var i = 0; i < dropCount; i++)
 	{
 		const drop = drops[i];
 		if(drop)
@@ -491,24 +561,24 @@ function mergeDrops()
 				if(otherDrop)
 				{
 					const otherDropRadius = (electrodeSize / 2) * otherDrop.size;
-					if(otherDrop)
+					const distance = distanceAB(drop.position, otherDrop.position);
+					if (distance - dropRadius - otherDropRadius < electrodeSize / 2)
 					{
-						const distance = distanceAB(drop.position, otherDrop.position);
-						if (distance - dropRadius - otherDropRadius < electrodeSize / 2)
+						if (STRICT_MODE_ENABLED && drop.amount + otherDrop.amount > 2)
 						{
-							const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
-													(drop.position[1] + otherDrop.position[1]) / 2);
-							const newDropColor = vec4((drop.color[0] + otherDrop.color[0]) / 2, 
-													  (drop.color[1] + otherDrop.color[1]) / 2, 
-													  (drop.color[2] + otherDrop.color[2]) / 2, 
-													  (drop.color[3] + otherDrop.color[3]) / 2);
-							spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropColor);
-							
-							drops[i] = null;
-							drops[k] = null;
-							break;
+							throw "Can't marge two drops where the resulting drop will have 3 or more drops worth of fluid.";
 						}
-					}	
+						
+						const newDropPos = vec2((drop.position[0] + otherDrop.position[0]) / 2, 
+												(drop.position[1] + otherDrop.position[1]) / 2);
+						const newDropHue = MixHues(drop.hue, otherDrop.hue);
+						spawnDrop(newDropPos, drop.amount + otherDrop.amount, newDropHue);
+						
+						drops[i] = null;
+						drops[k] = null;
+						didGraphicsChange = true;
+						break;
+					}
 				}
 			}
 		}
@@ -524,6 +594,18 @@ function mergeDrops()
 	}
 }
 
+function MixHues(hueA, hueB)
+{
+	if (Math.abs(hueA - hueB) < 0.5)
+	{
+		return (hueA + hueB) / 2;
+	}
+	else
+	{
+		return ((hueA + hueB + 1) / 2) % 1;
+	}
+}
+
 //electrode
 //{
 //	position
@@ -536,14 +618,15 @@ function mergeDrops()
 //	position
 //	amount
 //	size
-//	color
+//	color // rgba
+//	hue
 //}
 
 //inputs
 //{
 //	index
 //	canSpawn
-//	color
+//	color // a hue
 //}
 
 //outputs

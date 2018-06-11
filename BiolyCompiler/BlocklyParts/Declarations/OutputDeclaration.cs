@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Xml;
 
 namespace BiolyCompiler.BlocklyParts.Declarations
 {
-    public class OutputDeclaration : StaticDeclarationBlock
+    public class OutputDeclaration : StaticDeclarationBlock, DeclarationBlock
     {
         public const string XML_TYPE_NAME = "outputDeclaration";
 
@@ -18,10 +19,10 @@ namespace BiolyCompiler.BlocklyParts.Declarations
 
         public static Block Parse(XmlNode node, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.IDFieldName);
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             Validator.CheckVariableName(id, moduleName);
-            parserInfo.AddModuleName(moduleName);
+            parserInfo.AddVariable(id, VariableType.OUTPUT, moduleName);
 
             return new OutputDeclaration(moduleName, node, id);
         }

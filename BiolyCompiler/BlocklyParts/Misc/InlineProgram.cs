@@ -1,9 +1,11 @@
-﻿using BiolyCompiler.BlocklyParts.Declarations;
+﻿using BiolyCompiler.BlocklyParts.Arithmetics;
+using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,19 +21,22 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string PROGRAM_NAME_ATTRIBUTE_NAME = "program_name";
         public const string INPUT_COUNT_ATTRIBUTE_NAME = "input_count";
         public const string OUTPUT_COUNT_ATTRIBUTE_NAME = "output_count";
+        public const string VARIABLE_COUNT_ATTRIBUTE_NAME = "variable_count";
         public const string XML_TYPE_NAME = "inlineProgram";
         public readonly string ID;
         public readonly string ProgramName;
         public readonly string[] Inputs;
         public readonly string[] Outputs;
+        public readonly string[] VariableImports;
         public readonly string ProgramXml;
         public readonly Dictionary<string, FluidInput> InputsFromTo = new Dictionary<string, FluidInput>();
         public readonly Dictionary<string, string> OutputsFromTo = new Dictionary<string, string>();
+        public readonly Dictionary<string, VariableBlock> VariablesFromTo = new Dictionary<string, VariableBlock>();
         public readonly bool IsValidProgram;
 
         public InlineProgram(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            this.ID = node.GetAttributeValue(Block.IDFieldName);
+            this.ID = node.GetAttributeValue(Block.ID_FIELD_NAME);
 
             XmlNode mutatorNode = node.TryGetNodeWithName("mutation");
             if (mutatorNode == null)
@@ -40,12 +45,18 @@ namespace BiolyCompiler.BlocklyParts.Misc
             }
 
             this.ProgramName = mutatorNode.TryGetAttributeValue(PROGRAM_NAME_ATTRIBUTE_NAME);
-            int inputCount = int.Parse(mutatorNode.TryGetAttributeValue(INPUT_COUNT_ATTRIBUTE_NAME));
-            int outputCunt = int.Parse(mutatorNode.TryGetAttributeValue(OUTPUT_COUNT_ATTRIBUTE_NAME));
+
+            string inputCountString    = mutatorNode.TryGetAttributeValue(INPUT_COUNT_ATTRIBUTE_NAME);
+            string outputCountString   = mutatorNode.TryGetAttributeValue(OUTPUT_COUNT_ATTRIBUTE_NAME);
+            string variableCountString = mutatorNode.TryGetAttributeValue(VARIABLE_COUNT_ATTRIBUTE_NAME);
+
+            int inputCount    = int.Parse(inputCountString    ?? "0");
+            int outputCunt    = int.Parse(outputCountString   ?? "0");
+            int variableCount = int.Parse(variableCountString ?? "0");
 
             try
             {
-                (this.Inputs, this.Outputs, this.ProgramXml) = LoadProgram(ProgramName);
+                (this.Inputs, this.Outputs, this.VariableImports, this.ProgramXml) = LoadProgram(ProgramName);
 
                 for (int i = 0; i < inputCount; i++)
                 {
@@ -61,16 +72,25 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     string toName = node.GetNodeWithAttributeValue(GetOutputFieldName(i)).InnerText;
                     OutputsFromTo.Add(Outputs[i], toName);
                 }
+                for (int i = 0; i < variableCount; i++)
+                {
+                    XmlNode variableNode = node.GetInnerBlockNode(GetVariableFieldName(i), parserInfo, new MissingBlockException(ID, ""));
+                    if (variableNode != null)
+                    {
+                        VariableBlock varBlock = (VariableBlock)XmlParser.ParseBlock(variableNode, dfg, parserInfo);
+                        VariablesFromTo.Add(VariableImports[i], varBlock);
+                    }
+                }
 
                 this.IsValidProgram = true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 this.IsValidProgram = false;
             }
         }
 
-        public static (string[] inputs, string[] outputs, string programXml) LoadProgram(string programName)
+        public static (string[] inputs, string[] outputs, string[] variableImports, string programXml) LoadProgram(string programName)
         {
             string programNameWithExtension = programName + CompilerOptions.FILE_EXTENSION;
             string fullProgramPath = Path.Combine(CompilerOptions.PROGRAM_FOLDER_PATH, programNameWithExtension);
@@ -86,8 +106,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     var outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
                                                            .Select(x => (x.value as OutputDeclaration).ModuleName)
                                                            .ToArray();
+                    var variableImports = cdfg.StartDFG.Input.Where(x => x.value is ImportVariable)
+                                                             .Select(x => (x.value as ImportVariable).VariableName)
+                                                             .ToArray();
 
-                    return (inputs, outputs, programXml);
+                    return (inputs, outputs, variableImports, programXml);
                 }
                 else
                 {
@@ -110,12 +133,22 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return $"output-{index}";
         }
 
+        private static string GetVariableFieldName(int index)
+        {
+            return $"variable-{index}";
+        }
+
         public void AppendProgramXml(ref XmlNode currentProgramXml, ParserInfo parserInfo)
         {
             if (!IsValidProgram)
             {
                 parserInfo.ParseExceptions.Add(new ParseException(ID, "The program can't be parsed."));
                 return;
+            }
+
+            foreach (var item in OutputsFromTo)
+            {
+                parserInfo.AddVariable(ID, VariableType.FLUID, item.Value);
             }
 
             XmlDocument newXmlDoc = new XmlDocument();
@@ -128,10 +161,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //it should be converted into.
             string postfix = parserInfo.GetUniquePostFix();
             Dictionary<string, string> variablesFromTo = new Dictionary<string, string>();
-            variables.ForEach(x => variablesFromTo.Add(x, x + postfix));
-            variablesFromTo.Where(x => InputsFromTo .ContainsKey(x.Key)).ToList().ForEach(x => InputsFromTo .Add(x.Value, InputsFromTo [x.Key]));
-            variablesFromTo.Where(x => OutputsFromTo.ContainsKey(x.Key)).ToList().ForEach(x => OutputsFromTo.Add(x.Value, OutputsFromTo[x.Key]));
             
+            InputsFromTo.ToList().ForEach(x => variablesFromTo.Add(x.Key, x.Value.OriginalFluidName));
+            variables.Where(x => !variablesFromTo.ContainsKey(x)).ToList().ForEach(x => variablesFromTo.Add(x, x + postfix));
+            variablesFromTo.Where(x => OutputsFromTo  .ContainsKey(x.Key)).ToList().ForEach(x => OutputsFromTo  .Add(x.Value, OutputsFromTo  [x.Key]));
+            variablesFromTo.Where(x => VariablesFromTo.ContainsKey(x.Key)).ToList().ForEach(x => VariablesFromTo.Add(x.Value, VariablesFromTo[x.Key]));
+
 
             //some static blocks needs to include specific changes
             HandleStaticUsageBlockVariableChanges(variablesFromTo);
@@ -141,15 +176,19 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             ParserInfo dummyParserInfo = new ParserInfo();
             dummyParserInfo.EnterDFG();
-            variablesFromTo.Where(x => OutputsFromTo.ContainsKey(x.Key)).ToList().ForEach(x => dummyParserInfo.AddModuleName(x.Value));
-            variablesFromTo.ToList().ForEach(x => dummyParserInfo.AddFluidVariable(x.Value));
+            dummyParserInfo.DoTypeChecks = false;
 
             //replace inputs
             //replace outputs
             var splittedXml = SplitBlockXml(currentProgramXml, currentProgramXml.OwnerDocument.OuterXml);
             string textToRepresentTheNextBlock = "<to_be_replaced>90234LKASJDW8U923RJJOMFN2978RF30FJ28</to_be_replaced>";
-            string xmlWithReplacedBlock = ReplaceBlocks(newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild, dummyParserInfo, newXmlDoc.OuterXml, textToRepresentTheNextBlock);
-            newXmlDoc.LoadXml(xmlWithReplacedBlock);
+            XmlNode firstBlockNode = newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
+            string xmlWithReplacedBlock = ReplaceBlocks(firstBlockNode, dummyParserInfo, newXmlDoc.OuterXml);
+
+            //insert dummy xml which will later be replaced with the xml which comes after this inline blocks xml
+            string xmlWithDummyXml = InsertDummyXml(xmlWithReplacedBlock, textToRepresentTheNextBlock);
+
+            newXmlDoc.LoadXml(xmlWithDummyXml);
 
             //rename the id of all the blocks in the inline program
             //so any errors in the inline program is shown on the 
@@ -171,7 +210,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             {
                 foreach (XmlAttribute attribute in node.Attributes)
                 {
-                    if (attribute.Name == Block.IDFieldName)
+                    if (attribute.Name == Block.ID_FIELD_NAME)
                     {
                         attribute.Value = this.ID;
                     }
@@ -214,25 +253,16 @@ namespace BiolyCompiler.BlocklyParts.Misc
             document.LoadXml(programXml);
         }
 
-        private string ReplaceBlocks(XmlNode blockNode, ParserInfo dummyParserInfo, string xml, string nextXmlFromPrevDocument, bool straightLine = true)
+        private string ReplaceBlocks(XmlNode blockNode, ParserInfo dummyParserInfo, string xml)
         {
             if (blockNode.Attributes != null)
             {
-                string blockType = blockNode.Attributes[Block.TypeFieldName]?.Value;
+                string blockType = blockNode.Attributes[Block.TYPE_FIELD_NAME]?.Value;
                 if (blockType != null)
                 {
                     switch (blockType)
                     {
                         case InputDeclaration.XML_TYPE_NAME:
-                            {
-                                var splittedXml = SplitBlockXml(blockNode, xml);
-                                InputDeclaration inputBlock = InputDeclaration.Parse(blockNode);
-                                string fluidInputXml = InputsFromTo[inputBlock.OriginalOutputVariable].ToXml();
-                                string inputXml = Fluid.ToXml(ID, inputBlock.OriginalOutputVariable, fluidInputXml, splittedXml.nextBlockXml);
-
-                                xml = splittedXml.beforeBlockXml + inputXml + splittedXml.afterBlockXml;
-                                break;
-                            }
                         case OutputDeclaration.XML_TYPE_NAME:
                         //case WasteDeclaration.XML_TYPE_NAME:
                         case HeaterDeclaration.XML_TYPE_NAME:
@@ -242,20 +272,25 @@ namespace BiolyCompiler.BlocklyParts.Misc
                                 xml = splittedXml.beforeBlockXml + (splittedXml.nextBlockXml ?? String.Empty) + splittedXml.afterBlockXml;
                                 break;
                             }
-                        case OutputUseage.XML_TYPE_NAME:
+                        case OutputUsage.XML_TYPE_NAME:
                             {
                                 var splittedXml = SplitBlockXml(blockNode, xml);
                                 DFG<Block> dfg = new DFG<Block>();
-                                OutputUseage output = OutputUseage.Parse(blockNode, dfg, dummyParserInfo);
+                                OutputUsage output = OutputUsage.Parse(blockNode, dfg, dummyParserInfo);
                                 FluidInput fluidInputA = new BasicInput(String.Empty, OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
                                 string unionXml = Union.ToXml(ID, fluidInputA.ToXml(), output.InputVariables[0].ToXml());
                                 string nextXml = splittedXml.nextBlockXml;
-                                if (straightLine && splittedXml.nextBlockXml == null)
-                                {
-                                    nextXml = nextXmlFromPrevDocument;
-                                }
                                 string fluidXml = Fluid.ToXml(ID, fluidInputA.OriginalFluidName, unionXml, nextXml);
                                 xml = splittedXml.beforeBlockXml + fluidXml + splittedXml.afterBlockXml;
+                                break;
+                            }
+                        case ImportVariable.XML_TYPE_NAME:
+                            {
+                                var splittedXml = SplitBlockXml(blockNode, xml);
+                                ImportVariable importVariable = (ImportVariable)ImportVariable.Parse(blockNode, dummyParserInfo, false);
+                                string variabelDefinitionXml = VariablesFromTo[importVariable.VariableName].ToXml();
+                                string setVariableXml = SetNumberVariable.ToXml(importVariable.BlockID, importVariable.VariableName, variabelDefinitionXml, splittedXml.nextBlockXml);
+                                xml = splittedXml.beforeBlockXml + setVariableXml + splittedXml.afterBlockXml;
                                 break;
                             }
                     }
@@ -264,8 +299,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             foreach (XmlNode node in blockNode.ChildNodes)
             {
-                bool stillStraightLine = straightLine && (node.Name == "block" || node.Name == "next");
-                xml = ReplaceBlocks(node, dummyParserInfo, xml, nextXmlFromPrevDocument, stillStraightLine);
+                xml = ReplaceBlocks(node, dummyParserInfo, xml);
             }
 
             return xml;
@@ -293,10 +327,32 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return Regex.Replace(xml, " xmlns=\"[^\"]+\"", String.Empty);
         }
 
+        private string InsertDummyXml(string xml, string dummyXml)
+        {
+            XmlDocument xDoc = new XmlDocument();
+            xDoc.LoadXml(xml);
+            XmlNode firstBlockNode = xDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
+            XmlNode lastBlockNode = GetLastBlockNode(firstBlockNode);
+
+            var splittedXml = SplitBlockXml(lastBlockNode, xml);
+            string partialBlock = splittedXml.blockXml.Substring(0, splittedXml.blockXml.Length - "</block>".Length);
+            return splittedXml.beforeBlockXml + partialBlock + "<next>" + dummyXml + "</next>" + "</block>" + splittedXml.afterBlockXml;
+        }
+
+        private XmlNode GetLastBlockNode(XmlNode node)
+        {
+            while (node.TryGetNodeWithName("next") != null)
+            {
+                node = node.TryGetNodeWithName("next").FirstChild;
+            }
+
+            return node;
+        }
+
         private void InsertProgram(ref XmlNode node, string modifiedXml)
         {
             var splittedXml = SplitBlockXml(node, node.OwnerDocument.OuterXml);
-            string address = node.ParentNode.ParentNode.Attributes[Block.IDFieldName].Value;
+            string address = node.ParentNode.ParentNode.Attributes[Block.ID_FIELD_NAME].Value;
 
             string combinedXml = splittedXml.beforeBlockXml + modifiedXml + splittedXml.afterBlockXml;
 
@@ -311,7 +367,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             if (node.Attributes != null)
             {
-                if (node.Attributes[Block.IDFieldName]?.Value == id)
+                if (node.Attributes[Block.ID_FIELD_NAME]?.Value == id)
                 {
                     return node;
                 }
