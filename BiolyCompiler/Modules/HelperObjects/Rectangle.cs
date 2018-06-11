@@ -351,7 +351,7 @@ namespace BiolyCompiler.Modules
                         candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, adjacentRectangle.y - this.height);
                     else
                         candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, adjacentRectangle.y);
-                    candidateNewRectangle = new Rectangle(this.width - adjacentRectangle.width, this.height, this.width + extendOffset, this.y);
+                    candidateNewRectangle = new Rectangle(this.width - adjacentRectangle.width, this.height, this.x + extendOffset, this.y);
                 }
 
 

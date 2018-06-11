@@ -48,6 +48,7 @@ namespace BiolyCompiler
             Dictionary<int, Board> boards = new Dictionary<int, Board>();
             List<(int, int, int, int)> oldRectangles = null;
             bool firstRun = true;
+            int runNumber = 0;
 
             while (runningGraph != null)
             {
@@ -58,6 +59,7 @@ namespace BiolyCompiler
 
                 List<Module> usedModules;
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules, out usedModules);
+                runNumber++;
                 if (firstRun)
                 {
                     StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
@@ -183,8 +185,11 @@ namespace BiolyCompiler
             }
         }
 
+       
+       static int numberOfDFGsHandled = 0;
         private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out List<Module> usedModules)
         {
+            numberOfDFGsHandled++;
             Schedule scheduler = new Schedule();
             scheduler.TransferFluidVariableLocationInformation(dropPositions);
             scheduler.TransferStaticModulesInformation(staticModules);
