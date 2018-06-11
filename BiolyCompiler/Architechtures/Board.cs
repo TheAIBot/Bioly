@@ -118,76 +118,76 @@ namespace BiolyCompiler.Architechtures
         }
 
 
-        public (bool, Rectangle) PlaceBottomBufferedModuleInRectangle(Module module, Rectangle current)
-        {
-            Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
-            //It reserves/places the area for the whole buffered rectangle
-            (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
-            EmptyRectangles.Remove(current);
-            if (topRectangle != null) EmptyRectangles.Add(topRectangle);
-            if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
+        //public (bool, Rectangle) PlaceBottomBufferedModuleInRectangle(Module module, Rectangle current)
+        //{
+        //    Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
+        //    //It reserves/places the area for the whole buffered rectangle
+        //    (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
+        //    EmptyRectangles.Remove(current);
+        //    if (topRectangle != null) EmptyRectangles.Add(topRectangle);
+        //    if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
 
-            //The placed buffered rectangle is divided up into smaller empty rectangles, that can be used for routing.
-            //Here a thin slice is cut off from the bottom, for the purpose of routing
-            Rectangle lowerBufferingRectangle = new Rectangle(bufferedRectangle.width, 1, bufferedRectangle.x, bufferedRectangle.y);
-            Rectangle remainingUpperRectangle = new Rectangle(bufferedRectangle.width, bufferedRectangle.height - 1, bufferedRectangle.x, bufferedRectangle.y + 1);
-            bufferedRectangle.splitRectangleInTwo(lowerBufferingRectangle, remainingUpperRectangle);
-            EmptyRectangles.Add(remainingUpperRectangle);
-            EmptyRectangles.Add(lowerBufferingRectangle);
-            //It needs to be checked, if with the buffer, one can still route to all other rectangles.
-            //If not, then one should fail.
-            if (DoesNotBlockRouteToAnyModuleOrEmptyRectangle(remainingUpperRectangle, module, EmptyRectangles, PlacedModules))
-            {
-                PlaceModuleInRectangle(module, remainingUpperRectangle);
-                return (true, null);
-            }
-            else
-            {
-                //Everything is returned to the same state as before:
-                //This must be done in a certain order, to avoid error cases, where one do not return to the original board.
-                Rectangle intermediateCurrent = remainingUpperRectangle.MergeWithRectangle(RectangleSide.Bottom, lowerBufferingRectangle);
-                EmptyRectangles.Remove(remainingUpperRectangle);
-                EmptyRectangles.Remove(lowerBufferingRectangle);
+        //    //The placed buffered rectangle is divided up into smaller empty rectangles, that can be used for routing.
+        //    //Here a thin slice is cut off from the bottom, for the purpose of routing
+        //    Rectangle lowerBufferingRectangle = new Rectangle(bufferedRectangle.width, 1, bufferedRectangle.x, bufferedRectangle.y);
+        //    Rectangle remainingUpperRectangle = new Rectangle(bufferedRectangle.width, bufferedRectangle.height - 1, bufferedRectangle.x, bufferedRectangle.y + 1);
+        //    bufferedRectangle.splitRectangleInTwo(lowerBufferingRectangle, remainingUpperRectangle);
+        //    EmptyRectangles.Add(remainingUpperRectangle);
+        //    EmptyRectangles.Add(lowerBufferingRectangle);
+        //    //It needs to be checked, if with the buffer, one can still route to all other rectangles.
+        //    //If not, then one should fail.
+        //    if (DoesNotBlockRouteToAnyModuleOrEmptyRectangle(remainingUpperRectangle, module, EmptyRectangles, PlacedModules))
+        //    {
+        //        PlaceModuleInRectangle(module, remainingUpperRectangle);
+        //        return (true, null);
+        //    }
+        //    else
+        //    {
+        //        //Everything is returned to the same state as before:
+        //        //This must be done in a certain order, to avoid error cases, where one do not return to the original board.
+        //        Rectangle intermediateCurrent = remainingUpperRectangle.MergeWithRectangle(RectangleSide.Bottom, lowerBufferingRectangle);
+        //        EmptyRectangles.Remove(remainingUpperRectangle);
+        //        EmptyRectangles.Remove(lowerBufferingRectangle);
 
-                //A lot of conditionals, depending on the original splitting of topRectangle and rightRectangle:
-                if (topRectangle != null)
-                {
-                    (RectangleSide side, bool canMerge) = intermediateCurrent.CanMerge(topRectangle);
-                    if (canMerge)
-                    {
-                        intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
-                        if (rightRectangle != null)
-                        {
-                            //It should then be able to merge
-                            (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-                            if (!canTotallyMerge) throw new Exception("Logic error");
-                            intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
+        //        //A lot of conditionals, depending on the original splitting of topRectangle and rightRectangle:
+        //        if (topRectangle != null)
+        //        {
+        //            (RectangleSide side, bool canMerge) = intermediateCurrent.CanMerge(topRectangle);
+        //            if (canMerge)
+        //            {
+        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
+        //                if (rightRectangle != null)
+        //                {
+        //                    //It should then be able to merge
+        //                    (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
+        //                    if (!canTotallyMerge) throw new Exception("Logic error");
+        //                    intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
 
-                        }
-                    }
-                    else
-                    { //Then the right rectangle must exists, and it can be merged with first
-                        (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-                        if (!canTotallyMerge) throw new Exception("Logic error");
-                        intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
-                        intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
-                    }
-                }
-                else if (rightRectangle != null)
-                {
-                    //It should then be able to merge
-                    (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-                    if (!canTotallyMerge) throw new Exception("Logic error");
-                }
+        //                }
+        //            }
+        //            else
+        //            { //Then the right rectangle must exists, and it can be merged with first
+        //                (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
+        //                if (!canTotallyMerge) throw new Exception("Logic error");
+        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
+        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
+        //            }
+        //        }
+        //        else if (rightRectangle != null)
+        //        {
+        //            //It should then be able to merge
+        //            (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
+        //            if (!canTotallyMerge) throw new Exception("Logic error");
+        //        }
 
-                if (topRectangle != null)   EmptyRectangles.Remove(topRectangle);
-                if (rightRectangle != null) EmptyRectangles.Remove(rightRectangle);
-                EmptyRectangles.Add(intermediateCurrent);
-                return (false, intermediateCurrent);
-            }
+        //        if (topRectangle != null)   EmptyRectangles.Remove(topRectangle);
+        //        if (rightRectangle != null) EmptyRectangles.Remove(rightRectangle);
+        //        EmptyRectangles.Add(intermediateCurrent);
+        //        return (false, intermediateCurrent);
+        //    }
 
             
-        }
+        //}
 
         public bool PlaceCompletlyBufferedModuleInRectangle(Module module, Rectangle current)
         {

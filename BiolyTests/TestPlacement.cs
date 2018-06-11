@@ -189,11 +189,36 @@ namespace BiolyTests.PlacementTests
             
         }
 
-        //[TestMethod]
+        [TestMethod]
         public void TestMergeWithOtherRectangles()
         {
-            
-            Assert.Fail("Not implemented yet");
+            int boardWidth = 20;
+            int boardHeigth = 20;
+            Board board = new Board(boardWidth, boardHeigth);
+            //Based on an example given in the original article, page 16
+            Rectangle lowerLeft     = new Rectangle(10, 10,  0, 0);
+            Rectangle lowerRight    = new Rectangle(10, 15, 10, 0);
+            Rectangle topLeft       = new Rectangle( 5, 10,  0, 10);
+            Rectangle topRight      = new Rectangle(15,  5,  5, 15);
+            Rectangle middle        = new Rectangle( 5,  5,  5, 10);
+
+            board.EmptyRectangles.Clear();
+            board.EmptyRectangles.Add(lowerLeft);
+            board.EmptyRectangles.Add(lowerRight);
+            board.EmptyRectangles.Add(topLeft);
+            board.EmptyRectangles.Add(topRight);
+            board.EmptyRectangles.Add(middle);
+            foreach (var rectangle1 in board.EmptyRectangles)
+                foreach (var rectangle2 in board.EmptyRectangles)
+                    rectangle1.ConnectIfAdjacent(rectangle2);
+            lowerRight.MergeWithOtherRectangles(board);
+            Assert.AreEqual(1, board.EmptyRectangles.Count);
+            Rectangle rectangle = board.EmptyRectangles.First();
+            Assert.AreEqual(boardWidth, rectangle.width);
+            Assert.AreEqual(boardHeigth, rectangle.height);
+            Assert.AreEqual(0, rectangle.x);
+            Assert.AreEqual(0, rectangle.y);
+            Assert.AreEqual(0, rectangle.AdjacentRectangles.Count);
         }
 
 
@@ -217,7 +242,8 @@ namespace BiolyTests.PlacementTests
                             {
                                 Assert.AreEqual(RectangleSide.Left, side);
                                 Assert.IsTrue(canMerge);
-                                Rectangle mergedRectangle = nonStaticEmptyRectangle.MergeWithRectangle(side, staticEmptyRectangle);
+                                nonStaticEmptyRectangle.MergeWithRectangle(side, staticEmptyRectangle);
+                                Rectangle mergedRectangle = nonStaticEmptyRectangle;
                                 Assert.AreEqual(height, mergedRectangle.height);
                                 Assert.AreEqual(width + recWidth, mergedRectangle.width);
                                 Assert.AreEqual(x, mergedRectangle.x);
@@ -229,17 +255,7 @@ namespace BiolyTests.PlacementTests
                 }
             }
         }
-
-        //[TestMethod]
-        public void TestFastTemplateAddRemoveRandom()
-        {
-            //After adding a lot of modules, removing them all should give the empty rectangle again.
-            int boardHeight = 20, boardWidth = 20;
-            Board board = new Board(boardWidth, boardHeight);
-            Module[] modules = new TestModule[10];
-            Assert.Fail("Not implemented yet");
-        }
-
+        
         public static bool doAdjacencyGraphContainTheCorrectNodes(Board board)
         {
             //It visits all the modules and rectangles in the graph, 

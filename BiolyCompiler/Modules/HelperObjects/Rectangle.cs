@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using BiolyCompiler.Architechtures;
 using BiolyCompiler.Modules.RectangleSides;
@@ -184,35 +185,54 @@ namespace BiolyCompiler.Modules
             {
                 adjacentRectangle.AdjacentRectangles.Remove(this);
             }
-            //Should not be necessary:
-            //AdjacentRectangles.Clear();
         }
 
 
-        public void MergeWithOtherRectangles(Board board)
+        private void TotalRemoveAdjacencies()
+        {
+            foreach (var adjacentRectangle in AdjacentRectangles)
+            {
+                adjacentRectangle.AdjacentRectangles.Remove(this);
+            }
+            AdjacentRectangles.Clear();
+        }
+
+        
+        public bool MergeWithOtherRectangles(Board board)
         {
             //Recursivly merge with neighboring rectangles, which sides lines up perfectly with the current rectangle:
-            foreach (var AdjacentRectangle in AdjacentRectangles)
+            foreach (var adjacentRectangle in AdjacentRectangles)
             {
-                if (!AdjacentRectangle.isEmpty) continue;
-                (RectangleSide side, bool canMerge) = this.CanMerge(AdjacentRectangle);
+                if (!adjacentRectangle.isEmpty) continue;
+                (RectangleSide side, bool canMerge) = this.CanMerge(adjacentRectangle);
                 if (canMerge) {
-                    Rectangle mergedRectangle = MergeWithRectangle(side, AdjacentRectangle);
-                    board.EmptyRectangles.Remove(AdjacentRectangle);
+                    //Necessary, as the hashcode will change (remind me to never use hashsets again!):
                     board.EmptyRectangles.Remove(this);
-                    board.EmptyRectangles.Add(mergedRectangle);
-                    //Continue the merging with the new rectangle!
-                    mergedRectangle.MergeWithOtherRectangles(board);
-                    return;
+                    board.EmptyRectangles.Remove(adjacentRectangle);
+                    MergeWithRectangle(side, adjacentRectangle);
+                    board.EmptyRectangles.Add(this);
+                    //Continue the merging with the updated rectangle!
+                    MergeWithOtherRectangles(board);
+                    return true;
                 }
             }
-            //The last merges rectangle will be placed here.
-            //SplitMerge();
+            //If no other merges can be done, some special merge checks must be made.
+            return SplitMerge(board);
         }
 
-        public Rectangle MergeWithRectangle(RectangleSide side, Rectangle adjacentRectangle)
+        public void MergeWithRectangle(RectangleSide side, Rectangle adjacentRectangle)
         {
             Rectangle mergedRectangle;
+            //Necessary, because the transformation updates the hashcode of this rectangle:
+            HashSet<Rectangle> copyAdjacentRectangles = new HashSet<Rectangle>(AdjacentRectangles);
+            foreach (var rectangle in AdjacentRectangles) {
+                rectangle.AdjacentRectangles.Remove(this);
+            }
+            foreach (var rectangle in adjacentRectangle.AdjacentRectangles)
+            {
+                rectangle.AdjacentRectangles.Remove(adjacentRectangle);
+            }
+            this.AdjacentRectangles.Clear();
             switch (side)
             {
                 case RectangleSide.Left:
@@ -229,26 +249,175 @@ namespace BiolyCompiler.Modules
                     break;
                 default:
                     throw new Exception("A rectangle can only be joined on the sides left, right, top or bottom, not " + side.ToString());
-            } 
+            }
+            //It is important that it is the current rectangle that is changed.
+            this.width  = mergedRectangle.width;
+            this.height = mergedRectangle.height;
+            this.x = mergedRectangle.x;
+            this.y = mergedRectangle.y;
             //Updating adjacent rectangles:
-            mergedRectangle.AdjacentRectangles.UnionWith(this.AdjacentRectangles);
-            mergedRectangle.AdjacentRectangles.UnionWith(adjacentRectangle.AdjacentRectangles);
-            mergedRectangle.AdjacentRectangles.Remove(adjacentRectangle);
-            mergedRectangle.AdjacentRectangles.Remove(this);
+            AdjacentRectangles.UnionWith(copyAdjacentRectangles);
+            AdjacentRectangles.UnionWith(adjacentRectangle.AdjacentRectangles);
+            adjacentRectangle.AdjacentRectangles.Clear();
+            AdjacentRectangles.Remove(adjacentRectangle);
+            AdjacentRectangles.Remove(this);
             //Duplicates have been removed automaticly, as AdjacentRectangles is a set.
             //The adjacent rectangles own adjacent rectangles also needs to be updated.
-            foreach (var rectangle in mergedRectangle.AdjacentRectangles)
-            {
-                rectangle.AdjacentRectangles.Remove(adjacentRectangle);
-                rectangle.AdjacentRectangles.Remove(this);
-                rectangle.AdjacentRectangles.Add(mergedRectangle);
+            foreach (var rectangle in AdjacentRectangles) {
+                rectangle.AdjacentRectangles.Add(this);
             }
-            return mergedRectangle;
         }
 
-        private void SplitMerge()
+        private bool SplitMerge(Board board)
         {
-            throw new NotImplementedException();
+            foreach (var adjacentRectangle in AdjacentRectangles) {
+                if (!adjacentRectangle.isEmpty) continue;
+                (var formsLShapedSegment, var side, var extendDirection) = FormsLSegment(this, adjacentRectangle);
+                if (formsLShapedSegment)
+                {
+                    //The horizontal and vertical segment of the L shape needs to be found, 
+                    //to evaluate whether or not the L shape should split up into different rectangles than rectangle and adjacentRectangle.
+                    (var candidateNewRectangle, var candidateNewAdjacentRectangle, bool isAnActualImprovement) = GetLShapeInformation(adjacentRectangle, side, extendDirection);
+
+                    //To avoid eternal recursion, the L shape should only be split, if it is an actual improvement, not if it does not matter.
+                    if (isAnActualImprovement) { 
+                        HashSet<Rectangle> allAdjacentRectangles = new HashSet<Rectangle>();
+                        allAdjacentRectangles.UnionWith(this.AdjacentRectangles);
+                        allAdjacentRectangles.UnionWith(adjacentRectangle.AdjacentRectangles);
+                        allAdjacentRectangles.Remove(this);
+                        allAdjacentRectangles.Remove(adjacentRectangle);
+
+                        this.TotalRemoveAdjacencies();
+                        adjacentRectangle.TotalRemoveAdjacencies();
+
+                        board.EmptyRectangles.Remove(this);
+                        board.EmptyRectangles.Remove(adjacentRectangle);
+
+                        this.TransformToGivenRectangle(candidateNewRectangle);
+                        adjacentRectangle.TransformToGivenRectangle(candidateNewAdjacentRectangle);
+
+                        board.EmptyRectangles.Add(this);
+                        board.EmptyRectangles.Add(adjacentRectangle);
+
+                        allAdjacentRectangles.Add(this);
+                        allAdjacentRectangles.Add(adjacentRectangle);
+                        foreach (var rectangle in allAdjacentRectangles)
+                        {
+                            adjacentRectangle.ConnectIfAdjacent(rectangle);
+                            this.ConnectIfAdjacent(rectangle);
+                        }
+
+                        bool mergeSucceeds = this.MergeWithOtherRectangles(board);
+                        //Both things must not be done, as adjacentRectangle can have been "deleted" in the merge.
+                        if (! mergeSucceeds) adjacentRectangle.MergeWithOtherRectangles(board);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void TransformToGivenRectangle(Rectangle rectangle)
+        {
+            this.x = rectangle.x; this.y = rectangle.y;
+            this.width  = rectangle.width;
+            this.height = rectangle.height;
+        }
+
+        private (Rectangle, Rectangle, bool) GetLShapeInformation(Rectangle adjacentRectangle, RectangleSide side, RectangleSide extendDirection)
+        {
+            int horizontalSegment;
+            int verticalSegment;
+            Rectangle candidateNewRectangle;
+            Rectangle candidateNewAdjacentRectangle;
+            //It is an actual improvement, if it wants to split at the segment different from the current situation, and it does not want to split it in the current maner.
+            if (side.Equals(RectangleSide.Top) || side.Equals(RectangleSide.Bottom))
+            {
+                if (this.width < adjacentRectangle.width) {
+                    int extendOffset = ((extendDirection == RectangleSide.Right) ? this.width : 0);
+                    horizontalSegment = this.width;
+                    verticalSegment = adjacentRectangle.height;
+                    if (side == RectangleSide.Top)
+                        candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, this.y);
+                    else
+                        candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, this.y - adjacentRectangle.height);
+                    candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width - this.width, adjacentRectangle.height, adjacentRectangle.x + extendOffset, adjacentRectangle.y);
+                }
+                else {
+                    int extendOffset = ((extendDirection == RectangleSide.Right) ? adjacentRectangle.width : 0);
+                    horizontalSegment = adjacentRectangle.width;
+                    verticalSegment = this.height;
+                    if (side == RectangleSide.Top)
+                        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, adjacentRectangle.y - this.height);
+                    else
+                        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, adjacentRectangle.y);
+                    candidateNewRectangle = new Rectangle(this.width - adjacentRectangle.width, this.height, this.width + extendOffset, this.y);
+                }
+
+
+                //Split matters, if a split is favored one way, and not the other.
+                bool doesSplitMatter = ( ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment) && !ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment)) ||
+                                       ( ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment) && !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment));
+                bool isAlreadyOptimallySplit = ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment);
+                if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);
+                else return (candidateNewRectangle, candidateNewAdjacentRectangle, true);
+            }
+            else if (side.Equals(RectangleSide.Left) || side.Equals(RectangleSide.Right))
+            {
+                if (this.height < adjacentRectangle.height)
+                {
+                    int extendOffset = (extendDirection == RectangleSide.Top) ? this.height : 0;
+                    horizontalSegment = adjacentRectangle.width;
+                    verticalSegment = this.height;
+                    if (side == RectangleSide.Right)
+                        candidateNewRectangle = new Rectangle(this.width + adjacentRectangle.width, this.height, this.x, this.y);
+                    else
+                        candidateNewRectangle = new Rectangle(this.width + adjacentRectangle.width, this.height, this.x - adjacentRectangle.width, this.y);
+                    candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height - this.height, adjacentRectangle.x, adjacentRectangle.y + extendOffset);
+                }
+                else
+                {
+                    int extendOffset = (extendDirection == RectangleSide.Top) ? adjacentRectangle.height : 0;
+                    horizontalSegment = this.width;
+                    verticalSegment = adjacentRectangle.height;
+                    if (side == RectangleSide.Right)
+                        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width + this.width, adjacentRectangle.height, adjacentRectangle.x - this.width, adjacentRectangle.y);
+                    else
+                        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width + this.width, adjacentRectangle.height, adjacentRectangle.x, adjacentRectangle.y);
+                    candidateNewRectangle = new Rectangle(this.width, this.height - adjacentRectangle.height, this.x, this.y + extendOffset);
+                }
+
+
+                //Split matters, if a split is favored one way, and not the other.
+                bool doesSplitMatter = (ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment) && !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment)) ||
+                                       (ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment) && !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment));
+                bool isAlreadyOptimallySplit = !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment);
+                if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);
+                else return (candidateNewRectangle, candidateNewAdjacentRectangle, true);
+            }
+            else throw new Exception("Logic error.");
+        }
+
+        private static (bool, RectangleSide, RectangleSide) FormsLSegment(Rectangle rectangle, Rectangle adjacentRectangle)
+        {
+            //It forms an L segment, if for any of the corners of rectangle, adjacent rectangle "starts" there:
+            //for example if the lower right corner of rectangle is at the same position of the lower left corner of adjacentRectangle.
+            (var rectangleLowerLeft, var rectangleLowerRight, var rectangleTopLeft, var rectangleTopRight) = rectangle.GetRectangleCorners();
+            (var adjacentLowerLeft , var adjacentLowerRight , var adjacentTopLeft , var adjacentTopRight ) = adjacentRectangle.GetRectangleCorners();
+
+            if (rectangleLowerRight.Equals(adjacentLowerLeft))      return (true, RectangleSide.Right,  RectangleSide.Top);   //It is to the right, and it extends upwards.
+            else if (rectangleTopRight.Equals(adjacentTopLeft))     return (true, RectangleSide.Right,  RectangleSide.Bottom);//It is to the right, and it extends downwards.
+
+            else if (rectangleTopRight.Equals(adjacentLowerRight))  return (true, RectangleSide.Top,    RectangleSide.Left);
+            else if (rectangleTopLeft.Equals(adjacentLowerLeft))    return (true, RectangleSide.Top,    RectangleSide.Right);
+
+            else if (rectangleTopLeft.Equals(adjacentTopRight))     return (true, RectangleSide.Left,   RectangleSide.Bottom);
+            else if (rectangleLowerLeft.Equals(adjacentLowerRight)) return (true, RectangleSide.Left,   RectangleSide.Top);
+
+            else if (rectangleLowerLeft.Equals(adjacentTopLeft))    return (true, RectangleSide.Bottom, RectangleSide.Right);
+            else if (rectangleLowerRight.Equals(adjacentTopRight))  return (true, RectangleSide.Bottom, RectangleSide.Left);
+
+            else return (false, RectangleSide.None, RectangleSide.None);
         }
 
         public (RectangleSide, bool) CanMerge(Rectangle adjacentRectangle)
@@ -355,6 +524,15 @@ namespace BiolyCompiler.Modules
                         rectangleObj.x      == x      &&
                         rectangleObj.y      == y;
             //It will not compare adjacency lists.
+        }
+
+        /// <summary>
+        /// Returns the four corners of the rectangle.
+        /// </summary>
+        /// <returns>(LowerLeft, LowerRight, TopLeft, TopRight)</returns>
+        public (Point, Point, Point, Point) GetRectangleCorners()
+        {
+            return (new Point(x, y), new Point(x + width, y), new Point(x, y+height), new Point(x+width, y+height));
         }
     }
 }
