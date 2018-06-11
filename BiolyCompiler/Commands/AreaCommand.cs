@@ -14,12 +14,16 @@ namespace BiolyCompiler.Commands
         public readonly float G;
         public readonly float B;
 
-        public AreaCommand(Rectangle shape, CommandType type, int time) : base(shape.x, shape.y, type, time)
+        public AreaCommand(Rectangle shape, CommandType type, int time) : this(shape.x, shape.y, shape.width, shape.height, type, time)
         {
-            this.ID = shape.ToString().Replace(' ', '-');
-            this.Width = shape.width;
-            this.Height = shape.height;
-            Random Rando = new Random(shape.x * 2133 + shape.y);
+        }
+   
+        public AreaCommand(int x, int y, int width, int height, CommandType type, int time) : base(x, y, type, time)
+        {
+            this.ID = $"{x}-{y}-{width}-{height}";
+            this.Width = width;
+            this.Height = height;
+            Random Rando = new Random(x * 2133 + y);
             this.R = (float)Rando.NextDouble();
             this.G = (float)Rando.NextDouble();
             this.B = (float)Rando.NextDouble();
