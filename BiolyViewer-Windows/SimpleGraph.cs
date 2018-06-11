@@ -67,6 +67,17 @@ namespace BiolyViewer_Windows
                 }
             }
 
+            nodes += CreateNode(dfgName + "-input", String.Empty, dfgName, "hidden");
+            nodes += CreateNode(dfgName + "-output", String.Empty, dfgName, "hidden");
+            foreach (var node in dfg.Nodes.Where(x => x.getIngoingEdges().Count == 0))
+            {
+                edges += CreateEdge(dfgName + "-input", node.value.OutputVariable, "haystack");
+            }
+            foreach (var node in dfg.Nodes.Where(x => x.getOutgoingEdges().Count == 0))
+            {
+                edges += CreateEdge(node.value.OutputVariable, dfgName + "-output", "haystack");
+            }
+
             return (nodes, edges);
         }
 
@@ -80,7 +91,7 @@ namespace BiolyViewer_Windows
             {
                 DFG<Block> nextDFG = nextDFGStack.Peek();
                 edges += CreateEdge(dfgNames[dfg], dfgNames[nextDFG]);
-                edges += CreateHiddenRankEdgesBetweenDFGs(dfg, nextDFG);
+                edges += CreateHiddenRankEdgesBetweenDFGs(dfg, nextDFG, dfgNames);
             }
             else if (control is If)
             {
@@ -152,13 +163,13 @@ namespace BiolyViewer_Windows
             if (conditional.GuardedDFG != null)
             {
                 edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.GuardedDFG]);
-                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.GuardedDFG);
+                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.GuardedDFG, dfgNames);
             }
             if (conditional.NextDFG != null && !edgesAlreadyCreated.Any(x => x.Item1 == node.dfg && x.Item2 == conditional.NextDFG))
             {
                 //edge from before if to after if
                 edges += CreateEdge(dfgNames[node.dfg], dfgNames[conditional.NextDFG]);
-                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.NextDFG);
+                edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, conditional.NextDFG, dfgNames);
                 edgesAlreadyCreated.Add((node.dfg, conditional.NextDFG));
             }
             //edge from control to after control
@@ -168,7 +179,7 @@ namespace BiolyViewer_Windows
                 if (!edgesAlreadyCreated.Any(x => x.Item1 == node.dfg && x.Item2 == nextDFG))
                 {
                     edges += CreateEdge(dfgNames[node.dfg], dfgNames[nextDFG]);
-                    edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, nextDFG);
+                    edges += CreateHiddenRankEdgesBetweenDFGs(node.dfg, nextDFG, dfgNames);
                     edgesAlreadyCreated.Add((node.dfg, nextDFG));
                 }
             }
@@ -176,22 +187,12 @@ namespace BiolyViewer_Windows
             return edges;
         }
 
-        private static string CreateHiddenRankEdgesBetweenDFGs(DFG<Block> source, DFG<Block> target)
+        private static string CreateHiddenRankEdgesBetweenDFGs(DFG<Block> source, DFG<Block> target, Dictionary<DFG<Block>, string> dfgNames)
         {
-            string edges = "";
-
-            foreach (var output in source.Nodes.Where(x => x.getOutgoingEdges().Count == 0))
-            {
-                foreach (var input in target.Nodes.Where(y => y.getIngoingEdges().Count == 0))
-                {
-                    edges += CreateEdge(output.value.OutputVariable, input.value.OutputVariable, "haystack");
-                }
-            }
-
-            return edges;
+            return CreateEdge(dfgNames[source] + "-output", dfgNames[target] + "-input");
         }
 
-        private static string CreateNode(string id, string label, string parent = null)
+        private static string CreateNode(string id, string label, string parent = null, string classTarget = null)
         {
             StringBuilder sBuilder = new StringBuilder();
             sBuilder.Append("{ data: { id: '");
@@ -203,7 +204,14 @@ namespace BiolyViewer_Windows
                 sBuilder.Append("', parent: '");
                 sBuilder.Append(parent);
             }
-            sBuilder.Append("' } },");
+            sBuilder.Append("' }");
+            if (classTarget != null)
+            {
+                sBuilder.Append(", classes: '");
+                sBuilder.Append(classTarget);
+                sBuilder.Append("'");
+            }
+            sBuilder.Append(" },");
 
             return sBuilder.ToString();
         }

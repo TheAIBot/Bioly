@@ -28,6 +28,13 @@ function setGraph(nodes, edges)
 				}
 			},
 			{
+				selector: 'node.hidden',
+				style: 
+				{
+					'display': 'none'
+				}
+			},
+			{
 				selector: ':parent',
 				style: 
 				{
