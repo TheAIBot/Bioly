@@ -224,13 +224,13 @@ namespace BiolyCompiler.Modules
         {
             Rectangle mergedRectangle;
             //Necessary, because the transformation updates the hashcode of this rectangle:
-            HashSet<Rectangle> copyAdjacentRectangles = new HashSet<Rectangle>(AdjacentRectangles);
-            foreach (var rectangle in AdjacentRectangles) {
-                rectangle.AdjacentRectangles.Remove(this);
-            }
             foreach (var rectangle in adjacentRectangle.AdjacentRectangles)
             {
                 rectangle.AdjacentRectangles.Remove(adjacentRectangle);
+            }
+            HashSet<Rectangle> copyAdjacentRectangles = new HashSet<Rectangle>(AdjacentRectangles);
+            foreach (var rectangle in AdjacentRectangles) {
+                rectangle.AdjacentRectangles.Remove(this);
             }
             this.AdjacentRectangles.Clear();
             switch (side)
