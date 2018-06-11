@@ -5,6 +5,7 @@ using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
+using BiolyCompiler.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -145,6 +146,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 return;
             }
 
+            foreach (var item in OutputsFromTo)
+            {
+                parserInfo.AddVariable(ID, VariableType.FLUID, item.Value);
+            }
+
             XmlDocument newXmlDoc = new XmlDocument();
             newXmlDoc.LoadXml(ProgramXml);
 
@@ -155,8 +161,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //it should be converted into.
             string postfix = parserInfo.GetUniquePostFix();
             Dictionary<string, string> variablesFromTo = new Dictionary<string, string>();
-            variables.ForEach(x => variablesFromTo.Add(x, x + postfix));
-            variablesFromTo.Where(x => InputsFromTo   .ContainsKey(x.Key)).ToList().ForEach(x => InputsFromTo   .Add(x.Value, InputsFromTo   [x.Key]));
+            
+            InputsFromTo.ToList().ForEach(x => variablesFromTo.Add(x.Key, x.Value.OriginalFluidName));
+            variables.Where(x => !variablesFromTo.ContainsKey(x)).ToList().ForEach(x => variablesFromTo.Add(x, x + postfix));
             variablesFromTo.Where(x => OutputsFromTo  .ContainsKey(x.Key)).ToList().ForEach(x => OutputsFromTo  .Add(x.Value, OutputsFromTo  [x.Key]));
             variablesFromTo.Where(x => VariablesFromTo.ContainsKey(x.Key)).ToList().ForEach(x => VariablesFromTo.Add(x.Value, VariablesFromTo[x.Key]));
 
@@ -175,8 +182,13 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //replace outputs
             var splittedXml = SplitBlockXml(currentProgramXml, currentProgramXml.OwnerDocument.OuterXml);
             string textToRepresentTheNextBlock = "<to_be_replaced>90234LKASJDW8U923RJJOMFN2978RF30FJ28</to_be_replaced>";
-            string xmlWithReplacedBlock = ReplaceBlocks(newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild, dummyParserInfo, newXmlDoc.OuterXml, textToRepresentTheNextBlock);
-            newXmlDoc.LoadXml(xmlWithReplacedBlock);
+            XmlNode firstBlockNode = newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
+            string xmlWithReplacedBlock = ReplaceBlocks(firstBlockNode, dummyParserInfo, newXmlDoc.OuterXml);
+
+            //insert dummy xml which will later be replaced with the xml which comes after this inline blocks xml
+            string xmlWithDummyXml = InsertDummyXml(xmlWithReplacedBlock, textToRepresentTheNextBlock);
+
+            newXmlDoc.LoadXml(xmlWithDummyXml);
 
             //rename the id of all the blocks in the inline program
             //so any errors in the inline program is shown on the 
@@ -241,7 +253,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             document.LoadXml(programXml);
         }
 
-        private string ReplaceBlocks(XmlNode blockNode, ParserInfo dummyParserInfo, string xml, string nextXmlFromPrevDocument, bool straightLine = true)
+        private string ReplaceBlocks(XmlNode blockNode, ParserInfo dummyParserInfo, string xml)
         {
             if (blockNode.Attributes != null)
             {
@@ -251,15 +263,6 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     switch (blockType)
                     {
                         case InputDeclaration.XML_TYPE_NAME:
-                            {
-                                var splittedXml = SplitBlockXml(blockNode, xml);
-                                InputDeclaration inputBlock = InputDeclaration.Parse(blockNode, dummyParserInfo);
-                                string fluidInputXml = InputsFromTo[inputBlock.OriginalOutputVariable].ToXml();
-                                string inputXml = Fluid.ToXml(ID, inputBlock.OriginalOutputVariable, fluidInputXml, splittedXml.nextBlockXml);
-
-                                xml = splittedXml.beforeBlockXml + inputXml + splittedXml.afterBlockXml;
-                                break;
-                            }
                         case OutputDeclaration.XML_TYPE_NAME:
                         //case WasteDeclaration.XML_TYPE_NAME:
                         case HeaterDeclaration.XML_TYPE_NAME:
@@ -277,10 +280,6 @@ namespace BiolyCompiler.BlocklyParts.Misc
                                 FluidInput fluidInputA = new BasicInput(String.Empty, OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
                                 string unionXml = Union.ToXml(ID, fluidInputA.ToXml(), output.InputVariables[0].ToXml());
                                 string nextXml = splittedXml.nextBlockXml;
-                                if (straightLine && splittedXml.nextBlockXml == null)
-                                {
-                                    nextXml = nextXmlFromPrevDocument;
-                                }
                                 string fluidXml = Fluid.ToXml(ID, fluidInputA.OriginalFluidName, unionXml, nextXml);
                                 xml = splittedXml.beforeBlockXml + fluidXml + splittedXml.afterBlockXml;
                                 break;
@@ -300,8 +299,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             foreach (XmlNode node in blockNode.ChildNodes)
             {
-                bool stillStraightLine = straightLine && (node.Name == "block" || node.Name == "next");
-                xml = ReplaceBlocks(node, dummyParserInfo, xml, nextXmlFromPrevDocument, stillStraightLine);
+                xml = ReplaceBlocks(node, dummyParserInfo, xml);
             }
 
             return xml;
@@ -327,6 +325,28 @@ namespace BiolyCompiler.BlocklyParts.Misc
         private string RemoveXmlnsTag(string xml)
         {
             return Regex.Replace(xml, " xmlns=\"[^\"]+\"", String.Empty);
+        }
+
+        private string InsertDummyXml(string xml, string dummyXml)
+        {
+            XmlDocument xDoc = new XmlDocument();
+            xDoc.LoadXml(xml);
+            XmlNode firstBlockNode = xDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
+            XmlNode lastBlockNode = GetLastBlockNode(firstBlockNode);
+
+            var splittedXml = SplitBlockXml(lastBlockNode, xml);
+            string partialBlock = splittedXml.blockXml.Substring(0, splittedXml.blockXml.Length - "</block>".Length);
+            return splittedXml.beforeBlockXml + partialBlock + "<next>" + dummyXml + "</next>" + "</block>" + splittedXml.afterBlockXml;
+        }
+
+        private XmlNode GetLastBlockNode(XmlNode node)
+        {
+            while (node.TryGetNodeWithName("next") != null)
+            {
+                node = node.TryGetNodeWithName("next").FirstChild;
+            }
+
+            return node;
         }
 
         private void InsertProgram(ref XmlNode node, string modifiedXml)

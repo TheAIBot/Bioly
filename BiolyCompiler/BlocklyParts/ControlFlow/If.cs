@@ -35,6 +35,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
                 hasElse = mutatorNode.TryGetAttributeValue("else") != null;
             }
 
+            DFG<Block> nextDFG = null;
             for (int ifCounter = 0; ifCounter < IfBlocksCount; ifCounter++)
             {
                 string exceptionStart = $"{ (ifCounter == 0 ? "If" : "Else if") } statement { (ifCounter == 0 ? String.Empty : $"Number {ifCounter}")}";
@@ -50,7 +51,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
                 if (guardedDFGNode != null)
                 {
                     DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, parserInfo);
-                    DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, parserInfo);
+                    nextDFG = nextDFG ?? XmlParser.ParseNextDFG(node, parserInfo);
 
                     conditionals.Add(new Conditional(decidingBlock, guardedDFG, nextDFG));
                 }
@@ -62,7 +63,6 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
                 if (guardedDFGNode != null)
                 {
                     DFG<Block> guardedDFG = XmlParser.ParseDFG(guardedDFGNode, parserInfo);
-                    DFG<Block> nextDFG = XmlParser.ParseNextDFG(node, parserInfo);
 
                     conditionals.Add(new Conditional(null, guardedDFG, nextDFG));
                 }
