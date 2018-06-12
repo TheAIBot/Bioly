@@ -199,25 +199,25 @@ namespace BiolyCompiler.Parser
                 case InputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
-                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "Declaration blocks has to be at the top of the program."));
                     }
                     return InputDeclaration.Parse(node, parserInfo);
                 case OutputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
-                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "Declaration blocks has to be at the top of the program."));
                     }
                     return OutputDeclaration.Parse(node, parserInfo);
                 case WasteDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
-                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "Declaration blocks has to be at the top of the program."));
                     }
                     return WasteDeclaration.Parse(node, parserInfo);
                 case HeaterDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
-                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "Declaration blocks has to be at the top of the program."));
                     }
                     return HeaterDeclaration.Parse(node, parserInfo);
                 case OutputUsage.XML_TYPE_NAME:
