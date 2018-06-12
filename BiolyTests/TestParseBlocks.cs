@@ -63,6 +63,21 @@ namespace BiolyTests.ParseBlockTests
         }
 
         [TestMethod]
+        public void ParseWasteDeclarationBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddWasteDeclarationBlock("z");
+            TestTools.ExecuteJS(program);
+
+            XmlNode node = TestTools.GetWorkspace();
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            WasteDeclaration heater = (WasteDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
+
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
+        }
+
+        [TestMethod]
         public void ParseHeaterDeclarationBlock()
         {
             JSProgram program = new JSProgram();
@@ -146,23 +161,6 @@ namespace BiolyTests.ParseBlockTests
         }
 
         [TestMethod]
-        public void ParseWasteBlock()
-        {
-            JSProgram program = new JSProgram();
-            program.AddWasteSegment("a", 329, false);
-            TestTools.ExecuteJS(program);
-
-            XmlNode node = TestTools.GetWorkspace();
-            ParserInfo parserInfo = new ParserInfo();
-            parserInfo.EnterDFG();
-            parserInfo.AddVariable("", VariableType.FLUID, "a");
-            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
-
-            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
-            Assert.IsTrue(input is Waste);
-        }
-
-        [TestMethod]
         public void ParseFluidBlock()
         {
             JSProgram program = new JSProgram();
@@ -194,6 +192,24 @@ namespace BiolyTests.ParseBlockTests
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.IsTrue(input is OutputUsage);
+        }
+
+        [TestMethod]
+        public void ParseWasteBlock()
+        {
+            JSProgram program = new JSProgram();
+            program.AddWasteSegment("a", "z", 1249, false);
+            TestTools.ExecuteJS(program);
+
+            XmlNode node = TestTools.GetWorkspace();
+            ParserInfo parserInfo = new ParserInfo();
+            parserInfo.EnterDFG();
+            parserInfo.AddVariable("", VariableType.FLUID, "a");
+            parserInfo.AddVariable("", VariableType.WASTE, "z");
+            Block input = XmlParser.ParseBlock(node, new DFG<Block>(), parserInfo);
+
+            Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
+            Assert.IsTrue(input is WasteUsage);
         }
 
         [TestMethod]

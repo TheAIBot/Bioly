@@ -199,23 +199,33 @@ namespace BiolyCompiler.Parser
                 case InputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
-                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "Declaration blocks has to be at the top of the program."));
                     }
                     return InputDeclaration.Parse(node, parserInfo);
                 case OutputDeclaration.XML_TYPE_NAME:
                     if (!allowDeclarationBlocks)
                     {
-                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "Declaration blocks has to be at the top of the program."));
                     }
                     return OutputDeclaration.Parse(node, parserInfo);
+                case WasteDeclaration.XML_TYPE_NAME:
+                    if (!allowDeclarationBlocks)
+                    {
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "Declaration blocks has to be at the top of the program."));
+                    }
+                    return WasteDeclaration.Parse(node, parserInfo);
+                case HeaterDeclaration.XML_TYPE_NAME:
+                    if (!allowDeclarationBlocks)
+                    {
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "Declaration blocks has to be at the top of the program."));
+                    }
+                    return HeaterDeclaration.Parse(node, parserInfo);
                 case OutputUsage.XML_TYPE_NAME:
                     return OutputUsage.Parse(node, dfg, parserInfo);
-                case HeaterDeclaration.XML_TYPE_NAME:
-                    return HeaterDeclaration.Parse(node, parserInfo);
+                case WasteUsage.XML_TYPE_NAME:
+                    return WasteUsage.Parse(node, dfg, parserInfo);
                 case DropletDeclaration.XML_TYPE_NAME:
                     return DropletDeclaration.Parse(node, parserInfo);
-                case Waste.XML_TYPE_NAME:
-                    return Waste.Parse(node, dfg, parserInfo);
                 case BoolOP.XML_TYPE_NAME:
                     return BoolOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 //case Sensor.XmlTypeName:
