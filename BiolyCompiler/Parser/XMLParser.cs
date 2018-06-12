@@ -214,12 +214,16 @@ namespace BiolyCompiler.Parser
                         throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
                     }
                     return WasteDeclaration.Parse(node, parserInfo);
+                case HeaterDeclaration.XML_TYPE_NAME:
+                    if (!allowDeclarationBlocks)
+                    {
+                        throw new ParseException(id, "Declaration blocks has to be at the top of the program.");
+                    }
+                    return HeaterDeclaration.Parse(node, parserInfo);
                 case OutputUsage.XML_TYPE_NAME:
                     return OutputUsage.Parse(node, dfg, parserInfo);
                 case WasteUsage.XML_TYPE_NAME:
                     return WasteUsage.Parse(node, dfg, parserInfo);
-                case HeaterDeclaration.XML_TYPE_NAME:
-                    return HeaterDeclaration.Parse(node, parserInfo);
                 case DropletDeclaration.XML_TYPE_NAME:
                     return DropletDeclaration.Parse(node, parserInfo);
                 case BoolOP.XML_TYPE_NAME:
