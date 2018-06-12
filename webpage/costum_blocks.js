@@ -25,23 +25,16 @@ Blockly.Blocks["inputDeclaration"] = {
 				{
 					"type": "field_variable",
 					"name": "inputName",
-					"variable": "input_fluid_name"
+					"variable": "input_fluid_name",
+					"variableTypes": ["FLUID"]
 				}
 			],
-			"message2": "amount %1 %2",
+			"message2": "amount %1 drops",
 			"args2": [
 				{
 					"type": "field_number",
 					"name": "inputAmount",
 					"check": "Number"
-				},
-				{
-					"type": "field_dropdown",
-					"name": "inputUnit",
-					"options": [
-						["drops", "0"],
-						["ml", "1"]
-					]
 				}
 			],
 			"previousStatement": null,
@@ -302,7 +295,8 @@ Blockly.Blocks["fluid"] = {
 				{
 					"type": "field_variable",
 					"name": "fluidName",
-					"variable": "fluid_name"
+					"variable": "fluid_name",
+					"variableTypes": ["FLUID"]
 				},
 				{
 					"type": "input_value",
@@ -325,10 +319,11 @@ Blockly.Blocks["getFluid"] = {
 				{
 					"type": "field_variable",
 					"name": "fluidName",
-					"variable": "fluid_name"
+					"variable": "fluid_name",
+					"check": "FLUID"
 				}
 			],
-			"message1": "amount %1 ml",
+			"message1": "amount %1 drops",
 			"args1": [
 				{
 					"type": "field_number",
@@ -359,7 +354,8 @@ Blockly.Blocks["getDropletCount"] = {
 				{
 					"type": "field_variable",
 					"name": "fluidName",
-					"variable": "fluid_name"
+					"variable": "fluid_name",
+					"variableTypes": ["FLUID"]
 				}
 			],
 			"output": "Number",
@@ -528,7 +524,8 @@ Blockly.Blocks["getNumberVariable"] = {
 				{
 					"type": "field_variable",
 					"name": "variableName",
-					"variable": "variable_name"
+					"variable": "variable_name",
+					"variableTypes": ["NUMBER"]
 				}
 			],
 			"output": "Number",
@@ -545,7 +542,9 @@ Blockly.Blocks["setNumberVariable"] = {
 				{
 					"type": "field_variable",
 					"name": "variableName",
-					"variable": "variable_name"
+					"variable": "variable_name",
+					"check": ["NUMBER"],
+					"variableTypes": ["NUMBER"]
 				},
 				{
 					"type": "input_value",
