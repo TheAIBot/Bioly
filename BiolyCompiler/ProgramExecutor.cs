@@ -46,8 +46,9 @@ namespace BiolyCompiler
             Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Dictionary<int, Board> boards = new Dictionary<int, Board>();
-            Board oldBoard = null;
+            List<(int, int, int, int)> oldRectangles = null;
             bool firstRun = true;
+            int runNumber = 0;
 
             while (runningGraph != null)
             {
@@ -58,6 +59,7 @@ namespace BiolyCompiler
 
                 List<Module> usedModules;
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules, out usedModules);
+                runNumber++;
                 if (firstRun)
                 {
                     StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
@@ -66,7 +68,7 @@ namespace BiolyCompiler
 
                 List<Command>[] commandTimeline = CreateCommandTimeline(variables, scheduledOperations, time, dropPositions);
 
-                SendCommands(commandTimeline, ref oldBoard, boards);
+                SendCommands(commandTimeline, ref oldRectangles, boards);
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
@@ -122,7 +124,7 @@ namespace BiolyCompiler
             return commandTimeline;
         }
 
-        private void SendCommands(List<Command>[] commandTimeline, ref Board oldBoard, Dictionary<int, Board> boards)
+        private void SendCommands(List<Command>[] commandTimeline, ref List<(int, int, int, int)> oldRectangles, Dictionary<int, Board> boards)
         {
             int time = 0;
             foreach (List<Command> commands in commandTimeline)
@@ -149,16 +151,19 @@ namespace BiolyCompiler
 
                 if (ShowEmptyRectangles)
                 {
-                    var closestsBoard = boards.MinBy(x => Math.Abs(x.Key - time));
-                    if (closestsBoard.Value != oldBoard && closestsBoard.Value != null)
+                    List<(int, int, int, int)> closestBoardData = boards.MinBy(x => x.Key - time < 0 ? int.MaxValue : x.Key - time)
+                                                                        .Value.EmptyRectangles
+                                                                        .Select(x => (x.x, x.y, x.width, x.height))
+                                                                        .ToList();
+                    if (closestBoardData != oldRectangles && closestBoardData != null)
                     {
-                        var emptyRectanglesToRemove = oldBoard?.EmptyRectangles.Except(closestsBoard.Value.EmptyRectangles);
-                        emptyRectanglesToRemove?.ForEach(x => removeAreaCommands.Add(new AreaCommand(x, CommandType.REMOVE_AREA, 0)));
+                        var rectanglesToRemove = oldRectangles?.Except(closestBoardData);
+                        rectanglesToRemove?.ForEach(x => removeAreaCommands.Add(new AreaCommand(x.Item1, x.Item2, x.Item3, x.Item4, CommandType.REMOVE_AREA, 0)));
 
-                        var emptyRectanglesToShow = closestsBoard.Value.EmptyRectangles.Except(oldBoard?.EmptyRectangles ?? new HashSet<Rectangle>());
-                        emptyRectanglesToShow.ForEach(x => showAreaCommands.Add(new AreaCommand(x, CommandType.SHOW_AREA, 0)));
+                        var rectanglesToShow = closestBoardData.Except(oldRectangles ?? new List<(int, int, int, int)>());
+                        rectanglesToShow.ForEach(x => showAreaCommands.Add(new AreaCommand(x.Item1, x.Item2, x.Item3, x.Item4, CommandType.SHOW_AREA, 0)));
                     }
-                    oldBoard = closestsBoard.Value ?? oldBoard;
+                    oldRectangles = closestBoardData ?? oldRectangles;
                 }
 
                 if (removeAreaCommands.Count > 0)
@@ -180,8 +185,11 @@ namespace BiolyCompiler
             }
         }
 
+       
+       static int numberOfDFGsHandled = 0;
         private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out List<Module> usedModules)
         {
+            numberOfDFGsHandled++;
             Schedule scheduler = new Schedule();
             scheduler.TransferFluidVariableLocationInformation(dropPositions);
             scheduler.TransferStaticModulesInformation(staticModules);

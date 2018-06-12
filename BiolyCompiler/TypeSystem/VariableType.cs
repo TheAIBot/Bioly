@@ -9,6 +9,8 @@ namespace BiolyCompiler.TypeSystem
         FLUID,
         HEATER,
         OUTPUT,
+        WASTE,
+        SENSOR,
         NUMBER,
         FLUID_ARRAY,
         NUMBER_ARRAY

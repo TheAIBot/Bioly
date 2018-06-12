@@ -22,6 +22,41 @@ namespace BiolyCompiler
             //                 .OrderBy(element => element.StartTime)
             #endif
             checkAdjacencyMatrixCorrectness(board);
+            checkIsBoardPerfectlyPartitioned(board);
+        }
+
+        private static void checkIsBoardPerfectlyPartitioned(Board board)
+        {
+            bool[,] grid = new bool[board.width,board.heigth];
+            HashSet<Rectangle> allRectangles = new HashSet<Rectangle>();
+            allRectangles.UnionWith(board.EmptyRectangles);
+            allRectangles.UnionWith(board.PlacedModules.Select(module => module.Shape));
+            foreach (var rectangle in allRectangles)
+            {
+                for (int i = 0; i < rectangle.width; i++)
+                {
+                    for (int j = 0; j < rectangle.height; j++)
+                    {
+                        if (board.width <= rectangle.x + i || board.heigth <= rectangle.y+j )
+                        {
+                            Console.Write("");
+                            continue;
+                        }
+                        if (grid[rectangle.x + i, rectangle.y + j])
+                            throw new Exception("The board is not perfectly partitioned by its rectangles: more than one rectangle is overlapping.");
+                        else grid[rectangle.x + i, rectangle.y + j] = true;
+                    }
+                }
+            }
+
+            for (int x = 0; x < board.width; x++)
+            {
+                for (int y = 0; y < board.heigth; y++)
+                {
+                    if (!grid[x, y])
+                        throw new Exception("The board is not perfectly partitioned by its rectangles: a part of the board is not inside a rectangle.");
+                }
+            }
         }
 
         public static void checkAdjacencyMatrixCorrectness(Board board)
