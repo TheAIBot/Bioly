@@ -277,6 +277,7 @@ namespace BiolyCompiler.Architechtures
             return visitsEverything;
         }
 
+
         public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, HashSet<Rectangle> outsideEmptyRectangles, HashSet<Rectangle> layoutEmptyRectangles)
         {
             //Breadth first search, finding all the empty rectangles that can be visited.
@@ -308,7 +309,12 @@ namespace BiolyCompiler.Architechtures
             bool hasAllEmptyRectanglesBeenVisited = layoutEmptyRectangles.IsSubsetOf(visitedEmptyRectangles);
             return hasAllEmptyRectanglesBeenVisited;
         }
-
+        
+        /// <summary>
+        /// Return an empty rectangle adjacent to the given rectangle: and null if such a rectangle does not exist.
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <returns></returns>
         private static Rectangle getEmptyAdjacentRectangle(Rectangle rectangle)
         {
             Rectangle randomEmptyRectangle = null;
@@ -324,6 +330,17 @@ namespace BiolyCompiler.Architechtures
             return randomEmptyRectangle;
         }
 
+        /// <summary>
+        /// Compares the size of the given sets, to find if exactely the right rectangles and modules have been visisted.
+        /// It returns true if this is the case, else false.
+        /// </summary>
+        /// <param name="extraEmptyRectangles"></param>
+        /// <param name="extraPlacedModules"></param>
+        /// <param name="visitedEmptyRectangles"></param>
+        /// <param name="connectedModuleRectangles"></param>
+        /// <param name="originalEmptyRectangles"></param>
+        /// <param name="originalPlacedModules"></param>
+        /// <returns></returns>
         private static bool VisitsAllModulesAndEmptyRectangles(int extraEmptyRectangles, int extraPlacedModules, HashSet<Rectangle> visitedEmptyRectangles, 
                                                                HashSet<Rectangle> connectedModuleRectangles, HashSet<Rectangle> originalEmptyRectangles, HashSet<Module> originalPlacedModules)
         {
@@ -331,6 +348,12 @@ namespace BiolyCompiler.Architechtures
                     visitedEmptyRectangles.Count    == originalEmptyRectangles.Count + extraEmptyRectangles);
         }
 
+        /// <summary>
+        /// Returns the rectangles that are only present in one of the two sets given.
+        /// </summary>
+        /// <param name="set1"></param>
+        /// <param name="set2"></param>
+        /// <returns></returns>
         private HashSet<Rectangle> GetSetDifference(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
         {
             HashSet<Rectangle> differenceSet = new HashSet<Rectangle>();
