@@ -589,7 +589,7 @@ Blockly.Blocks["inlineProgram"] =
 			items.push([item.name, item.name]);
 		}
 		
-		this.appendDummyInput().appendField("program").appendField(new Blockly.FieldDropdown(items), "programsDropdown");
+		this.appendDummyInput().appendField("run program").appendField(new Blockly.FieldDropdown(items), "programsDropdown");
 		this.getField("programsDropdown").setValidator(function(option) 
 		{
 			this.sourceBlock_.updateShape_(option);
