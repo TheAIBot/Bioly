@@ -320,7 +320,8 @@ Blockly.Blocks["getFluid"] = {
 					"type": "field_variable",
 					"name": "fluidName",
 					"variable": "fluid_name",
-					"check": "FLUID"
+					"check": "FLUID",
+					"variableTypes": ["FLUID"]
 				}
 			],
 			"message1": "amount %1 drops",
