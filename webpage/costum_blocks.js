@@ -501,12 +501,12 @@ Blockly.Blocks["getFluidArrayIndex"] = {
 Blockly.Blocks["getArrayLength"] = {
 	init: function() {
 		this.jsonInit({
-			"message0": "array length %1",
+			"message0": "array length of %1",
 			"args0": [
 				{
 					"type": "field_variable",
 					"name": "arrayName",
-					"variable": "fluid_array_name"
+					"variable": "array_name"
 				}
 			],
 			"output": "Number",
