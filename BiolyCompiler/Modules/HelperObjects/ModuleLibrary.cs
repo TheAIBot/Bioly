@@ -26,7 +26,7 @@ namespace BiolyCompiler.Modules
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
             HashSet<Module> associatedModules = new HashSet<Module>();
-            foreach (var node in assay.dfg.Nodes)
+            foreach (var node in assay.Dfg.Nodes)
             {
                 if (  node.value is FluidBlock operation && 
                     !(node.value is StaticUseageBlock) &&

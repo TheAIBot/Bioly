@@ -58,11 +58,11 @@ namespace BiolyTests.AssayTests
 
             Assay assay = new Assay(dfg);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count);
+            Assert.AreEqual(assay.GetReadyOperations().Count, dfg.Nodes.Count);
             foreach (var node in dfg.Nodes)
             {
                 //Even the pointers should be the same.
-                Assert.IsTrue(assay.getReadyOperations().Contains(node.value));
+                Assert.IsTrue(assay.GetReadyOperations().Contains(node.value));
             }
         }
 
@@ -86,10 +86,10 @@ namespace BiolyTests.AssayTests
 
             Assay assay = new Assay(dfg);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count - 1);
+            Assert.AreEqual(assay.GetReadyOperations().Count, dfg.Nodes.Count - 1);
             for (int i = 0; i < dfg.Nodes.Count; i++)
             {
-                bool containsOperation = assay.getReadyOperations().Contains(dfg.Nodes[i].value);
+                bool containsOperation = assay.GetReadyOperations().Contains(dfg.Nodes[i].value);
                 if (i == 1)
                 {
                     Assert.IsFalse(containsOperation);
@@ -121,14 +121,14 @@ namespace BiolyTests.AssayTests
 
             Assay assay = new Assay(dfg);
 
-            assay.updateReadyOperations(dfg.Nodes[2].value);
+            assay.UpdateReadyOperations(dfg.Nodes[2].value);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count - 2);
+            Assert.AreEqual(assay.GetReadyOperations().Count, dfg.Nodes.Count - 2);
 
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[0].value));
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[3].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
+            Assert.IsTrue(assay.GetReadyOperations().Contains(dfg.Nodes[0].value));
+            Assert.IsTrue(assay.GetReadyOperations().Contains(dfg.Nodes[3].value));
+            Assert.IsFalse(assay.GetReadyOperations().Contains(dfg.Nodes[1].value));
+            Assert.IsFalse(assay.GetReadyOperations().Contains(dfg.Nodes[2].value));
 
             Assert.IsFalse(dfg.Nodes[0].value.IsDone);
             Assert.IsFalse(dfg.Nodes[1].value.IsDone);
@@ -158,14 +158,14 @@ namespace BiolyTests.AssayTests
 
             //Remove first dependecy
 
-            assay.updateReadyOperations(dfg.Nodes[2].value);
+            assay.UpdateReadyOperations(dfg.Nodes[2].value);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count - 2);
+            Assert.AreEqual(assay.GetReadyOperations().Count, dfg.Nodes.Count - 2);
 
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[0].value));
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[3].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
+            Assert.IsTrue(assay.GetReadyOperations().Contains(dfg.Nodes[0].value));
+            Assert.IsTrue(assay.GetReadyOperations().Contains(dfg.Nodes[3].value));
+            Assert.IsFalse(assay.GetReadyOperations().Contains(dfg.Nodes[1].value));
+            Assert.IsFalse(assay.GetReadyOperations().Contains(dfg.Nodes[2].value));
 
             Assert.IsFalse(dfg.Nodes[0].value.IsDone);
             Assert.IsFalse(dfg.Nodes[1].value.IsDone);
@@ -173,14 +173,14 @@ namespace BiolyTests.AssayTests
             Assert.IsFalse(dfg.Nodes[3].value.IsDone);
 
             //remove last dependecy
-            assay.updateReadyOperations(dfg.Nodes[0].value);
+            assay.UpdateReadyOperations(dfg.Nodes[0].value);
 
-            Assert.AreEqual(assay.getReadyOperations().Count, dfg.Nodes.Count - 2);
+            Assert.AreEqual(assay.GetReadyOperations().Count, dfg.Nodes.Count - 2);
 
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[1].value));
-            Assert.IsTrue(assay.getReadyOperations().Contains(dfg.Nodes[3].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[0].value));
-            Assert.IsFalse(assay.getReadyOperations().Contains(dfg.Nodes[2].value));
+            Assert.IsTrue(assay.GetReadyOperations().Contains(dfg.Nodes[1].value));
+            Assert.IsTrue(assay.GetReadyOperations().Contains(dfg.Nodes[3].value));
+            Assert.IsFalse(assay.GetReadyOperations().Contains(dfg.Nodes[0].value));
+            Assert.IsFalse(assay.GetReadyOperations().Contains(dfg.Nodes[2].value));
 
             Assert.IsTrue(dfg.Nodes[0].value.IsDone);
             Assert.IsFalse(dfg.Nodes[1].value.IsDone);
