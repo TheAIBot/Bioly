@@ -236,8 +236,8 @@ namespace BiolyCompiler.Parser
                     return SetNumberVariable.Parse(node, dfg, parserInfo);
                 case GetDropletCount.XML_TYPE_NAME:
                     return GetDropletCount.Parser(node, parserInfo, canBeScheduled);
-                case GetFluidArrayLength.XML_TYPE_NAME:
-                    return GetFluidArrayLength.Parse(node, parserInfo, canBeScheduled);
+                case GetArrayLength.XML_TYPE_NAME:
+                    return GetArrayLength.Parse(node, parserInfo, canBeScheduled);
                 case ImportVariable.XML_TYPE_NAME:
                     return ImportVariable.Parse(node, parserInfo, canBeScheduled);
                 case NumberArray.XML_TYPE_NAME:

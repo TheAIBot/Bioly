@@ -9,13 +9,13 @@ using BiolyCompiler.TypeSystem;
 
 namespace BiolyCompiler.BlocklyParts.Arrays
 {
-    public class GetFluidArrayLength : VariableBlock
+    public class GetArrayLength : VariableBlock
     {
         public const string ARRAY_NAME_FIELD_NAME = "arrayName";
         public const string XML_TYPE_NAME = "getArrayLength";
         public readonly string ArrayName;
 
-        public GetFluidArrayLength(string arrayName, List<string> input, string id, bool canBeScheduled) : base(false, input, null, id, canBeScheduled)
+        public GetArrayLength(string arrayName, List<string> input, string id, bool canBeScheduled) : base(false, input, null, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
         }
@@ -29,7 +29,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             List<string> inputs = new List<string>();
             inputs.Add(arrayName);
 
-            return new GetFluidArrayLength(arrayName, inputs, id, canBeScheduled);
+            return new GetArrayLength(arrayName, inputs, id, canBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
