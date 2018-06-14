@@ -56,6 +56,7 @@ namespace BiolyViewer_Windows
             }
             catch (Exception e)
             {
+                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
         }
@@ -90,6 +91,7 @@ namespace BiolyViewer_Windows
                     }
                     catch (Exception e)
                     {
+                        Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
                         Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
                     }
                 });
