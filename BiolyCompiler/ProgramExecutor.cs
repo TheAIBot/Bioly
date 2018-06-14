@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using System.Diagnostics;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler
 {
