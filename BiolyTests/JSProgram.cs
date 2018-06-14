@@ -71,13 +71,12 @@ namespace BiolyTests
             Builder.Append($"{blockName}.render();");
         }
 
-        public string AddInputBlock(string fluidName, int fluidAmount, FluidUnit unit)
+        public string AddInputBlock(string fluidName, int fluidAmount)
         {
             string a = GetUniqueName();
             AddBlock(a, InputDeclaration.XML_TYPE_NAME);
             SetField(a, InputDeclaration.INPUT_FLUID_FIELD_NAME, fluidName);
             SetField(a, InputDeclaration.INPUT_AMOUNT_FIELD_NAME, fluidAmount);
-            SetField(a, InputDeclaration.FLUID_UNIT_FIELD_NAME, InputDeclaration.FluidUnitToString(unit));
 
             CurrentScope.Add(a);
             return a;
@@ -313,7 +312,7 @@ namespace BiolyTests
             for (int i = 0; i < random.Next(10, Math.Max(20, size / 10)); i++)
             {
                 string fluidName = GetUniqueName();
-                AddInputBlock(fluidName, random.Next(), GetRandomFluidUnit(random));
+                AddInputBlock(fluidName, random.Next());
                 fluidNames.Add(fluidName);
             }
 
@@ -374,19 +373,6 @@ namespace BiolyTests
                 }
             }
             Finish();
-        }
-
-        private FluidUnit GetRandomFluidUnit(Random random)
-        {
-            switch (random.Next(2))
-            {
-                case 0:
-                    return FluidUnit.drops;
-                case 1:
-                    return FluidUnit.ml;
-                default:
-                    throw new Exception("random number is not between 0 and 2");
-            }
         }
 
         private bool GetRandomBool(Random random)

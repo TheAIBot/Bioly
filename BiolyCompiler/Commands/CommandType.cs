@@ -9,6 +9,9 @@ namespace BiolyCompiler.Commands
         ELECTRODE_ON,
         ELECTRODE_OFF,
         SHOW_AREA,
-        REMOVE_AREA
+        REMOVE_AREA,
+        SENSOR_START,
+        SENSOR_STOP,
+        SET_HEATER
     }
 }
