@@ -29,7 +29,7 @@ namespace BiolyCompiler.Scheduling
         public SimplePriorityQueue<FluidBlock> CurrentlyRunningOpertions = new SimplePriorityQueue<FluidBlock>();
         public List<Block> ScheduledOperations = new List<Block>();
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
-        public const int IGNORED_TIME_DIFFERENCE = 100; 
+        public const int IGNORED_TIME_DIFFERENCE = 30; 
         private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
         public Schedule(){
 
