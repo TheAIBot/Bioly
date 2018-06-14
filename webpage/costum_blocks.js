@@ -25,23 +25,17 @@ Blockly.Blocks["inputDeclaration"] = {
 				{
 					"type": "field_variable",
 					"name": "inputName",
-					"variable": "input_fluid_name"
+					"variable": "input_fluid_name",
+					"check": "FLUID",
+					"variableTypes": ["FLUID"]
 				}
 			],
-			"message2": "amount %1 %2",
+			"message2": "amount %1 drops",
 			"args2": [
 				{
 					"type": "field_number",
 					"name": "inputAmount",
 					"check": "Number"
-				},
-				{
-					"type": "field_dropdown",
-					"name": "inputUnit",
-					"options": [
-						["drops", "0"],
-						["ml", "1"]
-					]
 				}
 			],
 			"previousStatement": null,
@@ -63,7 +57,9 @@ Blockly.Blocks["dropletDeclaration"] = {
 				{
 					"type": "field_variable",
 					"name": "dropletName",
-					"variable": "input_fluid_name"
+					"variable": "input_fluid_name",
+					"check": "FLUID",
+					"variableTypes": ["FLUID"]
 				}
 			],
 			"previousStatement": null,
@@ -85,7 +81,9 @@ Blockly.Blocks["outputDeclaration"] = {
 				{
 					"type": "field_variable",
 					"name": "moduleName",
-					"variable": "module_name"
+					"variable": "module_name",
+					"check": "OUTPUT",
+					"variableTypes": ["OUTPUT"]
 				}
 			],
 			"previousStatement": null,
@@ -107,7 +105,9 @@ Blockly.Blocks["wasteDeclaration"] = {
 				{
 					"type": "field_variable",
 					"name": "moduleName",
-					"variable": "module_name"
+					"variable": "module_name",
+					"check": "WASTE",
+					"variableTypes": ["WASTE"]
 				}
 			],
 			"previousStatement": null,
@@ -129,7 +129,9 @@ Blockly.Blocks["sensorDeclaration"] = {
 				{
 					"type": "field_variable",
 					"name": "moduleName",
-					"variable": "module_name"
+					"variable": "module_name",
+					"check": "SENSOR",
+					"variableTypes": ["SENSOR"]
 				}
 			],
 			"previousStatement": null,
@@ -151,7 +153,9 @@ Blockly.Blocks["heaterDeclaration"] = {
 				{
 					"type": "field_variable",
 					"name": "moduleName",
-					"variable": "module_name"
+					"variable": "module_name",
+					"check": "HEATER",
+					"variableTypes": ["HEATER"]
 				}
 			],
 			"previousStatement": null,
@@ -173,7 +177,9 @@ Blockly.Blocks["outputUsage"] = {
 				{
 					"type": "field_variable",
 					"name": "moduleName",
-					"variable": "module_name"
+					"variable": "module_name",
+					"check": "OUTPUT",
+					"variableTypes": ["OUTPUT"]
 				},
 				{
 					"type": "input_value",
@@ -200,7 +206,9 @@ Blockly.Blocks["wasteUsage"] = {
 				{
 					"type": "field_variable",
 					"name": "moduleName",
-					"variable": "module_name"
+					"variable": "module_name",
+					"check": "WASTE",
+					"variableTypes": ["WASTE"]
 				},
 				{
 					"type": "input_value",
@@ -228,7 +236,9 @@ Blockly.Blocks["sensorUsage"] = {
 				{
 					"type": "field_variable",
 					"name": "moduleName",
-					"variable": "module_name"
+					"variable": "module_name",
+					"check": "SENSOR",
+					"variableTypes": ["SENSOR"]
 				},
 				{
 					"type": "input_value",
@@ -265,7 +275,9 @@ Blockly.Blocks["heaterUsage"] = {
 				{
 					"type": "field_variable",
 					"name": "moduleName",
-					"variable": "module_name"
+					"variable": "module_name",
+					"check": "HEATER",
+					"variableTypes": ["HEATER"]
 				}
 			],
 			"message2": "temperature %1",
@@ -302,7 +314,9 @@ Blockly.Blocks["fluid"] = {
 				{
 					"type": "field_variable",
 					"name": "fluidName",
-					"variable": "fluid_name"
+					"variable": "fluid_name",
+					"check": "FLUID",
+					"variableTypes": ["FLUID"]
 				},
 				{
 					"type": "input_value",
@@ -325,10 +339,12 @@ Blockly.Blocks["getFluid"] = {
 				{
 					"type": "field_variable",
 					"name": "fluidName",
-					"variable": "fluid_name"
+					"variable": "fluid_name",
+					"check": "FLUID",
+					"variableTypes": ["FLUID"]
 				}
 			],
-			"message1": "amount %1 ml",
+			"message1": "amount %1 drops",
 			"args1": [
 				{
 					"type": "field_number",
@@ -359,7 +375,9 @@ Blockly.Blocks["getDropletCount"] = {
 				{
 					"type": "field_variable",
 					"name": "fluidName",
-					"variable": "fluid_name"
+					"variable": "fluid_name",
+					"check": "FLUID",
+					"variableTypes": ["FLUID"]
 				}
 			],
 			"output": "Number",
@@ -409,7 +427,9 @@ Blockly.Blocks["fluidArray"] = {
 				{
 					"type": "field_variable",
 					"name": "arrayName",
-					"variable": "fluid_array_name"
+					"variable": "fluid_array_name",
+					"check": ["FLUID_ARRAY"],
+					"variableTypes": ["FLUID_ARRAY"]
 				}
 			],
 			"message2": "length %1",
@@ -435,7 +455,9 @@ Blockly.Blocks["setFluidArrayIndex"] = {
 				{
 					"type": "field_variable",
 					"name": "arrayName",
-					"variable": "fluid_array_name"
+					"variable": "fluid_array_name",
+					"check": "FLUID_ARRAY",
+					"variableTypes": ["FLUID_ARRAY"]
 				}
 			],
 			"message1": "set index %1",
@@ -469,7 +491,9 @@ Blockly.Blocks["getFluidArrayIndex"] = {
 				{
 					"type": "field_variable",
 					"name": "arrayName",
-					"variable": "fluid_array_name"
+					"variable": "fluid_array_name",
+					"check": "FLUID_ARRAY",
+					"variableTypes": ["FLUID_ARRAY"]
 				}
 			],
 			"message1": "get index %1",
@@ -505,12 +529,14 @@ Blockly.Blocks["getFluidArrayIndex"] = {
 Blockly.Blocks["getArrayLength"] = {
 	init: function() {
 		this.jsonInit({
-			"message0": "fluid array length %1",
+			"message0": "array length of %1",
 			"args0": [
 				{
 					"type": "field_variable",
 					"name": "arrayName",
-					"variable": "fluid_array_name"
+					"variable": "array_name",
+				"check": ["FLUID_ARRAY", "NUMBER_ARRAY"],
+					"variableTypes": ["FLUID_ARRAY", "NUMBER_ARRAY"]
 				}
 			],
 			"output": "Number",
@@ -528,7 +554,9 @@ Blockly.Blocks["getNumberVariable"] = {
 				{
 					"type": "field_variable",
 					"name": "variableName",
-					"variable": "variable_name"
+					"variable": "variable_name",
+					"check": "NUMBER",
+					"variableTypes": ["NUMBER"]
 				}
 			],
 			"output": "Number",
@@ -545,7 +573,9 @@ Blockly.Blocks["setNumberVariable"] = {
 				{
 					"type": "field_variable",
 					"name": "variableName",
-					"variable": "variable_name"
+					"variable": "variable_name",
+					"check": ["NUMBER"],
+					"variableTypes": ["NUMBER"]
 				},
 				{
 					"type": "input_value",
@@ -590,7 +620,7 @@ Blockly.Blocks["inlineProgram"] =
 			items.push([item.name, item.name]);
 		}
 		
-		this.appendDummyInput().appendField("program").appendField(new Blockly.FieldDropdown(items), "programsDropdown");
+		this.appendDummyInput().appendField("run program").appendField(new Blockly.FieldDropdown(items), "programsDropdown");
 		this.getField("programsDropdown").setValidator(function(option) 
 		{
 			this.sourceBlock_.updateShape_(option);
@@ -732,7 +762,9 @@ Blockly.Blocks["importNumberVariable"] = {
 				{
 					"type": "field_variable",
 					"name": "variableName",
-					"variable": "variable_name"
+					"variable": "variable_name",
+					"check": "NUMBER",
+					"variableTypes": ["NUMBER"]
 				}
 			],
 			"previousStatement": null,
@@ -754,7 +786,9 @@ Blockly.Blocks["numberArray"] = {
 				{
 					"type": "field_variable",
 					"name": "arrayName",
-					"variable": "number_array_name"
+					"variable": "number_array_name",
+					"check": "NUMBER_ARRAY",
+					"variableTypes": ["NUMBER_ARRAY"]
 				}
 			],
 			"message2": "length %1",
@@ -780,7 +814,9 @@ Blockly.Blocks["setNumberArrayIndex"] = {
 				{
 					"type": "field_variable",
 					"name": "arrayName",
-					"variable": "number_array_name"
+					"variable": "number_array_name",
+					"check": "NUMBER_ARRAY",
+					"variableTypes": ["NUMBER_ARRAY"]
 				}
 			],
 			"message1": "set index %1",
@@ -814,7 +850,9 @@ Blockly.Blocks["getNumberArrayIndex"] = {
 				{
 					"type": "field_variable",
 					"name": "arrayName",
-					"variable": "number_array_name"
+					"variable": "number_array_name",
+					"check": "NUMBER_ARRAY",
+					"variableTypes": ["NUMBER_ARRAY"]
 				}
 			],
 			"message1": "get index %1",
