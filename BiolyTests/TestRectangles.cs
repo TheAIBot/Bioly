@@ -7,6 +7,7 @@ using BiolyTests.TestObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using BiolyCompiler.Architechtures;
+using System.Text;
 
 namespace BiolyTests.RectanglesWithModulesTests
 {
@@ -289,6 +290,18 @@ namespace BiolyTests.RectanglesWithModulesTests
             }
 
             return foundRectangles;
+        }
+
+        private string RectanglesToString(List<Rectangle> rectangles, int width, int height)
+        {
+            StringBuilder builder = new StringBuilder();
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+
+                }
+            }
         }
 
         private void CompareRectangles(int[] before, int[] after, int width, int merger)
