@@ -110,6 +110,10 @@ namespace BiolyCompiler
                 else if (operation is VariableBlock varBlock)
                 {
                     (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor, dropPositions);
+                    if (float.IsInfinity(value) || float.IsNaN(value))
+                    {
+                        throw new InvalidNumberException(varBlock.BlockID, value);
+                    }
                     if (!variables.ContainsKey(variableName))
                     {
                         variables.Add(variableName, value);
