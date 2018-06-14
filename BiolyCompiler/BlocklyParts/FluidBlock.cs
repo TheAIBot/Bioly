@@ -78,12 +78,6 @@ namespace BiolyCompiler.BlocklyParts
             int time = 0;
             List<Command> commands = new List<Command>();
 
-            if (!(this is StaticBlock))
-            {
-                //show module on simulator
-                commands.Add(new AreaCommand(BoundModule.Shape, CommandType.SHOW_AREA, 0));
-            }
-
             //add commands for the routes
             foreach (List<Route> routeList in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
             {
@@ -92,12 +86,6 @@ namespace BiolyCompiler.BlocklyParts
 
             //add commands for the module itself
             commands.AddRange(BoundModule.GetModuleCommands(ref time));
-
-            if (!(this is StaticBlock))
-            {
-                //remove module from simulator
-                commands.Add(new AreaCommand(BoundModule.Shape, CommandType.REMOVE_AREA, time));
-            }
 
             return commands;
         }

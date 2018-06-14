@@ -45,7 +45,7 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.Render = true;
-            program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddInputBlock("k", 1);
             program.AddHeaterDeclarationBlock("z");            
 
             foreach (bool[] enableIf in enableIfs)
@@ -61,7 +61,7 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.Render = true;
-            program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddInputBlock("k", 1);
             program.AddHeaterDeclarationBlock("z");
 
             foreach (bool enableIf in enableIfs)
@@ -167,7 +167,7 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.Render = true;
-            program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddInputBlock("k", 1);
             program.AddHeaterDeclarationBlock("z");
 
             foreach (int[] repeats in repeatTimes)
@@ -182,7 +182,7 @@ namespace BiolyTests
         private JSProgram CreateProgramWithoutRepeatStatement(int repeatTimes)
         {
             JSProgram program = new JSProgram();
-            program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddInputBlock("k", 1);
             program.AddHeaterDeclarationBlock("z");
 
             for (int i = 0; i < repeatTimes; i++)
@@ -252,7 +252,7 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.Render = true;
-            program.AddInputBlock("k", 1, FluidUnit.drops);
+            program.AddInputBlock("k", 1);
             program.AddHeaterDeclarationBlock("z");
 
             string times = program.AddConstantBlock(whileTimes);
