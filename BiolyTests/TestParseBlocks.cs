@@ -32,7 +32,7 @@ namespace BiolyTests.ParseBlockTests
         public void ParseInputBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddInputBlock("a", 20, FluidUnit.ml);
+            program.AddInputBlock("a", 20);
             TestTools.ExecuteJS(program);
 
             XmlNode node = TestTools.GetWorkspace();
@@ -44,7 +44,6 @@ namespace BiolyTests.ParseBlockTests
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
             Assert.AreEqual("a", input.OriginalOutputVariable);
             Assert.AreEqual(20, input.Amount);
-            Assert.AreEqual(FluidUnit.ml, input.Unit);
         }
 
         [TestMethod]
@@ -236,7 +235,7 @@ namespace BiolyTests.ParseBlockTests
         public void ParseIfBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddInputBlock("k", 10, FluidUnit.drops);
+            program.AddInputBlock("k", 10);
             program.AddOutputDeclarationBlock("z");
 
             string left = program.AddConstantBlock(3);
@@ -267,7 +266,7 @@ namespace BiolyTests.ParseBlockTests
         public void ParseRepeatBlock()
         {
             JSProgram program = new JSProgram();
-            program.AddInputBlock("k", 10, FluidUnit.drops);
+            program.AddInputBlock("k", 10);
             program.AddOutputDeclarationBlock("z");
 
             string conditionalBlock = program.AddConstantBlock(3);
