@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.BlocklyParts.Arrays;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
@@ -58,7 +59,13 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
-            int index = (int)IndexBlock.Run(variables, executor, dropPositions);
+            float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
+            if (float.IsInfinity(floatIndex) || float.IsNaN(floatIndex))
+            {
+                throw new InvalidNumberException(ID, floatIndex);
+            }
+
+            int index = (int)floatIndex;
             if (index < 0 || index >= arrayLength)
             {
                 throw new ArrayIndexOutOfRange(ID, ArrayName, arrayLength, index);
