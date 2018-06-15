@@ -6,6 +6,7 @@ using BiolyCompiler.Commands;
 using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
 using System.Linq;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.Modules
 {
@@ -73,13 +74,13 @@ namespace BiolyCompiler.Modules
 
         public virtual ModuleLayout GetOutputLayout() {
             if (OutputLayout == null) {
-                throw new Exception("The output layout for the module \"" + this.ToString() + "\" have not been set/is null");
+                throw new InternalRuntimeException("The output layout for the module \"" + this.ToString() + "\" have not been set/is null");
             } else return OutputLayout;
         }
 
         public virtual ModuleLayout GetInputLayout() {
             if (InputLayout == null) {
-                throw new Exception("The layout for the module \"" + this.ToString() + "\" have not been set/is null");
+                throw new InternalRuntimeException("The layout for the module \"" + this.ToString() + "\" have not been set/is null");
             } else return InputLayout;
         }
 

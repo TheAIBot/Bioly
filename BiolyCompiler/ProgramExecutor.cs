@@ -25,6 +25,7 @@ namespace BiolyCompiler
         private readonly CommandExecutor<T> Executor;
         public int TimeBetweenCommands = 50;
         public bool ShowEmptyRectangles = true;
+        public bool Running = true;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -186,6 +187,10 @@ namespace BiolyCompiler
                 if (TimeBetweenCommands > 0)
                 {
                     Thread.Sleep(TimeBetweenCommands);
+                }
+                else if (!Running)
+                {
+                    throw new ThreadInterruptedException();
                 }
                 time++;
             }

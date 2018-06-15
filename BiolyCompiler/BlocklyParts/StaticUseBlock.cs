@@ -1,6 +1,7 @@
 ﻿using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Routing;
 using System;
@@ -40,7 +41,7 @@ namespace BiolyCompiler.BlocklyParts
 
         public override Module getAssociatedModule()
         {
-            throw new Exception("As this block represents the use of a module, it has no associated module.");
+            throw new InternalRuntimeException("As this block represents the use of a module, it has no associated module.");
         }
 
 

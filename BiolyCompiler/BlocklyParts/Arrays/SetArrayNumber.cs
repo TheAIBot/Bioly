@@ -62,7 +62,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("This method is not supported for.");
         }
 
         public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -88,7 +88,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override string ToXml()
         {
-            throw new NotImplementedException();
+            throw new InternalParseException(BlockID, "Can't create xml of this block.");
         }
 
         public override string ToString()

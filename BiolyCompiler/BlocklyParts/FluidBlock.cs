@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MoreLinq;
+using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -38,7 +40,7 @@ namespace BiolyCompiler.BlocklyParts
 
         public virtual Module getAssociatedModule()
         {
-            throw new NotImplementedException("No modules have been associated with blocks/operations of type " + this.GetType().ToString());
+            throw new InternalRuntimeException("No modules have been associated with blocks/operations of type " + this.GetType().ToString());
         }
 
         public virtual void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)
@@ -92,7 +94,7 @@ namespace BiolyCompiler.BlocklyParts
 
         internal void Unbind(Module module)
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("This method is not supported for this block.");
         }
 
         protected override void ResetBlock()

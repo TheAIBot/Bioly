@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
@@ -71,7 +72,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
                 case false:
                     return "FALSE";
                 default:
-                    throw new Exception("Failed to parse the boolean type.");
+                    throw new InternalParseException("Failed to parse the boolean type.");
             }
         }
 

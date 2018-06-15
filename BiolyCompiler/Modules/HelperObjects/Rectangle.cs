@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using BiolyCompiler.Architechtures;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Modules.RectangleSides;
 
 namespace BiolyCompiler.Modules
@@ -18,7 +19,7 @@ namespace BiolyCompiler.Modules
 
         public Rectangle(int width, int height)
         {
-            if (width < 0 || height < 0) throw new Exception("A rectangle must have a non-negative height and width: (width, height)=(" + width + ", " + height + ") is not allowed.");
+            if (width < 0 || height < 0) throw new InternalRuntimeException("A rectangle must have a non-negative height and width: (width, height)=(" + width + ", " + height + ") is not allowed.");
             this.height = height;
             this.width = width;
         }
@@ -135,15 +136,15 @@ namespace BiolyCompiler.Modules
         private void CheckThatTheRectanglesDividesTheRectanglePerfectly(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
         {
             if (splittingRectangle1.getArea() + splittingRectangle2.GetArea() != this.getArea())
-                throw new Exception("The sum of the area of the two rectangles that are supposed to split the rectangle into two, " +
+                throw new InternalRuntimeException("The sum of the area of the two rectangles that are supposed to split the rectangle into two, " +
                                     "do not equal the area of the split rectangle.");
             else if (splittingRectangle1.width == 0 || splittingRectangle1.height == 0 ||
                      splittingRectangle2.width == 0 || splittingRectangle2.height == 0)
-                throw new Exception("The two rectangles that are supposed to split the rectangle, must both have a non-zero size.");
+                throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle, must both have a non-zero size.");
             //else if (splittingRectangle1.isOverlappingWith(splittingRectangle2))
             //    throw new Exception("The two rectangles that are supposed to split the rectangle into two are overlapping");
             else if (!(splittingRectangle1.isCompletlyInside(this) && splittingRectangle2.isCompletlyInside(this)))
-                throw new Exception("At least one of the two rectangles that are supposed to split the rectangle into two, are not competly contained in the rectangle.");
+                throw new InternalRuntimeException("At least one of the two rectangles that are supposed to split the rectangle into two, are not competly contained in the rectangle.");
         }
 
         private bool isOverlappingWith(Rectangle splittingRectangle)
@@ -251,7 +252,7 @@ namespace BiolyCompiler.Modules
                     mergedRectangle = new Rectangle(width, height + adjacentRectangle.height, x, adjacentRectangle.y);
                     break;
                 default:
-                    throw new Exception("A rectangle can only be joined on the sides left, right, top or bottom, not " + side.ToString());
+                    throw new InternalRuntimeException("A rectangle can only be joined on the sides left, right, top or bottom, not " + side.ToString());
             }
             //It is important that it is the current rectangle that is changed.
             this.width  = mergedRectangle.width;
@@ -402,7 +403,7 @@ namespace BiolyCompiler.Modules
                 if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);
                 else return (candidateNewRectangle, candidateNewAdjacentRectangle, true);
             }
-            else throw new Exception("Logic error.");
+            else throw new InternalRuntimeException("Logic error.");
         }
 
         private static (bool, RectangleSide, RectangleSide) FormsLSegment(Rectangle rectangle, Rectangle adjacentRectangle)

@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using BiolyCompiler.Modules;
 using System.Xml;
+using BiolyCompiler.Exceptions.RuntimeExceptions;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler
 {
@@ -40,7 +42,7 @@ namespace BiolyCompiler
                             continue;
                         }
                         if (grid[rectangle.x + i, rectangle.y + j])
-                            throw new Exception("The board is not perfectly partitioned by its rectangles: more than one rectangle is overlapping.");
+                            throw new InternalRuntimeException("The board is not perfectly partitioned by its rectangles: more than one rectangle is overlapping.");
                         else grid[rectangle.x + i, rectangle.y + j] = true;
                     }
                 }
@@ -51,7 +53,7 @@ namespace BiolyCompiler
                 for (int y = 0; y < board.heigth; y++)
                 {
                     if (!grid[x, y])
-                        throw new Exception("The board is not perfectly partitioned by its rectangles: a part of the board is not inside a rectangle.");
+                        throw new InternalRuntimeException("The board is not perfectly partitioned by its rectangles: a part of the board is not inside a rectangle.");
                 }
             }
         }
@@ -59,7 +61,7 @@ namespace BiolyCompiler
         public static void checkAdjacencyMatrixCorrectness(Board board)
         {
             if (!doAdjacencyGraphContainTheCorrectNodes(board))
-                throw new Exception("The boards adjacency graph does not match up with the placed modules and empty rectangles.");
+                throw new InternalRuntimeException("The boards adjacency graph does not match up with the placed modules and empty rectangles.");
         }
 
 

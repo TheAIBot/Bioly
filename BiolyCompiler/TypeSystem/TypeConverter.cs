@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BiolyCompiler.Exceptions.ParserExceptions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -23,7 +24,7 @@ namespace BiolyCompiler.TypeSystem
                 case VariableType.NUMBER_ARRAY:
                     return "number array";
                 default:
-                    throw new Exception("Can't make readable version of the VariableType. Type: " + type.ToString());
+                    throw new InternalParseException("Can't make readable version of the VariableType. Type: " + type.ToString());
             }
         }
     }

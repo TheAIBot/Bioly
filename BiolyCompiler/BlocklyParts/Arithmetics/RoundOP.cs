@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
@@ -87,7 +88,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case RoundOPTypes.ROUNDUP:
                     return (float)Math.Ceiling(result);
                 default:
-                    throw new Exception("Failed to parse the round operator type. Type: " + RoundType.ToString());
+                    throw new InternalRuntimeException("Failed to parse the round operator type. Type: " + RoundType.ToString());
             }
         }
 

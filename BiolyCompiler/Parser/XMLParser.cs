@@ -139,6 +139,7 @@ namespace BiolyCompiler.Parser
 
         private static IControlBlock ParseDFGBreaker(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string blockType = node.Attributes[Block.TYPE_FIELD_NAME].Value;
             switch (blockType)
             {
@@ -159,7 +160,7 @@ namespace BiolyCompiler.Parser
                     program.AppendProgramXml(ref node, parserInfo);
                     return new Direct(node, dfg, parserInfo);
                 default:
-                    throw new Exception("Invalid type: " + blockType);
+                    throw new UnknownBlockException(id);
             }
         }
 
