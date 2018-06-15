@@ -56,12 +56,14 @@ namespace BiolyViewer_Windows
                     Browser.ExecuteScriptAsync(js);
                 }
             }
-            catch (InternalParseException e)
+            catch (ParseException e)
             {
                 Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
+                Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
             catch (Exception e)
             {
+                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"Unexpected error.\n{e.Message.Replace('\"', '\'')}\");");
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
         }
@@ -94,6 +96,10 @@ namespace BiolyViewer_Windows
                             CurrentlyExecutionProgram.ShowEmptyRectangles = showEmptyRectangles;
                             CurrentlyExecutionProgram.Run(boardWidth, boardHeight, xml);
                         }
+                    }
+                    catch (InternalRuntimeException e)
+                    {
+                        Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"Unexpected error.{@Environment.NewLine}{e.Message.Replace('\"', '\'')}\");");
                     }
                     catch (RuntimeException e)
                     {
