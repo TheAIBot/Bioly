@@ -210,6 +210,7 @@ namespace BiolyCompiler.Modules
                     board.EmptyRectangles.Remove(this);
                     board.EmptyRectangles.Remove(adjacentRectangle);
                     MergeWithRectangle(side, adjacentRectangle);
+                    board.EmptyRectangles.Remove(this);
                     board.EmptyRectangles.Add(this, this);
                     //Continue the merging with the updated rectangle!
                     MergeWithOtherRectangles(board);
