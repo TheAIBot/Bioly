@@ -689,12 +689,14 @@ namespace BiolyTests.RectanglesWithModulesTests
                 4, 4, 1, 1, 2, 2, 2,
                 4, 4, 1, 1, 2, 2, 2,
                 4, 4, 1, 1, 2, 2, 2,
+                4, 4, 1, 1, 2, 2, 2,
             };
             int[] after = new int[]
             {
                 1, 1, 1, 1, 0, 0, 0,
                 1, 1, 1, 1, 0, 0, 0,
                 1, 1, 1, 1, 0, 0, 0,
+                2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
@@ -719,12 +721,14 @@ namespace BiolyTests.RectanglesWithModulesTests
                 2, 2, 2, 1, 1, 4, 4,
                 2, 2, 2, 1, 1, 4, 4,
                 2, 2, 2, 1, 1, 4, 4,
+                2, 2, 2, 1, 1, 4, 4,
             };
             int[] after = new int[]
             {
                 0, 0, 0, 1, 1, 1, 1,
                 0, 0, 0, 1, 1, 1, 1,
                 0, 0, 0, 1, 1, 1, 1,
+                2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
@@ -746,12 +750,14 @@ namespace BiolyTests.RectanglesWithModulesTests
                 4, 4, 1, 1, 2, 2, 2,
                 4, 4, 1, 1, 2, 2, 2,
                 4, 4, 1, 1, 2, 2, 2,
+                4, 4, 1, 1, 2, 2, 2,
                 3, 3, 1, 1, 0, 0, 0,
                 3, 3, 1, 1, 0, 0, 0,
                 3, 3, 1, 1, 0, 0, 0,
             };
             int[] after = new int[]
             {
+                2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
@@ -776,12 +782,14 @@ namespace BiolyTests.RectanglesWithModulesTests
                 2, 2, 2, 1, 1, 4, 4,
                 2, 2, 2, 1, 1, 4, 4,
                 2, 2, 2, 1, 1, 4, 4,
+                2, 2, 2, 1, 1, 4, 4,
                 0, 0, 0, 1, 1, 3, 3,
                 0, 0, 0, 1, 1, 3, 3,
                 0, 0, 0, 1, 1, 3, 3,
             };
             int[] after = new int[]
             {
+                2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
@@ -803,7 +811,6 @@ namespace BiolyTests.RectanglesWithModulesTests
             int[] before = new int[]
             {
                 4, 4, 4, 4, 3, 3,
-                4, 4, 4, 4, 3, 3,
                 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1,
                 2, 2, 2, 2, 0, 0,
@@ -812,7 +819,6 @@ namespace BiolyTests.RectanglesWithModulesTests
             };
             int[] after = new int[]
             {
-                2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 1, 1,
@@ -833,7 +839,6 @@ namespace BiolyTests.RectanglesWithModulesTests
             int[] before = new int[]
             {
                 3, 3, 4, 4, 4, 4,
-                3, 3, 4, 4, 4, 4,
                 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1,
                 0, 0, 2, 2, 2, 2,
@@ -842,7 +847,6 @@ namespace BiolyTests.RectanglesWithModulesTests
             };
             int[] after = new int[]
             {
-                1, 1, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
@@ -868,14 +872,12 @@ namespace BiolyTests.RectanglesWithModulesTests
                 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1,
                 4, 4, 4, 4, 3, 3,
-                4, 4, 4, 4, 3, 3,
             };
             int[] after = new int[]
             {
                 2, 2, 2, 2, 0, 0,
                 2, 2, 2, 2, 0, 0,
                 2, 2, 2, 2, 0, 0,
-                2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 1, 1,
@@ -898,14 +900,12 @@ namespace BiolyTests.RectanglesWithModulesTests
                 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1,
                 3, 3, 4, 4, 4, 4,
-                3, 3, 4, 4, 4, 4,
             };
             int[] after = new int[]
             {
                 0, 0, 2, 2, 2, 2,
                 0, 0, 2, 2, 2, 2,
                 0, 0, 2, 2, 2, 2,
-                1, 1, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
