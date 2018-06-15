@@ -26,6 +26,11 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             this.OriginalFluidName = originalFluidName;
             this.AmountInML = inputAmountInDroplets;
             this.UseAllFluid = useAllFluid;
+
+            if (!UseAllFluid)
+            {
+                Validator.ValueWithinRange(id, inputAmountInDroplets, 1, int.MaxValue);
+            }
         }
 
         public virtual void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
