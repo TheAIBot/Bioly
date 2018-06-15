@@ -201,16 +201,18 @@ namespace BiolyCompiler.Modules
         public bool MergeWithOtherRectangles(Board board)
         {
             //Recursivly merge with neighboring rectangles, which sides lines up perfectly with the current rectangle:
-            foreach (var adjacentRectangle in AdjacentRectangles)
+            List<Rectangle> adjacentRectangles = AdjacentRectangles.ToList();
+            for (int i = 0; i < adjacentRectangles.Count; i++)
             {
+                Rectangle adjacentRectangle = adjacentRectangles[i];
                 if (!adjacentRectangle.isEmpty) continue;
                 (RectangleSide side, bool canMerge) = this.CanMerge(adjacentRectangle);
-                if (canMerge) {
+                if (canMerge)
+                {
                     //Necessary, as the hashcode will change (remind me to never use hashsets again!):
                     board.EmptyRectangles.Remove(this);
                     board.EmptyRectangles.Remove(adjacentRectangle);
                     MergeWithRectangle(side, adjacentRectangle);
-                    board.EmptyRectangles.Remove(this);
                     board.EmptyRectangles.Add(this, this);
                     //Continue the merging with the updated rectangle!
                     MergeWithOtherRectangles(board);
@@ -512,7 +514,7 @@ namespace BiolyCompiler.Modules
         public override int GetHashCode()
         {
             //It does not guarentee uniqueness, in the sense that for a given hashcode, 
-            //there might be more than one unique set of heigh, width, x, and y values,
+            //there might be more than one unique set of heigth, width, x, and y values,
             //that could result in that value.
 
             //The +1 is to avoid everything becoming 0, if one value is 0.
