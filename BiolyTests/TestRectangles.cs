@@ -321,13 +321,18 @@ namespace BiolyTests.RectanglesWithModulesTests
         {
             List<Rectangle> beforeRectangles = ArrayToRectangles(before, width);
             List<Rectangle> expectedRectangles  = ArrayToRectangles(after , width);
-
             Board board = new Board(width, before.Length / width);
+
+            board.EmptyRectangles.Clear();
+            foreach (var rectangle in beforeRectangles)
+                board.EmptyRectangles.Add(rectangle, rectangle);
+
             Rectangle mergerRectangle = beforeRectangles[merger - 1];
             mergerRectangle.MergeWithOtherRectangles(board);
 
             List<Rectangle> actualRectangles = GetAllRectanglesInGraph(mergerRectangle);
 
+            Assert.AreEqual(0, actualRectangles.Except(board.EmptyRectangles.Values).Count());
             Assert.AreEqual(0, expectedRectangles.Except(actualRectangles).Count(), merger.ToString() + Environment.NewLine + RectanglesToString(actualRectangles, width, before.Length / width));
         }
 
