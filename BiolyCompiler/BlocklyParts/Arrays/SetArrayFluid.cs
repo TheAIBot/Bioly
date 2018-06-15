@@ -94,7 +94,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override string ToString()
         {
-            return "Set value in the array " + ArrayName;
+            return "put fluid into " + ArrayName;
         }
     }
 }

@@ -93,7 +93,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override string ToString()
         {
-            return "set number in array " + ArrayName;
+            return "put number into " + ArrayName;
         }
     }
 }
