@@ -109,13 +109,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BiolyCompiler\BiolyCompiler.csproj">
-      <Project>{85227332-4836-44b3-8521-d5f268c0515c}</Project>
-      <Name>BiolyCompiler</Name>
-    </ProjectReference>
+    <Folder Include="BiolyPrograms\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="BiolyPrograms\" />
+    <ProjectReference Include="..\BiolyCompiler\BiolyCompiler.csproj">
+      <Project>{6b7cb0cc-1ade-49cc-9d4f-818f0fbad0f4}</Project>
+      <Name>BiolyCompiler</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

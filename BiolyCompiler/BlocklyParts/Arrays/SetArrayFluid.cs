@@ -6,6 +6,7 @@ using System.Xml;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
@@ -65,7 +66,13 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             base.Update(variables, executor, dropPositions);
 
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
-            int index = (int)IndexBlock.Run(variables, executor, dropPositions);
+            float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
+            if (float.IsInfinity(floatIndex) || float.IsNaN(floatIndex))
+            {
+                throw new InvalidNumberException(BlockID, floatIndex);
+            }
+
+            int index = (int)floatIndex;
             if (index < 0 || index >= arrayLength)
             {
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);

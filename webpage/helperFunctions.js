@@ -73,7 +73,8 @@ function setGraph(nodes, edges)
 	});
 }
 
-function loadWorkspace(xmlText) {
+function loadWorkspace(xmlText) 
+{
 	workspace.removeChangeListener(onWorkspaceChanged);
 	
 	const xml = Blockly.Xml.textToDom(xmlText);
@@ -110,7 +111,7 @@ function openTab(e, tabName)
 }
 
 function ShowBlocklyErrors(errorInfo)
-{
+{	
 	//{
 	//	id,
 	//	message
@@ -144,6 +145,14 @@ function ShowBlocklyErrors(errorInfo)
 	}
 }
 
+function ShowUnexpectedError(unexpectedError)
+{
+	const unexpectedErrorTextDisplay = document.getElementById("errorTextDiv");
+	unexpectedErrorTextDisplay.innerHTML = unexpectedError;
+	const unexpectedErrorsDisplay = document.getElementById("showErrors");
+	unexpectedErrorsDisplay.style.display = "block";
+}
+
 function ClearErrors()
 {
 	const allBlocks = workspace.getAllBlocks();
@@ -152,6 +161,9 @@ function ClearErrors()
 		allBlocks[i].setWarningText(null);
 	}
 	workspace.highlightBlock(null);
+	
+	const unexpectedErrorsDisplay = document.getElementById("showErrors");
+	unexpectedErrorsDisplay.style.display = "none";
 }
 
 if(typeof(CefSharp) == "undefined") 
