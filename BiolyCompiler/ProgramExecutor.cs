@@ -153,7 +153,8 @@ namespace BiolyCompiler
                 {
                     List<(int, int, int, int)> closestBoardData = boards.MinBy(x => x.Key - time < 0 ? int.MaxValue : x.Key - time)
                                                                         .Value.EmptyRectangles
-                                                                        .Select(x => (x.x, x.y, x.width, x.height))
+                                                                        .Values
+                                                                        .Select(rectangle => (rectangle.x, rectangle.y, rectangle.width, rectangle.height))
                                                                         .ToList();
                     if (closestBoardData != oldRectangles && closestBoardData != null)
                     {

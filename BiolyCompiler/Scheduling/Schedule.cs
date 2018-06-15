@@ -372,7 +372,7 @@ namespace BiolyCompiler.Scheduling
             assay.SetStaticModules(StaticModules);
             library.allocateModules(assay);
             library.sortLibrary();
-            AllUsedModules.AddRange(board.PlacedModules);
+            AllUsedModules.AddRange(board.PlacedModules.Values);
             boardAtDifferentTimes.Add(startTime, board);
             if (!assay.Dfg.Nodes.Select(node => node.value).All(operation => operation is VariableBlock))
             {

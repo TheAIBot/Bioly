@@ -210,7 +210,7 @@ namespace BiolyCompiler.Modules
                     board.EmptyRectangles.Remove(this);
                     board.EmptyRectangles.Remove(adjacentRectangle);
                     MergeWithRectangle(side, adjacentRectangle);
-                    board.EmptyRectangles.Add(this);
+                    board.EmptyRectangles.Add(this, this);
                     //Continue the merging with the updated rectangle!
                     MergeWithOtherRectangles(board);
                     return true;
@@ -296,8 +296,8 @@ namespace BiolyCompiler.Modules
                         this.TransformToGivenRectangle(candidateNewRectangle);
                         adjacentRectangle.TransformToGivenRectangle(candidateNewAdjacentRectangle);
 
-                        board.EmptyRectangles.Add(this);
-                        board.EmptyRectangles.Add(adjacentRectangle);
+                        board.EmptyRectangles.Add(this, this);
+                        board.EmptyRectangles.Add(adjacentRectangle, adjacentRectangle);
 
                         allAdjacentRectangles.Add(this);
                         allAdjacentRectangles.Add(adjacentRectangle);
@@ -307,9 +307,13 @@ namespace BiolyCompiler.Modules
                             this.ConnectIfAdjacent(rectangle);
                         }
 
-                        bool mergeSucceeds = this.MergeWithOtherRectangles(board);
-                        //Both things must not be done, as adjacentRectangle can have been "deleted" in the merge.
-                        if (! mergeSucceeds) adjacentRectangle.MergeWithOtherRectangles(board);
+                        this.MergeWithOtherRectangles(board);
+                        //In the case that adjacentRectangle have been modified in the above merge, 
+                        //we must ensure that the rectangle is actually placed on the board:
+                        if (board.EmptyRectangles.TryGetValue(adjacentRectangle, out Rectangle adjacentRectangleInDictionary))
+                        {
+                            adjacentRectangleInDictionary.MergeWithOtherRectangles(board);
+                        }
                         return true;
                     }
                 }
