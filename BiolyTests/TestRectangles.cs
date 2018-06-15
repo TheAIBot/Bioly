@@ -292,11 +292,8 @@ namespace BiolyTests.RectanglesWithModulesTests
             return foundRectangles;
         }
 
-        private string RectanglesToString(List<Rectangle> rectangles)
+        private string RectanglesToString(List<Rectangle> rectangles, int width, int height)
         {
-            int width  = rectangles.Max(x => x.x + x.width);
-            int height = rectangles.Max(x => x.y + x.height);
-
             int[][] map = new int[height][];
             for (int i = 0; i < map.Length; i++)
             {
@@ -329,7 +326,7 @@ namespace BiolyTests.RectanglesWithModulesTests
 
             List<Rectangle> actualRectangles = GetAllRectanglesInGraph(mergerRectangle);
 
-            Assert.AreEqual(0, expectedRectangles.Except(actualRectangles).Count(), RectanglesToString(actualRectangles));
+            Assert.AreEqual(0, expectedRectangles.Except(actualRectangles).Count(), merger.ToString() + Environment.NewLine + RectanglesToString(actualRectangles, width, before.Length / width));
         }
 
         [TestMethod]
@@ -693,9 +690,9 @@ namespace BiolyTests.RectanglesWithModulesTests
             };
             int[] after = new int[]
             {
-                1, 1, 1, 1, 0, 0, 0,
-                1, 1, 1, 1, 0, 0, 0,
-                1, 1, 1, 1, 0, 0, 0,
+                3, 3, 1, 1, 0, 0, 0,
+                3, 3, 1, 1, 0, 0, 0,
+                3, 3, 1, 1, 0, 0, 0,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
@@ -703,9 +700,6 @@ namespace BiolyTests.RectanglesWithModulesTests
             };
 
             CompareRectangles(before, after, 7, 2);
-            CompareRectangles(before, after, 7, 3);
-            CompareRectangles(before, after, 7, 4);
-            CompareRectangles(before, before, 7, 1);
         }
 
         [TestMethod]
@@ -723,9 +717,9 @@ namespace BiolyTests.RectanglesWithModulesTests
             };
             int[] after = new int[]
             {
-                0, 0, 0, 1, 1, 1, 1,
-                0, 0, 0, 1, 1, 1, 1,
-                0, 0, 0, 1, 1, 1, 1,
+                0, 0, 0, 1, 1, 3, 3,
+                0, 0, 0, 1, 1, 3, 3,
+                0, 0, 0, 1, 1, 3, 3,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
@@ -733,9 +727,6 @@ namespace BiolyTests.RectanglesWithModulesTests
             };
 
             CompareRectangles(before, after, 7, 2);
-            CompareRectangles(before, after, 7, 3);
-            CompareRectangles(before, after, 7, 4);
-            CompareRectangles(before, before, 7, 1);
         }
 
         [TestMethod]
@@ -757,15 +748,12 @@ namespace BiolyTests.RectanglesWithModulesTests
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
-                1, 1, 1, 1, 0, 0, 0,
-                1, 1, 1, 1, 0, 0, 0,
-                1, 1, 1, 1, 0, 0, 0,
+                3, 3, 1, 1, 0, 0, 0,
+                3, 3, 1, 1, 0, 0, 0,
+                3, 3, 1, 1, 0, 0, 0,
             };
 
             CompareRectangles(before, after, 7, 2);
-            CompareRectangles(before, after, 7, 3);
-            CompareRectangles(before, after, 7, 4);
-            CompareRectangles(before, before, 7, 1);
         }
 
         [TestMethod]
@@ -787,15 +775,12 @@ namespace BiolyTests.RectanglesWithModulesTests
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2, 2, 2, 2, 2,
-                0, 0, 0, 1, 1, 1, 1,
-                0, 0, 0, 1, 1, 1, 1,
-                0, 0, 0, 1, 1, 1, 1,
+                0, 0, 0, 1, 1, 3, 3,
+                0, 0, 0, 1, 1, 3, 3,
+                0, 0, 0, 1, 1, 3, 3,
             };
 
             CompareRectangles(before, after, 7, 2);
-            CompareRectangles(before, after, 7, 3);
-            CompareRectangles(before, after, 7, 4);
-            CompareRectangles(before, before, 7, 1);
         }
 
         [TestMethod]
@@ -813,8 +798,8 @@ namespace BiolyTests.RectanglesWithModulesTests
             };
             int[] after = new int[]
             {
-                2, 2, 2, 2, 1, 1,
-                2, 2, 2, 2, 1, 1,
+                2, 2, 2, 2, 3, 3,
+                2, 2, 2, 2, 3, 3,
                 2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 0, 0,
@@ -822,10 +807,7 @@ namespace BiolyTests.RectanglesWithModulesTests
                 2, 2, 2, 2, 0, 0,
             };
 
-            CompareRectangles(before, after, 7, 2);
-            CompareRectangles(before, after, 7, 3);
-            CompareRectangles(before, after, 7, 4);
-            CompareRectangles(before, before, 7, 1);
+            CompareRectangles(before, after, 6, 2);
         }
 
         [TestMethod]
@@ -843,8 +825,8 @@ namespace BiolyTests.RectanglesWithModulesTests
             };
             int[] after = new int[]
             {
-                1, 1, 2, 2, 2, 2,
-                1, 1, 2, 2, 2, 2,
+                3, 3, 2, 2, 2, 2,
+                3, 3, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
                 0, 0, 2, 2, 2, 2,
@@ -852,10 +834,7 @@ namespace BiolyTests.RectanglesWithModulesTests
                 0, 0, 2, 2, 2, 2,
             };
 
-            CompareRectangles(before, after, 7, 2);
-            CompareRectangles(before, after, 7, 3);
-            CompareRectangles(before, after, 7, 4);
-            CompareRectangles(before, before, 7, 1);
+            CompareRectangles(before, after, 6, 2);
         }
 
         [TestMethod]
@@ -878,14 +857,11 @@ namespace BiolyTests.RectanglesWithModulesTests
                 2, 2, 2, 2, 0, 0,
                 2, 2, 2, 2, 1, 1,
                 2, 2, 2, 2, 1, 1,
-                2, 2, 2, 2, 1, 1,
-                2, 2, 2, 2, 1, 1,
+                2, 2, 2, 2, 3, 3,
+                2, 2, 2, 2, 3, 3,
             };
 
-            CompareRectangles(before, after, 7, 2);
-            CompareRectangles(before, after, 7, 3);
-            CompareRectangles(before, after, 7, 4);
-            CompareRectangles(before, before, 7, 1);
+            CompareRectangles(before, after, 6, 2);
         }
 
         [TestMethod]
@@ -908,14 +884,11 @@ namespace BiolyTests.RectanglesWithModulesTests
                 0, 0, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
                 1, 1, 2, 2, 2, 2,
-                1, 1, 2, 2, 2, 2,
-                1, 1, 2, 2, 2, 2,
+                3, 3, 2, 2, 2, 2,
+                3, 3, 2, 2, 2, 2,
             };
 
-            CompareRectangles(before, after, 7, 2);
-            CompareRectangles(before, after, 7, 3);
-            CompareRectangles(before, after, 7, 4);
-            CompareRectangles(before, before, 7, 1);
+            CompareRectangles(before, after, 6, 2);
         }
     }
 }
