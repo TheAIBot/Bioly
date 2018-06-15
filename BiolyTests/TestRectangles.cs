@@ -292,16 +292,30 @@ namespace BiolyTests.RectanglesWithModulesTests
             return foundRectangles;
         }
 
-        private string RectanglesToString(List<Rectangle> rectangles, int width, int height)
+        private string RectanglesToString(List<Rectangle> rectangles)
         {
-            StringBuilder builder = new StringBuilder();
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
+            int width  = rectangles.Max(x => x.x + x.width);
+            int height = rectangles.Max(x => x.y + x.height);
 
-                }
+            int[][] map = new int[height][];
+            for (int i = 0; i < map.Length; i++)
+            {
+                map[i] = new int[width];
             }
+            int index = 1;
+            foreach (Rectangle rectangle in rectangles)
+            {
+                for (int y = rectangle.y; y < rectangle.height + rectangle.y; y++)
+                {
+                    for (int x = rectangle.x; x < rectangle.width + rectangle.x; x++)
+                    {
+                        map[y][x] = index;
+                    }
+                }
+                index++;
+            }
+
+            return String.Join(Environment.NewLine, map.Select(x => String.Join(", ", x)));
         }
 
         private void CompareRectangles(int[] before, int[] after, int width, int merger)
@@ -315,7 +329,7 @@ namespace BiolyTests.RectanglesWithModulesTests
 
             List<Rectangle> actualRectangles = GetAllRectanglesInGraph(mergerRectangle);
 
-            Assert.AreEqual(0, expectedRectangles.Except(actualRectangles).Count());
+            Assert.AreEqual(0, expectedRectangles.Except(actualRectangles).Count(), RectanglesToString(actualRectangles));
         }
 
         [TestMethod]
