@@ -28,11 +28,19 @@ namespace BiolyCompiler.Parser
             XmlNode node;
             try
             {
-                node = xmlDocument.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
+                node = xmlDocument.FirstChild.GetNodeWithName("block");
             }
             catch (Exception)
             {
                 throw new MissingBlockException("", "Missing start block.");
+            }
+            try
+            {
+                node = node.FirstChild.FirstChild;
+            }
+            catch (Exception)
+            {
+                throw new MissingBlockException("", "Program contains no blocks");
             }
 
             ParserInfo parserInfo = new ParserInfo();
@@ -155,7 +163,7 @@ namespace BiolyCompiler.Parser
                     InlineProgram program = new InlineProgram(node, dfg, parserInfo);
                     if (!program.IsValidProgram)
                     {
-                        throw new ParseException(program.ID, "asdasas");
+                        throw new ParseException(program.ID, "There is program errors in the program: " + program.ProgramName);
                     }
                     program.AppendProgramXml(ref node, parserInfo);
                     return new Direct(node, dfg, parserInfo);

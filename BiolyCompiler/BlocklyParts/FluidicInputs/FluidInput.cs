@@ -59,7 +59,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
                 case "FALSE":
                     return false;
                 default:
-                    throw new Exception("Failed to parse the boolean type.");
+                    throw new InternalParseException("Failed to parse the boolean type.");
             }
         }
 

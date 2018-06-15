@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
@@ -32,12 +34,12 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("Not allowed to execute this block.");
         }
 
         public override string ToXml()
         {
-            throw new NotImplementedException();
+            throw new InternalParseException(BlockID, "Can't create xml of this block.");
         }
 
         public override string ToString()

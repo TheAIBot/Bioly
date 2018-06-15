@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
@@ -90,7 +91,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.POW:
                     return "POWER";
                 default:
-                    throw new Exception("Failed to parse the arithmetic operator type. Type: " + type.ToString());
+                    throw new InternalParseException("Failed to parse the arithmetic operator type. Type: " + type.ToString());
             }
         }
 
@@ -112,7 +113,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.POW:
                     return (float)Math.Pow(leftResult, rightResult);
                 default:
-                    throw new Exception("Failed to parse the arithmetic operator type.");
+                    throw new InternalRuntimeException("Failed to parse the arithmetic operator type.");
             }
         }
 
@@ -143,7 +144,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.DIV:
                     return "/";
                 default:
-                    throw new Exception("Failed to parse the operator type.");
+                    throw new InternalParseException("Failed to parse the operator type.");
             }
         }
     }

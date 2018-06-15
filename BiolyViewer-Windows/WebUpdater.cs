@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
@@ -73,10 +74,6 @@ namespace BiolyViewer_Windows
         {
             lock (simulatorLocker)
             {
-                //CommandExecutor<string> executor = new SimulatorConnector(Browser, BOARD_WIDTH, BOARD_HEIGHT);
-                //ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-                //programExecutor.Run(BOARD_WIDTH, BOARD_HEIGHT, xml);
-                simulatorThread?.Interrupt();
                 if (CurrentlyExecutionProgram != null)
                 {
                     CurrentlyExecutionProgram.Running = false;

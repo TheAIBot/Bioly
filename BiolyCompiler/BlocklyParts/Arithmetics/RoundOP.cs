@@ -72,7 +72,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case RoundOPTypes.ROUNDUP:
                     return "ROUNDUP";
                 default:
-                    throw new Exception("Failed to parse the round operator type. Type: " + type.ToString());
+                    throw new InternalParseException("Failed to parse the round operator type. Type: " + type.ToString());
             }
         }
 

@@ -142,7 +142,7 @@ namespace BiolyCompiler.Modules
                      splittingRectangle2.width == 0 || splittingRectangle2.height == 0)
                 throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle, must both have a non-zero size.");
             //else if (splittingRectangle1.isOverlappingWith(splittingRectangle2))
-            //    throw new Exception("The two rectangles that are supposed to split the rectangle into two are overlapping");
+            //    throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle into two are overlapping");
             else if (!(splittingRectangle1.isCompletlyInside(this) && splittingRectangle2.isCompletlyInside(this)))
                 throw new InternalRuntimeException("At least one of the two rectangles that are supposed to split the rectangle into two, are not competly contained in the rectangle.");
         }

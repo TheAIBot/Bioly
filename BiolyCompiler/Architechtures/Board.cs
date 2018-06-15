@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Modules.RectangleSides;
@@ -161,7 +162,7 @@ namespace BiolyCompiler.Architechtures
         //                {
         //                    //It should then be able to merge
         //                    (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //                    if (!canTotallyMerge) throw new Exception("Logic error");
+        //                    if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
         //                    intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
 
         //                }
@@ -169,7 +170,7 @@ namespace BiolyCompiler.Architechtures
         //            else
         //            { //Then the right rectangle must exists, and it can be merged with first
         //                (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //                if (!canTotallyMerge) throw new Exception("Logic error");
+        //                if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
         //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
         //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
         //            }
@@ -178,7 +179,7 @@ namespace BiolyCompiler.Architechtures
         //        {
         //            //It should then be able to merge
         //            (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //            if (!canTotallyMerge) throw new Exception("Logic error");
+        //            if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
         //        }
 
         //        if (topRectangle != null)   EmptyRectangles.Remove(topRectangle);
@@ -187,7 +188,7 @@ namespace BiolyCompiler.Architechtures
         //        return (false, intermediateCurrent);
         //    }
 
-            
+
         //}
 
         public bool PlaceCompletlyBufferedModuleInRectangle(Module module, Rectangle current)
@@ -261,7 +262,7 @@ namespace BiolyCompiler.Architechtures
             {
                 Rectangle currentEmptyRectangle = emptyRectanglesToVisit.Dequeue();
                 foreach (var adjacentRectangle in currentEmptyRectangle.AdjacentRectangles) {
-                    if (adjacentRectangle == rectangle) throw new Exception("Logic error: no rectangles should currently be adjacent to this rectangle");
+                    if (adjacentRectangle == rectangle) throw new InternalRuntimeException("Logic error: no rectangles should currently be adjacent to this rectangle");
                     //if it is an empty rectangle, it should be visited:
                     if (adjacentRectangle.isEmpty && visitedEmptyRectangles.Add(adjacentRectangle))
                         emptyRectanglesToVisit.Enqueue(adjacentRectangle);
@@ -459,11 +460,6 @@ namespace BiolyCompiler.Architechtures
         private int RectangleCost(Rectangle rectangle, Module module)
         {
             return Math.Abs(rectangle.GetArea() - module.Shape.GetArea());
-        }
-
-        private bool UpdatePlacement(Rectangle rectangle, Module module)
-        {
-            throw new NotImplementedException();
         }
 
         public String print(List<Module> allPlacedModules)
