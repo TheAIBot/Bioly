@@ -57,7 +57,6 @@ namespace BiolyCompiler.Parser
             {
                 IControlBlock controlBlock = null;
                 var dfg = new DFG<Block>();
-                var mostRecentRef = new Dictionary<string, string>();
                 while (true)
                 {
                     if (IsDFGBreaker(node, dfg) && canFirstBlockBeControlFlow)
