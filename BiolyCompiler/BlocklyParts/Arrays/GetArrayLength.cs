@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public const string XML_TYPE_NAME = "getArrayLength";
         public readonly string ArrayName;
 
-        public GetArrayLength(string arrayName, List<string> input, string id, bool canBeScheduled) : base(false, input, null, id, canBeScheduled)
+        public GetArrayLength(string arrayName, List<string> input, string id, bool canBeScheduled) : base(false, null, input, null, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
         }

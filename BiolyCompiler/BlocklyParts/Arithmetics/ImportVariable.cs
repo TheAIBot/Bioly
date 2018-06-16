@@ -18,7 +18,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XML_TYPE_NAME = "importNumberVariable";
         public readonly string VariableName;
 
-        public ImportVariable(string variableName, string id, bool canBeScheduled) : base(true, null, null, id, canBeScheduled)
+        public ImportVariable(string variableName, string id, bool canBeScheduled) : base(true, null, null, null, id, canBeScheduled)
         {
             this.VariableName = variableName;
         }

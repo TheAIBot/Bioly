@@ -264,7 +264,7 @@ namespace BiolyCompiler.Scheduling
 
         private (SimplePriorityQueue<Block, int>, int, Board) HandleFluidTransfers(Assay assay, Board board, int currentTime, FluidBlock nextOperation)
         {
-            FluidInput input = nextOperation.InputVariables[0];
+            FluidInput input = nextOperation.InputFluids[0];
             int requiredDroplets = input.GetAmountInDroplets(FluidVariableLocations);
             
             //If there already exists droplets with the target fluid type (what the droplets should be renamed to),
@@ -305,8 +305,8 @@ namespace BiolyCompiler.Scheduling
         }
 
         private (SimplePriorityQueue<Block, int>, int, Board) HandleUnionOperation(Assay assay, Board board, int currentTime, Union nextOperation){
-            FluidInput input1 = nextOperation.InputVariables[0];
-            FluidInput input2 = nextOperation.InputVariables[1];
+            FluidInput input1 = nextOperation.InputFluids[0];
+            FluidInput input2 = nextOperation.InputFluids[1];
             int requiredDroplets1 = input1.GetAmountInDroplets(FluidVariableLocations);
             int requiredDroplets2 = input2.GetAmountInDroplets(FluidVariableLocations);
             int originalStartTime = currentTime;

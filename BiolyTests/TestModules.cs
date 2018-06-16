@@ -29,7 +29,7 @@ namespace BiolyTests.ModulesTests
             string op2Name = "op2";
             InputDeclaration inputOperation1 = new InputDeclaration("kage", op1Name, 1, "");
             InputDeclaration inputOperation2 = new InputDeclaration("fisk", op2Name, 1, "");
-            Mixer mixingOperation = new Mixer(new List<FluidInput>() {new BasicInput("", inputOperation1.OriginalOutputVariable, inputOperation1.OriginalOutputVariable, 1, false), new BasicInput("", inputOperation2.OriginalOutputVariable, inputOperation2.OriginalOutputVariable, 1, false) }, "Lagkage", null, "");
+            Mixer mixingOperation = new Mixer(new List<FluidInput>() {new BasicInput("", inputOperation1.OriginalOutputVariable, inputOperation1.OriginalOutputVariable, 1, false), new BasicInput("", inputOperation2.OriginalOutputVariable, inputOperation2.OriginalOutputVariable, 1, false) }, "Lagkage", "");
             dfg.AddNode(inputOperation1);
             dfg.AddNode(inputOperation2);
             dfg.AddNode(mixingOperation);
@@ -171,7 +171,7 @@ namespace BiolyTests.ModulesTests
             InputDeclaration inputOperation1 = new InputDeclaration("kage1", "Test1", initialNumberOfDroplets, "");
             InputDeclaration inputOperation2 = new InputDeclaration("kage2", "Test2", initialNumberOfDroplets, "");
             //Testing extracting from an input:
-            Union union = new Union(new List<FluidInput>() { new BasicInput("", inputOperation1.OriginalOutputVariable, inputOperation1.OriginalOutputVariable, numberOfDropletsTransfered1, false), new BasicInput("", inputOperation2.OriginalOutputVariable, inputOperation2.OriginalOutputVariable, numberOfDropletsTransfered2, false) }, "op1", null, "");
+            Union union = new Union(new List<FluidInput>() { new BasicInput("", inputOperation1.OriginalOutputVariable, inputOperation1.OriginalOutputVariable, numberOfDropletsTransfered1, false), new BasicInput("", inputOperation2.OriginalOutputVariable, inputOperation2.OriginalOutputVariable, numberOfDropletsTransfered2, false) }, "op1", "");
             dfg.AddNode(inputOperation1);
             dfg.AddNode(inputOperation2);
             dfg.AddNode(union);

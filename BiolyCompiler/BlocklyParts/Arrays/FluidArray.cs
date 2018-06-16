@@ -21,7 +21,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock ArrayLengthBlock;
 
-        public FluidArray(string arrayName, VariableBlock arrayLengthBlock, List<string> input, string id) : base(true, input, arrayName, id, true)
+        public FluidArray(string arrayName, VariableBlock arrayLengthBlock, List<string> input, string id) : base(true, null, input, arrayName, id, true)
         {
             this.ArrayName = arrayName;
             this.ArrayLengthBlock = arrayLengthBlock;

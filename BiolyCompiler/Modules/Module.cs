@@ -135,7 +135,7 @@ namespace BiolyCompiler.Modules
 
         public bool Implements(FluidBlock operation)
         {
-            return  getNumberOfOutputs() == operation.InputVariables.Count && 
+            return  getNumberOfOutputs() == operation.InputFluids.Count && 
                     //numberOfOutputs == operation.OutputVariable.Count &&
                     this.GetType().Equals(operation.getAssociatedModule().GetType());
         }

@@ -12,7 +12,7 @@ namespace BiolyTests.TestObjects
     {
         public readonly Module associatedModule;
 
-        public TestBlock(List<FluidInput> inputs, string output, Module associatedModule) : base(true, inputs, output, String.Empty)
+        public TestBlock(List<FluidInput> inputs, string output, Module associatedModule) : base(true, inputs, null, output, String.Empty)
         {
             this.associatedModule = associatedModule;
         }

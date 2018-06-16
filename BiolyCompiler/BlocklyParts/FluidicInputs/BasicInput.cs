@@ -14,7 +14,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public const string USE_ALL_FLUID_FIELD_NAME = "useAllFluid";
         public const string XML_TYPE_NAME = "getFluid";
 
-        public BasicInput(string id, string fluidName, string originalFluidName, int inputAmountInDroplets, bool useAllFluid) : base(id, fluidName, originalFluidName, inputAmountInDroplets, useAllFluid)
+        public BasicInput(string id, string fluidName, string originalFluidName, int inputAmountInDroplets, bool useAllFluid) : 
+            base(id, fluidName, originalFluidName, inputAmountInDroplets, useAllFluid, null)
         {
 
         }

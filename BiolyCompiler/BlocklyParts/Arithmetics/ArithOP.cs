@@ -21,7 +21,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : base(false, input, output, id, canBeScheduled)
+        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : 
+            base(false, null, input, output, id, canBeScheduled)
         {
             this.OPType = ArithOP.StringToArithOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
             this.LeftBlock = leftBlock;

@@ -18,21 +18,20 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public const string TIME_FIELD_NAME = "time";
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "heaterUsage";
-        public int Temperature { get; private set; }
-        public int Time { get; private set; }
+        public readonly int Temperature;
+        public readonly int Time;
 
 
-        public HeaterUsage(string moduleName, List<FluidInput> inputs, string output, int temperature, int time, string id) : base(moduleName, inputs, true, output, id)
+        public HeaterUsage(string moduleName, List<FluidInput> inputs, string output, int temperature, int time, string id) : 
+            base(moduleName, inputs, null, true, output, id)
         {
-            SetTemperatureAndTime(id, temperature, time);
-        }
+            this.Temperature = temperature;
+            //Can't be colder than absolute zero and the board probably can't handle more than 1000K
+            Validator.ValueWithinRange(id, this.Temperature, -273, 1000);
 
-
-        public HeaterUsage(string moduleName, List<FluidInput> inputs, string output, XmlNode node, string id) : base(moduleName, inputs, true, output, id)
-        {
-            int temperature = (int)node.GetNodeWithAttributeValue(TEMPERATURE_FIELD_NAME).TextToFloat(id);
-            int time = (int)node.GetNodeWithAttributeValue(TIME_FIELD_NAME).TextToFloat(id);
-            SetTemperatureAndTime(id, temperature, time);
+            this.Time = time;
+            //Time can't be negative and probably shouldn't be over a months time so throw an erro in those cases
+            Validator.ValueWithinRange(id, this.Time, 0, 2592000);
         }
 
         public static Block CreateHeater(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
@@ -40,6 +39,9 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
             parserInfo.CheckVariable(id, VariableType.HEATER, moduleName);
+
+            int temperature = (int)node.GetNodeWithAttributeValue(TEMPERATURE_FIELD_NAME).TextToFloat(id);
+            int time = (int)node.GetNodeWithAttributeValue(TIME_FIELD_NAME).TextToFloat(id);
 
             FluidInput fluidInput = null;
             XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Heater is missing input fluid block."));
@@ -51,7 +53,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);
 
-            return new HeaterUsage(moduleName, inputs, output, node, id);
+            return new HeaterUsage(moduleName, inputs, output, temperature, time, id);
         }
 
 
@@ -64,13 +66,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         private void SetTemperatureAndTime(string id, int temperature, int time)
         {
-            this.Temperature = temperature;
-            //Can't be colder than absolute zero and the board probably can't handle more than 1000C
-            Validator.ValueWithinRange(id, this.Temperature, -273, 1000);
 
-            this.Time = time;
-            //Time can't be negative and probably shouldn't be over a months time so throw an erro in those cases
-            Validator.ValueWithinRange(id, this.Time, 0, 2592000);
 
         }
 

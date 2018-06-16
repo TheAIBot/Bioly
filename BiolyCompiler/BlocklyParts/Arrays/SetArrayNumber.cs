@@ -23,7 +23,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly VariableBlock IndexBlock;
         public readonly VariableBlock NumberBlock;
 
-        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : base(true, input, arrayName, id, canBeScheduled)
+        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : 
+            base(true, null, input, arrayName, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -52,6 +53,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
 
             dfg.AddNode(indexBlock);
+            dfg.AddNode(numberInput);
 
             List<string> inputs = new List<string>();
             inputs.Add(indexBlock?.OutputVariable);

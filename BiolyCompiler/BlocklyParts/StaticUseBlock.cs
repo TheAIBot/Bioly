@@ -16,7 +16,8 @@ namespace BiolyCompiler.BlocklyParts
         //When the useage of a static module has finished, sometimes droplets needs to be moved out of the module:
         public Dictionary<string, List<Route>> OutputRoutes = new Dictionary<string, List<Route>>();
 
-        public StaticUseageBlock(string moduleName, List<FluidInput> inputs, bool canBeOutput, string output, string id) : base(moduleName, inputs, canBeOutput, output, id)
+        public StaticUseageBlock(string moduleName, List<FluidInput> inputFluids, List<string> inputNumbers, bool canBeOutput, string output, string id) : 
+            base(moduleName, inputFluids, inputNumbers, canBeOutput, output, id)
         {
 
         }

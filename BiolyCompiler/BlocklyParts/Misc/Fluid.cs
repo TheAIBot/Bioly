@@ -20,7 +20,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string OUTPUT_FLUID_FIELD_NAME = "fluidName";
         public const string XML_TYPE_NAME = "fluid";
 
-        public Fluid(List<FluidInput> input, string output, string id) : base(true, input, output, id)
+        public Fluid(List<FluidInput> input, string output, string id) : base(true, input, null, output, id)
         {
         }
 
@@ -91,7 +91,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public override string ToString()
         {
-            return $"{InputVariables[0].OriginalFluidName} -> {OriginalOutputVariable}";
+            return $"{InputFluids[0].OriginalFluidName} -> {OriginalOutputVariable}";
         }
     }
 }

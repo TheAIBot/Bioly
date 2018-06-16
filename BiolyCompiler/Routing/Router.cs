@@ -53,7 +53,7 @@ namespace BiolyCompiler.Routing
         {
             int originalStartTime = currentTime;
             Droplet inputLocation = outputOperation.BoundModule.GetInputLayout().Droplets[0];
-            foreach (var fluid in outputOperation.InputVariables)
+            foreach (var fluid in outputOperation.InputFluids)
             {
                 for (int i = 0; i < fluid.GetAmountInDroplets(FluidVariableLocations); i++)
                 {
