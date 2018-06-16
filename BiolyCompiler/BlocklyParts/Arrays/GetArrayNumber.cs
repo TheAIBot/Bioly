@@ -43,8 +43,11 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
             dfg.AddNode(indexBlock);
 
+            parserInfo.MostRecentVariableRef.TryGetValue(arrayName, out string correctedArrayName);
+
             List<string> inputs = new List<string>();
             inputs.Add(indexBlock?.OutputVariable);
+            inputs.Add(correctedArrayName);
 
             return new GetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);
         }
