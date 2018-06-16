@@ -32,7 +32,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
-            parserInfo.CheckVariable(id, new VariableType[] { VariableType.NUMBER_ARRAY, VariableType.FLUID_ARRAY }, arrayName);
+            parserInfo.CheckVariable(id, VariableType.NUMBER_ARRAY, arrayName);
 
             VariableBlock indexBlock = null;
             XmlNode indexNode = node.GetInnerBlockNode(INDEX_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block which define the index into the array."));

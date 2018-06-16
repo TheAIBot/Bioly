@@ -24,7 +24,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
-            parserInfo.CheckVariable(id, VariableType.FLUID_ARRAY, arrayName);
+            parserInfo.CheckVariable(id, new VariableType[] { VariableType.NUMBER_ARRAY, VariableType.FLUID_ARRAY }, arrayName);
 
             List<string> inputs = new List<string>();
             inputs.Add(arrayName);
