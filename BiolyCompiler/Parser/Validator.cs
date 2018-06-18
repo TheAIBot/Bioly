@@ -23,7 +23,7 @@ namespace BiolyCompiler.Parser
         public static void CheckVariableName(string id, string variableName)
         {
             //has to start with a character and can't end with a space
-            if (!Regex.IsMatch(variableName, $"[a-zA-Z]([a-zA-Z0-9 ][a-zA-Z0-9])*({REGEX_FOR_SPECIAL_SEPARATORS})?([a-zA-Z0-9])*$"))
+            if (!Regex.IsMatch(variableName, $"[a-zA-Z]([a-zA-Z0-9 ])*(({REGEX_FOR_SPECIAL_SEPARATORS})?([a-zA-Z0-9])*)*$"))
             {
                 throw new ParseException(id, "Variable names must only consist of letters(a to z), numbers, spaces and underscores and has to start with a letter.");
             }

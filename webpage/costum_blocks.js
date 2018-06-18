@@ -701,7 +701,7 @@ Blockly.Blocks["inlineProgram"] =
 			for(var i = 0; i < this.program.outputs.length; i++)
 			{
 				const outputName = this.program.outputs[i];
-				this.appendDummyInput("outputer-" + i).appendField("output " + outputName).appendField(new Blockly.FieldVariable("output fluid name"), "output-" + i);
+				this.appendDummyInput("outputer-" + i).appendField("output " + outputName).appendField(new Blockly.FieldVariable("output fluid name", null, ["FLUID"]), "output-" + i);
 			}
 		}
 	},

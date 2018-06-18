@@ -99,7 +99,7 @@ namespace BiolyViewer_Windows
                     }
                     catch (InternalRuntimeException e)
                     {
-                        Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"Unexpected error.{@Environment.NewLine}{e.Message.Replace('\"', '\'')}\");");
+                        Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
                     }
                     catch (RuntimeException e)
                     {

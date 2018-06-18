@@ -247,7 +247,7 @@ namespace BiolyCompiler.Scheduling
                     }
                     if (numberOfDropletsTransfered == requiredDroplets) break;
                 }
-                if (numberOfDropletsTransfered != requiredDroplets) throw new RuntimeException("Not enough droplets available.");
+                if (numberOfDropletsTransfered != requiredDroplets) throw new RuntimeException("Not enough droplets available. Fluid name: " + inputFluid.FluidName);
             }
             else
             {
