@@ -52,6 +52,10 @@ namespace BiolyCompiler.Routing
         public static int RouteDropletsToOutput(Board board, int currentTime, OutputUsage outputOperation, Dictionary<string, BoardFluid> FluidVariableLocations)
         {
             int originalStartTime = currentTime;
+            if (outputOperation.BoundModule.GetInputLayout().Droplets.Count == 0)
+            {
+                throw new RuntimeException("No droplets with name " + outputOperation.InputFluids.First().OriginalFluidName + " available to output.");
+            }
             Droplet inputLocation = outputOperation.BoundModule.GetInputLayout().Droplets[0];
             foreach (var fluid in outputOperation.InputFluids)
             {
