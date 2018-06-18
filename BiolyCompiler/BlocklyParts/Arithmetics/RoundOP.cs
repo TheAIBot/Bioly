@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
@@ -18,7 +19,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public readonly VariableBlock NumberBlock;
         public readonly RoundOPTypes RoundType;
 
-        public RoundOP(VariableBlock numberBlock, RoundOPTypes roundType, List<string> input, string id, bool canBeScheduled) : base(false, input, null, id, canBeScheduled)
+        public RoundOP(VariableBlock numberBlock, RoundOPTypes roundType, List<string> input, string id, bool canBeScheduled) : 
+            base(false, null, input, null, id, canBeScheduled)
         {
             this.NumberBlock = numberBlock;
             this.RoundType = roundType;
@@ -71,7 +73,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case RoundOPTypes.ROUNDUP:
                     return "ROUNDUP";
                 default:
-                    throw new Exception("Failed to parse the round operator type. Type: " + type.ToString());
+                    throw new InternalParseException("Failed to parse the round operator type. Type: " + type.ToString());
             }
         }
 
@@ -87,7 +89,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case RoundOPTypes.ROUNDUP:
                     return (float)Math.Ceiling(result);
                 default:
-                    throw new Exception("Failed to parse the round operator type. Type: " + RoundType.ToString());
+                    throw new InternalRuntimeException("Failed to parse the round operator type. Type: " + RoundType.ToString());
             }
         }
 

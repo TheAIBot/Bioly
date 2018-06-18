@@ -21,7 +21,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public GetArrayNumber(VariableBlock indexBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : base(false, input, null, id, canBeScheduled)
+        public GetArrayNumber(VariableBlock indexBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : 
+            base(false, null, input, null, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -31,7 +32,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
-            parserInfo.CheckVariable(id, new VariableType[] { VariableType.NUMBER_ARRAY, VariableType.FLUID_ARRAY }, arrayName);
+            parserInfo.CheckVariable(id, VariableType.NUMBER_ARRAY, arrayName);
 
             VariableBlock indexBlock = null;
             XmlNode indexNode = node.GetInnerBlockNode(INDEX_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block which define the index into the array."));
@@ -42,8 +43,11 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
             dfg.AddNode(indexBlock);
 
+            parserInfo.MostRecentVariableRef.TryGetValue(arrayName, out string correctedArrayName);
+
             List<string> inputs = new List<string>();
             inputs.Add(indexBlock?.OutputVariable);
+            inputs.Add(correctedArrayName);
 
             return new GetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);
         }

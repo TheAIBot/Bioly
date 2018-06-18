@@ -14,6 +14,7 @@ using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.Arrays;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -37,7 +38,7 @@ namespace BiolyCompiler.Scheduling
         
         private static Board getCurrentBoard()
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("Getting the current board hasn't been implemented yet.");
         }
 
         private void UpdateSchedule(Block operation, int currentTime, int startTime)
@@ -79,7 +80,7 @@ namespace BiolyCompiler.Scheduling
                     BoardFluid fluidType = RecordNewFluidType(dropletDeclaration);
                     Droplet droplet = (Droplet) dropletDeclaration.getAssociatedModule();
                     bool couldBePlaced = board.FastTemplatePlace(droplet);
-                    if (!couldBePlaced) throw new Exception("The input module couldn't be placed. The module is: " + droplet.ToString());
+                    if (!couldBePlaced) throw new RuntimeException("The input module couldn't be placed. The module is: " + droplet.ToString());
                     //It is not really static, and thus must does not need to be registered as such.
                 }
                 else if (staticDeclaration is InputDeclaration input)
@@ -87,7 +88,7 @@ namespace BiolyCompiler.Scheduling
                     BoardFluid fluidType = RecordNewFluidType(input);
                     InputModule inputModule = new InputModule(fluidType, (int)input.Amount);
                     bool couldBePlaced = board.FastTemplatePlace(inputModule);
-                    if (!couldBePlaced) throw new Exception("The input module couldn't be placed. The module is: " + inputModule.ToString());
+                    if (!couldBePlaced) throw new RuntimeException("The input module couldn't be placed. The module is: " + inputModule.ToString());
                     input.BoundModule = inputModule;
                     inputModule.RepositionLayout();
                     StaticModules.Add(staticDeclaration.ModuleName, inputModule);
@@ -163,14 +164,14 @@ namespace BiolyCompiler.Scheduling
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
 
                     //If the module can't be placed, one must wait until there is enough space for it:
-                    if (operationExecutingModule == null) throw new Exception("Not enough space for a module: this is not handeled yet");
+                    if (operationExecutingModule == null) throw new RuntimeException("Not enough space for a module: this is not handeled yet");
 
                     //Now all the droplet that the module should operate on, needs to be delivered to it.
                     //By construction, there will be a route from the droplets to the module, 
                     //and so it will always be possible for this routing to be done:
                     currentTime = RouteDropletsToModuleAndUpdateSchedule(board, currentTime, topPriorityOperation, operationExecutingModule);
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                } else  throw new Exception("The given block/operation type is unhandeled by the scheduler. " +
+                } else  throw new InternalRuntimeException("The given block/operation type is unhandeled by the scheduler. " +
                                             "The operation is: " + nextOperation.ToString());
                 
                 //When operations finishes, while the routing associated with nextOperation was performed, 
@@ -182,7 +183,7 @@ namespace BiolyCompiler.Scheduling
             }
             if (assay.hasUnfinishedOperations())
             {
-                throw new Exception("There were operations that couldn't be scheduled.");
+                throw new InternalRuntimeException("There were operations that couldn't be scheduled.");
             }
             SortScheduledOperations();
             return GetCompletionTime();
@@ -238,7 +239,7 @@ namespace BiolyCompiler.Scheduling
                         Droplet droplet = new Droplet(targetFluidType);
                         AllUsedModules.Add(droplet);
                         bool couldPlace = board.FastTemplatePlace(droplet);
-                        if (!couldPlace) throw new Exception("Not enough space for the fluid transfer.");
+                        if (!couldPlace) throw new RuntimeException("Not enough space for the fluid transfer.");
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         Route route = Router.RouteDropletToNewPosition(inputModule, droplet, board, currentTime);
                         currentTime = route.getEndTime() + 1;
@@ -246,7 +247,7 @@ namespace BiolyCompiler.Scheduling
                     }
                     if (numberOfDropletsTransfered == requiredDroplets) break;
                 }
-                if (numberOfDropletsTransfered != requiredDroplets) throw new Exception("Not enough droplets available.");
+                if (numberOfDropletsTransfered != requiredDroplets) throw new RuntimeException("Not enough droplets available.");
             }
             else
             {
@@ -263,7 +264,7 @@ namespace BiolyCompiler.Scheduling
 
         private (SimplePriorityQueue<Block, int>, int, Board) HandleFluidTransfers(Assay assay, Board board, int currentTime, FluidBlock nextOperation)
         {
-            FluidInput input = nextOperation.InputVariables[0];
+            FluidInput input = nextOperation.InputFluids[0];
             int requiredDroplets = input.GetAmountInDroplets(FluidVariableLocations);
             
             //If there already exists droplets with the target fluid type (what the droplets should be renamed to),
@@ -272,7 +273,7 @@ namespace BiolyCompiler.Scheduling
 
             BoardFluid inputFluid;
             FluidVariableLocations.TryGetValue(input.OriginalFluidName, out inputFluid);
-            if (inputFluid == null) throw new Exception("Fluid of type \"" + input.FluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
+            if (inputFluid == null) throw new InternalRuntimeException("Fluid of type \"" + input.FluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
 
             int originalStartTime = currentTime;
             SimplePriorityQueue<Block, int> readyOperations;
@@ -304,8 +305,8 @@ namespace BiolyCompiler.Scheduling
         }
 
         private (SimplePriorityQueue<Block, int>, int, Board) HandleUnionOperation(Assay assay, Board board, int currentTime, Union nextOperation){
-            FluidInput input1 = nextOperation.InputVariables[0];
-            FluidInput input2 = nextOperation.InputVariables[1];
+            FluidInput input1 = nextOperation.InputFluids[0];
+            FluidInput input2 = nextOperation.InputFluids[1];
             int requiredDroplets1 = input1.GetAmountInDroplets(FluidVariableLocations);
             int requiredDroplets2 = input2.GetAmountInDroplets(FluidVariableLocations);
             int originalStartTime = currentTime;
@@ -344,7 +345,7 @@ namespace BiolyCompiler.Scheduling
                 readyOperations = HandleStaticModuleDeclarations(assay, nextOperation);
             else if (nextOperation is Fluid || nextOperation is SetArrayFluid)
                 (readyOperations, currentTime, board) = HandleFluidTransfers(assay, board, currentTime, (FluidBlock)nextOperation);
-            else throw new Exception("An operation has been categorized as a special operation, but it is not handeled. " +
+            else throw new InternalRuntimeException("An operation has been categorized as a special operation, but it is not handeled. " +
                                      "The operation is: " + nextOperation.ToString());
             return (readyOperations, currentTime, board);
         }
@@ -439,7 +440,7 @@ namespace BiolyCompiler.Scheduling
                             Droplet routingDroplet = new Droplet(new BoardFluid("Routing - droplet"));
                             routingDroplet.Shape.PlaceAt(heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
                             board.UpdateGridAtGivenLocation(routingDroplet, heaterOperation.BoundModule.Shape);
-                            if (!couldBePlaced) throw new Exception("Not enough space available to place a Droplet.");
+                            if (!couldBePlaced) throw new RuntimeException("Not enough space available to place a Droplet.");
                             Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, startTime);
                             startTime = dropletRoute.getEndTime() + 1;
                             heaterOperation.OutputRoutes.Add(heaterOperation.OriginalOutputVariable, new List<Route>() { dropletRoute});

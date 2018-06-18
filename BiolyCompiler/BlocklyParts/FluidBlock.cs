@@ -8,37 +8,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MoreLinq;
+using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.BlocklyParts
 {
     public abstract class FluidBlock : Block
     {
-        public readonly IReadOnlyList<FluidInput> InputVariables;
-
-        private static readonly List<FluidInput> EmptyList = new List<FluidInput>();
         //For the scheduling.
         public Module BoundModule = null;
         //The key is the input fluid name, see InputVariables.
         public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
 
-        public FluidBlock(bool canBeOutput, string output, string id) : base(canBeOutput, output, id)
+        public FluidBlock(bool canBeOutput, List<FluidInput> inputFluids, List<string> inputNumbers, string output, string id) : 
+            base(canBeOutput, inputFluids, inputNumbers, output, id)
         {
-            InputVariables = EmptyList;
-        }
-
-        public FluidBlock(bool canBeOutput, List<FluidInput> input, string output, string id) : base(canBeOutput, output, id)
-        {
-            InputVariables = input;
         }
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            InputVariables.ForEach(x => x.Update(variables, executor, dropPositions));
+            InputFluids.ForEach(x => x.Update(variables, executor, dropPositions));
         }
 
         public virtual Module getAssociatedModule()
         {
-            throw new NotImplementedException("No modules have been associated with blocks/operations of type " + this.GetType().ToString());
+            throw new InternalRuntimeException("No modules have been associated with blocks/operations of type " + this.GetType().ToString());
         }
 
         public virtual void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)
@@ -51,7 +45,7 @@ namespace BiolyCompiler.BlocklyParts
             //the remaining droplets will have the correct type, and can be used by operations requiring the output of that module.
 
             int currentDroplet = 0;
-            foreach (var fluid in InputVariables)
+            foreach (var fluid in InputFluids)
             {
                 BoardFluid fluidType = new BoardFluid(fluid.OriginalFluidName);
                 for (int i = 0; i < fluid.GetAmountInDroplets(FluidVariableLocations); i++)
@@ -92,7 +86,7 @@ namespace BiolyCompiler.BlocklyParts
 
         internal void Unbind(Module module)
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("This method is not supported for this block.");
         }
 
         protected override void ResetBlock()

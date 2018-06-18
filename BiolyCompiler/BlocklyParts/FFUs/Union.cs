@@ -20,7 +20,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public const string SECOND_INPUT_FIELD_NAME = "inputFluidB";
         public const string XML_TYPE_NAME = "union";
 
-        public Union(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, output, id)
+        public Union(List<FluidInput> input, string output, string id) : base(true, input, null, output, id)
         {
 
         }
@@ -46,7 +46,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             inputs.Add(fluidInput1);
             inputs.Add(fluidInput2);
 
-            return new Union(inputs, output, node, id);
+            return new Union(inputs, output, id);
         }
 
 
@@ -64,7 +64,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public string ToXml()
         {
-            return ToXml(this.BlockID, InputVariables[0].ToXml(), InputVariables[0].ToXml());
+            return ToXml(this.BlockID, InputFluids[0].ToXml(), InputFluids[0].ToXml());
         }
 
         public static string ToXml(string id, string inputAXml, string inputBXml)

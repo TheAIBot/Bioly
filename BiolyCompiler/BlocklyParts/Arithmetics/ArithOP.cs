@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
@@ -20,7 +21,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : base(false, input, output, id, canBeScheduled)
+        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : 
+            base(false, null, input, output, id, canBeScheduled)
         {
             this.OPType = ArithOP.StringToArithOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
             this.LeftBlock = leftBlock;
@@ -90,7 +92,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.POW:
                     return "POWER";
                 default:
-                    throw new Exception("Failed to parse the arithmetic operator type. Type: " + type.ToString());
+                    throw new InternalParseException("Failed to parse the arithmetic operator type. Type: " + type.ToString());
             }
         }
 
@@ -112,7 +114,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.POW:
                     return (float)Math.Pow(leftResult, rightResult);
                 default:
-                    throw new Exception("Failed to parse the arithmetic operator type.");
+                    throw new InternalRuntimeException("Failed to parse the arithmetic operator type.");
             }
         }
 
@@ -143,7 +145,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 case ArithOPTypes.DIV:
                     return "/";
                 default:
-                    throw new Exception("Failed to parse the operator type.");
+                    throw new InternalParseException("Failed to parse the operator type.");
             }
         }
     }

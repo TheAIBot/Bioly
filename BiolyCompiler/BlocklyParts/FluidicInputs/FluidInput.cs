@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
@@ -15,17 +16,20 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public string OriginalFluidName { get; internal set; }
         protected readonly float AmountInML;
         public  readonly bool UseAllFluid;
+        public readonly List<string> InputNumbers;
+        public static readonly List<string> EmptyNumbersList = new List<string>();
 
         public const int ML_PER_DROPLET = 1;
         public const string NO_FLUID_NAME = "ERROR_FINDING_NODE";
 
-        public FluidInput(string id, string fluidName, string originalFluidName, int inputAmountInDroplets, bool useAllFluid)
+        public FluidInput(string id, string fluidName, string originalFluidName, int inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers)
         {
             this.ID = id;
             this.FluidName = fluidName;
             this.OriginalFluidName = originalFluidName;
             this.AmountInML = inputAmountInDroplets;
             this.UseAllFluid = useAllFluid;
+            this.InputNumbers = inputNumbers ?? EmptyNumbersList;
 
             if (!UseAllFluid)
             {
@@ -58,7 +62,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
                 case "FALSE":
                     return false;
                 default:
-                    throw new Exception("Failed to parse the boolean type.");
+                    throw new InternalParseException("Failed to parse the boolean type.");
             }
         }
 
@@ -71,7 +75,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
                 case false:
                     return "FALSE";
                 default:
-                    throw new Exception("Failed to parse the boolean type.");
+                    throw new InternalParseException("Failed to parse the boolean type.");
             }
         }
 

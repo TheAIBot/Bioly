@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
@@ -21,7 +22,8 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : base(false, input, output, id, canBeScheduled)
+        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : 
+            base(false, null, input, output, id, canBeScheduled)
         {
             this.OPType = BoolOP.StringToBoolOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
             this.LeftBlock = leftBlock;
@@ -119,7 +121,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 case BoolOPTypes.GTE:
                     return leftResult >= rightResult ? 1 : 0;
                 default:
-                    throw new Exception("Failed to parse the operator type. Type: " + OPType.ToString());
+                    throw new InternalRuntimeException("Failed to parse the operator type. Type: " + OPType.ToString());
             }
         }
 
@@ -154,7 +156,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                 case BoolOPTypes.GTE:
                     return ">=";
                 default:
-                    throw new Exception("Failed to parse the operator type.");
+                    throw new InternalParseException("Failed to parse the operator type.");
             }
         }
     }

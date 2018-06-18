@@ -26,7 +26,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string id) : base(true, input, arrayName, id)
+        public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string indexBlockName, string id) : 
+            base(true, input, new List<string>() { indexBlockName }, arrayName, id)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -39,7 +40,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             parserInfo.CheckVariable(id, VariableType.FLUID_ARRAY, arrayName);
 
             VariableBlock indexBlock = null;
-            XmlNode indexNode = node.GetInnerBlockNode(INDEX_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block to define the variables value."));
+            XmlNode indexNode = node.GetInnerBlockNode(INDEX_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block to define the index."));
             if (indexNode != null)
             {
                 indexBlock = (VariableBlock)XmlParser.ParseBlock(indexNode, dfg, parserInfo, false, false);
@@ -55,10 +56,10 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
             dfg.AddNode(indexBlock);
 
-            List<FluidInput> inputs = new List<FluidInput>();
-            inputs.Add(fluidInput);
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            inputFluids.Add(fluidInput);
 
-            return new SetArrayFluid(indexBlock, arrayName, inputs, id);
+            return new SetArrayFluid(indexBlock, arrayName, inputFluids, indexBlock?.OutputVariable, id);
         }
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

@@ -25,26 +25,21 @@ namespace BiolyCompiler.Graphs
             {
                 Block block = node.value as Block;
 
-                if (block is VariableBlock varBlock)
+                foreach (string nodeName in block.InputNumbers)
                 {
-                    foreach (string nodeName in varBlock.InputVariables)
+                    Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
+                    if (inputNode != null)
                     {
-                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
-                        if (inputNode != null)
-                        {
-                            AddEdge(inputNode, node);
-                        }
+                        AddEdge(inputNode, node);
                     }
                 }
-                else if (block is FluidBlock fluidBlock)
+
+                foreach (FluidInput nodeName in block.InputFluids)
                 {
-                    foreach (FluidInput nodeName in fluidBlock.InputVariables)
+                    Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName.FluidName);
+                    if (inputNode != null)
                     {
-                        Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName.FluidName);
-                        if (inputNode != null)
-                        {
-                            AddEdge(inputNode, node);
-                        }
+                        AddEdge(inputNode, node);
                     }
                 }
             }
