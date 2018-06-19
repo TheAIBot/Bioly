@@ -142,7 +142,7 @@ namespace BiolyViewer_Windows
 
         private async void ExecuteJs(string js)
         {
-            Debug.WriteLine(js);
+            //Debug.WriteLine(js);
             
             if (REALLY_SLOW_COMPUTER)
             {
