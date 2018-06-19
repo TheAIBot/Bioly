@@ -399,15 +399,27 @@ namespace BiolyCompiler.Architechtures
             EmptyRectangles.Remove(bestFitRectangle);
             UpdateGridWithModulePlacement(module, bestFitRectangle);            
             (Rectangle topRectangle, Rectangle rightRectangle) = bestFitRectangle.SplitIntoSmallerRectangles(module.Shape);
-            bool hasBeenMerged = false; //Extra step where we just try to merge the two new rectangles with their adjacent rectangles:
             if (topRectangle != null) {
                 EmptyRectangles.Add(topRectangle, topRectangle);
-                hasBeenMerged = topRectangle.MergeWithOtherRectangles(board);
             }
             if (rightRectangle != null) {
                 EmptyRectangles.Add(rightRectangle, rightRectangle);
-                if (!hasBeenMerged) rightRectangle.MergeWithOtherRectangles(board);
             }
+
+            if (topRectangle != null)
+            {
+                topRectangle.MergeWithOtherRectangles(board);
+            }
+            if (rightRectangle != null)
+            {
+                //In the case that adjacentRectangle have been modified in the above merge, 
+                //we must ensure that the rectangle is actually placed on the board:
+                if (board.EmptyRectangles.TryGetValue(rightRectangle, out Rectangle rightRectangleInDictionary))
+                {
+                    rightRectangleInDictionary.MergeWithOtherRectangles(board);
+                }
+            }
+            
         }
 
         public void FastTemplateRemove(Module module)
