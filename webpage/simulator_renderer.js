@@ -409,9 +409,6 @@ function offsetCurrentViewPosition(x, y)
 	currentViewOffsetX += x;
 	currentViewOffsetY += y;
 	
-	currentViewOffsetX = Math.min(0.95, Math.max(-0.95, currentViewOffsetX));
-	currentViewOffsetY = Math.min(0.95, Math.max(-0.95, currentViewOffsetY));
-	
     gl.uniform2f(glData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
 }
 
