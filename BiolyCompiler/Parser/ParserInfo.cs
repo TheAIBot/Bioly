@@ -77,6 +77,8 @@ namespace BiolyCompiler.Parser
 
         public void AddVariable(string id, VariableType type, string variableName)
         {
+            Validator.CheckVariableName(id, variableName);
+
             //Not allowed to add the variable if it already 
             //exists as another type
             foreach (var scope in Scopes)
