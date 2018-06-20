@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XML_TYPE_NAME = "getNumberVariable";
         public readonly string VariableName;
 
-        public GetNumberVariable(string variableName, string id, List<string> input, bool canBeScheduled) : base(false, input, null, id, canBeScheduled)
+        public GetNumberVariable(string variableName, string id, List<string> input, bool canBeScheduled) : base(false, null, input, null, id, canBeScheduled)
         {
             this.VariableName = variableName;
         }

@@ -1,6 +1,8 @@
 ﻿using BiolyCompiler;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using CefSharp;
@@ -54,23 +56,30 @@ namespace BiolyViewer_Windows
                     Browser.ExecuteScriptAsync(js);
                 }
             }
+            catch (ParseException e)
+            {
+                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
+                Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
+            }
             catch (Exception e)
             {
+                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"Unexpected error.\n{e.Message.Replace('\"', '\'')}\");");
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
         }
 
         Thread simulatorThread = null;
         object simulatorLocker = new object();
+        ProgramExecutor<string> CurrentlyExecutionProgram = null;
 
         private void RunSimulator(string xml)
         {
             lock (simulatorLocker)
             {
-                //CommandExecutor<string> executor = new SimulatorConnector(Browser, BOARD_WIDTH, BOARD_HEIGHT);
-                //ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-                //programExecutor.Run(BOARD_WIDTH, BOARD_HEIGHT, xml);
-                simulatorThread?.Interrupt();
+                if (CurrentlyExecutionProgram != null)
+                {
+                    CurrentlyExecutionProgram.Running = false;
+                }
                 simulatorThread?.Join();
                 simulatorThread = new Thread(() =>
                 {
@@ -82,11 +91,23 @@ namespace BiolyViewer_Windows
                         bool showEmptyRectangles = Settings.ShowEmptyRectangles;
                         using (SimulatorConnector executor = new SimulatorConnector(Browser, boardWidth, boardHeight))
                         {
-                            ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
-                            programExecutor.TimeBetweenCommands = timeBetweenCommands;
-                            programExecutor.ShowEmptyRectangles = showEmptyRectangles;
-                            programExecutor.Run(boardWidth, boardHeight, xml);
+                            CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
+                            CurrentlyExecutionProgram.TimeBetweenCommands = timeBetweenCommands;
+                            CurrentlyExecutionProgram.ShowEmptyRectangles = showEmptyRectangles;
+                            CurrentlyExecutionProgram.Run(boardWidth, boardHeight, xml);
                         }
+                    }
+                    catch (InternalRuntimeException e)
+                    {
+                        Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
+                    }
+                    catch (RuntimeException e)
+                    {
+                        Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
+                    }
+                    catch (ThreadInterruptedException)
+                    {
+
                     }
                     catch (Exception e)
                     {

@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using System.Diagnostics;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler
 {
@@ -24,6 +25,7 @@ namespace BiolyCompiler
         private readonly CommandExecutor<T> Executor;
         public int TimeBetweenCommands = 50;
         public bool ShowEmptyRectangles = true;
+        public bool Running = true;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -45,10 +47,15 @@ namespace BiolyCompiler
             Dictionary<string, Module> staticModules = new Dictionary<string, Module>();
             Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
+            Stack<List<string>> scopedVariables = new Stack<List<string>>();
+
             Dictionary<int, Board> boards = new Dictionary<int, Board>();
             List<(int, int, int, int)> oldRectangles = null;
             bool firstRun = true;
             int runNumber = 0;
+
+            controlStack.Push(null);
+            scopedVariables.Push(new List<string>());
 
             while (runningGraph != null)
             {
@@ -57,8 +64,11 @@ namespace BiolyCompiler
                 //thing that should be done is to update these blocks originaloutputvariable.
                 runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, dropPositions));
 
-                List<Module> usedModules;
-                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules, out usedModules);
+                HashSet<string> fluidVariablesBefore = dropPositions.Keys.ToHashSet();
+                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules);
+                HashSet<string> fluidVariablesAfter = dropPositions.Keys.ToHashSet();
+                scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("@#@Index")));
+
                 runNumber++;
                 if (firstRun)
                 {
@@ -66,13 +76,16 @@ namespace BiolyCompiler
                     firstRun = false;
                 }
 
+                HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
                 List<Command>[] commandTimeline = CreateCommandTimeline(variables, scheduledOperations, time, dropPositions);
+                HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
+                scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("@#@Index")));
 
                 SendCommands(commandTimeline, ref oldRectangles, boards);
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
-                runningGraph = GetNextGraph(graph, runningGraph, variables, controlStack, dropPositions);
+                runningGraph = GetNextGraph(graph, runningGraph, variables, controlStack, scopedVariables, dropPositions);
             }
             Console.Write("");
         }
@@ -110,6 +123,10 @@ namespace BiolyCompiler
                 else if (operation is VariableBlock varBlock)
                 {
                     (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor, dropPositions);
+                    if (float.IsInfinity(value) || float.IsNaN(value))
+                    {
+                        throw new InvalidNumberException(varBlock.BlockID, value);
+                    }
                     if (!variables.ContainsKey(variableName))
                     {
                         variables.Add(variableName, value);
@@ -153,7 +170,8 @@ namespace BiolyCompiler
                 {
                     List<(int, int, int, int)> closestBoardData = boards.MinBy(x => x.Key - time < 0 ? int.MaxValue : x.Key - time)
                                                                         .Value.EmptyRectangles
-                                                                        .Select(x => (x.x, x.y, x.width, x.height))
+                                                                        .Values
+                                                                        .Select(rectangle => (rectangle.x, rectangle.y, rectangle.width, rectangle.height))
                                                                         .ToList();
                     if (closestBoardData != oldRectangles && closestBoardData != null)
                     {
@@ -181,13 +199,17 @@ namespace BiolyCompiler
                 {
                     Thread.Sleep(TimeBetweenCommands);
                 }
+                else if (!Running)
+                {
+                    throw new ThreadInterruptedException();
+                }
                 time++;
             }
         }
 
        
        static int numberOfDFGsHandled = 0;
-        private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out List<Module> usedModules)
+        private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules)
         {
             numberOfDFGsHandled++;
             Schedule scheduler = new Schedule();
@@ -207,12 +229,11 @@ namespace BiolyCompiler
             boards = scheduler.boardAtDifferentTimes;
             dropPositions = scheduler.FluidVariableLocations;
             staticModules = scheduler.StaticModules;
-
-            usedModules = scheduler.AllUsedModules;
+            
             return (scheduler.ScheduledOperations, time);
         }
 
-        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Dictionary<string, BoardFluid> dropPositions)
+        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Stack<List<string>> scopeStack, Dictionary<string, BoardFluid> dropPositions)
         {
             {
                 IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
@@ -222,6 +243,7 @@ namespace BiolyCompiler
                     if (guardedDFG != null)
                     {
                         controlStack.Push(control);
+                        scopeStack.Push(new List<string>());
                         return guardedDFG;
                     }
 
@@ -234,14 +256,26 @@ namespace BiolyCompiler
             }
 
 
-            while (controlStack.Count > 0)
+            while (controlStack.Count > 1)
             {
                 IControlBlock control = controlStack.Pop();
+                foreach (string variable in scopeStack.Pop())
+                {
+                    if (variables.ContainsKey(variable))
+                    {
+                        variables.Remove(variable);
+                    }
+                    else if (dropPositions.ContainsKey(variable))
+                    {
+                        dropPositions.Remove(variable);
+                    }
+                }
 
                 DFG<Block> loopDFG = control.TryLoop(variables, Executor, dropPositions);
                 if (loopDFG != null)
                 {
                     controlStack.Push(control);
+                    scopeStack.Push(new List<string>());
                     return loopDFG;
                 }
 

@@ -6,6 +6,8 @@ using BiolyCompiler.Modules;
 using BiolyCompiler.Scheduling;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
+using System.Linq;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -16,6 +18,12 @@ namespace BiolyCompiler.BlocklyParts
         public string OriginalOutputVariable { get; protected set; }
         public readonly string BlockID;
         private static int nameID;
+
+        public readonly IReadOnlyList<FluidInput> InputFluids;
+        private static readonly List<FluidInput> EmptyFluidList = new List<FluidInput>();
+        public readonly IReadOnlyList<string> InputNumbers;
+        private static readonly List<string> EmptyNumberList = new List<string>();
+
         //first symbol is important because it makes it an invalid name to parse
         //but that's okay here because this is after the parser step
         public const string DEFAULT_NAME = "@anonymous var";
@@ -28,9 +36,14 @@ namespace BiolyCompiler.BlocklyParts
         public int EndTime = -1;
         public int priority = Int32.MaxValue;
 
-        public Block(bool canBeOutput, string output, string blockID)
+        public Block(bool canBeOutput, List<FluidInput> inputFluids, List<string> inputNumbers, string output, string blockID)
         {
             this.CanBeOutput = canBeOutput;
+            this.InputFluids = inputFluids ?? EmptyFluidList;
+
+            inputNumbers = inputNumbers ?? EmptyNumberList;
+            inputFluids?.Where(x => x != null).ToList().ForEach(x => inputNumbers.AddRange(x?.InputNumbers));
+            this.InputNumbers = inputNumbers ?? EmptyNumberList;
             this.OutputVariable = $"N{nameID}";
             nameID++;
             this.BlockID = blockID;

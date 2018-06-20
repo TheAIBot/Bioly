@@ -15,7 +15,7 @@ body
 
 #leftSide
 {
-	left: 0%;	
+	left: 0%;
 }
 
 #quickSaveButton
@@ -40,6 +40,28 @@ body
 {
 	left: 75%;
 	width: 25%;
+}
+
+#blocklyDiv
+{
+	z-index: 1;	
+}
+
+#showErrors
+{
+	top: 90%;
+	height: 10%;
+	width: 100%;
+	background-color: rgb(255, 150, 150);
+	z-index: 2;
+	position: absolute;
+	border-radius: 25px;
+	display: none;
+}
+
+#errorTextDiv
+{
+	padding: 20px;
 }
 
 #rightSide

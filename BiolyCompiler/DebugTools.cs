@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using BiolyCompiler.Modules;
 using System.Xml;
+using BiolyCompiler.Exceptions.RuntimeExceptions;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler
 {
@@ -16,10 +18,7 @@ namespace BiolyCompiler
         public static void makeDebugCorrectnessChecks(Board board, SimplePriorityQueue<FluidBlock> runningOperations, List<Module> usedModules)
         {
             #if DEBUG
-                //Debug.WriteLine(board.print(usedModules));
-            //  runningOperations.ToList()
-            //                 .ForEach(element => Debug.WriteLine(element.OriginalOutputVariable + ", " + element.StartTime + ", " + element.EndTime));
-            //                 .OrderBy(element => element.StartTime)
+                        //Debug.WriteLine(board.print(usedModules));
             #endif
             checkAdjacencyMatrixCorrectness(board);
             checkIsBoardPerfectlyPartitioned(board);
@@ -29,8 +28,8 @@ namespace BiolyCompiler
         {
             bool[,] grid = new bool[board.width,board.heigth];
             HashSet<Rectangle> allRectangles = new HashSet<Rectangle>();
-            allRectangles.UnionWith(board.EmptyRectangles);
-            allRectangles.UnionWith(board.PlacedModules.Select(module => module.Shape));
+            allRectangles.UnionWith(board.EmptyRectangles.Values);
+            allRectangles.UnionWith(board.PlacedModules.Values.Select(module => module.Shape));
             foreach (var rectangle in allRectangles)
             {
                 for (int i = 0; i < rectangle.width; i++)
@@ -43,7 +42,7 @@ namespace BiolyCompiler
                             continue;
                         }
                         if (grid[rectangle.x + i, rectangle.y + j])
-                            throw new Exception("The board is not perfectly partitioned by its rectangles: more than one rectangle is overlapping.");
+                            throw new InternalRuntimeException("The board is not perfectly partitioned by its rectangles: more than one rectangle is overlapping.");
                         else grid[rectangle.x + i, rectangle.y + j] = true;
                     }
                 }
@@ -54,7 +53,7 @@ namespace BiolyCompiler
                 for (int y = 0; y < board.heigth; y++)
                 {
                     if (!grid[x, y])
-                        throw new Exception("The board is not perfectly partitioned by its rectangles: a part of the board is not inside a rectangle.");
+                        throw new InternalRuntimeException("The board is not perfectly partitioned by its rectangles: a part of the board is not inside a rectangle.");
                 }
             }
         }
@@ -62,7 +61,7 @@ namespace BiolyCompiler
         public static void checkAdjacencyMatrixCorrectness(Board board)
         {
             if (!doAdjacencyGraphContainTheCorrectNodes(board))
-                throw new Exception("The boards adjacency graph does not match up with the placed modules and empty rectangles.");
+                throw new InternalRuntimeException("The boards adjacency graph does not match up with the placed modules and empty rectangles.");
         }
 
 
@@ -96,10 +95,10 @@ namespace BiolyCompiler
                 }
             }
 
-            HashSet<Rectangle> placedModuleRectangles = new HashSet<Rectangle>(board.PlacedModules.Select(module => module.Shape));
+            HashSet<Rectangle> placedModuleRectangles = new HashSet<Rectangle>(board.PlacedModules.Values.Select(module => module.Shape));
 
 
-            return isSameSet(emptyVisitedRectangles, board.EmptyRectangles) && isSameSet(moduleVisitedRectangles, placedModuleRectangles);
+            return isSameSet(emptyVisitedRectangles, board.EmptyRectangles.Values.ToHashSet()) && isSameSet(moduleVisitedRectangles, placedModuleRectangles);
         }
 
         private static bool isSameSet(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
@@ -107,10 +106,10 @@ namespace BiolyCompiler
             return set1.Count == set2.Count && set1.All(rectangle => set2.Contains(rectangle));
         }
 
-        private static Rectangle GetRandomRectangle(HashSet<Rectangle> set)
+        private static Rectangle GetRandomRectangle(Dictionary<Rectangle, Rectangle> set)
         {
-            foreach (var rectangle in set)
-                return rectangle;
+            foreach (var pair in set)
+                return pair.Value;
             return null;
         }
     }

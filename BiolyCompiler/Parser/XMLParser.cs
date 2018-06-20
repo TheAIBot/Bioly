@@ -28,11 +28,19 @@ namespace BiolyCompiler.Parser
             XmlNode node;
             try
             {
-                node = xmlDocument.FirstChild.GetNodeWithName("block").FirstChild.FirstChild;
+                node = xmlDocument.FirstChild.GetNodeWithName("block");
             }
             catch (Exception)
             {
                 throw new MissingBlockException("", "Missing start block.");
+            }
+            try
+            {
+                node = node.FirstChild.FirstChild;
+            }
+            catch (Exception)
+            {
+                throw new MissingBlockException("", "Program contains no blocks");
             }
 
             ParserInfo parserInfo = new ParserInfo();
@@ -49,7 +57,6 @@ namespace BiolyCompiler.Parser
             {
                 IControlBlock controlBlock = null;
                 var dfg = new DFG<Block>();
-                var mostRecentRef = new Dictionary<string, string>();
                 while (true)
                 {
                     if (IsDFGBreaker(node, dfg) && canFirstBlockBeControlFlow)
@@ -139,6 +146,7 @@ namespace BiolyCompiler.Parser
 
         private static IControlBlock ParseDFGBreaker(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string blockType = node.Attributes[Block.TYPE_FIELD_NAME].Value;
             switch (blockType)
             {
@@ -154,12 +162,12 @@ namespace BiolyCompiler.Parser
                     InlineProgram program = new InlineProgram(node, dfg, parserInfo);
                     if (!program.IsValidProgram)
                     {
-                        throw new ParseException(program.ID, "asdasas");
+                        throw new ParseException(program.ID, "There is program errors in the program: " + program.ProgramName);
                     }
                     program.AppendProgramXml(ref node, parserInfo);
                     return new Direct(node, dfg, parserInfo);
                 default:
-                    throw new Exception("Invalid type: " + blockType);
+                    throw new UnknownBlockException(id);
             }
         }
 
@@ -236,8 +244,8 @@ namespace BiolyCompiler.Parser
                     return SetNumberVariable.Parse(node, dfg, parserInfo);
                 case GetDropletCount.XML_TYPE_NAME:
                     return GetDropletCount.Parser(node, parserInfo, canBeScheduled);
-                case GetFluidArrayLength.XML_TYPE_NAME:
-                    return GetFluidArrayLength.Parse(node, parserInfo, canBeScheduled);
+                case GetArrayLength.XML_TYPE_NAME:
+                    return GetArrayLength.Parse(node, parserInfo, canBeScheduled);
                 case ImportVariable.XML_TYPE_NAME:
                     return ImportVariable.Parse(node, parserInfo, canBeScheduled);
                 case NumberArray.XML_TYPE_NAME:

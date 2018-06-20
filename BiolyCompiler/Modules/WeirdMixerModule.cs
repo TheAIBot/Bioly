@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.Modules
 {
@@ -69,13 +70,13 @@ namespace BiolyCompiler.Modules
             //The merged droplet is now at the right position, where they should stay.
             
             int restTime = OperationTime - (time - startTime);
-            if (restTime < 0) throw new Exception("Reaming waiting time for mixing should not be negative: it is "  + restTime);
+            if (restTime < 0) throw new InternalRuntimeException("Remaining waiting time for mixing should not be negative: it is " + restTime);
             time += restTime;
             commands.Add(new Command(commands.Last().X, commands.Last().Y, CommandType.ELECTRODE_OFF, time));
 
             if (commands.Last().Time - startTime != OperationTime)
             {
-                throw new Exception("WAAAAA");
+                throw new InternalRuntimeException("WAAAAA");
             }
 
             return commands;

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.Routing
 {
@@ -51,8 +52,12 @@ namespace BiolyCompiler.Routing
         public static int RouteDropletsToOutput(Board board, int currentTime, OutputUsage outputOperation, Dictionary<string, BoardFluid> FluidVariableLocations)
         {
             int originalStartTime = currentTime;
+            if (outputOperation.BoundModule.GetInputLayout().Droplets.Count == 0)
+            {
+                throw new RuntimeException("No droplets with name " + outputOperation.InputFluids.First().OriginalFluidName + " available to output.");
+            }
             Droplet inputLocation = outputOperation.BoundModule.GetInputLayout().Droplets[0];
-            foreach (var fluid in outputOperation.InputVariables)
+            foreach (var fluid in outputOperation.InputFluids)
             {
                 for (int i = 0; i < fluid.GetAmountInDroplets(FluidVariableLocations); i++)
                 {
@@ -99,7 +104,7 @@ namespace BiolyCompiler.Routing
                 }
                 if (!hasDropletBeenRouted)
                 {
-                    throw new Exception("It is not possible to route a droplet to every internal droplet inside a module. This should always be possible." +
+                    throw new InternalRuntimeException("It is not possible to route a droplet to every internal droplet inside a module. This should always be possible." +
                                         "The module is: " + operation.BoundModule.ToString());
                 }
             }
@@ -137,11 +142,11 @@ namespace BiolyCompiler.Routing
         private static Route RouteSingleDropletToModule(FluidBlock operation, Board board, int currentTime, Droplet dropletInput)
         {
             BoardFluid InputFluidType = dropletInput.GetFluidType();
-            if (InputFluidType.GetNumberOfDropletsAvailable() < 1) throw new Exception("There isn't enough droplets of type " + InputFluidType.FluidName +
+            if (InputFluidType.GetNumberOfDropletsAvailable() < 1) throw new RuntimeException("There isn't enough droplets of type " + InputFluidType.FluidName +
                                                                                        " avaiable, to satisfy the requirement of the module: " + operation.BoundModule.ToString());
             //Routes a droplet of type InputFluid to the module.
             Route route = DetermineRouteToModule(haveReachedDropletOfTargetType(dropletInput), operation.BoundModule, dropletInput, board, currentTime); //Will be included as part of a later step.
-            if (route == null) throw new Exception("No route found. This should not be possible.");
+            if (route == null) throw new InternalRuntimeException("No route found. This should not be possible.");
 
             //The route is added to the module's routes:
             List<Route> inputRoutes;
@@ -176,10 +181,10 @@ namespace BiolyCompiler.Routing
                         dropletSource.DecrementDropletCount();
                         //board.FastTemplateRemove(dropletSource); 
                     }
-                    else throw new Exception("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
+                    else throw new InternalRuntimeException("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
                     break;
                 default:
-                    throw new Exception("Unhandled droplet source: " + route.routedDroplet.ToString());
+                    throw new InternalRuntimeException("Unhandled droplet source: " + route.routedDroplet.ToString());
             }
         }
 
@@ -196,7 +201,7 @@ namespace BiolyCompiler.Routing
                 Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
 
                 if (isUnreachableNode(currentNode))
-                    throw new Exception("No route to the desired component could be found. Desired droplet type: " + targetInput.GetFluidType().FluidName);
+                    throw new InternalRuntimeException("No route to the desired component could be found. Desired droplet type: " + targetInput.GetFluidType().FluidName);
                 else if (hasReachedTarget(moduleAtCurrentNode, currentNode)) //Have reached the desired target
                     return GetRouteFromSourceToTarget(currentNode, (IDropletSource)moduleAtCurrentNode, startTime);
                 //No collisions with other modules are allowed (except the starting module):
@@ -207,7 +212,7 @@ namespace BiolyCompiler.Routing
                 UpdateAllNeighborPriorities(board, dijkstraGraph, priorityQueue, currentNode);
             }
             //If no route was found:
-            throw new Exception("No route to the desired component could be found");
+            throw new InternalRuntimeException("No route to the desired component could be found");
         }
 
         private static (RoutingInformation[,], SimplePriorityQueue<RoutingInformation, int>) SetUpInitialDijsktraGraph(IDropletSource targetInput, Board board)

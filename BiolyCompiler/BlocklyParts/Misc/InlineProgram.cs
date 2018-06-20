@@ -8,6 +8,7 @@ using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string OUTPUT_COUNT_ATTRIBUTE_NAME = "output_count";
         public const string VARIABLE_COUNT_ATTRIBUTE_NAME = "variable_count";
         public const string XML_TYPE_NAME = "inlineProgram";
+        public const string UNIQUE_ATTRIBUTE_IDENTIFIER = "asjdasljckkrw3209fj48dhsaljdhasdlja";
+        private static int AttributeIdentifierCounter = 0;
         public readonly string ID;
         public readonly string ProgramName;
         public readonly string[] Inputs;
@@ -87,6 +90,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             catch (Exception e)
             {
                 this.IsValidProgram = false;
+                Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
         }
 
@@ -201,7 +205,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
 
 
-            InsertProgram(ref currentProgramXml, newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild.OuterXml);
+            InsertProgram(ref currentProgramXml, newXmlDoc.FirstChild.GetNodeWithName("block").FirstChild.FirstChild);
         }
 
         private void ReplaceIDAttribute(XmlNode node)
@@ -278,7 +282,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                                 DFG<Block> dfg = new DFG<Block>();
                                 OutputUsage output = OutputUsage.Parse(blockNode, dfg, dummyParserInfo);
                                 FluidInput fluidInputA = new BasicInput(String.Empty, OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
-                                string unionXml = Union.ToXml(ID, fluidInputA.ToXml(), output.InputVariables[0].ToXml());
+                                string unionXml = Union.ToXml(ID, fluidInputA.ToXml(), output.InputFluids[0].ToXml());
                                 string nextXml = splittedXml.nextBlockXml;
                                 string fluidXml = Fluid.ToXml(ID, fluidInputA.OriginalFluidName, unionXml, nextXml);
                                 xml = splittedXml.beforeBlockXml + fluidXml + splittedXml.afterBlockXml;
@@ -312,7 +316,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
             if (nextBlockXml != null)
             {
                 nextBlockXml = RemoveXmlnsTag(nextBlockXml);
-                blockXml = blockXml.Replace(nextBlockXml, String.Empty);
+                int firstOccurencePosition = blockXml.IndexOf(nextBlockXml);
+                blockXml = blockXml.Substring(0, firstOccurencePosition) + blockXml.Substring(firstOccurencePosition + nextBlockXml.Length);
+                //blockXml = blockXml.Replace(nextBlockXml, String.Empty);
             }
 
             string[] splittedDocument = xml.Split(new string[] { RemoveXmlnsTag(blockNode.OuterXml) }, StringSplitOptions.None);
@@ -349,25 +355,30 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return node;
         }
 
-        private void InsertProgram(ref XmlNode node, string modifiedXml)
+        private void InsertProgram(ref XmlNode node, XmlNode modifiedXmlNode)
         {
+            XmlAttribute typeAttr = modifiedXmlNode.OwnerDocument.CreateAttribute(UNIQUE_ATTRIBUTE_IDENTIFIER);
+            typeAttr.Value = "0";
+
+            modifiedXmlNode.Attributes.Append(typeAttr);
+
             var splittedXml = SplitBlockXml(node, node.OwnerDocument.OuterXml);
-            string address = node.ParentNode.ParentNode.Attributes[Block.ID_FIELD_NAME].Value;
 
-            string combinedXml = splittedXml.beforeBlockXml + modifiedXml + splittedXml.afterBlockXml;
+            string combinedXml = splittedXml.beforeBlockXml + modifiedXmlNode.OuterXml + splittedXml.afterBlockXml;
 
-            XmlDocument doc = node.OwnerDocument;
+            XmlDocument doc = new XmlDocument();
             doc.LoadXml(combinedXml);
 
-            node = GetXmlNodeWithSpecificID(doc.FirstChild, address);
-            node = node.GetNodeWithName("next").FirstChild;
+            node = GetXmlNodeWithSpecificID(doc.FirstChild, UNIQUE_ATTRIBUTE_IDENTIFIER, "0");
+            node.Attributes.Remove(node.Attributes[UNIQUE_ATTRIBUTE_IDENTIFIER]);
+            //node = node.GetNodeWithName("next").FirstChild;
         }
 
-        private XmlNode GetXmlNodeWithSpecificID(XmlNode node, string id)
+        private XmlNode GetXmlNodeWithSpecificID(XmlNode node, string key, string id)
         {
             if (node.Attributes != null)
             {
-                if (node.Attributes[Block.ID_FIELD_NAME]?.Value == id)
+                if (node.Attributes[key]?.Value == id)
                 {
                     return node;
                 }
@@ -375,7 +386,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             foreach (XmlNode child in node.ChildNodes)
             {
-                XmlNode result = GetXmlNodeWithSpecificID(child, id);
+                XmlNode result = GetXmlNodeWithSpecificID(child, key, id);
                 if (result != null)
                 {
                     return result;

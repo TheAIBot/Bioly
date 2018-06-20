@@ -8,6 +8,7 @@ namespace BiolyCompiler.Modules
     public class HeaterModule : Module
     {
         public int temperature { get; private set; } = 25; //In celcius
+        public bool IsInUse = false;
 
         public HeaterModule() : base(Droplet.DROPLET_WIDTH*1, Droplet.DROPLET_HEIGHT, 1, true)
         {

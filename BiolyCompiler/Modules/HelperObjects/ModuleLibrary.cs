@@ -6,6 +6,7 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Arrays;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.Modules
 {
@@ -26,7 +27,7 @@ namespace BiolyCompiler.Modules
         public void allocateModules(Assay assay){
             //It needs to find which modules are included in the assay.
             HashSet<Module> associatedModules = new HashSet<Module>();
-            foreach (var node in assay.dfg.Nodes)
+            foreach (var node in assay.Dfg.Nodes)
             {
                 if (  node.value is FluidBlock operation && 
                     !(node.value is StaticUseageBlock) &&
@@ -63,7 +64,7 @@ namespace BiolyCompiler.Modules
 
             if (module == null)
             {
-                throw new Exception("No allocated modules implements operations of type \" " + operation.ToString() + "\"");
+                throw new InternalRuntimeException("No allocated modules implements operations of type \" " + operation.ToString() + "\"");
             }
 
             return module;
@@ -72,12 +73,12 @@ namespace BiolyCompiler.Modules
 
         public Module getAndPlaceFirstPlaceableModule(FluidBlock operation, Board board){
             Module optimalModuleTemplate = getOptimalModule(operation);
-            if (optimalModuleTemplate.GetInputLayout() == null) throw new Exception("The layout of the module have never been set. The module is: " + optimalModuleTemplate.ToString());
+            if (optimalModuleTemplate.GetInputLayout() == null) throw new InternalRuntimeException("The layout of the module have never been set. The module is: " + optimalModuleTemplate.ToString());
             Module module = optimalModuleTemplate.GetCopyOf();
             if (module == null) return null;
             
             bool canBePlaced = board.FastTemplatePlace(module);
-            if(!canBePlaced) throw new Exception("Module \"" + module.ToString() +  "\" can't be placed");
+            if(!canBePlaced) throw new RuntimeException("Module \"" + module.ToString() +  "\" can't be placed");
             //Now that the module has been placed, the internal rectangles in the module layout can be modified, such that they are placed correctly.
             module.RepositionLayout();
             return module;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Modules.RectangleSides;
@@ -16,8 +17,8 @@ namespace BiolyCompiler.Architechtures
         //Dummy class for now.
         public int heigth;
         public int width;
-        public HashSet<Module> PlacedModules        = new HashSet<Module>();
-        public HashSet<Rectangle> EmptyRectangles   = new HashSet<Rectangle>();
+        public Dictionary<Module, Module> PlacedModules           = new Dictionary<Module, Module>();
+        public Dictionary<Rectangle, Rectangle> EmptyRectangles   = new Dictionary<Rectangle, Rectangle>();
         public Dictionary<string,BoardFluid> fluids = new Dictionary<string,BoardFluid>();
         public Module[,] grid;
 
@@ -27,7 +28,8 @@ namespace BiolyCompiler.Architechtures
             this.width  = width;
             this.heigth = heigth;
             this.grid = new Module[width,heigth];
-            EmptyRectangles.Add(new Rectangle(width, heigth));
+            Rectangle emptyRectangle = new Rectangle(width, heigth);
+            EmptyRectangles.Add(emptyRectangle, emptyRectangle);
         }
 
 
@@ -51,7 +53,7 @@ namespace BiolyCompiler.Architechtures
             int bestFitScore = Int32.MaxValue;
             //Used when placing the module in any rectangle, blocks the routing.
             List<Rectangle> candidateBufferedRectangles = new List<Rectangle>();
-            foreach (var rectangle in EmptyRectangles)
+            foreach (var rectangle in EmptyRectangles.Values)
             {
                 int Cost = RectangleCost(rectangle, module);
                 if (rectangle.DoesRectangleFitInside(module.Shape) && Cost < bestFitScore)
@@ -160,7 +162,7 @@ namespace BiolyCompiler.Architechtures
         //                {
         //                    //It should then be able to merge
         //                    (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //                    if (!canTotallyMerge) throw new Exception("Logic error");
+        //                    if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
         //                    intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
 
         //                }
@@ -168,7 +170,7 @@ namespace BiolyCompiler.Architechtures
         //            else
         //            { //Then the right rectangle must exists, and it can be merged with first
         //                (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //                if (!canTotallyMerge) throw new Exception("Logic error");
+        //                if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
         //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
         //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
         //            }
@@ -177,7 +179,7 @@ namespace BiolyCompiler.Architechtures
         //        {
         //            //It should then be able to merge
         //            (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //            if (!canTotallyMerge) throw new Exception("Logic error");
+        //            if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
         //        }
 
         //        if (topRectangle != null)   EmptyRectangles.Remove(topRectangle);
@@ -186,7 +188,7 @@ namespace BiolyCompiler.Architechtures
         //        return (false, intermediateCurrent);
         //    }
 
-            
+
         //}
 
         public bool PlaceCompletlyBufferedModuleInRectangle(Module module, Rectangle current)
@@ -195,8 +197,8 @@ namespace BiolyCompiler.Architechtures
             //It reserves/places the area for the whole buffered rectangle
             (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
             EmptyRectangles.Remove(current);
-            if (topRectangle != null) EmptyRectangles.Add(topRectangle);
-            if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
+            if (topRectangle != null) EmptyRectangles.Add(topRectangle, topRectangle);
+            if (rightRectangle != null) EmptyRectangles.Add(rightRectangle, rightRectangle);
 
             //The placed buffered rectangle is divided up into smaller empty rectangles, that can be used for routing.
             //This is done by first cutting a thin slice of the bottom off, and then a thin slice of the left. 
@@ -204,12 +206,12 @@ namespace BiolyCompiler.Architechtures
             Rectangle lowerBufferingRectangle = new Rectangle(bufferedRectangle.width, 1, bufferedRectangle.x, bufferedRectangle.y);
             Rectangle remainingUpperRectangle = new Rectangle(bufferedRectangle.width, bufferedRectangle.height - 1, bufferedRectangle.x, bufferedRectangle.y + 1);
             bufferedRectangle.splitRectangleInTwo(lowerBufferingRectangle, remainingUpperRectangle);
-            EmptyRectangles.Add(lowerBufferingRectangle);
+            EmptyRectangles.Add(lowerBufferingRectangle, lowerBufferingRectangle);
 
             Rectangle leftBufferingRectangle = new Rectangle(1, remainingUpperRectangle.height, remainingUpperRectangle.x, remainingUpperRectangle.y);
             Rectangle remainingRightRectangle = new Rectangle(remainingUpperRectangle.width - 1, remainingUpperRectangle.height, remainingUpperRectangle.x + 1, remainingUpperRectangle.y);
             remainingUpperRectangle.splitRectangleInTwo(leftBufferingRectangle, remainingRightRectangle);
-            EmptyRectangles.Add(leftBufferingRectangle);
+            EmptyRectangles.Add(leftBufferingRectangle, leftBufferingRectangle);
 
             PlaceModuleInRectangle(module, remainingRightRectangle, this);
             return true;
@@ -229,7 +231,7 @@ namespace BiolyCompiler.Architechtures
         /// <param name="rectangle"></param>
         /// <param name="module"></param>
         /// <returns>true iff it is still possible to reach all modules and empty rectangles on the board</returns>
-        public static bool DoesNotBlockRouteToAnyModuleOrEmptyRectangle(Rectangle rectangle, Module module, HashSet<Rectangle> emptyRectangles, HashSet<Module> placedModules)
+        public static bool DoesNotBlockRouteToAnyModuleOrEmptyRectangle(Rectangle rectangle, Module module, Dictionary<Rectangle,Rectangle> emptyRectangles, Dictionary<Module, Module> placedModules)
         {
             //If the board is empty, the placement is legal iff it leaves at least 1 empty rectangle:
             if (emptyRectangles.Count == 1 && placedModules.Count == 0) return (module.Shape.width != rectangle.width || module.Shape.height != rectangle.height);
@@ -260,7 +262,7 @@ namespace BiolyCompiler.Architechtures
             {
                 Rectangle currentEmptyRectangle = emptyRectanglesToVisit.Dequeue();
                 foreach (var adjacentRectangle in currentEmptyRectangle.AdjacentRectangles) {
-                    if (adjacentRectangle == rectangle) throw new Exception("Logic error: no rectangles should currently be adjacent to this rectangle");
+                    if (adjacentRectangle == rectangle) throw new InternalRuntimeException("Logic error: no rectangles should currently be adjacent to this rectangle");
                     //if it is an empty rectangle, it should be visited:
                     if (adjacentRectangle.isEmpty && visitedEmptyRectangles.Add(adjacentRectangle))
                         emptyRectanglesToVisit.Enqueue(adjacentRectangle);
@@ -275,6 +277,11 @@ namespace BiolyCompiler.Architechtures
             //DebugTools.checkAdjacencyMatrixCorrectness(this);
             bool visitsEverything = VisitsAllModulesAndEmptyRectangles(extraEmptyRectangles, 1, visitedEmptyRectangles, connectedModuleRectangles, emptyRectangles, placedModules);
             return visitsEverything;
+        }
+
+        public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, Dictionary<Rectangle, Rectangle> outsideEmptyRectangles, Dictionary<Rectangle, Rectangle> layoutEmptyRectangles)
+        {
+            return DoesNotBlockConnectionToSourceEmptyRectangles(dropletInput, outsideEmptyRectangles.Values.ToHashSet(), layoutEmptyRectangles.Values.ToHashSet());
         }
 
         public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, HashSet<Rectangle> outsideEmptyRectangles, HashSet<Rectangle> layoutEmptyRectangles)
@@ -308,7 +315,12 @@ namespace BiolyCompiler.Architechtures
             bool hasAllEmptyRectanglesBeenVisited = layoutEmptyRectangles.IsSubsetOf(visitedEmptyRectangles);
             return hasAllEmptyRectanglesBeenVisited;
         }
-
+        
+        /// <summary>
+        /// Return an empty rectangle adjacent to the given rectangle: and null if such a rectangle does not exist.
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <returns></returns>
         private static Rectangle getEmptyAdjacentRectangle(Rectangle rectangle)
         {
             Rectangle randomEmptyRectangle = null;
@@ -324,13 +336,30 @@ namespace BiolyCompiler.Architechtures
             return randomEmptyRectangle;
         }
 
+        /// <summary>
+        /// Compares the size of the given sets, to find if exactely the right rectangles and modules have been visisted.
+        /// It returns true if this is the case, else false.
+        /// </summary>
+        /// <param name="extraEmptyRectangles"></param>
+        /// <param name="extraPlacedModules"></param>
+        /// <param name="visitedEmptyRectangles"></param>
+        /// <param name="connectedModuleRectangles"></param>
+        /// <param name="originalEmptyRectangles"></param>
+        /// <param name="originalPlacedModules"></param>
+        /// <returns></returns>
         private static bool VisitsAllModulesAndEmptyRectangles(int extraEmptyRectangles, int extraPlacedModules, HashSet<Rectangle> visitedEmptyRectangles, 
-                                                               HashSet<Rectangle> connectedModuleRectangles, HashSet<Rectangle> originalEmptyRectangles, HashSet<Module> originalPlacedModules)
+                                                               HashSet<Rectangle> connectedModuleRectangles, Dictionary<Rectangle, Rectangle> originalEmptyRectangles, Dictionary<Module, Module> originalPlacedModules)
         {
             return (connectedModuleRectangles.Count == originalPlacedModules.Count   + extraPlacedModules && 
                     visitedEmptyRectangles.Count    == originalEmptyRectangles.Count + extraEmptyRectangles);
         }
 
+        /// <summary>
+        /// Returns the rectangles that are only present in one of the two sets given.
+        /// </summary>
+        /// <param name="set1"></param>
+        /// <param name="set2"></param>
+        /// <returns></returns>
         private HashSet<Rectangle> GetSetDifference(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
         {
             HashSet<Rectangle> differenceSet = new HashSet<Rectangle>();
@@ -370,15 +399,27 @@ namespace BiolyCompiler.Architechtures
             EmptyRectangles.Remove(bestFitRectangle);
             UpdateGridWithModulePlacement(module, bestFitRectangle);            
             (Rectangle topRectangle, Rectangle rightRectangle) = bestFitRectangle.SplitIntoSmallerRectangles(module.Shape);
-            bool hasBeenMerged = false; //Extra step where we just try to merge the two new rectangles with their adjacent rectangles:
             if (topRectangle != null) {
-                EmptyRectangles.Add(topRectangle);
-                hasBeenMerged = topRectangle.MergeWithOtherRectangles(board);
+                EmptyRectangles.Add(topRectangle, topRectangle);
             }
             if (rightRectangle != null) {
-                EmptyRectangles.Add(rightRectangle);
-                if (!hasBeenMerged) rightRectangle.MergeWithOtherRectangles(board);
+                EmptyRectangles.Add(rightRectangle, rightRectangle);
             }
+
+            if (topRectangle != null)
+            {
+                topRectangle.MergeWithOtherRectangles(board);
+            }
+            if (rightRectangle != null)
+            {
+                //In the case that adjacentRectangle have been modified in the above merge, 
+                //we must ensure that the rectangle is actually placed on the board:
+                if (board.EmptyRectangles.TryGetValue(rightRectangle, out Rectangle rightRectangleInDictionary))
+                {
+                    rightRectangleInDictionary.MergeWithOtherRectangles(board);
+                }
+            }
+            
         }
 
         public void FastTemplateRemove(Module module)
@@ -391,7 +432,7 @@ namespace BiolyCompiler.Architechtures
             module.Shape = newModuleRectangle;
 
             newModuleRectangle.isEmpty = false;
-            EmptyRectangles.Add(emptyRectangle);
+            EmptyRectangles.Add(emptyRectangle, emptyRectangle);
             emptyRectangle.isEmpty = true;
 
             ClearBoard(emptyRectangle);
@@ -424,18 +465,13 @@ namespace BiolyCompiler.Architechtures
         {
             module.Shape.PlaceAt(rectangleToPlaceAt.x, rectangleToPlaceAt.y);
             UpdateGridAtGivenLocation(module, rectangleToPlaceAt);
-            PlacedModules.Add(module);
+            PlacedModules.Add(module, module);
         }
         
 
         private int RectangleCost(Rectangle rectangle, Module module)
         {
             return Math.Abs(rectangle.GetArea() - module.Shape.GetArea());
-        }
-
-        private bool UpdatePlacement(Rectangle rectangle, Module module)
-        {
-            throw new NotImplementedException();
         }
 
         public String print(List<Module> allPlacedModules)
@@ -490,7 +526,7 @@ namespace BiolyCompiler.Architechtures
             PlacedModules.Remove(operationExecutingModule);
             ClearBoard(operationExecutingModule.Shape);
             operationExecutingModule.GetOutputLayout().ChangeFluidType(fluidType);
-            operationExecutingModule.GetOutputLayout().EmptyRectangles.ForEach(rectangle => EmptyRectangles.Add(rectangle));
+            operationExecutingModule.GetOutputLayout().EmptyRectangles.ForEach(rectangle => EmptyRectangles.Add(rectangle, rectangle));
             operationExecutingModule.GetOutputLayout().Droplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet, droplet.Shape));
 
             return operationExecutingModule.GetOutputLayout().Droplets;
@@ -500,8 +536,8 @@ namespace BiolyCompiler.Architechtures
         {
             Board board = new Board(width, heigth);
             board.EmptyRectangles.Clear();
-            foreach (var module in PlacedModules) board.PlacedModules.Add(module);
-            foreach (var rectangle in EmptyRectangles) board.EmptyRectangles.Add(rectangle);
+            foreach (var module in PlacedModules.Values) board.PlacedModules.Add(module, module);
+            foreach (var rectangle in EmptyRectangles.Values) board.EmptyRectangles.Add(rectangle, rectangle);
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < heigth; j++)

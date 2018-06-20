@@ -46,6 +46,21 @@ namespace BiolyCompiler.Parser
             MostRecentVariableRef = null;
         }
 
+        public void CheckVariable(string id, VariableType[] types, string variableName)
+        {
+            //if type checked is disabled then don't type check. duh
+            if (!DoTypeChecks)
+            {
+                return;
+            }
+
+            if (types.All(type => !Scopes[type].validVariables.Contains(variableName)))
+            {
+                var typesString = types.Select(x => x.ToReadableString());
+                ParseExceptions.Add(new ParseException(id, $"Variable {variableName} with one of the types {String.Join(", ", typesString)} isn't previously defined."));
+            }
+        }
+
         public void CheckVariable(string id, VariableType type, string variableName)
         {
             //if type checked is disabled then don't type check. duh
@@ -62,6 +77,8 @@ namespace BiolyCompiler.Parser
 
         public void AddVariable(string id, VariableType type, string variableName)
         {
+            Validator.CheckVariableName(id, variableName);
+
             //Not allowed to add the variable if it already 
             //exists as another type
             foreach (var scope in Scopes)

@@ -15,12 +15,13 @@ namespace BiolyCompiler.BlocklyParts
         public const string DEFAULT_MODULE_NAME = "module_name";
         public readonly string ModuleName; 
 
-        public StaticBlock(string moduleName, bool canBeOutput, string output, string id) : base(canBeOutput, output, id)
+        public StaticBlock(string moduleName, bool canBeOutput, string output, string id) : base(canBeOutput, null, null, output, id)
         {
             this.ModuleName = moduleName;
         }
 
-        public StaticBlock(string moduleName, List<FluidInput> inputs, bool canBeOutput, string output, string id) : base(canBeOutput, inputs, output, id)
+        public StaticBlock(string moduleName, List<FluidInput> inputFluids, List<string> inputNumbers, bool canBeOutput, string output, string id) : 
+            base(canBeOutput, inputFluids, inputNumbers, output, id)
         {
             this.ModuleName = moduleName;
         }

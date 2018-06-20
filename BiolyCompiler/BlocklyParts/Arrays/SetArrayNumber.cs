@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions.RuntimeExceptions;
 using BiolyCompiler.Graphs;
@@ -22,7 +23,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly VariableBlock IndexBlock;
         public readonly VariableBlock NumberBlock;
 
-        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : base(true, input, arrayName, id, canBeScheduled)
+        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : 
+            base(true, null, input, arrayName, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -51,6 +53,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
 
             dfg.AddNode(indexBlock);
+            dfg.AddNode(numberInput);
 
             List<string> inputs = new List<string>();
             inputs.Add(indexBlock?.OutputVariable);
@@ -61,13 +64,19 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("This method is not supported for.");
         }
 
         public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
-            int index = (int)IndexBlock.Run(variables, executor, dropPositions);
+            float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
+            if (float.IsInfinity(floatIndex) || float.IsNaN(floatIndex))
+            {
+                throw new InvalidNumberException(BlockID, floatIndex);
+            }
+
+            int index = (int)floatIndex;
             if (index < 0 || index >= arrayLength)
             {
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
@@ -81,12 +90,12 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override string ToXml()
         {
-            throw new NotImplementedException();
+            throw new InternalParseException(BlockID, "Can't create xml of this block.");
         }
 
         public override string ToString()
         {
-            return "set number in array " + ArrayName;
+            return "put number into " + ArrayName;
         }
     }
 }

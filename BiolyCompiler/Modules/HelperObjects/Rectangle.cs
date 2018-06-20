@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using BiolyCompiler.Architechtures;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Modules.RectangleSides;
 
 namespace BiolyCompiler.Modules
@@ -18,7 +19,7 @@ namespace BiolyCompiler.Modules
 
         public Rectangle(int width, int height)
         {
-            if (width < 0 || height < 0) throw new Exception("A rectangle must have a non-negative height and width: (width, height)=(" + width + ", " + height + ") is not allowed.");
+            if (width < 0 || height < 0) throw new InternalRuntimeException("A rectangle must have a non-negative height and width: (width, height)=(" + width + ", " + height + ") is not allowed.");
             this.height = height;
             this.width = width;
         }
@@ -135,15 +136,15 @@ namespace BiolyCompiler.Modules
         private void CheckThatTheRectanglesDividesTheRectanglePerfectly(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
         {
             if (splittingRectangle1.getArea() + splittingRectangle2.GetArea() != this.getArea())
-                throw new Exception("The sum of the area of the two rectangles that are supposed to split the rectangle into two, " +
+                throw new InternalRuntimeException("The sum of the area of the two rectangles that are supposed to split the rectangle into two, " +
                                     "do not equal the area of the split rectangle.");
             else if (splittingRectangle1.width == 0 || splittingRectangle1.height == 0 ||
                      splittingRectangle2.width == 0 || splittingRectangle2.height == 0)
-                throw new Exception("The two rectangles that are supposed to split the rectangle, must both have a non-zero size.");
+                throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle, must both have a non-zero size.");
             //else if (splittingRectangle1.isOverlappingWith(splittingRectangle2))
-            //    throw new Exception("The two rectangles that are supposed to split the rectangle into two are overlapping");
+            //    throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle into two are overlapping");
             else if (!(splittingRectangle1.isCompletlyInside(this) && splittingRectangle2.isCompletlyInside(this)))
-                throw new Exception("At least one of the two rectangles that are supposed to split the rectangle into two, are not competly contained in the rectangle.");
+                throw new InternalRuntimeException("At least one of the two rectangles that are supposed to split the rectangle into two, are not competly contained in the rectangle.");
         }
 
         private bool isOverlappingWith(Rectangle splittingRectangle)
@@ -201,16 +202,19 @@ namespace BiolyCompiler.Modules
         public bool MergeWithOtherRectangles(Board board)
         {
             //Recursivly merge with neighboring rectangles, which sides lines up perfectly with the current rectangle:
-            foreach (var adjacentRectangle in AdjacentRectangles)
+            List<Rectangle> adjacentRectangles = AdjacentRectangles.ToList();
+            for (int i = 0; i < adjacentRectangles.Count; i++)
             {
+                Rectangle adjacentRectangle = adjacentRectangles[i];
                 if (!adjacentRectangle.isEmpty) continue;
                 (RectangleSide side, bool canMerge) = this.CanMerge(adjacentRectangle);
-                if (canMerge) {
+                if (canMerge)
+                {
                     //Necessary, as the hashcode will change (remind me to never use hashsets again!):
                     board.EmptyRectangles.Remove(this);
                     board.EmptyRectangles.Remove(adjacentRectangle);
                     MergeWithRectangle(side, adjacentRectangle);
-                    board.EmptyRectangles.Add(this);
+                    board.EmptyRectangles.Add(this, this);
                     //Continue the merging with the updated rectangle!
                     MergeWithOtherRectangles(board);
                     return true;
@@ -248,7 +252,7 @@ namespace BiolyCompiler.Modules
                     mergedRectangle = new Rectangle(width, height + adjacentRectangle.height, x, adjacentRectangle.y);
                     break;
                 default:
-                    throw new Exception("A rectangle can only be joined on the sides left, right, top or bottom, not " + side.ToString());
+                    throw new InternalRuntimeException("A rectangle can only be joined on the sides left, right, top or bottom, not " + side.ToString());
             }
             //It is important that it is the current rectangle that is changed.
             this.width  = mergedRectangle.width;
@@ -296,8 +300,8 @@ namespace BiolyCompiler.Modules
                         this.TransformToGivenRectangle(candidateNewRectangle);
                         adjacentRectangle.TransformToGivenRectangle(candidateNewAdjacentRectangle);
 
-                        board.EmptyRectangles.Add(this);
-                        board.EmptyRectangles.Add(adjacentRectangle);
+                        board.EmptyRectangles.Add(this, this);
+                        board.EmptyRectangles.Add(adjacentRectangle, adjacentRectangle);
 
                         allAdjacentRectangles.Add(this);
                         allAdjacentRectangles.Add(adjacentRectangle);
@@ -307,9 +311,13 @@ namespace BiolyCompiler.Modules
                             this.ConnectIfAdjacent(rectangle);
                         }
 
-                        bool mergeSucceeds = this.MergeWithOtherRectangles(board);
-                        //Both things must not be done, as adjacentRectangle can have been "deleted" in the merge.
-                        if (! mergeSucceeds) adjacentRectangle.MergeWithOtherRectangles(board);
+                        this.MergeWithOtherRectangles(board);
+                        //In the case that adjacentRectangle have been modified in the above merge, 
+                        //we must ensure that the rectangle is actually placed on the board:
+                        if (board.EmptyRectangles.TryGetValue(adjacentRectangle, out Rectangle adjacentRectangleInDictionary))
+                        {
+                            adjacentRectangleInDictionary.MergeWithOtherRectangles(board);
+                        }
                         return true;
                     }
                 }
@@ -395,7 +403,7 @@ namespace BiolyCompiler.Modules
                 if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);
                 else return (candidateNewRectangle, candidateNewAdjacentRectangle, true);
             }
-            else throw new Exception("Logic error.");
+            else throw new InternalRuntimeException("Logic error.");
         }
 
         private static (bool, RectangleSide, RectangleSide) FormsLSegment(Rectangle rectangle, Rectangle adjacentRectangle)
@@ -471,10 +479,10 @@ namespace BiolyCompiler.Modules
         public bool IsAdjacent(Rectangle rectangle)
         {
             //Adjacency depends on which side that the rectangles are closest - left, right top or bottom.
-            Boolean isAdjacentToTheLeft  = (rectangle.getRightmostXPosition() + 1 == this.x   && isOverlappingInterval(y, getTopmostYPosition()  , rectangle.y, rectangle.getTopmostYPosition()));
-            Boolean isAdjacentBelow      = (rectangle.getTopmostYPosition()   + 1 == this.y   && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
-            Boolean isAdjacentToTheRight = (rectangle.x == this.getRightmostXPosition() + 1   && isOverlappingInterval(y, getTopmostYPosition()  , rectangle.y, rectangle.getTopmostYPosition()));
-            Boolean isAdjacentAbove      = (rectangle.y == this.getTopmostYPosition() + 1     && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
+            bool isAdjacentToTheLeft  = (rectangle.getRightmostXPosition() + 1 == this.x   && isOverlappingInterval(y, getTopmostYPosition()  , rectangle.y, rectangle.getTopmostYPosition()));
+            bool isAdjacentBelow      = (rectangle.getTopmostYPosition()   + 1 == this.y   && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
+            bool isAdjacentToTheRight = (rectangle.x == this.getRightmostXPosition() + 1   && isOverlappingInterval(y, getTopmostYPosition()  , rectangle.y, rectangle.getTopmostYPosition()));
+            bool isAdjacentAbove      = (rectangle.y == this.getTopmostYPosition() + 1     && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
             return isAdjacentToTheLeft || isAdjacentToTheRight || isAdjacentBelow || isAdjacentAbove;
         }
 
@@ -507,7 +515,7 @@ namespace BiolyCompiler.Modules
         public override int GetHashCode()
         {
             //It does not guarentee uniqueness, in the sense that for a given hashcode, 
-            //there might be more than one unique set of heigh, width, x, and y values,
+            //there might be more than one unique set of heigth, width, x, and y values,
             //that could result in that value.
 
             //The +1 is to avoid everything becoming 0, if one value is 0.

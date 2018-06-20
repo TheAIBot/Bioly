@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.Modules
 {
@@ -13,12 +14,12 @@ namespace BiolyCompiler.Modules
 
         public override Module GetCopyOf()
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("This method is not supported.");
         }
 
         public override List<Command> GetModuleCommands(ref int time)
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("This method is not supported.");
         }
     }
 }

@@ -15,6 +15,7 @@ using BiolyTests.TestObjects;
 using System.Diagnostics;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.BlocklyParts.Declarations;
+using Priority_Queue;
 
 namespace BiolyTests.ScheduleTests
 {
@@ -24,21 +25,25 @@ namespace BiolyTests.ScheduleTests
         [TestMethod]
         public void TestRemoveOperation()
         {
-            List<Block> Operations = new List<Block>() { };
-            int OperationsToAdd = 5;
+            SimplePriorityQueue<Block, int> Operations = new SimplePriorityQueue<Block, int>();
+            int OperationsToAdd = 5;            
+            Block OperationThatShouldBeRemoved = null;
+
             for (int i = 0; i < OperationsToAdd; i++)
             {
                 Block Operation1 = new Sensor(null, null, null, String.Empty);
-                Block Operation2 = new Mixer(null, null, null, String.Empty);
+                Block Operation2 = new Mixer(null, null, String.Empty);
                 Operation1.priority = i;
                 Operation2.priority = i;
-                Operations.Add(Operation1);
-                Operations.Add(Operation2);
+                if (i == 2)
+                {
+                    Operation1.priority = -10;
+                    OperationThatShouldBeRemoved = Operation1;
+                }
+                Operations.Enqueue(Operation1, Operation1.priority);
+                Operations.Enqueue(Operation2, Operation2.priority);
             }
-
-            Operations[4].priority = 10;
-            Block OperationThatShouldBeRemoved = Operations[4];
-
+            
             Block RemovedOperation = Schedule.RemoveOperation(Operations);
             Assert.AreEqual(OperationsToAdd * 2 - 1, Operations.Count);
             Assert.AreEqual(OperationThatShouldBeRemoved, RemovedOperation);
@@ -271,7 +276,7 @@ namespace BiolyTests.ScheduleTests
             }
             
             //The second last board should be where the module implementing the operation should be placed.
-            Assert.AreEqual(module.GetType(), boards[boards.Count - 2].PlacedModules.Select(placedModule => placedModule.GetType()).Last());
+            Assert.AreEqual(module.GetType(), boards[boards.Count - 2].PlacedModules.Values.Select(placedModule => placedModule.GetType()).Last());
             Assert.AreEqual(1, schedule.ScheduledOperations.Count);
             Assert.AreEqual(operation1, schedule.ScheduledOperations[0]);
             Assert.IsTrue(module.OperationTime <= completionTime);
@@ -326,7 +331,7 @@ namespace BiolyTests.ScheduleTests
 
 
             //The second last board should be where the module implementing the operation should be placed.
-            Assert.AreEqual(module.GetType(), boards[boards.Count - 2].PlacedModules.Select(placedModule => placedModule.GetType()).Last());
+            Assert.AreEqual(module.GetType(), boards[boards.Count - 2].PlacedModules.Values.Select(placedModule => placedModule.GetType()).Last());
             Assert.AreEqual(1, schedule.ScheduledOperations.Count);
             Assert.AreEqual(operation1, schedule.ScheduledOperations[0]);
             Assert.IsTrue(module.OperationTime <= completionTime);
