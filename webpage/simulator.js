@@ -164,7 +164,7 @@ function updateLoop()
 
 function updateGraphics()
 {	
-	if (didGraphicsChange)
+	if (true)
 	{
 		didGraphicsChange = false;
 		
