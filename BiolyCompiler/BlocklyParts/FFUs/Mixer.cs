@@ -17,7 +17,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public const string SecondInputFieldName = "inputFluidB";
         public const string XmlTypeName = "mixer";
 
-        public Mixer(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, output, id)
+        public Mixer(List<FluidInput> input, string output, string id) : base(true, input, null, output, id)
         {
 
         }
@@ -45,7 +45,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             inputs.Add(fluidInput1);
             inputs.Add(fluidInput2);
 
-            return new Mixer(inputs, output, node, id);
+            return new Mixer(inputs, output, id);
         }
 
         public override string ToString()

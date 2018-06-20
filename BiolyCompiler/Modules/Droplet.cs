@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.Modules
@@ -50,13 +51,13 @@ namespace BiolyCompiler.Modules
 
         public override Module GetCopyOf()
         {
-            throw new NotImplementedException();
+            throw new InternalRuntimeException("This method is not suported.");
         }
 
 
         public override List<Command> GetModuleCommands(ref int time)
         {
-            throw new Exception("Droplet can't be converted into commands");
+            throw new InternalRuntimeException("Droplet can't be converted into commands");
         }
 
         public bool IsInMiddleOfSource(RoutingInformation location)

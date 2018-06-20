@@ -18,7 +18,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XML_TYPE_NAME = "setNumberVariable";
         private readonly VariableBlock OperandBlock;
 
-        public SetNumberVariable(VariableBlock operandBlock, List<string> input, string output, string id) : base(true, input, output, id, true)
+        public SetNumberVariable(VariableBlock operandBlock, List<string> input, string output, string id) : base(true, null, input, output, id, true)
         {
             this.OperandBlock = operandBlock;
         }

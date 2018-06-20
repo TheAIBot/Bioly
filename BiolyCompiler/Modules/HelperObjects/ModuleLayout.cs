@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BiolyCompiler.Exceptions;
+using BiolyCompiler.Exceptions.ParserExceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -63,7 +65,7 @@ namespace BiolyCompiler.Modules
                 for (int i = 0; i < rectangle.width; i++){
                     for (int j = 0; j < rectangle.height; j++)
                     {
-                        if (grid[i + rectangle.x, j + rectangle.y] == true) throw new Exception("In the current module, there is an overlap of rectangles");
+                        if (grid[i + rectangle.x, j + rectangle.y] == true) throw new InternalRuntimeException("In the current module, there is an overlap of rectangles");
                         else grid[i + rectangle.x, j + rectangle.y] = true;
                     }
                 }
@@ -72,7 +74,7 @@ namespace BiolyCompiler.Modules
             {
                 for (int j = 0; j < height; j++)
                 {
-                    if (grid[i,j] == false) throw new Exception("The given module layout does not divide the module perfectly up into droplets and empty rectangles, as required");
+                    if (grid[i,j] == false) throw new InternalRuntimeException("The given module layout does not divide the module perfectly up into droplets and empty rectangles, as required");
                 }
             }
         }

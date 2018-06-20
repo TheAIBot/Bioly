@@ -12,6 +12,7 @@ using CefSharp.WinForms;
 using System.IO.Ports;
 using System.Threading;
 using System.Collections.Concurrent;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyViewer_Windows
 {
@@ -141,7 +142,7 @@ namespace BiolyViewer_Windows
 
         private async void ExecuteJs(string js)
         {
-            Debug.WriteLine(js);
+            //Debug.WriteLine(js);
             
             if (REALLY_SLOW_COMPUTER)
             {
@@ -157,7 +158,7 @@ namespace BiolyViewer_Windows
 
         public override V WaitForResponse<V>()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Doesn't supported feedback from board.");
         }
 
         protected override string ConvertCommand(List<Command> commands)
@@ -182,7 +183,7 @@ namespace BiolyViewer_Windows
                 case CommandType.REMOVE_AREA:
                     return $"remove_area {areaCommand.ID}";
                 default:
-                    throw new Exception($"Can't convert command type {commands.First().Type.ToString()}");
+                    throw new InternalRuntimeException($"Can't convert command type {commands.First().Type.ToString()}");
             }
         }
 

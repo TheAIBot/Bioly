@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Exceptions;
 using BiolyCompiler.Routing;
 
 namespace BiolyCompiler.Modules
@@ -15,7 +16,7 @@ namespace BiolyCompiler.Modules
         {
             this.FluidType = fluidType;
             fluidType.dropletSources.Add(this);
-            if (capacity < 1) throw new Exception("A droplet source/spawner needs to be initally non-empty. The droplet source has fluid type = " + fluidType.ToString());
+            if (capacity < 1) throw new RuntimeException("A droplet source/spawner needs to be initally non-empty. The droplet source has fluid type = " + fluidType.ToString());
             this.Capacity = capacity;
             this.DropletCount = capacity;
         }
@@ -63,7 +64,7 @@ namespace BiolyCompiler.Modules
 
         public override List<Command> GetModuleCommands(ref int time)
         {
-            throw new Exception("A droplet spawner does not execute any commands.");
+            throw new InternalRuntimeException("A droplet spawner does not execute any commands.");
         }
 
         public void SetFluidType(BoardFluid fluidType)

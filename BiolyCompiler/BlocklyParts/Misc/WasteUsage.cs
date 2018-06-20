@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "wasteUsage";
 
-        public WasteUsage(string moduleName, List<FluidInput> input, string output, XmlNode node, string id) : base(moduleName, input, true, output, id)
+        public WasteUsage(string moduleName, List<FluidInput> input, string output, XmlNode node, string id) : base(moduleName, input, null, true, output, id)
         {
 
         }
@@ -46,7 +46,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //needs to be changed to the amount required by this block/operation.
             //This is neccessary for the routing to work:
             InfiniteModuleLayout layout = (InfiniteModuleLayout) module.GetInputLayout();
-            layout.SetGivenAmountOfDroplets(InputVariables[0].GetAmountInDroplets(FluidVariableLocations), module);
+            layout.SetGivenAmountOfDroplets(InputFluids[0].GetAmountInDroplets(FluidVariableLocations), module);
 
 
 
@@ -57,7 +57,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public override string ToString()
         {
             return "Waste" + Environment.NewLine +
-                   "Fluid: " + InputVariables[0].OriginalFluidName + Environment.NewLine +
+                   "Fluid: " + InputFluids[0].OriginalFluidName + Environment.NewLine +
                    "To target module: " + ModuleName;
         }
     }

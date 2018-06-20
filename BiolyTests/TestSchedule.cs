@@ -32,7 +32,7 @@ namespace BiolyTests.ScheduleTests
             for (int i = 0; i < OperationsToAdd; i++)
             {
                 Block Operation1 = new Sensor(null, null, null, String.Empty);
-                Block Operation2 = new Mixer(null, null, null, String.Empty);
+                Block Operation2 = new Mixer(null, null, String.Empty);
                 Operation1.priority = i;
                 Operation2.priority = i;
                 if (i == 2)

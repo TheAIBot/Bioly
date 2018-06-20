@@ -24,7 +24,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public GetArrayFluid(VariableBlock indexBlock, string arrayName, string id, string fluidName, int inputAmountInDroplets, bool useAllFluid) : base(id, fluidName, null, inputAmountInDroplets, useAllFluid)
+        public GetArrayFluid(VariableBlock indexBlock, string arrayName, string id, string fluidName, int inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers) : 
+            base(id, fluidName, null, inputAmountInDroplets, useAllFluid, inputNumbers)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -53,11 +54,18 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
             dfg.AddNode(indexBlock);
 
-            return new GetArrayFluid(indexBlock, arrayName, id, fluidName, amountInML, useAllFluid);
+            List<string> inputNumbers = new List<string>();
+            //inputNumbers.Add(indexBlock?.OutputVariable);
+
+            return new GetArrayFluid(indexBlock, arrayName, id, fluidName, amountInML, useAllFluid, inputNumbers);
         }
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
+            if (!variables.ContainsKey(FluidArray.GetArrayLengthVariable(ArrayName)))
+            {
+                throw new RuntimeException(ID, "Can't get a fluid before inserting one into the array. Array name: " + ArrayName);
+            }
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
             if (float.IsInfinity(floatIndex) || float.IsNaN(floatIndex))

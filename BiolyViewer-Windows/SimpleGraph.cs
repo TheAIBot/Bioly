@@ -56,14 +56,7 @@ namespace BiolyViewer_Windows
 
                 foreach (Node<Block> edgeNode in node.getOutgoingEdges())
                 {
-                    if (edgeNode.value is VariableBlock)
-                    {
-                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
-                    }
-                    else if (edgeNode.value is FluidBlock fluidBlock)
-                    {
-                        edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable, null, fluidBlock.InputVariables.First(x => x.FluidName == node.value.OutputVariable).ToString());
-                    }
+                    edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
                 }
             }
 

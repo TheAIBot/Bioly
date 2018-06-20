@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XML_TYPE_NAME = "math_number";
         public readonly float Value;
 
-        public Constant(XmlNode node, string id, bool canBeScheduled) : base(false, null, null, id, canBeScheduled)
+        public Constant(XmlNode node, string id, bool canBeScheduled) : base(false, null, null, null, id, canBeScheduled)
         {
             this.Value = node.TextToFloat(id);
         }

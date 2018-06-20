@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string XML_TYPE_NAME = "getDropletCount";
         public readonly string VariableName;
 
-        public GetDropletCount(string variableName, string id, bool canBeScheduled) : base(false, null, null, id, canBeScheduled)
+        public GetDropletCount(string variableName, string id, bool canBeScheduled) : base(false, null, null, null, id, canBeScheduled)
         {
             this.VariableName = variableName;
         }
