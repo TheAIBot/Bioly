@@ -715,7 +715,6 @@ Blockly.Blocks["inlineProgram"] =
 		{
 			const xml = Blockly.Xml.textToDom(this.program.programXml);
 			Blockly.Xml.domToWorkspace(xml, localWorkspace);
-			localWorkspace.options.readOnly = true;
 			
 			return localWorkspace.getTopBlocks[0];
 		}
