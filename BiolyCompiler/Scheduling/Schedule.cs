@@ -138,7 +138,6 @@ namespace BiolyCompiler.Scheduling
             int currentTime = 0;
             board = ListSchedulingSetup(assay, board, library, currentTime);
             SimplePriorityQueue<Block, int> readyOperations = assay.GetReadyOperations();
-            Console.Write("");
             //currentTime = 0;
 
             //Continue until all operations have been scheduled:
@@ -273,7 +272,7 @@ namespace BiolyCompiler.Scheduling
 
             BoardFluid inputFluid;
             FluidVariableLocations.TryGetValue(input.OriginalFluidName, out inputFluid);
-            if (inputFluid == null) throw new InternalRuntimeException("Fluid of type \"" + input.FluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
+            if (inputFluid == null) throw new InternalRuntimeException("Fluid of type \"" + input.OriginalFluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
 
             int originalStartTime = currentTime;
             SimplePriorityQueue<Block, int> readyOperations;

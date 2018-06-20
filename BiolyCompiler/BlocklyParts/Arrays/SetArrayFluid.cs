@@ -27,7 +27,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly VariableBlock IndexBlock;
 
         public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string indexBlockName, string id) : 
-            base(true, input, new List<string>() { indexBlockName }, arrayName, id)
+            base(true, input, null, arrayName, id)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -47,7 +47,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             }
 
             FluidInput fluidInput = null;
-            XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Mixer is missing input fluid block."));
+            XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing input fluid block."));
             if (inputFluidNode != null)
             {
                 fluidInput = XmlParser.ParseFluidInput(inputFluidNode, dfg, parserInfo);
