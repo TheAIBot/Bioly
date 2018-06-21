@@ -34,6 +34,7 @@ namespace BiolyViewer_Windows
     {
         public const string SETTINGS_FILE_PATH = "settings.stx";
         private const string PROGRAMS_FOLDER_PATH = @"../../../../BiolyPrograms";
+        private const string WEBPAGE_FOLDER_PATH = @"../../../../webpage";
         private WebUpdater Updater;
 
         public MainWindow()
@@ -42,7 +43,7 @@ namespace BiolyViewer_Windows
             settings.RegisterScheme(new CefCustomScheme
             {
                 SchemeName = "costum",
-                SchemeHandlerFactory = new FolderSchemeHandlerFactory(@"../../../../webpage"),
+                SchemeHandlerFactory = new FolderSchemeHandlerFactory(WEBPAGE_FOLDER_PATH),
                 IsSecure = true
             });
             Cef.Initialize(settings);
