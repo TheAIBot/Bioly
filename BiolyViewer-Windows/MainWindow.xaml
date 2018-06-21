@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:BiolyViewer_Windows"
         xmlns:wf="clr-namespace:CefSharp.WinForms;assembly=CefSharp.WinForms"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525" WindowStartupLocation="CenterScreen" WindowState="Maximized" Loaded="Window_Loaded" Closing="Window_Closing">
+        Title="Bioly" Height="350" Width="525" WindowStartupLocation="CenterScreen" WindowState="Maximized" Loaded="Window_Loaded" Closing="Window_Closing">
     <!--<wpf:ChromiumWebBrowser x:Name="Browser"/>-->
     <WindowsFormsHost>
         <wf:ChromiumWebBrowser x:Name="Browser"/>

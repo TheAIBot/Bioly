@@ -66,19 +66,6 @@ namespace BiolyViewer_Windows
                 //Wait for the MainFrame to finish loading
                 if (args.Frame.IsMain)
                 {
-                    //string xmlProgram = File.ReadAllText(System.IO.Path.Combine(PROGRAMS_FOLDER_PATH, "UsinDiluter2.bc"));
-
-                    //for (int i = 0; i < 100; i++)
-                    //{
-                    //    SimulatorConnector connector = new SimulatorConnector(Browser, 20, 20);
-                    //    ProgramExecutor<string> executor = new ProgramExecutor<string>(connector);
-                    //    executor.TimeBetweenCommands = 0;
-                    //    executor.ShowEmptyRectangles = false;
-                    //    executor.Run(20, 20, xmlProgram);
-                    //}
-
-                    //MessageBox.Show("Done");
-
                     GiveSettingsToJS(settings);
                     GiveProgramsToJS();
                 }
