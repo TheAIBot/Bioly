@@ -25,6 +25,7 @@ var DROP_DISTANCE_PER_SEC_IN_CM = 600;
 var DEFAULT_DROP_SIZE_IN_CM = 1;
 var STRICT_MODE_ENABLED = true;
 var didGraphicsChange = false;
+var updatesPerUdate = 1;
 var runningSimulatorIntervalID = null;
 var UPDATES_PER_SECOND = 60;
 
@@ -65,7 +66,19 @@ function startSimulator(width, height, inputs, outputs)
 		clearInterval(runningSimulatorIntervalID);
 	}
 	
-	runningSimulatorIntervalID = setInterval(updateLoop, 1000 / UPDATES_PER_SECOND);
+	let timeBetweenUpdates = 1000 / UPDATES_PER_SECOND;
+	
+	if (timeBetweenUpdates < 10)
+	{
+		updatesPerUdate = Math.ceil(10 / timeBetweenUpdates);
+		timeBetweenUpdates = 10;
+	}
+	else
+	{
+		updatesPerUdate = 1;
+	}
+	
+	runningSimulatorIntervalID = setInterval(updateLoop, timeBetweenUpdates);
 	didGraphicsChange = true;
 }
 
@@ -141,24 +154,27 @@ function addCommand(command)
 
 function updateLoop()
 {	
-	if(newCommands.length > 0)
+	for(let i = 0; i < updatesPerUdate; i++)
 	{
-		executeCommand(newCommands[0]);
-		newCommands.splice(0, 1);
-	}
-	try
-	{
-		spawnInputDrops();
-		splitDrops();
-		removeDrops();
-		updateDropPositions();
-		mergeDrops();
-	}
-	catch(error)
-	{
-		console.log(error);
-		clearInterval(runningSimulatorIntervalID);
-		return;
+		if(newCommands.length > 0)
+		{
+			executeCommand(newCommands[0]);
+			newCommands.splice(0, 1);
+		}
+		try
+		{
+			spawnInputDrops();
+			splitDrops();
+			removeDrops();
+			updateDropPositions();
+			mergeDrops();
+		}
+		catch(error)
+		{
+			console.log(error);
+			clearInterval(runningSimulatorIntervalID);
+			return;
+		}
 	}
 }
 
