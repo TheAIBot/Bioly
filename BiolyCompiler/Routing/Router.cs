@@ -59,7 +59,8 @@ namespace BiolyCompiler.Routing
             Droplet inputLocation = outputOperation.BoundModule.GetInputLayout().Droplets[0];
             foreach (var fluid in outputOperation.InputFluids)
             {
-                for (int i = 0; i < fluid.GetAmountInDroplets(FluidVariableLocations); i++)
+                int amountToTransfer = fluid.GetAmountInDroplets(FluidVariableLocations);
+                for (int i = 0; i < amountToTransfer; i++)
                 {
                     Route route = RouteSingleDropletToModule(outputOperation, board, currentTime, inputLocation);
                     //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
