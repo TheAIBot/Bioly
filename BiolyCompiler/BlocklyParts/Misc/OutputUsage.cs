@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "outputUsage";
 
-        public OutputUsage(string moduleName, List<FluidInput> input, string output, XmlNode node, string id) : base(moduleName, input, null, true, output, id)
+        public OutputUsage(string moduleName, List<FluidInput> input, string output, string id) : base(moduleName, input, null, true, output, id)
         {
 
         }
@@ -37,7 +37,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);
 
-            return new OutputUsage(moduleName, inputs, null, node, id);
+            return new OutputUsage(moduleName, inputs, null, id);
         }
 
         public override void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)

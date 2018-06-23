@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
         public readonly int Temperature;
         public readonly int Time;
 
-        public HeaterDeclaration(string moduleName, XmlNode node, string id) : base(moduleName, true, null, id)
+        public HeaterDeclaration(string moduleName, string id) : base(moduleName, true, null, id)
         {
         }
 
@@ -32,7 +32,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             Validator.CheckVariableName(id, moduleName);
             parserInfo.AddVariable(id, VariableType.HEATER, moduleName);
 
-            return new HeaterDeclaration(moduleName, node, id);
+            return new HeaterDeclaration(moduleName, id);
         }
 
         public override string ToString()

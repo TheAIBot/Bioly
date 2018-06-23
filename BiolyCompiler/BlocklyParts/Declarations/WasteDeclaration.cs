@@ -12,7 +12,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
     {
         public const string XML_TYPE_NAME = "wasteDeclaration";
 
-        public WasteDeclaration(string moduleName, XmlNode node, string id) : base(moduleName, false, null, id)
+        public WasteDeclaration(string moduleName, string id) : base(moduleName, false, null, id)
         {
 
         }
@@ -24,7 +24,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             Validator.CheckVariableName(id, moduleName);
             parserInfo.AddVariable(id, VariableType.WASTE, moduleName);
 
-            return new WasteDeclaration(moduleName, node, id);
+            return new WasteDeclaration(moduleName, id);
         }
 
         public override Module getAssociatedModule()

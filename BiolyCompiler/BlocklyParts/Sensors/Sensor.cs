@@ -13,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts.Sensors
         public const string XmlTypeName = "sensor";
         public static string TypeName => "sensor";
 
-        public Sensor(List<FluidInput> input, string output, XmlNode node, string id) : base(true, input, null, output, id)
+        public Sensor(List<FluidInput> input, string output, string id) : base(true, input, null, output, id)
         {
 
         }
