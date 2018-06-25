@@ -58,7 +58,7 @@ namespace BiolyCompiler
             controlStack.Push(null);
             scopedVariables.Push(new List<string>());
 
-            if (CanOptimizeCDFG(graph))
+            if (!CanOptimizeCDFG(graph))
             {
                 while (runningGraph != null)
                 {
