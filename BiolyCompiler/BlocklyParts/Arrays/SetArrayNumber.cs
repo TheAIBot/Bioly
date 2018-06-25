@@ -62,13 +62,30 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new SetArrayNumber(indexBlock, numberInput, arrayName, inputs, id, canBeScheduled);
         }
 
-        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
-            throw new InternalRuntimeException("This method is not supported for.");
+            VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef);
+            VariableBlock numberInput = (VariableBlock)NumberBlock.CopyBlock(dfg, mostRecentRef);
+
+            dfg.AddNode(indexBlock);
+            dfg.AddNode(numberInput);
+
+            List<string> inputs = new List<string>();
+            inputs.Add(indexBlock.OutputVariable);
+            inputs.Add(numberInput.OutputVariable);
+
+            return new SetArrayNumber(indexBlock, numberInput, ArrayName, inputs, BlockID, CanBeScheduled);
         }
 
-        public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
+            return NumberBlock.Run(variables, executor, dropPositions);
+        }
+
+        public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        {
+            base.Update(variables, executor, dropPositions);
+
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
             if (float.IsInfinity(floatIndex) || float.IsNaN(floatIndex))
@@ -82,11 +99,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
             }
 
-            string arrayIndexName = FluidArray.GetArrayIndexName(ArrayName, index);
-            return (arrayIndexName, NumberBlock.Run(variables, executor, dropPositions));
+            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
         }
-
-
 
         public override string ToXml()
         {

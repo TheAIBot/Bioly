@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.Linq;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -38,6 +39,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
             inputs.Add(fluidInput);
 
             return new OutputUsage(moduleName, inputs, null, id);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef)));
+
+            return new OutputUsage(ModuleName, inputFluids, OriginalOutputVariable, BlockID);
         }
 
         public override void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)

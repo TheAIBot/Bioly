@@ -62,6 +62,17 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new SetArrayFluid(indexBlock, arrayName, inputFluids, indexBlock?.OutputVariable, id);
         }
 
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef);
+            dfg.AddNode(indexBlock);
+
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef)));
+
+            return new SetArrayFluid(indexBlock, ArrayName, inputFluids, indexBlock.OutputVariable, BlockID);
+        }
+
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             base.Update(variables, executor, dropPositions);

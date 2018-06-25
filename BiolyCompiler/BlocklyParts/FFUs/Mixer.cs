@@ -8,6 +8,7 @@ using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Graphs;
+using System.Linq;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -46,6 +47,14 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             inputs.Add(fluidInput2);
 
             return new Mixer(inputs, output, id);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef)));
+
+            return new Mixer(inputFluids, OriginalOutputVariable, BlockID);
         }
 
         public override string ToString()

@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 
 namespace BiolyCompiler.BlocklyParts.Sensors
@@ -20,6 +21,11 @@ namespace BiolyCompiler.BlocklyParts.Sensors
         public Block TryParseBlock(XmlNode node)
         {
             throw new InternalParseException("Sensor block is not supported yet.");
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            throw new NotImplementedException();
         }
 
         public override Module getAssociatedModule()

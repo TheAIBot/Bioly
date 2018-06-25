@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Modules;
+﻿using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
 using System;
@@ -25,6 +26,11 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             parserInfo.AddVariable(id, VariableType.WASTE, moduleName);
 
             return new WasteDeclaration(moduleName, id);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            return new WasteDeclaration(ModuleName, BlockID);
         }
 
         public override Module getAssociatedModule()

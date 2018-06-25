@@ -8,6 +8,7 @@ using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using System.Linq;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -65,6 +66,8 @@ namespace BiolyCompiler.BlocklyParts
         {
 
         }
+
+        public abstract Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef);
 
         public override int GetHashCode()
         {

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.Linq;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -54,6 +55,14 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             inputs.Add(fluidInput);
 
             return new HeaterUsage(moduleName, inputs, output, temperature, time, id);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef)));
+
+            return new HeaterUsage(ModuleName, inputFluids, OriginalOutputVariable, Temperature, Time, BlockID);
         }
 
 

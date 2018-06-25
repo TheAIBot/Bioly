@@ -24,7 +24,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public GetArrayFluid(VariableBlock indexBlock, string arrayName, string id, string fluidName, int inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers) : 
+        public GetArrayFluid(VariableBlock indexBlock, string arrayName, string id, string fluidName, float inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers) : 
             base(id, fluidName, null, inputAmountInDroplets, useAllFluid, inputNumbers)
         {
             this.ArrayName = arrayName;
@@ -42,7 +42,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             parserInfo.MostRecentVariableRef.TryGetValue(arrayName, out string correctedName);
 
             string fluidName = correctedName ?? NO_FLUID_NAME;
-            int amountInML = (int)node.GetNodeWithAttributeValue(FLUID_AMOUNT_FIELD_NAME).TextToFloat(id);
+            float amountInML = node.GetNodeWithAttributeValue(FLUID_AMOUNT_FIELD_NAME).TextToFloat(id);
             bool useAllFluid = FluidInput.StringToBool(node.GetNodeWithAttributeValue(USE_ALL_FLUID_FIELD_NAME).InnerText);
 
             VariableBlock indexBlock = null;
@@ -58,6 +58,18 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             //inputNumbers.Add(indexBlock?.OutputVariable);
 
             return new GetArrayFluid(indexBlock, arrayName, id, fluidName, amountInML, useAllFluid, inputNumbers);
+        }
+
+        public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef);
+            dfg.AddNode(indexBlock);
+            List<string> inputNumbers = new List<string>();
+            //inputNumbers.Add(indexBlock.OutputVariable);
+
+            FluidInput result = new GetArrayFluid(indexBlock, ArrayName, ID, null, AmountInML, UseAllFluid, inputNumbers);
+            result.OriginalFluidName = OriginalFluidName;
+            return result;
         }
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

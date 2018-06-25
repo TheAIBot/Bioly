@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,11 @@ namespace BiolyTests.TestObjects
         public TestBlock(List<FluidBlock> inputs, string output, Module associatedModule) : this(inputs.Select(input => (FluidInput)new BasicInput("", input.OutputVariable, input.OriginalOutputVariable, 1, true)).ToList(), output, associatedModule)
         {
 
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            throw new NotImplementedException();
         }
 
         public override Module getAssociatedModule()

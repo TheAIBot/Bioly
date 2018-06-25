@@ -6,6 +6,7 @@ using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.TypeSystem;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts.Declarations
 {
@@ -37,6 +38,11 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             parserInfo.AddVariable(id, VariableType.FLUID, output);
 
             return new InputDeclaration(output, amount, id);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            return new InputDeclaration(OriginalOutputVariable, Amount, BlockID);
         }
 
         public override Module getAssociatedModule()

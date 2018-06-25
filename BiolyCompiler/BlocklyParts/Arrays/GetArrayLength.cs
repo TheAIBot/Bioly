@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
@@ -30,6 +31,14 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             inputs.Add(arrayName);
 
             return new GetArrayLength(arrayName, inputs, id, canBeScheduled);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            List<string> inputs = new List<string>();
+            inputs.Add(ArrayName);
+
+            return new GetArrayLength(ArrayName, inputs, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

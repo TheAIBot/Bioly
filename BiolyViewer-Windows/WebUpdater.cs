@@ -39,6 +39,15 @@ namespace BiolyViewer_Windows
                     string js = String.Empty;
                     if (Settings.CreateGraph)
                     {
+                        if (ProgramExecutor<string>.CanOptimizeCDFG(cdfg))
+                        {
+                            int boardWidth = Settings.BoardWidth;
+                            int boardHeight = Settings.BoardHeight;
+                            CDFG newCdfg = new CDFG();
+                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg));
+                            cdfg = newCdfg;
+                            cdfg.StartDFG = cdfg.Nodes.First().dfg;
+                        }
                         (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
                         js = $"setGraph({nodes}, {edges});";
                     }

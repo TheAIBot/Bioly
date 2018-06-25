@@ -48,6 +48,16 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new FluidArray(arrayName, arrayLengthBlock, inputs, id);
         }
 
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            VariableBlock arrayLengthBlock = (VariableBlock)ArrayLengthBlock.CopyBlock(dfg, mostRecentRef);
+            dfg.AddNode(arrayLengthBlock);
+            List<string> inputs = new List<string>();
+            inputs.Add(arrayLengthBlock.OutputVariable);
+
+            return new FluidArray(ArrayName, arrayLengthBlock, inputs, BlockID);
+        }
+
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             throw new InternalRuntimeException("This method is not supported for this block.");

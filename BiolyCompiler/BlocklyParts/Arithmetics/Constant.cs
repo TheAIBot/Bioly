@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
@@ -25,6 +26,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             float value = node.TextToFloat(id);
             return new Constant(value, id, canBeScheduled);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            return new Constant(Value, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

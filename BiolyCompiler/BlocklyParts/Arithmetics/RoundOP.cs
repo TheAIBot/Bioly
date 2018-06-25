@@ -47,6 +47,16 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new RoundOP(numberBlock, roundType, inputs, id, canBeScheduled);
         }
 
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            VariableBlock numberBlock = (VariableBlock)NumberBlock.CopyBlock(dfg, mostRecentRef);
+            dfg.AddNode(numberBlock);
+            List<string> inputs = new List<string>();
+            inputs.Add(numberBlock.OutputVariable);
+
+            return new RoundOP(numberBlock, RoundType, inputs, BlockID, CanBeScheduled);
+        }
+
         public static RoundOPTypes StringToRoundOPType(string id, string roundOPTypeAsString)
         {
             switch (roundOPTypeAsString)

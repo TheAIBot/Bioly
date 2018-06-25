@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
@@ -26,6 +27,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             string variableName = node.GetNodeWithAttributeValue(VARIABLE_FIELD_NAME).InnerText;
             parserInfo.CheckVariable(id, VariableType.FLUID, variableName);
             return new GetDropletCount(variableName, id, canBeScheduled);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            return new GetDropletCount(VariableName, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

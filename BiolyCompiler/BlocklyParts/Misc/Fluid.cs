@@ -33,6 +33,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new Fluid(inputs, output, id);
         }
 
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef)));
+
+            return new Fluid(inputFluids, OriginalOutputVariable, BlockID);
+        }
+
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);

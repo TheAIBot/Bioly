@@ -6,6 +6,7 @@ using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.TypeSystem;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts.Declarations
 {
@@ -31,7 +32,12 @@ namespace BiolyCompiler.BlocklyParts.Declarations
 
             return new DropletDeclaration(output, id);
         }
-        
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            return new DropletDeclaration(OriginalOutputVariable, BlockID);
+        }
+
         public override Module getAssociatedModule()
         {
             return new Droplet(new BoardFluid(OriginalOutputVariable));

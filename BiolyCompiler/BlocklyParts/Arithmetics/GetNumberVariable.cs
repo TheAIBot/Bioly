@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
@@ -38,6 +39,15 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             }
 
             return new GetNumberVariable(variableName, id, inputs, canBeScheduled);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            mostRecentRef.TryGetValue(VariableName, out string correctedName);
+            List<string> inputs = new List<string>();
+            inputs.Add(correctedName);
+
+            return new GetNumberVariable(VariableName, BlockID, inputs, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

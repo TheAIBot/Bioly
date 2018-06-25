@@ -60,6 +60,21 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, opType, id, canBeScheduled);
         }
 
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        {
+            VariableBlock leftBlock = (VariableBlock)LeftBlock.CopyBlock(dfg, mostRecentRef);
+            VariableBlock rightBlock = (VariableBlock)RightBlock.CopyBlock(dfg, mostRecentRef);
+
+            dfg.AddNode(leftBlock);
+            dfg.AddNode(rightBlock);
+
+            List<string> inputs = new List<string>();
+            inputs.Add(leftBlock.OutputVariable);
+            inputs.Add(rightBlock.OutputVariable);
+
+            return new BoolOP(leftBlock, rightBlock, inputs, null, OPType, BlockID, CanBeScheduled);
+        }
+
         public static BoolOPTypes StringToBoolOPType(string id, string boolOPAsString)
         {
             switch (boolOPAsString)
