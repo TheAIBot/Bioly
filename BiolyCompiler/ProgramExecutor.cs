@@ -143,9 +143,14 @@ namespace BiolyCompiler
                 HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
                 scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("@#@Index")));
 
-                foreach (Block operation in scheduledOperations)
+                runningGraph.Nodes.ForEach(x => x.value.IsDone = false);
+                Assay fisk = new Assay(runningGraph);
+
+                var cake = fisk.GetReadyOperations();
+                while (cake.Count > 0)
                 {
-                    Block copy = operation.CopyBlock(bigDFG, mostRecentRef);
+                    Block toCopy = cake.Dequeue();
+                    Block copy = toCopy.CopyBlock(bigDFG, mostRecentRef);
                     bigDFG.AddNode(copy);
 
                     if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
@@ -156,6 +161,8 @@ namespace BiolyCompiler
                     {
                         mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
                     }
+
+                    fisk.UpdateReadyOperations(toCopy);
                 }
 
 
