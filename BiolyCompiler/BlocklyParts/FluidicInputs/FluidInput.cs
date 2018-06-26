@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public readonly string ID;
         public  readonly string FluidName;
         public string OriginalFluidName { get; internal set; }
-        protected readonly float AmountInML;
+        public readonly float AmountInML;
         public  readonly bool UseAllFluid;
         public readonly List<string> InputNumbers;
         public static readonly List<string> EmptyNumbersList = new List<string>();

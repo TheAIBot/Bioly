@@ -62,14 +62,17 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
         public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
         {
-            VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef);
-            dfg.AddNode(indexBlock);
-            List<string> inputNumbers = new List<string>();
-            //inputNumbers.Add(indexBlock.OutputVariable);
+            mostRecentRef.TryGetValue(OriginalFluidName, out string fluidName);
+            return new BasicInput(ID, fluidName, OriginalFluidName, AmountInML, UseAllFluid);
 
-            FluidInput result = new GetArrayFluid(indexBlock, ArrayName, ID, null, AmountInML, UseAllFluid, inputNumbers);
-            result.OriginalFluidName = OriginalFluidName;
-            return result;
+            //VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef);
+            //dfg.AddNode(indexBlock);
+            //List<string> inputNumbers = new List<string>();
+            ////inputNumbers.Add(indexBlock.OutputVariable);
+
+            //FluidInput result = new GetArrayFluid(indexBlock, ArrayName, ID, null, AmountInML, UseAllFluid, inputNumbers);
+            //result.OriginalFluidName = OriginalFluidName;
+            //return result;
         }
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

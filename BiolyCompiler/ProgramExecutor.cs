@@ -17,6 +17,7 @@ using System.Threading;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using System.Diagnostics;
 using BiolyCompiler.Exceptions;
+using BiolyCompiler.BlocklyParts.Arrays;
 
 namespace BiolyCompiler
 {
@@ -151,15 +152,22 @@ namespace BiolyCompiler
                 {
                     Block toCopy = cake.Dequeue();
                     Block copy = toCopy.CopyBlock(bigDFG, mostRecentRef);
-                    bigDFG.AddNode(copy);
-
-                    if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
+                    if (copy is Fluid rename)
                     {
-                        mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
+                        mostRecentRef[copy.OriginalOutputVariable] = mostRecentRef[rename.InputFluids.First().OriginalFluidName];
                     }
                     else
                     {
-                        mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
+                        bigDFG.AddNode(copy);
+
+                        if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
+                        {
+                            mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
+                        }
+                        else
+                        {
+                            mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
+                        }
                     }
 
                     fisk.UpdateReadyOperations(toCopy);
@@ -169,6 +177,15 @@ namespace BiolyCompiler
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
                 runningGraph = GetNextGraph(graph, runningGraph, null, variables, controlStack, scopedVariables, dropPositions);
             }
+
+            bigDFG.Nodes.RemoveAll(x =>
+            {
+                if (x.value is VariableBlock)
+                {
+                    return true;
+                }
+                return false;
+            });
 
             bigDFG.FinishDFG();
             return bigDFG;
