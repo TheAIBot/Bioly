@@ -34,6 +34,7 @@ namespace BiolyViewer_Windows
     {
         public const string SETTINGS_FILE_PATH = "settings.stx";
         private const string PROGRAMS_FOLDER_PATH = @"../../../../BiolyPrograms";
+        private const string WEBPAGE_FOLDER_PATH = @"../../../../webpage";
         private WebUpdater Updater;
 
         public MainWindow()
@@ -42,7 +43,7 @@ namespace BiolyViewer_Windows
             settings.RegisterScheme(new CefCustomScheme
             {
                 SchemeName = "costum",
-                SchemeHandlerFactory = new FolderSchemeHandlerFactory(@"../../../../webpage"),
+                SchemeHandlerFactory = new FolderSchemeHandlerFactory(WEBPAGE_FOLDER_PATH),
                 IsSecure = true
             });
             Cef.Initialize(settings);
@@ -66,19 +67,6 @@ namespace BiolyViewer_Windows
                 //Wait for the MainFrame to finish loading
                 if (args.Frame.IsMain)
                 {
-                    //string xmlProgram = File.ReadAllText(System.IO.Path.Combine(PROGRAMS_FOLDER_PATH, "UsinDiluter2.bc"));
-
-                    //for (int i = 0; i < 100; i++)
-                    //{
-                    //    SimulatorConnector connector = new SimulatorConnector(Browser, 20, 20);
-                    //    ProgramExecutor<string> executor = new ProgramExecutor<string>(connector);
-                    //    executor.TimeBetweenCommands = 0;
-                    //    executor.ShowEmptyRectangles = false;
-                    //    executor.Run(20, 20, xmlProgram);
-                    //}
-
-                    //MessageBox.Show("Done");
-
                     GiveSettingsToJS(settings);
                     GiveProgramsToJS();
                 }
