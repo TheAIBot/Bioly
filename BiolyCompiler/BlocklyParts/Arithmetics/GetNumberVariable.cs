@@ -41,9 +41,10 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new GetNumberVariable(variableName, id, inputs, canBeScheduled);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
-            mostRecentRef.TryGetValue(VariableName, out string correctedName);
+            renamer.TryGetValue(VariableName, out string correctedVariableName);
+            mostRecentRef.TryGetValue(correctedVariableName, out string correctedName);
             List<string> inputs = new List<string>();
             inputs.Add(correctedName);
 

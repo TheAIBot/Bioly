@@ -52,17 +52,18 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new GetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
-            VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef);
+            VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef, renamer, namePostfix);
             dfg.AddNode(indexBlock);
-            mostRecentRef.TryGetValue(ArrayName, out string correctedName);
+            renamer.TryGetValue(ArrayName, out string correctedArrayName);
+            mostRecentRef.TryGetValue(correctedArrayName, out string correctedName);
 
             List<string> inputs = new List<string>();
             inputs.Add(indexBlock.OutputVariable);
             inputs.Add(correctedName);
 
-            GetArrayNumber result = new GetArrayNumber(indexBlock, ArrayName, inputs, BlockID, CanBeScheduled);
+            GetArrayNumber result = new GetArrayNumber(indexBlock, correctedArrayName, inputs, BlockID, CanBeScheduled);
             result.OriginalOutputVariable = OriginalOutputVariable;
             return result;
         }

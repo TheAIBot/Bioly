@@ -33,12 +33,13 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new GetArrayLength(arrayName, inputs, id, canBeScheduled);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
             List<string> inputs = new List<string>();
             inputs.Add(ArrayName);
 
-            return new GetArrayLength(ArrayName, inputs, BlockID, CanBeScheduled);
+            renamer.TryGetValue(ArrayName, out string correctedName);
+            return new GetArrayLength(correctedName, inputs, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
