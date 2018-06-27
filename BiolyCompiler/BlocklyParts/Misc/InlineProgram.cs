@@ -311,7 +311,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         private (string beforeBlockXml, string blockXml, string nextBlockXml, string afterBlockXml) SplitBlockXml(XmlNode blockNode, string xml)
         {
-            string blockXml = blockNode.OuterXml;
+            string blockXml = RemoveXmlnsTag(blockNode.OuterXml);
             string nextBlockXml = blockNode.TryGetNodeWithName("next")?.FirstChild.OuterXml;
             if (nextBlockXml != null)
             {
@@ -362,9 +362,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             modifiedXmlNode.Attributes.Append(typeAttr);
 
-            var splittedXml = SplitBlockXml(node, node.OwnerDocument.OuterXml);
+            var splittedXml = SplitBlockXml(node, RemoveXmlnsTag(node.OwnerDocument.OuterXml));
 
-            string combinedXml = splittedXml.beforeBlockXml + modifiedXmlNode.OuterXml + splittedXml.afterBlockXml;
+            string combinedXml = splittedXml.beforeBlockXml + RemoveXmlnsTag(modifiedXmlNode.OuterXml) + splittedXml.afterBlockXml;
 
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(combinedXml);
