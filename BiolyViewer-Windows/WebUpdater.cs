@@ -29,6 +29,8 @@ namespace BiolyViewer_Windows
             this.Settings = settings;
         }
 
+        CancellationTokenSource cancelSource = null;
+
         public void Update(string xml)
         {
             try
@@ -44,7 +46,14 @@ namespace BiolyViewer_Windows
                             int boardWidth = Settings.BoardWidth;
                             int boardHeight = Settings.BoardHeight;
                             CDFG newCdfg = new CDFG();
-                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg));
+                            cancelSource?.Cancel();
+                            cancelSource = new CancellationTokenSource();
+                            CancellationToken token = cancelSource.Token;
+                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg, token));
+                            if (cancelSource.IsCancellationRequested)
+                            {
+                                return;
+                            }
                             cdfg = newCdfg;
                             cdfg.StartDFG = cdfg.Nodes.First().dfg;
                         }
@@ -87,7 +96,7 @@ namespace BiolyViewer_Windows
             {
                 if (CurrentlyExecutionProgram != null)
                 {
-                    CurrentlyExecutionProgram.Running = false;
+                    CurrentlyExecutionProgram.KeepRunning.Cancel();
                 }
                 simulatorThread?.Join();
                 simulatorThread = new Thread(() =>

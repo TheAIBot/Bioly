@@ -26,7 +26,7 @@ namespace BiolyCompiler
         private readonly CommandExecutor<T> Executor;
         public int TimeBetweenCommands = 50;
         public bool ShowEmptyRectangles = true;
-        public bool Running = true;
+        public readonly CancellationTokenSource KeepRunning = new CancellationTokenSource();
         public DFG<Block> OptimizedDFG = null;
 
         public ProgramExecutor(CommandExecutor<T> executor)
@@ -89,11 +89,22 @@ namespace BiolyCompiler
 
                     runningGraph.Nodes.ForEach(x => x.value.Reset());
                     runningGraph = GetNextGraph(graph, runningGraph, Executor, variables, controlStack, scopedVariables, dropPositions);
+
+                    if (KeepRunning.IsCancellationRequested)
+                    {
+                        return;
+                    }
                 }
             }
             else
             {
-                OptimizedDFG = OptimizeCDFG(width, height, graph);
+                OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token);
+
+                if (KeepRunning.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules);
                 StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
                 List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
@@ -106,7 +117,7 @@ namespace BiolyCompiler
             return cdfg.Nodes.All(x => x.dfg.Nodes.All(y => !(y is INonDeterministic)));
         }
 
-        public static DFG<Block> OptimizeCDFG(int width, int height, CDFG graph)
+        public static DFG<Block> OptimizeCDFG(int width, int height, CDFG graph, CancellationToken keepRunning)
         {
             DFG<Block> runningGraph = graph.StartDFG;
 
@@ -152,22 +163,16 @@ namespace BiolyCompiler
                 {
                     Block toCopy = cake.Dequeue();
                     Block copy = toCopy.CopyBlock(bigDFG, mostRecentRef);
-                    if (copy is Fluid rename)
+
+                    bigDFG.AddNode(copy);
+
+                    if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
                     {
-                        mostRecentRef[copy.OriginalOutputVariable] = mostRecentRef[rename.InputFluids.First().OriginalFluidName];
+                        mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
                     }
                     else
                     {
-                        bigDFG.AddNode(copy);
-
-                        if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
-                        {
-                            mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
-                        }
-                        else
-                        {
-                            mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
-                        }
+                        mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
                     }
 
                     fisk.UpdateReadyOperations(toCopy);
@@ -175,7 +180,19 @@ namespace BiolyCompiler
 
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
+
+                fluidVariablesBefore = dropPositions.Keys.ToHashSet();
+                numberVariablesBefore = variables.Keys.ToHashSet();
                 runningGraph = GetNextGraph(graph, runningGraph, null, variables, controlStack, scopedVariables, dropPositions);
+                fluidVariablesAfter = dropPositions.Keys.ToHashSet();
+                numberVariablesAfter = variables.Keys.ToHashSet();
+                fluidVariablesBefore.Except(fluidVariablesAfter).ToList().ForEach(x => mostRecentRef.Remove(x));
+                numberVariablesBefore.Except(numberVariablesAfter).ToList().ForEach(x => mostRecentRef.Remove(x));
+
+                if (keepRunning.IsCancellationRequested)
+                {
+                    return null;
+                }
             }
 
             bigDFG.Nodes.RemoveAll(x =>
@@ -303,13 +320,15 @@ namespace BiolyCompiler
 
                 Executor.SendCommands();
 
+
+                if (KeepRunning.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 if (TimeBetweenCommands > 0)
                 {
                     Thread.Sleep(TimeBetweenCommands);
-                }
-                else if (!Running)
-                {
-                    throw new ThreadInterruptedException();
                 }
                 time++;
             }
