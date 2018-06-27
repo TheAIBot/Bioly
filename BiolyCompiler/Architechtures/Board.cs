@@ -482,10 +482,10 @@ namespace BiolyCompiler.Architechtures
             {
                 for (int i = 0; i < width; i++)
                 {
-                    if (grid[i, j] == null) printedBoard.Append(String.Format("{0,2}", "O"));
+                    if (grid[i, j] == null) printedBoard.Append(String.Format("{0,3}", "O"));
                     else {
                         int index = allPlacedModules.IndexOf(grid[i,j]);
-                        printedBoard.Append(String.Format("{0,2}", index));
+                        printedBoard.Append(String.Format("{0,3}", index));
                     }
                 }
                 printedBoard.AppendLine();
