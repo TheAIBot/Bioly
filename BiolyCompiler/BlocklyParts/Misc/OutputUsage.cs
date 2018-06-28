@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.Linq;
 
 namespace BiolyCompiler.BlocklyParts.Misc
 {
@@ -16,7 +17,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string INPUT_FLUID_FIELD_NAME = "inputFluid";
         public const string XML_TYPE_NAME = "outputUsage";
 
-        public OutputUsage(string moduleName, List<FluidInput> input, string output, XmlNode node, string id) : base(moduleName, input, null, true, output, id)
+        public OutputUsage(string moduleName, List<FluidInput> input, string output, string id) : base(moduleName, input, null, true, output, id)
         {
 
         }
@@ -37,7 +38,15 @@ namespace BiolyCompiler.BlocklyParts.Misc
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);
 
-            return new OutputUsage(moduleName, inputs, null, node, id);
+            return new OutputUsage(moduleName, inputs, null, id);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        {
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+
+            return new OutputUsage(ModuleName, inputFluids, null, BlockID);
         }
 
         public override void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)

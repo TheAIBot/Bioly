@@ -31,8 +31,8 @@ namespace BiolyTests.SimpleAssayTests
             DFG<Block> dfg = new DFG<Block>();
             int numberOfInputs = 5;
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
-            StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", null, "");
-            FluidBlock outputOperation = new OutputUsage("også_kage", new List<FluidInput> { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfInputs, false) }, "Kage", null, "");
+            StaticDeclarationBlock outputDeclaration = new OutputDeclaration("også_kage", "");
+            FluidBlock outputOperation = new OutputUsage("også_kage", new List<FluidInput> { new BasicInput("", inputOperation.OriginalOutputVariable, inputOperation.OriginalOutputVariable, numberOfInputs, false) }, "Kage", "");
             dfg.AddNode(inputOperation);
             dfg.AddNode(outputDeclaration);
             dfg.AddNode(outputOperation);
@@ -77,8 +77,8 @@ namespace BiolyTests.SimpleAssayTests
             Schedule schedule = runSelectedProgram("SequentialMixing");
             Board initialBoard = schedule.boardAtDifferentTimes[0];
             Assert.AreEqual(4, initialBoard.PlacedModules.Count);
-            Assert.AreEqual(2, initialBoard.PlacedModules.Where(module => module is InputModule).ToList().Count);
-            Assert.AreEqual(1, initialBoard.PlacedModules.Where(module => module is OutputModule).ToList().Count);
+            Assert.AreEqual(2, initialBoard.PlacedModules.Values.Where(module => module is InputModule).ToList().Count);
+            Assert.AreEqual(1, initialBoard.PlacedModules.Values.Where(module => module is OutputModule).ToList().Count);
             Mixer mixOperation1 = (Mixer) schedule.ScheduledOperations[0];
             Mixer mixOperation2 = (Mixer) schedule.ScheduledOperations[1];
             OutputUsage outputOpereration = (OutputUsage) schedule.ScheduledOperations[2];

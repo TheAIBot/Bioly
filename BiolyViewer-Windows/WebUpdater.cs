@@ -29,6 +29,8 @@ namespace BiolyViewer_Windows
             this.Settings = settings;
         }
 
+        CancellationTokenSource cancelSource = null;
+
         public void Update(string xml)
         {
             try
@@ -39,6 +41,22 @@ namespace BiolyViewer_Windows
                     string js = String.Empty;
                     if (Settings.CreateGraph)
                     {
+                        if (ProgramExecutor<string>.CanOptimizeCDFG(cdfg))
+                        {
+                            int boardWidth = Settings.BoardWidth;
+                            int boardHeight = Settings.BoardHeight;
+                            CDFG newCdfg = new CDFG();
+                            cancelSource?.Cancel();
+                            cancelSource = new CancellationTokenSource();
+                            CancellationToken token = cancelSource.Token;
+                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg, token));
+                            if (cancelSource.IsCancellationRequested)
+                            {
+                                return;
+                            }
+                            cdfg = newCdfg;
+                            cdfg.StartDFG = cdfg.Nodes.First().dfg;
+                        }
                         (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
                         js = $"setGraph({nodes}, {edges});";
                     }
@@ -58,12 +76,14 @@ namespace BiolyViewer_Windows
             }
             catch (ParseException e)
             {
-                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
+                string message = $"ShowUnexpectedError(\"{e.Message.Replace('\"', ' ').Replace('\'', ' ')}\");";
+                Browser.ExecuteScriptAsync(message);
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
             catch (Exception e)
             {
-                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"Unexpected error.\n{e.Message.Replace('\"', '\'')}\");");
+                string message = $"ShowUnexpectedError(\"{e.Message.Replace('\"', ' ').Replace('\'', ' ')}\");";
+                Browser.ExecuteScriptAsync(message);
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
         }
@@ -78,7 +98,7 @@ namespace BiolyViewer_Windows
             {
                 if (CurrentlyExecutionProgram != null)
                 {
-                    CurrentlyExecutionProgram.Running = false;
+                    CurrentlyExecutionProgram.KeepRunning.Cancel();
                 }
                 simulatorThread?.Join();
                 simulatorThread = new Thread(() =>

@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
@@ -14,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public readonly string ID;
         public  readonly string FluidName;
         public string OriginalFluidName { get; internal set; }
-        protected readonly float AmountInML;
+        public readonly float AmountInML;
         public  readonly bool UseAllFluid;
         public readonly List<string> InputNumbers;
         public static readonly List<string> EmptyNumbersList = new List<string>();
@@ -22,7 +23,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public const int ML_PER_DROPLET = 1;
         public const string NO_FLUID_NAME = "ERROR_FINDING_NODE";
 
-        public FluidInput(string id, string fluidName, string originalFluidName, int inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers)
+        public FluidInput(string id, string fluidName, string originalFluidName, float inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers)
         {
             this.ID = id;
             this.FluidName = fluidName;
@@ -36,6 +37,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
                 Validator.ValueWithinRange(id, inputAmountInDroplets, 1, int.MaxValue);
             }
         }
+
+        public abstract FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix);
 
         public virtual void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {

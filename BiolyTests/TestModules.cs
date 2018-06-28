@@ -211,7 +211,7 @@ namespace BiolyTests.ModulesTests
             int time2 = 100;
             string heaterModuleName = "heaterModule";
             StaticDeclarationBlock inputOperation = new InputDeclaration("kage", "Test", 10, "");
-            HeaterDeclaration heaterDeclaration = new HeaterDeclaration(heaterModuleName, null, "");
+            HeaterDeclaration heaterDeclaration = new HeaterDeclaration(heaterModuleName, "");
             HeaterUsage heaterOperation1 = new HeaterUsage(heaterModuleName, new List<FluidInput>() { new BasicInput("", inputOperation.OutputVariable, inputOperation.OriginalOutputVariable, numberOfDroplets, false)}, "Fisk", 500, time1, "");
             HeaterUsage heaterOperation2 = new HeaterUsage(heaterModuleName, new List<FluidInput>() { new BasicInput("", heaterOperation1.OutputVariable, heaterOperation1.OriginalOutputVariable, numberOfDroplets, false) }, "Derp", 500, time2, "");
             dfg.AddNode(inputOperation);

@@ -1,5 +1,6 @@
 ﻿using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
@@ -13,10 +14,8 @@ namespace BiolyCompiler.BlocklyParts.Declarations
     public class HeaterDeclaration : StaticDeclarationBlock, DeclarationBlock
     {
         public const string XML_TYPE_NAME = "heaterDeclaration";
-        public readonly int Temperature;
-        public readonly int Time;
 
-        public HeaterDeclaration(string moduleName, XmlNode node, string id) : base(moduleName, true, null, id)
+        public HeaterDeclaration(string moduleName, string id) : base(moduleName, true, null, id)
         {
         }
 
@@ -32,14 +31,17 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             Validator.CheckVariableName(id, moduleName);
             parserInfo.AddVariable(id, VariableType.HEATER, moduleName);
 
-            return new HeaterDeclaration(moduleName, node, id);
+            return new HeaterDeclaration(moduleName, id);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        {
+            return new HeaterDeclaration(ModuleName, BlockID);
         }
 
         public override string ToString()
         {
-            return "Heater" + Environment.NewLine +
-                   "Temp: " + Temperature + Environment.NewLine +
-                   "Time: " + Time;
+            return "Heater";
         }
     }
 }

@@ -17,6 +17,7 @@ using System.Threading;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using System.Diagnostics;
 using BiolyCompiler.Exceptions;
+using BiolyCompiler.BlocklyParts.Arrays;
 
 namespace BiolyCompiler
 {
@@ -25,7 +26,8 @@ namespace BiolyCompiler
         private readonly CommandExecutor<T> Executor;
         public int TimeBetweenCommands = 50;
         public bool ShowEmptyRectangles = true;
-        public bool Running = true;
+        public readonly CancellationTokenSource KeepRunning = new CancellationTokenSource();
+        public DFG<Block> OptimizedDFG = null;
 
         public ProgramExecutor(CommandExecutor<T> executor)
         {
@@ -43,8 +45,9 @@ namespace BiolyCompiler
 
             Board board = new Board(width, height);
             ModuleLibrary library = new ModuleLibrary();
-            Dictionary<string, BoardFluid> dropPositions = new Dictionary<string, BoardFluid>();
             Dictionary<string, Module> staticModules = new Dictionary<string, Module>();
+
+            Dictionary<string, BoardFluid> dropPositions = new Dictionary<string, BoardFluid>();
             Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Stack<List<string>> scopedVariables = new Stack<List<string>>();
@@ -52,42 +55,166 @@ namespace BiolyCompiler
             Dictionary<int, Board> boards = new Dictionary<int, Board>();
             List<(int, int, int, int)> oldRectangles = null;
             bool firstRun = true;
-            int runNumber = 0;
 
             controlStack.Push(null);
             scopedVariables.Push(new List<string>());
+
+            if (CanOptimizeCDFG(graph))
+            {
+                while (runningGraph != null)
+                {
+                    //some blocks are able to  change their originaloutputvariable.
+                    //Those blocks will always appear at the top of a dfg  so the first
+                    //thing that should be done is to update these blocks originaloutputvariable.
+                    runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, dropPositions));
+
+                    HashSet<string> fluidVariablesBefore = dropPositions.Keys.ToHashSet();
+                    (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules);
+                    HashSet<string> fluidVariablesAfter = dropPositions.Keys.ToHashSet();
+                    scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("@#@Index")));
+
+                    if (firstRun)
+                    {
+                        StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
+                        firstRun = false;
+                    }
+
+                    HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
+                    UpdateVariables(variables, Executor, scheduledOperations, dropPositions);
+                    HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
+                    scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("@#@Index")));
+
+                    List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
+                    SendCommands(commandTimeline, ref oldRectangles, boards);
+
+                    runningGraph.Nodes.ForEach(x => x.value.Reset());
+                    runningGraph = GetNextGraph(graph, runningGraph, Executor, variables, controlStack, scopedVariables, dropPositions);
+
+                    if (KeepRunning.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token);
+
+                if (KeepRunning.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules);
+                StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
+                List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
+                SendCommands(commandTimeline, ref oldRectangles, boards);
+            }
+            Console.Write("");
+        }
+
+        public static bool CanOptimizeCDFG(CDFG cdfg)
+        {
+            return cdfg.Nodes.All(x => x.dfg.Nodes.All(y => !(y is INonDeterministic)));
+        }
+
+        public static DFG<Block> OptimizeCDFG(int width, int height, CDFG graph, CancellationToken keepRunning)
+        {
+            DFG<Block> runningGraph = graph.StartDFG;
+
+            Board board = new Board(width, height);
+            ModuleLibrary library = new ModuleLibrary();
+            Dictionary<string, Module> staticModules = new Dictionary<string, Module>();
+
+            Dictionary<string, BoardFluid> dropPositions = new Dictionary<string, BoardFluid>();
+            Dictionary<string, float> variables = new Dictionary<string, float>();
+            Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
+            Stack<List<string>> scopedVariables = new Stack<List<string>>();
+
+            Dictionary<int, Board> boards = new Dictionary<int, Board>();
+
+            controlStack.Push(null);
+            scopedVariables.Push(new List<string>());
+
+            DFG<Block> bigDFG = new DFG<Block>();
+            Dictionary<string, string> mostRecentRef = new Dictionary<string, string>();
+            Dictionary<string, string> renamer = new Dictionary<string, string>();
+
+            int nameID = 0;
 
             while (runningGraph != null)
             {
                 //some blocks are able to  change their originaloutputvariable.
                 //Those blocks will always appear at the top of a dfg  so the first
                 //thing that should be done is to update these blocks originaloutputvariable.
-                runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, dropPositions));
+                runningGraph.Nodes.ForEach(node => node.value.Update<T>(variables, null, dropPositions));
 
                 HashSet<string> fluidVariablesBefore = dropPositions.Keys.ToHashSet();
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules);
                 HashSet<string> fluidVariablesAfter = dropPositions.Keys.ToHashSet();
                 scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("@#@Index")));
 
-                runNumber++;
-                if (firstRun)
-                {
-                    StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
-                    firstRun = false;
-                }
-
                 HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
-                List<Command>[] commandTimeline = CreateCommandTimeline(variables, scheduledOperations, time, dropPositions);
+                UpdateVariables(variables, null, scheduledOperations, dropPositions);
                 HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
                 scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("@#@Index")));
 
-                SendCommands(commandTimeline, ref oldRectangles, boards);
+                runningGraph.Nodes.ForEach(x => x.value.IsDone = false);
+                Assay fisk = new Assay(runningGraph);
+
+                var cake = fisk.GetReadyOperations();
+                while (cake.Count > 0)
+                {
+                    Block toCopy = cake.Dequeue();
+                    if (toCopy is FluidBlock fluidBlockToCopy)
+                    {
+                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, mostRecentRef, renamer, $"##{nameID++}");
+
+                        bigDFG.AddNode(copy);
+
+                        if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
+                        {
+                            mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
+                        }
+                        else
+                        {
+                            mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
+                        }
+                    }
+
+                    fisk.UpdateReadyOperations(toCopy);
+                }
+
 
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
-                runningGraph = GetNextGraph(graph, runningGraph, variables, controlStack, scopedVariables, dropPositions);
+                fluidVariablesBefore = dropPositions.Keys.ToHashSet();
+                numberVariablesBefore = variables.Keys.ToHashSet();
+                runningGraph = GetNextGraph(graph, runningGraph, null, variables, controlStack, scopedVariables, dropPositions);
+                fluidVariablesAfter = dropPositions.Keys.ToHashSet();
+                numberVariablesAfter = variables.Keys.ToHashSet();
+                fluidVariablesBefore.Except(fluidVariablesAfter).ToList().ForEach(x => mostRecentRef.Remove(x));
+                numberVariablesBefore.Except(numberVariablesAfter).ToList().ForEach(x => mostRecentRef.Remove(x));
+                fluidVariablesBefore.Except(fluidVariablesAfter).ToList().ForEach(x => renamer.Remove(x));
+                numberVariablesBefore.Except(numberVariablesAfter).ToList().ForEach(x => renamer.Remove(x));
+
+                if (keepRunning.IsCancellationRequested)
+                {
+                    return null;
+                }
             }
-            Console.Write("");
+
+            bigDFG.Nodes.RemoveAll(x =>
+            {
+                if (x.value is VariableBlock)
+                {
+                    return true;
+                }
+                return false;
+            });
+
+            bigDFG.FinishDFG();
+            return bigDFG;
         }
 
         private void StartExecutor(CDFG graph, List<Module> staticModules)
@@ -105,7 +232,7 @@ namespace BiolyCompiler
             Executor.StartExecutor(inputs, outputs, staticModulesWithoutInputOutputs);
         }
 
-        private List<Command>[] CreateCommandTimeline(Dictionary<string, float> variables, List<Block> scheduledOperations, int time, Dictionary<string, BoardFluid> dropPositions)
+        private List<Command>[] CreateCommandTimeline(List<Block> scheduledOperations, int time)
         {
             List<Command>[] commandTimeline = new List<Command>[time + 1];
             foreach (Block operation in scheduledOperations)
@@ -122,9 +249,18 @@ namespace BiolyCompiler
                         commandTimeline[index].Add(command);
                     }
                 }
-                else if (operation is VariableBlock varBlock)
+            }
+
+            return commandTimeline;
+        }
+
+        private static void UpdateVariables(Dictionary<string, float> variables, CommandExecutor<T> executor, List<Block> scheduledOperations, Dictionary<string, BoardFluid> dropPositions)
+        {
+            foreach (Block operation in scheduledOperations)
+            {
+                if (operation is VariableBlock varBlock)
                 {
-                    (string variableName, float value) = varBlock.ExecuteBlock(variables, Executor, dropPositions);
+                    (string variableName, float value) = varBlock.ExecuteBlock(variables, executor, dropPositions);
                     if (float.IsInfinity(value) || float.IsNaN(value))
                     {
                         throw new InvalidNumberException(varBlock.BlockID, value);
@@ -139,8 +275,6 @@ namespace BiolyCompiler
                     }
                 }
             }
-
-            return commandTimeline;
         }
 
         private void SendCommands(List<Command>[] commandTimeline, ref List<(int, int, int, int)> oldRectangles, Dictionary<int, Board> boards)
@@ -197,13 +331,15 @@ namespace BiolyCompiler
 
                 Executor.SendCommands();
 
+
+                if (KeepRunning.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 if (TimeBetweenCommands > 0)
                 {
                     Thread.Sleep(TimeBetweenCommands);
-                }
-                else if (!Running)
-                {
-                    throw new ThreadInterruptedException();
                 }
                 time++;
             }
@@ -211,7 +347,7 @@ namespace BiolyCompiler
 
        
        static int numberOfDFGsHandled = 0;
-        private (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules)
+        private static (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules)
         {
             numberOfDFGsHandled++;
             Schedule scheduler = new Schedule();
@@ -220,7 +356,10 @@ namespace BiolyCompiler
             List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
                                                               .Select(node => node.value as StaticDeclarationBlock)
                                                               .ToList();
-            scheduler.PlaceStaticModules(staticModuleDeclarations, board, library);
+            if (staticModuleDeclarations.Count > 0)
+            {
+                scheduler.PlaceStaticModules(staticModuleDeclarations, board, library);
+            }
             Assay assay = new Assay(runningGraph);
 
 
@@ -235,13 +374,13 @@ namespace BiolyCompiler
             return (scheduler.ScheduledOperations, time);
         }
 
-        private DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Stack<List<string>> scopeStack, Dictionary<string, BoardFluid> dropPositions)
+        private static DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, CommandExecutor<T> executor, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Stack<List<string>> scopeStack, Dictionary<string, BoardFluid> dropPositions)
         {
             {
                 IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
                 if (control != null)
                 {
-                    DFG<Block> guardedDFG = control.GuardedDFG(variables, Executor, dropPositions);
+                    DFG<Block> guardedDFG = control.GuardedDFG(variables, executor, dropPositions);
                     if (guardedDFG != null)
                     {
                         controlStack.Push(control);
@@ -249,7 +388,7 @@ namespace BiolyCompiler
                         return guardedDFG;
                     }
 
-                    DFG<Block> nextDFG = control.NextDFG(variables, Executor, dropPositions);
+                    DFG<Block> nextDFG = control.NextDFG(variables, executor, dropPositions);
                     if (nextDFG != null)
                     {
                         return nextDFG;
@@ -273,7 +412,7 @@ namespace BiolyCompiler
                     }
                 }
 
-                DFG<Block> loopDFG = control.TryLoop(variables, Executor, dropPositions);
+                DFG<Block> loopDFG = control.TryLoop(variables, executor, dropPositions);
                 if (loopDFG != null)
                 {
                     controlStack.Push(control);
@@ -281,7 +420,7 @@ namespace BiolyCompiler
                     return loopDFG;
                 }
 
-                DFG<Block> nextDFG = control.NextDFG(variables, Executor, dropPositions);
+                DFG<Block> nextDFG = control.NextDFG(variables, executor, dropPositions);
                 if (nextDFG != null)
                 {
                     return nextDFG;

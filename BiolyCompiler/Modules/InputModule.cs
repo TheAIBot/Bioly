@@ -10,6 +10,7 @@ namespace BiolyCompiler.Modules
     {
         private BoardFluid FluidType;
         public readonly int Capacity;
+        public Dictionary<string, double> FluidConcentrations = new Dictionary<string, double>();
         public int DropletCount { get; private set; }
 
         public InputModule(BoardFluid fluidType, int capacity) : base(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0, 1, null)
@@ -19,6 +20,7 @@ namespace BiolyCompiler.Modules
             if (capacity < 1) throw new RuntimeException("A droplet source/spawner needs to be initally non-empty. The droplet source has fluid type = " + fluidType.ToString());
             this.Capacity = capacity;
             this.DropletCount = capacity;
+            FluidConcentrations.Add(FluidType.FluidName, 1);
         }
         
 
@@ -72,6 +74,11 @@ namespace BiolyCompiler.Modules
             if (this.FluidType != null) this.FluidType.dropletSources.Remove(this);
             this.FluidType = fluidType;
             fluidType.dropletSources.Add(this);
+        }
+
+        public Dictionary<string, double> GetFluidConcentrations()
+        {
+            return FluidConcentrations;
         }
     }
 }

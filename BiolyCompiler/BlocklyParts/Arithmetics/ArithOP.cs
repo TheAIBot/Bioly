@@ -21,10 +21,10 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : 
+        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, ArithOPTypes opType, string id, bool canBeScheduled) : 
             base(false, null, input, output, id, canBeScheduled)
         {
-            this.OPType = ArithOP.StringToArithOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
+            this.OPType = opType;
             this.LeftBlock = leftBlock;
             this.RightBlock = rightBlock;
         }
@@ -32,6 +32,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
+            ArithOPTypes opType = ArithOP.StringToArithOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
 
             VariableBlock leftArithBlock = null;
             VariableBlock rightArithBlock = null;
@@ -55,7 +56,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             inputs.Add(leftArithBlock?.OutputVariable);
             inputs.Add(rightArithBlock?.OutputVariable);
 
-            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, node, id, canBeScheduled);
+            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, opType, id, canBeScheduled);
         }
 
         public static ArithOPTypes StringToArithOPType(string id, string arithOPTypeAsString)

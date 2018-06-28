@@ -10,6 +10,7 @@ using System.Text;
 using MoreLinq;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -22,10 +23,13 @@ namespace BiolyCompiler.BlocklyParts
         //For garbage collection:
         public Dictionary<string, List<Route>> WasteRoutes = new Dictionary<string, List<Route>>();
 
+
         public FluidBlock(bool canBeOutput, List<FluidInput> inputFluids, List<string> inputNumbers, string output, string id) : 
             base(canBeOutput, inputFluids, inputNumbers, output, id)
         {
         }
+
+        public abstract Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix);
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
@@ -113,6 +117,18 @@ namespace BiolyCompiler.BlocklyParts
         {
             this.BoundModule = null;
             InputRoutes.Clear();
+            WasteRoutes.Clear();
+        }
+
+        public virtual void UpdateInternalDropletConcentrations()
+        {
+            List<Route> allRoutes = new List<Route>();
+            InputRoutes.Select(pair => pair.Value).ForEach(list => allRoutes.AddRange(list));
+            List<IDropletSource> dropletInputs = allRoutes.Select(route => route.routedDroplet).ToList();
+            for (int i = 0; i < dropletInputs.Count; i++)
+            {
+                BoundModule.GetOutputLayout().Droplets[i].SetFluidConcentrations(dropletInputs[i]);
+            }
         }
     }
 }

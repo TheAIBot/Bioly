@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BiolyCompiler.Commands;
 using BiolyCompiler.Exceptions;
 using BiolyCompiler.Routing;
+using MoreLinq;
 
 namespace BiolyCompiler.Modules
 {
@@ -10,11 +11,19 @@ namespace BiolyCompiler.Modules
     {
         private BoardFluid fluidType;
         public const int DROPLET_WIDTH = 3, DROPLET_HEIGHT = 3;
+        public Dictionary<string, double> FluidConcentrations = new Dictionary<string, double>(); 
 
         public Droplet() : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, false)
         {
         }
 
+        public Droplet(BoardFluid fluidType, HashSet<string> NameOfUsedFluids) : this(fluidType)
+        {
+            foreach (var name in NameOfUsedFluids)
+            {
+                FluidConcentrations.Add(name,0);
+            }
+        }
         public Droplet(BoardFluid fluidType) : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, false)
         {
             this.fluidType = fluidType;
@@ -75,6 +84,20 @@ namespace BiolyCompiler.Modules
         public (int, int) GetMiddleOfSource() {
             return Shape.getCenterPosition();
         }
-        
+
+        public void SetConcentrationOfFluid(string fluidName, double concentration)
+        {
+            FluidConcentrations[fluidName] = concentration;
+        }
+
+        public Dictionary<string, double> GetFluidConcentrations()
+        {
+            return FluidConcentrations;
+        }
+
+        public void SetFluidConcentrations(IDropletSource dropleSource)
+        {
+            dropleSource.GetFluidConcentrations().ForEach(pair => FluidConcentrations[pair.Key] = pair.Value);
+        }
     }
 }

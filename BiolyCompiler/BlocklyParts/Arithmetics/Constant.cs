@@ -1,4 +1,5 @@
 ﻿using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
@@ -15,15 +16,16 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XML_TYPE_NAME = "math_number";
         public readonly float Value;
 
-        public Constant(XmlNode node, string id, bool canBeScheduled) : base(false, null, null, null, id, canBeScheduled)
+        public Constant(float value, string id, bool canBeScheduled) : base(false, null, null, null, id, canBeScheduled)
         {
-            this.Value = node.TextToFloat(id);
+            this.Value = value;
         }
 
         public static Block Parse(XmlNode node, bool canBeScheduled)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            return new Constant(node, id, canBeScheduled);
+            float value = node.TextToFloat(id);
+            return new Constant(value, id, canBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

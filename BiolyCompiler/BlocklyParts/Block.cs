@@ -8,6 +8,7 @@ using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Commands;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using System.Linq;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -80,6 +81,6 @@ namespace BiolyCompiler.BlocklyParts
             return false;
         }
 
-        public abstract string ToString();
+        public abstract override string ToString();
     }
 }

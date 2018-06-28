@@ -33,8 +33,9 @@ namespace BiolyCompiler.Scheduling
         public const int IGNORED_TIME_DIFFERENCE = 30; 
         private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
         private const string WASTE_FLUIDNAME_STRING  = "waste - fluidtype #";
+        private const string WASTE_MODULE_NAME = "waste @ module";
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
-        private WasteModule waste;
+        public HashSet<String> NameOfInputFluids = new HashSet<string>();
 
         public Schedule(){
 
@@ -81,6 +82,7 @@ namespace BiolyCompiler.Scheduling
             {
                 if (staticDeclaration is DropletDeclaration dropletDeclaration)
                 {
+                    throw new NotImplementedException();
                     BoardFluid fluidType = RecordCompletlyNewFluidType(dropletDeclaration);
                     Droplet droplet = (Droplet) dropletDeclaration.getAssociatedModule();
                     bool couldBePlaced = board.FastTemplatePlace(droplet);
@@ -96,6 +98,7 @@ namespace BiolyCompiler.Scheduling
                     input.BoundModule = inputModule;
                     inputModule.RepositionLayout();
                     StaticModules.Add(staticDeclaration.ModuleName, inputModule);
+                    NameOfInputFluids.Add(fluidType.FluidName);
                 }
                 else {
                     Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board);
@@ -106,10 +109,11 @@ namespace BiolyCompiler.Scheduling
             }
             if (SHOULD_DO_GARBAGE_COLLECTION)
             {
-                waste = new WasteModule();
+                WasteModule waste = new WasteModule();
                 bool couldBePlaced = board.FastTemplatePlace(waste);
                 if (!couldBePlaced) throw new RuntimeException("The waste module couldn't be placed. The module is: " + waste.ToString());
-                StaticModules.Add("waste @ module", waste);
+                waste.GetInputLayout().Reposition(waste.Shape.x, waste.Shape.y);
+                StaticModules.Add(WASTE_MODULE_NAME, waste);
             }
         }
 
@@ -136,8 +140,7 @@ namespace BiolyCompiler.Scheduling
                 if (SHOULD_DO_GARBAGE_COLLECTION)
                 {
                     int numberOfDropletsToRoute = oldFluidType.GetNumberOfDropletsAvailable();
-
-                    waste.GetInputLayout().Reposition(waste.Shape.x, waste.Shape.y);
+                    WasteModule waste = (WasteModule) StaticModules[WASTE_MODULE_NAME];
                     waste.GetInputLayout().Droplets[0].FakeSetFluidType(oldFluidType);
                     Droplet dropletInput = waste.GetInputLayout().Droplets[0];
 
@@ -150,7 +153,10 @@ namespace BiolyCompiler.Scheduling
                         //This will give an overhead of +1 for the operation starting time, for each droplet routed:
                         currentTime = route.getEndTime() + 1;
                     }
-                    operation.WasteRoutes.Add(oldFluidType.FluidName, wasteRoutes);
+                    if (wasteRoutes.Count > 0)
+                    {
+                        operation.WasteRoutes.Add(oldFluidType.FluidName, wasteRoutes);
+                    }
                     DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                 }
                 else
@@ -276,7 +282,8 @@ namespace BiolyCompiler.Scheduling
                     {
                         numberOfDropletsTransfered++;
                         inputModule.DecrementDropletCount();
-                        Droplet droplet = new Droplet(targetFluidType);
+                        Droplet droplet = new Droplet(targetFluidType, NameOfInputFluids);
+                        droplet.SetFluidConcentrations(inputModule);
                         AllUsedModules.Add(droplet);
                         bool couldPlace = board.FastTemplatePlace(droplet);
                         if (!couldPlace) throw new RuntimeException("Not enough space for the fluid transfer.");
@@ -287,7 +294,10 @@ namespace BiolyCompiler.Scheduling
                     }
                     if (numberOfDropletsTransfered == requiredDroplets) break;
                 }
-                if (numberOfDropletsTransfered != requiredDroplets) throw new RuntimeException("Not enough droplets available. Fluid name: " + inputFluid.FluidName);
+                if (numberOfDropletsTransfered != requiredDroplets)
+                {
+                    throw new RuntimeException("Not enough droplets available. Fluid name: " + inputFluid.FluidName);
+                }
             }
             else
             {
@@ -453,12 +463,13 @@ namespace BiolyCompiler.Scheduling
                 //it is still impossible to go back in time. Therefore, the max of the two are chosen.
                 currentTime = Math.Max(nextBatchOfFinishedOperations.Last().EndTime + 1, currentTime + 1);
                 foreach (var finishedOperation in nextBatchOfFinishedOperations)
-                {
+                { 
                     BoardFluid dropletOutputFluid;
                     if (!(finishedOperation is StaticUseageBlock))
                     {
                         //If a module is not static, and it is not used anymore, it is "disolved",
                         //leaving the droplets that is inside the module behind:
+                        finishedOperation.UpdateInternalDropletConcentrations();
                         (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, board, currentTime, finishedOperation);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
@@ -477,11 +488,12 @@ namespace BiolyCompiler.Scheduling
                             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                             (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, board, currentTime, finishedOperation);
                             Droplet droplet = new Droplet(dropletOutputFluid);
+                            droplet.SetFluidConcentrations(heaterOperation.InputRoutes.First().Value.First().routedDroplet);
                             AllUsedModules.Add(droplet);
                             bool couldBePlaced = board.FastTemplatePlace(droplet);
 
-                            //Temporaily placing a droplet on the initial position of the heater, for routing purposes:
-                            Droplet routingDroplet = new Droplet(new BoardFluid("Routing - droplet"));
+                            //Temporarily placing a droplet on the initial position of the heater, for routing purposes:
+                            Droplet routingDroplet = new Droplet(new BoardFluid("Routing @ droplet"));
                             routingDroplet.Shape.PlaceAt(heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
                             board.UpdateGridAtGivenLocation(routingDroplet, heaterOperation.BoundModule.Shape);
                             if (!couldBePlaced) throw new RuntimeException("Not enough space available to place a Droplet.");

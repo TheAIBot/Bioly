@@ -22,10 +22,10 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, XmlNode node, string id, bool canBeScheduled) : 
+        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, BoolOPTypes opType, string id, bool canBeScheduled) : 
             base(false, null, input, output, id, canBeScheduled)
         {
-            this.OPType = BoolOP.StringToBoolOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
+            this.OPType = opType;
             this.LeftBlock = leftBlock;
             this.RightBlock = rightBlock;
         }
@@ -33,6 +33,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
+            BoolOPTypes opType = BoolOP.StringToBoolOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
 
             VariableBlock leftBoolBlock = null;
             VariableBlock rightBoolBlock = null;
@@ -56,7 +57,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             inputs.Add(leftBoolBlock?.OutputVariable);
             inputs.Add(rightBoolBlock?.OutputVariable);
 
-            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, node, id, canBeScheduled);
+            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, opType, id, canBeScheduled);
         }
 
         public static BoolOPTypes StringToBoolOPType(string id, string boolOPAsString)

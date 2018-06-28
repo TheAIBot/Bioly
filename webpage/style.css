@@ -84,19 +84,25 @@ body
 #graphTab
 {
 	left: 0%;
-	width: 40%;
+	width: 25%;
+}
+
+#infoTab
+{
+	left: 25%;
+	width: 25%;
 }
 
 #simulatorTab
 {
-	left: 40%;
-	width: 40%;
+	left: 50%;
+	width: 25%;
 }
 
 #settingsTab
 {
-	left: 80%;
-	width: 20%;
+	left: 75%;
+	width: 25%;
 }
 
 .settingsPlacement

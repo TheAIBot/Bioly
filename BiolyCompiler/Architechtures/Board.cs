@@ -482,10 +482,10 @@ namespace BiolyCompiler.Architechtures
             {
                 for (int i = 0; i < width; i++)
                 {
-                    if (grid[i, j] == null) printedBoard.Append(String.Format("{0,2}", "O"));
+                    if (grid[i, j] == null) printedBoard.Append(String.Format("{0,3}", "O"));
                     else {
                         int index = allPlacedModules.IndexOf(grid[i,j]);
-                        printedBoard.Append(String.Format("{0,2}", index));
+                        printedBoard.Append(String.Format("{0,3}", index));
                     }
                 }
                 printedBoard.AppendLine();
@@ -500,7 +500,7 @@ namespace BiolyCompiler.Architechtures
             Module operationExecutingModule = finishedOperation.BoundModule;
             //Checks for each pair of adjacent rectangle to the module on the board, and the rectangles in the modules layout,
             //if they are adjacent -> if so, it makes them adjacent.
-            List<Rectangle> allRectangles = operationExecutingModule.GetOutputLayout().getAllRectanglesIncludingDroplets();
+            List<Rectangle> allRectangles = operationExecutingModule.GetOutputLayout().GetAllRectanglesIncludingDroplets();
 
             //Copied, as sets work in mysterious ways,
             HashSet<Rectangle> adjacentRectangles = new HashSet<Rectangle>(operationExecutingModule.Shape.AdjacentRectangles);

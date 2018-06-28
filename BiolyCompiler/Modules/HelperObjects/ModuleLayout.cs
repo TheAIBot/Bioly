@@ -84,7 +84,7 @@ namespace BiolyCompiler.Modules
             Droplets.ForEach(droplet => droplet.SetFluidType(fluidType));
         }
 
-        public List<Rectangle> getAllRectanglesIncludingDroplets()
+        public List<Rectangle> GetAllRectanglesIncludingDroplets()
         {
             List<Rectangle> allRectangles = new List<Rectangle>(EmptyRectangles);
             allRectangles.AddRange(Droplets.Select(droplet => droplet.Shape));
