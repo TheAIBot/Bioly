@@ -108,12 +108,14 @@ namespace BiolyViewer_Windows
                         int boardWidth = Settings.BoardWidth;
                         int boardHeight = Settings.BoardHeight;
                         int timeBetweenCommands = (int)((1f / Settings.CommandFrequency) * 1000);
-                        bool showEmptyRectangles = Settings.ShowEmptyRectangles;
                         using (SimulatorConnector executor = new SimulatorConnector(Browser, boardWidth, boardHeight))
                         {
                             CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
                             CurrentlyExecutionProgram.TimeBetweenCommands = timeBetweenCommands;
-                            CurrentlyExecutionProgram.ShowEmptyRectangles = showEmptyRectangles;
+                            CurrentlyExecutionProgram.ShowEmptyRectangles = Settings.ShowEmptyRectangles;
+                            CurrentlyExecutionProgram.EnableOptimizations = Settings.EnableOptimizations;
+                            CurrentlyExecutionProgram.EnableGarbageCollection = Settings.EnableGC;
+
                             CurrentlyExecutionProgram.Run(boardWidth, boardHeight, xml);
                         }
                     }

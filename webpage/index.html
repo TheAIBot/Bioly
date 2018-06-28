@@ -172,6 +172,14 @@
 							<span>Create graph</span>
 							<input class="settingInput" id="createGraphSettingSetting" type="checkbox" onclick="webUpdater.settingsChanged(getSettings());">
 						</div>
+						<div class="settingsPlacement">
+							<span>Enable optimizations</span>
+							<input class="settingInput" id="enableOptimizationsSetting" type="checkbox" oninput="webUpdater.settingsChanged(getSettings());">
+						</div>
+						<div class="settingsPlacement">
+							<span>Enable GC</span>
+							<input class="settingInput" id="enableGCSetting" type="checkbox" onclick="webUpdater.settingsChanged(getSettings());">
+						</div>
 					</div>
 				</div>
 			</div>
