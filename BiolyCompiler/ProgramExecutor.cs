@@ -26,6 +26,8 @@ namespace BiolyCompiler
         private readonly CommandExecutor<T> Executor;
         public int TimeBetweenCommands = 50;
         public bool ShowEmptyRectangles = true;
+        public bool EnableOptimizations = true;
+        public bool EnableGarbageCollection = true;
         public readonly CancellationTokenSource KeepRunning = new CancellationTokenSource();
         public DFG<Block> OptimizedDFG = null;
 
@@ -59,8 +61,22 @@ namespace BiolyCompiler
             controlStack.Push(null);
             scopedVariables.Push(new List<string>());
 
-            if (!CanOptimizeCDFG(graph))
+            if (CanOptimizeCDFG(graph) && EnableOptimizations)
             {
+                OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token);
+
+                if (KeepRunning.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules);
+                StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
+                List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
+                SendCommands(commandTimeline, ref oldRectangles, boards);
+            }
+            else
+            { 
                 while (runningGraph != null)
                 {
                     //some blocks are able to  change their originaloutputvariable.
@@ -95,20 +111,6 @@ namespace BiolyCompiler
                         return;
                     }
                 }
-            }
-            else
-            {
-                OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token);
-
-                if (KeepRunning.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules);
-                StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
-                List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
-                SendCommands(commandTimeline, ref oldRectangles, boards);
             }
         }
 
