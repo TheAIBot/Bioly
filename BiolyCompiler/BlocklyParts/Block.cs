@@ -81,6 +81,6 @@ namespace BiolyCompiler.BlocklyParts
             return false;
         }
 
-        public abstract string ToString();
+        public abstract override string ToString();
     }
 }

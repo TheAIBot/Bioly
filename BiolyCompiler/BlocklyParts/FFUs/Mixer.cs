@@ -9,6 +9,8 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Graphs;
 using System.Linq;
+using BiolyCompiler.Routing;
+using MoreLinq;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -72,7 +74,30 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override Module getAssociatedModule()
         {
-            return new MixerModule(900);
+            return new MixerModule(200);
+        }
+
+        public override void UpdateInternalDropletConcentrations()
+        {
+            List<Route> allRoutes = new List<Route>();
+            InputRoutes.Select(pair => pair.Value).ForEach(listOfRoutes => allRoutes.AddRange(listOfRoutes));
+            if (allRoutes.Count != 2) throw new NotImplementedException("Currently only mixing two droplets is supported.");
+            IDropletSource concistingDroplet1  = allRoutes[0].routedDroplet;
+            IDropletSource concistingDroplet2  = allRoutes[1].routedDroplet;
+
+            HashSet<string> allFluidParts = concistingDroplet1.GetFluidConcentrations().Keys.ToHashSet();
+            allFluidParts.UnionWith(concistingDroplet2.GetFluidConcentrations().Keys);
+            foreach (var fluidName in allFluidParts)
+            {
+                double sumOfConcetrations = 0;
+                if (concistingDroplet1.GetFluidConcentrations().TryGetValue(fluidName, out double concentration1))
+                    sumOfConcetrations += concentration1;
+                if (concistingDroplet2.GetFluidConcentrations().TryGetValue(fluidName, out double concentration2))
+                    sumOfConcetrations += concentration2;
+                BoundModule.GetOutputLayout().Droplets[0].FluidConcentrations[fluidName] = sumOfConcetrations / 2;
+                BoundModule.GetOutputLayout().Droplets[1].FluidConcentrations[fluidName] = sumOfConcetrations / 2;
+            }
+
         }
     }
 }

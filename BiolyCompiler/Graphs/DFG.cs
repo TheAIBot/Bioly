@@ -52,7 +52,7 @@ namespace BiolyCompiler.Graphs
                 {
                     Output.Add(node);
                 }
-                if (node.getIngoingEdges().Count == 0 || (block is VariableBlock && node.getIngoingEdges().All(x => x.value is VariableBlock && !(x.value as VariableBlock).CanBeScheduled)))
+                if (node.GetIngoingEdges().Count == 0 || (block is VariableBlock && node.GetIngoingEdges().All(x => x.value is VariableBlock && !(x.value as VariableBlock).CanBeScheduled)))
                 {
                     if (block is VariableBlock varBlock)
                     {
@@ -71,5 +71,13 @@ namespace BiolyCompiler.Graphs
             source.AddOutgoingEdge(target);
             target.AddIngoingEdge(source);
         }
+
+        public void InvertEdges()
+        {
+            foreach (var node in Nodes)
+                node.InvertEdges();
+        }
     }
 }
+
+

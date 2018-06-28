@@ -223,9 +223,11 @@ namespace BiolyCompiler
 
             List<Module> inputs = staticModules.Where(x => x is InputModule)
                                              .ToList();
-            List<Module> outputs = staticModules.Where(x => x is OutputModule/* || x is Waste*/)
+            List<Module> outputs = staticModules.Where(x => x is OutputModule || x is WasteModule)
                                               .Distinct()
                                               .ToList();
+
+
             List<Module> staticModulesWithoutInputOutputs = staticModules.Except(inputs).Except(outputs).ToList();
 
             Executor.StartExecutor(inputs, outputs, staticModulesWithoutInputOutputs);
@@ -355,7 +357,10 @@ namespace BiolyCompiler
             List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
                                                               .Select(node => node.value as StaticDeclarationBlock)
                                                               .ToList();
-            scheduler.PlaceStaticModules(staticModuleDeclarations, board, library);
+            if (staticModuleDeclarations.Count > 0)
+            {
+                scheduler.PlaceStaticModules(staticModuleDeclarations, board, library);
+            }
             Assay assay = new Assay(runningGraph);
 
 

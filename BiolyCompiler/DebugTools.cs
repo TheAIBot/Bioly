@@ -22,6 +22,19 @@ namespace BiolyCompiler
             #endif
             checkAdjacencyMatrixCorrectness(board);
             checkIsBoardPerfectlyPartitioned(board);
+            checkAllDropletsHasCorrectConcentrations(board);
+        }
+
+        private static void checkAllDropletsHasCorrectConcentrations(Board board)
+        {
+            foreach (IDropletSource dropletSource in board.PlacedModules.Values.Where(module => module is Droplet))
+            {
+                double sumOfConcentrations = dropletSource.GetFluidConcentrations().Values.Sum();
+                if (0.01 < Math.Abs(1 - sumOfConcentrations))
+                {
+                    throw new InternalRuntimeException("Error in the concentration of a droplet: the sum of its concentrations are not equal to 1");
+                }
+            }
         }
 
         private static void checkIsBoardPerfectlyPartitioned(Board board)

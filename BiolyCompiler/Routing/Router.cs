@@ -140,14 +140,26 @@ namespace BiolyCompiler.Routing
             return (dropletInputs, emptyRectangles);
         }
 
-        private static Route RouteSingleDropletToModule(FluidBlock operation, Board board, int currentTime, Droplet dropletInput)
+
+        public static Route RouteSingleDropletToModule(Module module, Board board, int currentTime, Droplet dropletInput)
         {
             BoardFluid InputFluidType = dropletInput.GetFluidType();
             if (InputFluidType.GetNumberOfDropletsAvailable() < 1) throw new RuntimeException("There isn't enough droplets of type " + InputFluidType.FluidName +
-                                                                                       " avaiable, to satisfy the requirement of the module: " + operation.BoundModule.ToString());
+                                                                                              " avaiable, to satisfy the requirement of the module: " + module.ToString());
             //Routes a droplet of type InputFluid to the module.
-            Route route = DetermineRouteToModule(haveReachedDropletOfTargetType(dropletInput), operation.BoundModule, dropletInput, board, currentTime); //Will be included as part of a later step.
+            Route route = DetermineRouteToModule(haveReachedDropletOfTargetType(dropletInput), module, dropletInput, board, currentTime); //Will be included as part of a later step.
             if (route == null) throw new InternalRuntimeException("No route found. This should not be possible.");
+            
+            //The droplet has been "used up"/it is now inside a module, 
+            //so it needs to be removed from its original position:
+            RemoveRoutedDropletFromBoard(board, route);
+            return route;
+        }
+
+        public static Route RouteSingleDropletToModule(FluidBlock operation, Board board, int currentTime, Droplet dropletInput)
+        {
+            BoardFluid InputFluidType = dropletInput.GetFluidType();
+            Route route = RouteSingleDropletToModule(operation.BoundModule, board, currentTime, dropletInput);
 
             //The route is added to the module's routes:
             List<Route> inputRoutes;
@@ -158,10 +170,6 @@ namespace BiolyCompiler.Routing
                 operation.InputRoutes.Add(InputFluidType.FluidName, inputRoutes);
             }
             inputRoutes.Add(route);
-            //The droplet has been "used up"/it is now inside a module, 
-            //so it needs to be removed from its original position:
-            RemoveRoutedDropletFromBoard(board, route);
-
             return route;
         }
 

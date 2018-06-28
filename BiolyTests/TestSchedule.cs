@@ -158,8 +158,7 @@ namespace BiolyTests.ScheduleTests
                 Debug.WriteLine("Time: " + boardsAtDifferentTimes[i].Key);
                 Debug.WriteLine(boardsAtDifferentTimes[i].Value.print(schedule.AllUsedModules));
             }
-            //Only the first board should contain a single module, the input.
-            Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.PlacedModules.Count == 2 || pair.Key == 0));
+            Assert.IsTrue(schedule.boardAtDifferentTimes.All(pair => pair.Value.PlacedModules.Count == 3 || pair.Key == 0));
             Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
             Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
 
@@ -205,7 +204,7 @@ namespace BiolyTests.ScheduleTests
             int sequentialOperationLineLenght = (dfg.Nodes.Count - numberOfInputs)/2;
 
             Assert.IsTrue(module.OperationTime * sequentialOperationLineLenght < completionTime);
-            Assert.IsTrue(completionTime <= module.OperationTime * sequentialOperationLineLenght + Schedule.DROP_MOVEMENT_TIME * sequentialOperationLineLenght * 50);
+            Assert.IsTrue(completionTime <= module.OperationTime * sequentialOperationLineLenght + Schedule.DROP_MOVEMENT_TIME * sequentialOperationLineLenght * 60);
 
             Assert.AreEqual(dfg.Nodes.Count - numberOfInputs, schedule.ScheduledOperations.Count);
             Assert.AreEqual(schedule.ScheduledOperations.Max(operation => operation.EndTime), completionTime);
@@ -230,10 +229,10 @@ namespace BiolyTests.ScheduleTests
             //It is sorted:
             List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
 
-            Assert.AreEqual(2, boardAtDifferentTimes[0].PlacedModules.Count);
+            Assert.AreEqual(3, boardAtDifferentTimes[0].PlacedModules.Count);
             for (int i = 1; i < boardAtDifferentTimes.Count; i++)
             {
-                Assert.AreEqual(4, boardAtDifferentTimes[i].PlacedModules.Count);
+                Assert.AreEqual(5, boardAtDifferentTimes[i].PlacedModules.Count);
             }
             Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
             Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
@@ -269,10 +268,10 @@ namespace BiolyTests.ScheduleTests
 
             List<Board> boards = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList();
 
-            Assert.AreEqual(1, boards[0].PlacedModules.Count);
+            Assert.AreEqual(2, boards[0].PlacedModules.Count);
             for (int i = 1; i < boards.Count; i++)
             {
-                Assert.AreEqual(2, boards[i].PlacedModules.Count);
+                Assert.AreEqual(3, boards[i].PlacedModules.Count);
             }
             
             //The second last board should be where the module implementing the operation should be placed.
@@ -280,8 +279,8 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(1, schedule.ScheduledOperations.Count);
             Assert.AreEqual(operation1, schedule.ScheduledOperations[0]);
             Assert.IsTrue(module.OperationTime <= completionTime);
-            //One droplets are routed, and it should for such a simple board, take at most 20 movements.
-            Assert.IsTrue(completionTime <= module.OperationTime + Schedule.DROP_MOVEMENT_TIME * 20);
+            //One droplets are routed, and it should for such a simple board, take at most 25 movements.
+            Assert.IsTrue(completionTime <= module.OperationTime + Schedule.DROP_MOVEMENT_TIME * 25);
             Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
             Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
         }
@@ -325,7 +324,7 @@ namespace BiolyTests.ScheduleTests
 
             for (int i = 1; i < boards.Count; i++)
             {
-                Assert.AreEqual(3, boards[i].PlacedModules.Count);
+                Assert.AreEqual(4, boards[i].PlacedModules.Count);
             }
 
 

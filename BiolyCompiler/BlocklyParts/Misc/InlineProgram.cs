@@ -25,7 +25,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string VARIABLE_COUNT_ATTRIBUTE_NAME = "variable_count";
         public const string XML_TYPE_NAME = "inlineProgram";
         public const string UNIQUE_ATTRIBUTE_IDENTIFIER = "asjdasljckkrw3209fj48dhsaljdhasdlja";
-        private static int AttributeIdentifierCounter = 0;
+        private static int  AttributeIdentifierCounter = 0;
         public readonly string ID;
         public readonly string ProgramName;
         public readonly string[] Inputs;
