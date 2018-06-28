@@ -76,7 +76,7 @@ namespace BiolyTests.SimpleAssayTests
         {
             Schedule schedule = runSelectedProgram("SequentialMixing");
             Board initialBoard = schedule.boardAtDifferentTimes[0];
-            Assert.AreEqual(3, initialBoard.PlacedModules.Count);
+            Assert.AreEqual(4, initialBoard.PlacedModules.Count);
             Assert.AreEqual(2, initialBoard.PlacedModules.Where(module => module is InputModule).ToList().Count);
             Assert.AreEqual(1, initialBoard.PlacedModules.Where(module => module is OutputModule).ToList().Count);
             Mixer mixOperation1 = (Mixer) schedule.ScheduledOperations[0];

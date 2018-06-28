@@ -33,6 +33,12 @@ namespace BiolyCompiler.Modules
             fluidType.dropletSources.Add(this);
         }
 
+        public void FakeSetFluidType(BoardFluid fluidType)
+        {
+            //Only to be used by waste!!!
+            this.fluidType = fluidType;
+        }
+
         public override bool Equals(object obj)
         {
             if (!base.Equals(obj)) return false;

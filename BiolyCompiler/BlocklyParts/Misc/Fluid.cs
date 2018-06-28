@@ -61,6 +61,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             int time = 0;
             List<Command> routeCommands = new List<Command>();
+
+
+            //add commands for waste routes. They must be before the other routes
+            foreach (List<Route> wasteRouteList in WasteRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                wasteRouteList.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
+            }
+
             foreach (List<Route> routes in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
             {
                 routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));

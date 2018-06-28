@@ -95,9 +95,11 @@ namespace BiolyCompiler
 
             List<Module> inputs = staticModules.Where(x => x is InputModule)
                                              .ToList();
-            List<Module> outputs = staticModules.Where(x => x is OutputModule/* || x is Waste*/)
+            List<Module> outputs = staticModules.Where(x => x is OutputModule || x is WasteModule)
                                               .Distinct()
                                               .ToList();
+
+
             List<Module> staticModulesWithoutInputOutputs = staticModules.Except(inputs).Except(outputs).ToList();
 
             Executor.StartExecutor(inputs, outputs, staticModulesWithoutInputOutputs);
