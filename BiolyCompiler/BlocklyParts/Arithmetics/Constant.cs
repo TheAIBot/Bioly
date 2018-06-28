@@ -28,11 +28,6 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new Constant(value, id, canBeScheduled);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
-        {
-            return new Constant(Value, BlockID, CanBeScheduled);
-        }
-
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             return Value;

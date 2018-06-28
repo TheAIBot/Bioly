@@ -52,23 +52,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new GetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
-        {
-            VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef, renamer, namePostfix);
-            dfg.AddNode(indexBlock);
-            renamer.TryGetValue(ArrayName, out string correctedArrayName);
-            mostRecentRef.TryGetValue(correctedArrayName, out string correctedName);
-
-            List<string> inputs = new List<string>();
-            inputs.Add(indexBlock.OutputVariable);
-            inputs.Add(correctedName);
-
-            GetArrayNumber result = new GetArrayNumber(indexBlock, correctedArrayName, inputs, BlockID, CanBeScheduled);
-            result.OriginalOutputVariable = OriginalOutputVariable;
-            return result;
-        }
-
-        public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
@@ -78,18 +62,6 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             }
 
             int index = (int)floatIndex;
-            if (index < 0 || index >= arrayLength)
-            {
-                throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
-            }
-
-            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
-        }
-
-        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
-        {
-            int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
-            int index = (int)IndexBlock.Run(variables, executor, dropPositions);
             if (index < 0 || index >= arrayLength)
             {
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);

@@ -67,8 +67,6 @@ namespace BiolyCompiler.BlocklyParts
 
         }
 
-        public abstract Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix);
-
         public override int GetHashCode()
         {
             return OutputVariable.GetHashCode();

@@ -76,12 +76,14 @@ namespace BiolyViewer_Windows
             }
             catch (ParseException e)
             {
-                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
+                string message = $"ShowUnexpectedError(\"{e.Message.Replace('\"', ' ').Replace('\'', ' ')}\");";
+                Browser.ExecuteScriptAsync(message);
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
             catch (Exception e)
             {
-                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"Unexpected error.\n{e.Message.Replace('\"', '\'')}\");");
+                string message = $"ShowUnexpectedError(\"{e.Message.Replace('\"', ' ').Replace('\'', ' ')}\");";
+                Browser.ExecuteScriptAsync(message);
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
         }

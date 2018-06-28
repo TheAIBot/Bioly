@@ -33,12 +33,18 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new Fluid(inputs, output, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
-            List<FluidInput> inputFluids = new List<FluidInput>();
-            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef)));
+            if (!renamer.ContainsKey(OriginalOutputVariable))
+            {
+                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+            }
 
-            return new Fluid(inputFluids, OriginalOutputVariable, BlockID);
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+
+            renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+            return new Fluid(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
         }
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)

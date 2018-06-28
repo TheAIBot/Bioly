@@ -33,9 +33,17 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new DropletDeclaration(output, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
-            return new DropletDeclaration(OriginalOutputVariable, BlockID);
+            if (renamer.ContainsKey(OriginalOutputVariable))
+            {
+                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+            }
+            else
+            {
+                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+            }
+            return new DropletDeclaration(OriginalOutputVariable + namePostfix, BlockID);
         }
 
         public override Module getAssociatedModule()

@@ -137,6 +137,9 @@ namespace BiolyCompiler
 
             DFG<Block> bigDFG = new DFG<Block>();
             Dictionary<string, string> mostRecentRef = new Dictionary<string, string>();
+            Dictionary<string, string> renamer = new Dictionary<string, string>();
+
+            int nameID = 0;
 
             while (runningGraph != null)
             {
@@ -162,17 +165,20 @@ namespace BiolyCompiler
                 while (cake.Count > 0)
                 {
                     Block toCopy = cake.Dequeue();
-                    Block copy = toCopy.CopyBlock(bigDFG, mostRecentRef);
-
-                    bigDFG.AddNode(copy);
-
-                    if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
+                    if (toCopy is FluidBlock fluidBlockToCopy)
                     {
-                        mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
-                    }
-                    else
-                    {
-                        mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
+                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, mostRecentRef, renamer, $"##{nameID++}");
+
+                        bigDFG.AddNode(copy);
+
+                        if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
+                        {
+                            mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
+                        }
+                        else
+                        {
+                            mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
+                        }
                     }
 
                     fisk.UpdateReadyOperations(toCopy);
@@ -188,6 +194,8 @@ namespace BiolyCompiler
                 numberVariablesAfter = variables.Keys.ToHashSet();
                 fluidVariablesBefore.Except(fluidVariablesAfter).ToList().ForEach(x => mostRecentRef.Remove(x));
                 numberVariablesBefore.Except(numberVariablesAfter).ToList().ForEach(x => mostRecentRef.Remove(x));
+                fluidVariablesBefore.Except(fluidVariablesAfter).ToList().ForEach(x => renamer.Remove(x));
+                numberVariablesBefore.Except(numberVariablesAfter).ToList().ForEach(x => renamer.Remove(x));
 
                 if (keepRunning.IsCancellationRequested)
                 {

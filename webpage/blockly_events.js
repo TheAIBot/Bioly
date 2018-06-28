@@ -38,8 +38,11 @@ function onWorkspaceChanged(event)
 		alreadyWaitingForUpdate = true;
 		new Promise(async resolve => 
 		{
-			await webUpdater.update(getWorkspaceAsXml());
-			alreadyWaitingForUpdate = false;
+			webUpdater.update(getWorkspaceAsXml());
+			setTimeout(function()
+			{
+				alreadyWaitingForUpdate = false;
+			}, 100);
 		});
 
 	}

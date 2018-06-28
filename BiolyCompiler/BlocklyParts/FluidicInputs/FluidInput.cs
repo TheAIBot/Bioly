@@ -38,7 +38,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             }
         }
 
-        public abstract FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef);
+        public abstract FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix);
 
         public virtual void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {

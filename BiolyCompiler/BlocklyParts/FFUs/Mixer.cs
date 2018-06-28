@@ -49,12 +49,20 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Mixer(inputs, output, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
             List<FluidInput> inputFluids = new List<FluidInput>();
-            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef)));
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
 
-            return new Mixer(inputFluids, OriginalOutputVariable, BlockID);
+            if (renamer.ContainsKey(OriginalOutputVariable))
+            {
+                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+            }
+            else
+            {
+                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+            }
+            return new Mixer(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
         }
 
         public override string ToString()

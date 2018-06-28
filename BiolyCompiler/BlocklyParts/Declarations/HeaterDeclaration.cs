@@ -34,7 +34,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new HeaterDeclaration(moduleName, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
             return new HeaterDeclaration(ModuleName, BlockID);
         }

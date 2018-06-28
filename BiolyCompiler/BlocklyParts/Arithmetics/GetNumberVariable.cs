@@ -41,16 +41,6 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new GetNumberVariable(variableName, id, inputs, canBeScheduled);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
-        {
-            renamer.TryGetValue(VariableName, out string correctedVariableName);
-            mostRecentRef.TryGetValue(correctedVariableName, out string correctedName);
-            List<string> inputs = new List<string>();
-            inputs.Add(correctedName);
-
-            return new GetNumberVariable(VariableName, BlockID, inputs, CanBeScheduled);
-        }
-
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             if (!variables.ContainsKey(VariableName))

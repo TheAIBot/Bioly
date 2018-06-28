@@ -39,10 +39,11 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             return new BasicInput(id, fluidName, originalFluidName, amountInML, useAllFluid);
         }
 
-        public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
-            mostRecentRef.TryGetValue(OriginalFluidName, out string fluidName);
-            return new BasicInput(ID, fluidName, OriginalFluidName, AmountInML, UseAllFluid);
+            renamer.TryGetValue(OriginalFluidName, out string correctedName);
+            mostRecentRef.TryGetValue(correctedName, out string fluidName);
+            return new BasicInput(ID, fluidName, correctedName, AmountInML, UseAllFluid);
         }
 
         public override string ToXml()

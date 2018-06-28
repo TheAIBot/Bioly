@@ -10,6 +10,7 @@ using System.Text;
 using MoreLinq;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -24,6 +25,8 @@ namespace BiolyCompiler.BlocklyParts
             base(canBeOutput, inputFluids, inputNumbers, output, id)
         {
         }
+
+        public abstract Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix);
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {

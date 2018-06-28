@@ -62,21 +62,6 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new SetArrayNumber(indexBlock, numberInput, arrayName, inputs, id, canBeScheduled);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
-        {
-            VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef);
-            VariableBlock numberInput = (VariableBlock)NumberBlock.CopyBlock(dfg, mostRecentRef);
-
-            dfg.AddNode(indexBlock);
-            dfg.AddNode(numberInput);
-
-            List<string> inputs = new List<string>();
-            inputs.Add(indexBlock.OutputVariable);
-            inputs.Add(numberInput.OutputVariable);
-
-            return new SetArrayNumber(indexBlock, numberInput, ArrayName, inputs, BlockID, CanBeScheduled);
-        }
-
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             return NumberBlock.Run(variables, executor, dropPositions);

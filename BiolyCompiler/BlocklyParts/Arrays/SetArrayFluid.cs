@@ -62,21 +62,19 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new SetArrayFluid(indexBlock, arrayName, inputFluids, indexBlock?.OutputVariable, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
         {
-            FluidInput input = InputFluids.First();
-            mostRecentRef.TryGetValue(input.OriginalFluidName, out string fluidName);
             List<FluidInput> inputFluids = new List<FluidInput>();
-            inputFluids.Add(new BasicInput(input.ID, fluidName, input.OriginalFluidName, input.AmountInML, input.UseAllFluid));
-            return new Fluid(inputFluids, OriginalOutputVariable, BlockID);
-
-            //VariableBlock indexBlock = (VariableBlock)IndexBlock.CopyBlock(dfg, mostRecentRef);
-            //dfg.AddNode(indexBlock);
-
-            //List<FluidInput> inputFluids = new List<FluidInput>();
-            //InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef)));
-
-            //return new SetArrayFluid(indexBlock, ArrayName, inputFluids, indexBlock.OutputVariable, BlockID);
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+            if (renamer.ContainsKey(OriginalOutputVariable))
+            {
+                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+            }
+            else
+            {
+                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+            }
+            return new Fluid(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
         }
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
