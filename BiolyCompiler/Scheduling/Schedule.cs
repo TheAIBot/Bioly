@@ -36,6 +36,7 @@ namespace BiolyCompiler.Scheduling
         public const string WASTE_MODULE_NAME = "waste @ module";
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
+        public Dictionary<string, List<Droplet>> OutputedDroplets = new Dictionary<string, List<Droplet>>();
 
         public Schedule(){
 
@@ -419,6 +420,21 @@ namespace BiolyCompiler.Scheduling
             if (topPriorityOperation is OutputUsage || topPriorityOperation is WasteUsage)
             {
                 finishedRoutingTime = Router.RouteDropletsToOutput(board, startTime, topPriorityOperation, FluidVariableLocations);
+                if (topPriorityOperation is OutputUsage outputOperation)
+                {
+                    List<Droplet> dropletsRoutedToOutput;
+                    if (OutputedDroplets.ContainsKey(outputOperation.ModuleName))
+                    {
+                        dropletsRoutedToOutput = OutputedDroplets[outputOperation.ModuleName];
+                    }
+                    else dropletsRoutedToOutput = new List<Droplet>();
+                    var routes = topPriorityOperation.InputRoutes.Values.Flatten();
+                    foreach (Route route in routes)
+                    {
+                        dropletsRoutedToOutput.Add((Droplet) route.routedDroplet);
+                    }
+                    OutputedDroplets[outputOperation.ModuleName] = dropletsRoutedToOutput;
+                }
             }
             else
             {

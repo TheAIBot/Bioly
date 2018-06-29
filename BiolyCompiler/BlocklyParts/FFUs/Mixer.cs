@@ -74,7 +74,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override Module getAssociatedModule()
         {
-            return new MixerModule(200);
+            return new MixerModule(100);
         }
 
         public override void UpdateInternalDropletConcentrations()
