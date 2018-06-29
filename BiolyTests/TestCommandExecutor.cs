@@ -21,7 +21,7 @@ namespace BiolyTests
         {
         }
 
-        public override void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules)
+        public override void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules, bool[] usedElectrodes)
         {
         }
 

@@ -74,7 +74,7 @@ namespace BiolyViewer_Windows
             }
         }
 
-        public override void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules)
+        public override void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules, bool[] usedElectrodes)
         {
             this.InputNames = inputNames;
 
@@ -103,7 +103,8 @@ namespace BiolyViewer_Windows
                 Debug.WriteLine("(async function() {");
             }
 
-            ExecuteJs($"startSimulator({Width}, {Height}, [{inputString}], [{outputString}]);");
+            string usedElectrodesString = $"[{ String.Join(", ", usedElectrodes).ToLower()}]";
+            ExecuteJs($"startSimulator({Width}, {Height}, [{inputString}], [{outputString}], {usedElectrodesString});");
 
             for (int i = 0; i < inputs.Count; i++)
             {

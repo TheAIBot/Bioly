@@ -30,6 +30,7 @@ namespace BiolyCompiler
         public bool ShowEmptyRectangles = true;
         public bool EnableOptimizations = true;
         public bool EnableGarbageCollection = true;
+        public bool EnableSparseSimulator = true;
         public readonly CancellationTokenSource KeepRunning = new CancellationTokenSource();
         public DFG<Block> OptimizedDFG = null;
 
@@ -73,9 +74,13 @@ namespace BiolyCompiler
                 }
 
                 (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules);
-                StartExecutor(OptimizedDFG, staticModules.Select(pair => pair.Value).ToList());
-                Executor.UpdateDropletData(dropPositions.SelectMany(x => x.Value.dropletSources.Select(y => y.GetFluidConcentrations())).ToList());
+                bool[] usedElectrodes = new bool[width * height];
                 List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
+                commandTimeline.ForEach(x => x?.Where(y => y.Type == CommandType.ELECTRODE_ON || y.Type == CommandType.ELECTRODE_OFF)
+                                              .ForEach(y => usedElectrodes[y.Y * width + y.X] = true));
+
+                StartExecutor(OptimizedDFG, staticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
+                Executor.UpdateDropletData(dropPositions.SelectMany(x => x.Value.dropletSources.Select(y => y.GetFluidConcentrations())).ToList());
                 SendCommands(commandTimeline, ref oldRectangles, boards);
             }
             else
@@ -94,7 +99,8 @@ namespace BiolyCompiler
 
                     if (firstRun)
                     {
-                        StartExecutor(graph.StartDFG, staticModules.Select(pair => pair.Value).ToList());
+                        bool[] usedElectrodes = new bool[width * height].Select(x => true).ToArray();
+                        StartExecutor(graph.StartDFG, staticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
                         firstRun = false;
                     }
 
@@ -270,7 +276,7 @@ namespace BiolyCompiler
             return bigDFG;
         }
 
-        private void StartExecutor(DFG<Block> graph, List<Module> staticModules)
+        private void StartExecutor(DFG<Block> graph, List<Module> staticModules, bool[] usedElectrodes)
         {
             List<string> inputNames = graph.Nodes.Where(x => x.value is InputDeclaration)
                                                  .Select(x => x.value.OriginalOutputVariable)
@@ -284,7 +290,7 @@ namespace BiolyCompiler
 
             List<Module> staticModulesWithoutInputOutputs = staticModules.Except(inputs).Except(outputs).ToList();
 
-            Executor.StartExecutor(inputNames, inputs, outputs, staticModulesWithoutInputOutputs);
+            Executor.StartExecutor(inputNames, inputs, outputs, staticModulesWithoutInputOutputs, usedElectrodes);
         }
 
         private List<Command>[] CreateCommandTimeline(List<Block> scheduledOperations, int time)

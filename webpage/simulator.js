@@ -36,7 +36,7 @@ var UPDATES_PER_SECOND = 60;
 //show_area (string)id (int)x (int)y (int)width (int)height (float)r (float)g (float)b
 //remove_area (string)id
 
-function startSimulator(width, height, inputs, outputs)
+function startSimulator(width, height, inputs, outputs, enabledElectrodes)
 {
 	ELECTRODE_SIZE_IN_CM        = getElectrodeSizeSetting();
 	DROP_DISTANCE_PER_SEC_IN_CM = getDropletSpeedSetting();
@@ -52,7 +52,7 @@ function startSimulator(width, height, inputs, outputs)
 	dropInputs = inputs;
 	dropOutputs = outputs;
 	
-	let electrodeData = setupBuffers(width, height);
+	let electrodeData = setupBuffers(width, height, enabledElectrodes);
 	electrodeSize = electrodeData.electrodeSize;
 
 	prepareElectrodes(width, height, electrodeData.electrodePositions);

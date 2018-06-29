@@ -12,6 +12,7 @@ var glData =
 
 const ELECTRODE_OFF_COLOR = vec4(0.85, 0.85, 0.85, 1.0);
 const ELECTRODE_ON_COLOR  = vec4(0.7, 0.7, 0.7, 1.0);
+const ELECTRODE_HIDDEN_COLOR  = vec4(0.0, 0.0, 0.0, 0.0);
 const DROP_POINT_COUNT = 30;
 //ratio between electrode size and electrode spacing
 const ratioForSpace = 0.1;
@@ -46,11 +47,11 @@ window.onload = function init()
 	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
 	
-	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], []);
+	startSimulator(5, 5, [{index: 6, color: vec4(1, 0, 0, 0.5)}], [], [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, ]);
 	addCommand("show_area 'asd' 0 0 3 3 0 1 0.1");
 }
 
-function setupBuffers(width, height)
+function setupBuffers(width, height, enabledElectrodes)
 {
 	glData.shapePointer = gl.getAttribLocation(glData.program, "vShape");
 	glData.positionPointer = gl.getAttribLocation(glData.program, "vPosition");
@@ -63,7 +64,7 @@ function setupBuffers(width, height)
 	glData.viewOffsetPointer = gl.getUniformLocation(glData.program, "viewOffset");
     gl.uniform2f(glData.viewOffsetPointer, currentViewOffsetX, currentViewOffsetY);
 	
-	const electrodeData = setupElectrodeBuffers(width, height);
+	const electrodeData = setupElectrodeBuffers(width, height, enabledElectrodes);
 	setupDropBuffers(electrodeData.electrodeSize / 2);
 	setupAreaBuffers(electrodeData.electrodeSize);
 	setupAreaBorderBuffers(electrodeData.electrodeSize);
@@ -71,9 +72,9 @@ function setupBuffers(width, height)
 	return electrodeData;
 }
 
-function setupElectrodeBuffers(width, height)
+function setupElectrodeBuffers(width, height, enabledElectrodes)
 {	
-    let electrodeData = createElectrodeVertexData(width, height);
+    let electrodeData = createElectrodeVertexData(width, height, enabledElectrodes);
 	
     glData.electrode.shapeBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, glData.electrode.shapeBuffer);
@@ -97,7 +98,7 @@ function setupElectrodeBuffers(width, height)
 	return electrodeData;
 }
 
-function createElectrodeVertexData(width, height)
+function createElectrodeVertexData(width, height, enabledElectrodes)
 {	
 	const borderSize = 0.10;
 	const boardSize = 2 - (borderSize * 2);
@@ -111,7 +112,7 @@ function createElectrodeVertexData(width, height)
 	boardData.electrodeVerticies = createElectrodeVerticies(electrodeSize);
 	boardData.electrodePositions = createElectrodePositions(width, height, topLeftX, topLeftY, ratioForSpace, electrodeSize);
 	boardData.electrodeSizes     = createElectrodeSizes(width, height);
-	boardData.electrodeColors    = createElectrodeColors(width, height);
+	boardData.electrodeColors    = createElectrodeColors(width, height, enabledElectrodes);
 	
 	return boardData;
 }
@@ -164,13 +165,20 @@ function createElectrodeSizes(width, height)
 	return sizes;
 }
 
-function createElectrodeColors(width, height)
+function createElectrodeColors(width, height, enabledElectrodes)
 {
 	let colors = [];
 	
 	for(var x = 0; x < width * height; x++)
 	{
-		colors.push(ELECTRODE_OFF_COLOR);
+		if (enabledElectrodes[x])
+		{
+			colors.push(ELECTRODE_OFF_COLOR);
+		}
+		else
+		{
+			colors.push(ELECTRODE_HIDDEN_COLOR);
+		}
 	}
 	
 	return colors;
