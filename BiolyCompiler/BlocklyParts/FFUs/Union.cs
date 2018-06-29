@@ -103,7 +103,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override string ToString()
         {
-            return "Union";
+            return "Union: " + OriginalOutputVariable;
         }
     }
 }
