@@ -18,6 +18,7 @@ using BiolyCompiler.Exceptions.ParserExceptions;
 using System.Diagnostics;
 using BiolyCompiler.Exceptions;
 using BiolyCompiler.BlocklyParts.Arrays;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 
 namespace BiolyCompiler
 {
@@ -63,7 +64,7 @@ namespace BiolyCompiler
 
             if (CanOptimizeCDFG(graph) && EnableOptimizations)
             {
-                OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token);
+                OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
 
                 if (KeepRunning.IsCancellationRequested)
                 {
@@ -103,13 +104,13 @@ namespace BiolyCompiler
                     List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
                     SendCommands(commandTimeline, ref oldRectangles, boards);
 
-                    runningGraph.Nodes.ForEach(x => x.value.Reset());
-                    runningGraph = GetNextGraph(graph, runningGraph, Executor, variables, controlStack, scopedVariables, dropPositions);
-
                     if (KeepRunning.IsCancellationRequested)
                     {
                         return;
                     }
+
+                    runningGraph.Nodes.ForEach(x => x.value.Reset());
+                    runningGraph = GetNextGraph(graph, runningGraph, Executor, variables, controlStack, scopedVariables, dropPositions);
                 }
             }
         }
@@ -119,7 +120,7 @@ namespace BiolyCompiler
             return cdfg.Nodes.All(x => x.dfg.Nodes.All(y => !(y is INonDeterministic)));
         }
 
-        public static DFG<Block> OptimizeCDFG(int width, int height, CDFG graph, CancellationToken keepRunning)
+        public static DFG<Block> OptimizeCDFG(int width, int height, CDFG graph, CancellationToken keepRunning, bool useGC)
         {
             DFG<Block> runningGraph = graph.StartDFG;
 
@@ -140,6 +141,7 @@ namespace BiolyCompiler
             DFG<Block> bigDFG = new DFG<Block>();
             Dictionary<string, string> mostRecentRef = new Dictionary<string, string>();
             Dictionary<string, string> renamer = new Dictionary<string, string>();
+            Dictionary<string, string> variablePostfixes = new Dictionary<string, string>();
 
             int nameID = 0;
 
@@ -155,6 +157,7 @@ namespace BiolyCompiler
                 HashSet<string> fluidVariablesAfter = dropPositions.Keys.ToHashSet();
                 scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("@#@Index")));
 
+
                 HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
                 UpdateVariables(variables, null, scheduledOperations, dropPositions);
                 HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
@@ -169,7 +172,12 @@ namespace BiolyCompiler
                     Block toCopy = cake.Dequeue();
                     if (toCopy is FluidBlock fluidBlockToCopy)
                     {
-                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, mostRecentRef, renamer, $"##{nameID++}");
+                        if (!variablePostfixes.ContainsKey(toCopy.OriginalOutputVariable))
+                        {
+                            variablePostfixes.Add(toCopy.OriginalOutputVariable, $"##{nameID++}");
+                        }
+
+                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, mostRecentRef, renamer, variablePostfixes[toCopy.OriginalOutputVariable]);
 
                         bigDFG.AddNode(copy);
 
@@ -186,18 +194,44 @@ namespace BiolyCompiler
                     fisk.UpdateReadyOperations(toCopy);
                 }
 
-
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
+                var dropPositionsCopy = dropPositions.ToDictionary();
                 fluidVariablesBefore = dropPositions.Keys.ToHashSet();
                 numberVariablesBefore = variables.Keys.ToHashSet();
                 runningGraph = GetNextGraph(graph, runningGraph, null, variables, controlStack, scopedVariables, dropPositions);
                 fluidVariablesAfter = dropPositions.Keys.ToHashSet();
                 numberVariablesAfter = variables.Keys.ToHashSet();
-                fluidVariablesBefore.Except(fluidVariablesAfter).ToList().ForEach(x => mostRecentRef.Remove(x));
-                numberVariablesBefore.Except(numberVariablesAfter).ToList().ForEach(x => mostRecentRef.Remove(x));
-                fluidVariablesBefore.Except(fluidVariablesAfter).ToList().ForEach(x => renamer.Remove(x));
-                numberVariablesBefore.Except(numberVariablesAfter).ToList().ForEach(x => renamer.Remove(x));
+                List<string> fluidsOutOfScope = fluidVariablesBefore.Except(fluidVariablesAfter).ToList();
+                List<string> numbersOutOfScope = numberVariablesBefore.Except(numberVariablesAfter).ToList();
+
+                if (useGC)
+                {
+                    foreach (string wasteFluidName in fluidsOutOfScope)
+                    {
+                        if (renamer.TryGetValue(wasteFluidName, out string correctedName))
+                        {
+                            string instanceName = mostRecentRef[renamer[wasteFluidName]];
+                            int dropletCount = dropPositionsCopy[wasteFluidName].GetNumberOfDropletsAvailable();
+                            if (dropletCount > 0)
+                            {
+                                List<FluidInput> fluidInputs = new List<FluidInput>();
+                                fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, true));
+
+                                bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
+                            }
+                        }
+                    }
+                }
+
+
+
+                fluidsOutOfScope.ForEach(x => mostRecentRef.Remove(x));
+                numbersOutOfScope.ForEach(x => mostRecentRef.Remove(x));
+                fluidsOutOfScope.ForEach(x => renamer.Remove(x));
+                numbersOutOfScope.ForEach(x => renamer.Remove(x));
+                fluidsOutOfScope.ForEach(x => variablePostfixes.Remove(x));
+                numbersOutOfScope.ForEach(x => variablePostfixes.Remove(x));
 
                 if (keepRunning.IsCancellationRequested)
                 {
@@ -205,14 +239,30 @@ namespace BiolyCompiler
                 }
             }
 
-            bigDFG.Nodes.RemoveAll(x =>
+            if (useGC)
             {
-                if (x.value is VariableBlock)
+                var staticBlocks = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock);
+                foreach (string wasteFluidName in scopedVariables.Pop())
                 {
-                    return true;
+                    if (staticBlocks.Any(x => x.value.OriginalOutputVariable == wasteFluidName))
+                    {
+                        continue;
+                    }
+
+                    if (renamer.TryGetValue(wasteFluidName, out string correctedName)) 
+                    {
+                        string instanceName = mostRecentRef[renamer[wasteFluidName]];
+                        int dropletCount = dropPositions[wasteFluidName].GetNumberOfDropletsAvailable();
+                        if (dropletCount > 0)
+                        {
+                            List<FluidInput> fluidInputs = new List<FluidInput>();
+                            fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, true));
+
+                            bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
+                        }
+                    }
                 }
-                return false;
-            });
+            }
 
             bigDFG.FinishDFG();
             return bigDFG;

@@ -21,7 +21,7 @@ namespace BiolyCompiler.Modules
         {
             foreach (var name in NameOfUsedFluids)
             {
-                FluidConcentrations.Add(name,0);
+                FluidConcentrations.Add(name, 0);
             }
         }
         public Droplet(BoardFluid fluidType) : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, false)

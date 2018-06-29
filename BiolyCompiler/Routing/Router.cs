@@ -49,7 +49,7 @@ namespace BiolyCompiler.Routing
         /// <param name="currentTime"></param>
         /// <param name="outputOperation"></param>
         /// <returns></returns>
-        public static int RouteDropletsToOutput(Board board, int currentTime, OutputUsage outputOperation, Dictionary<string, BoardFluid> FluidVariableLocations)
+        public static int RouteDropletsToOutput(Board board, int currentTime, FluidBlock outputOperation, Dictionary<string, BoardFluid> FluidVariableLocations)
         {
             int originalStartTime = currentTime;
             if (outputOperation.BoundModule.GetInputLayout().Droplets.Count == 0)

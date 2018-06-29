@@ -49,7 +49,7 @@ namespace BiolyViewer_Windows
                             cancelSource?.Cancel();
                             cancelSource = new CancellationTokenSource();
                             CancellationToken token = cancelSource.Token;
-                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg, token));
+                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg, token, Settings.EnableGC));
                             if (cancelSource.IsCancellationRequested)
                             {
                                 return;

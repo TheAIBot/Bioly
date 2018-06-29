@@ -33,7 +33,7 @@ namespace BiolyCompiler.Scheduling
         public const int IGNORED_TIME_DIFFERENCE = 30; 
         private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
         private const string WASTE_FLUIDNAME_STRING  = "waste - fluidtype #";
-        private const string WASTE_MODULE_NAME = "waste @ module";
+        public const string WASTE_MODULE_NAME = "waste @ module";
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
 
@@ -415,9 +415,14 @@ namespace BiolyCompiler.Scheduling
         private int RouteDropletsToModuleAndUpdateSchedule(Board board, int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)
         {
             int finishedRoutingTime;
-            if (topPriorityOperation is OutputUsage)
-                finishedRoutingTime = Router.RouteDropletsToOutput(board, startTime, (OutputUsage) topPriorityOperation, FluidVariableLocations);
-            else finishedRoutingTime = Router.RouteDropletsToModule(board, startTime, topPriorityOperation);
+            if (topPriorityOperation is OutputUsage || topPriorityOperation is WasteUsage)
+            {
+                finishedRoutingTime = Router.RouteDropletsToOutput(board, startTime, topPriorityOperation, FluidVariableLocations);
+            }
+            else
+            {
+                finishedRoutingTime = Router.RouteDropletsToModule(board, startTime, topPriorityOperation);
+            }
             UpdateSchedule(topPriorityOperation, finishedRoutingTime, startTime);
             return finishedRoutingTime;
         }
