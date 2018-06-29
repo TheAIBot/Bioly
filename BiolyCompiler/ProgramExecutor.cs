@@ -76,8 +76,29 @@ namespace BiolyCompiler
                 (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules);
                 bool[] usedElectrodes = new bool[width * height];
                 List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
-                commandTimeline.ForEach(x => x?.Where(y => y.Type == CommandType.ELECTRODE_ON || y.Type == CommandType.ELECTRODE_OFF)
-                                              .ForEach(y => usedElectrodes[y.Y * width + y.X] = true));
+                if (EnableSparseSimulator)
+                {
+                    for (int i = 0; i < usedElectrodes.Length; i++)
+                    {
+                        usedElectrodes[i] = false;
+                    }
+                    foreach (List<Command> commands in commandTimeline)
+                    {
+                        if (commands == null)
+                        {
+                            continue;
+                        }
+
+                        foreach (Command command in commands)
+                        {
+                            if (command.Type == CommandType.ELECTRODE_ON ||
+                                command.Type == CommandType.ELECTRODE_OFF)
+                            {
+                                usedElectrodes[command.Y * width + command.X] = true;
+                            }
+                        }
+                    }
+                }
 
                 StartExecutor(OptimizedDFG, staticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
                 Executor.UpdateDropletData(dropPositions.SelectMany(x => x.Value.dropletSources.Select(y => y.GetFluidConcentrations())).ToList());
@@ -95,7 +116,7 @@ namespace BiolyCompiler
                     HashSet<string> fluidVariablesBefore = dropPositions.Keys.ToHashSet();
                     (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules);
                     HashSet<string> fluidVariablesAfter = dropPositions.Keys.ToHashSet();
-                    scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("@#@Index")));
+                    scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
                     if (firstRun)
                     {
@@ -107,7 +128,7 @@ namespace BiolyCompiler
                     HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
                     UpdateVariables(variables, Executor, scheduledOperations, dropPositions);
                     HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
-                    scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("@#@Index")));
+                    scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
                     List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
                     SendCommands(commandTimeline, ref oldRectangles, boards);
@@ -163,13 +184,13 @@ namespace BiolyCompiler
                 HashSet<string> fluidVariablesBefore = dropPositions.Keys.ToHashSet();
                 (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules);
                 HashSet<string> fluidVariablesAfter = dropPositions.Keys.ToHashSet();
-                scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("@#@Index")));
+                scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
 
                 HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
                 UpdateVariables(variables, null, scheduledOperations, dropPositions);
                 HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
-                scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("@#@Index")));
+                scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
                 runningGraph.Nodes.ForEach(x => x.value.IsDone = false);
                 Assay fisk = new Assay(runningGraph);
