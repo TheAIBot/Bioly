@@ -6,6 +6,7 @@ using BiolyCompiler.BlocklyParts;
 using Priority_Queue;
 using BiolyCompiler.Modules;
 using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -92,11 +93,21 @@ namespace BiolyCompiler.Scheduling
                 int currentNodeExecutionTime;
 
                 if (currentNode.value is HeaterUsage heaterUsage)
+                {
                     currentNodeExecutionTime = heaterUsage.Time; //Heaters have an extra time variable.
+                }
+                else if (currentNode.value is WasteUsage)
+                {
+                    currentNodeExecutionTime = -100000000; //-100.000.000
+                }
                 else if (!Schedule.IsSpecialCaseOperation(currentNode.value) && !(currentNode.value is StaticUseageBlock))
+                {
                     currentNodeExecutionTime = ((FluidBlock)currentNode.value).getAssociatedModule().OperationTime; //Operation involving a module with an execution time.
+                }
                 else
+                {
                     currentNodeExecutionTime = 0; //Special case operations does not have any inherent execution time
+                }
 
                 //A min priority queue is used, so the priority is inverted.
                 currentNode.value.priority = -(lenghtOfLongestPathToNode[i] + currentNodeExecutionTime);

@@ -216,7 +216,7 @@ namespace BiolyCompiler
                             if (dropletCount > 0)
                             {
                                 List<FluidInput> fluidInputs = new List<FluidInput>();
-                                fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, true));
+                                fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, false));
 
                                 bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
                             }
