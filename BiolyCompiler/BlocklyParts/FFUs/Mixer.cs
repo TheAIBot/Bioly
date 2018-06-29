@@ -82,18 +82,17 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             List<Route> allRoutes = new List<Route>();
             InputRoutes.Select(pair => pair.Value).ForEach(listOfRoutes => allRoutes.AddRange(listOfRoutes));
             if (allRoutes.Count != 2) throw new NotImplementedException("Currently only mixing two droplets is supported.");
-            IDropletSource concistingDroplet1  = allRoutes[0].routedDroplet;
-            IDropletSource concistingDroplet2  = allRoutes[1].routedDroplet;
+            Dictionary<string, float> dropletConcentrations1  = allRoutes[0].routedDroplet.GetFluidConcentrations();
+            Dictionary<string, float> dropletConcentrations2  = allRoutes[1].routedDroplet.GetFluidConcentrations();
 
-            HashSet<string> allFluidParts = concistingDroplet1.GetFluidConcentrations().Keys.ToHashSet();
-            allFluidParts.UnionWith(concistingDroplet2.GetFluidConcentrations().Keys);
+            HashSet<string> allFluidParts = dropletConcentrations1.Keys.Union(dropletConcentrations2.Keys).ToHashSet();
             foreach (var fluidName in allFluidParts)
             {
-                double sumOfConcetrations = 0;
-                if (concistingDroplet1.GetFluidConcentrations().TryGetValue(fluidName, out double concentration1))
-                    sumOfConcetrations += concentration1;
-                if (concistingDroplet2.GetFluidConcentrations().TryGetValue(fluidName, out double concentration2))
-                    sumOfConcetrations += concentration2;
+                dropletConcentrations1.TryGetValue(fluidName, out float concentration1);
+                dropletConcentrations2.TryGetValue(fluidName, out float concentration2);
+
+                float sumOfConcetrations = concentration1 + concentration2;
+
                 BoundModule.GetOutputLayout().Droplets[0].FluidConcentrations[fluidName] = sumOfConcetrations / 2;
                 BoundModule.GetOutputLayout().Droplets[1].FluidConcentrations[fluidName] = sumOfConcetrations / 2;
             }

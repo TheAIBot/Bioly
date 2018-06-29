@@ -11,7 +11,7 @@ namespace BiolyCompiler.Modules
     {
         private BoardFluid fluidType;
         public const int DROPLET_WIDTH = 3, DROPLET_HEIGHT = 3;
-        public Dictionary<string, double> FluidConcentrations = new Dictionary<string, double>(); 
+        public Dictionary<string, float> FluidConcentrations = new Dictionary<string, float>(); 
 
         public Droplet() : base(DROPLET_WIDTH, DROPLET_HEIGHT, 0, false)
         {
@@ -85,12 +85,12 @@ namespace BiolyCompiler.Modules
             return Shape.getCenterPosition();
         }
 
-        public void SetConcentrationOfFluid(string fluidName, double concentration)
+        public void SetConcentrationOfFluid(string fluidName, float concentration)
         {
             FluidConcentrations[fluidName] = concentration;
         }
 
-        public Dictionary<string, double> GetFluidConcentrations()
+        public Dictionary<string, float> GetFluidConcentrations()
         {
             return FluidConcentrations;
         }

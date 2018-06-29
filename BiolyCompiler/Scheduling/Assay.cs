@@ -98,7 +98,7 @@ namespace BiolyCompiler.Scheduling
                 }
                 else if (currentNode.value is WasteUsage)
                 {
-                    currentNodeExecutionTime = 100000000; //100.000.000
+                    currentNodeExecutionTime = -100000000; //100.000.000
                 }
                 else if (!Schedule.IsSpecialCaseOperation(currentNode.value) && !(currentNode.value is StaticUseageBlock))
                 {
