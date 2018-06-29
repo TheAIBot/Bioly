@@ -19,6 +19,7 @@ using System.Diagnostics;
 using BiolyCompiler.Exceptions;
 using BiolyCompiler.BlocklyParts.Arrays;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.BlocklyParts.Declarations;
 
 namespace BiolyCompiler
 {
@@ -72,7 +73,8 @@ namespace BiolyCompiler
                 }
 
                 (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules);
-                StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
+                StartExecutor(OptimizedDFG, staticModules.Select(pair => pair.Value).ToList());
+                Executor.UpdateDropletData(dropPositions.SelectMany(x => x.Value.dropletSources.Select(y => y.GetFluidConcentrations())).ToList());
                 List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
                 SendCommands(commandTimeline, ref oldRectangles, boards);
             }
@@ -92,7 +94,7 @@ namespace BiolyCompiler
 
                     if (firstRun)
                     {
-                        StartExecutor(graph, staticModules.Select(pair => pair.Value).ToList());
+                        StartExecutor(graph.StartDFG, staticModules.Select(pair => pair.Value).ToList());
                         firstRun = false;
                     }
 
@@ -268,9 +270,11 @@ namespace BiolyCompiler
             return bigDFG;
         }
 
-        private void StartExecutor(CDFG graph, List<Module> staticModules)
+        private void StartExecutor(DFG<Block> graph, List<Module> staticModules)
         {
-
+            List<string> inputNames = graph.Nodes.Where(x => x.value is InputDeclaration)
+                                                 .Select(x => x.value.OriginalOutputVariable)
+                                                 .ToList();
             List<Module> inputs = staticModules.Where(x => x is InputModule)
                                              .ToList();
             List<Module> outputs = staticModules.Where(x => x is OutputModule || x is WasteModule)
@@ -280,7 +284,7 @@ namespace BiolyCompiler
 
             List<Module> staticModulesWithoutInputOutputs = staticModules.Except(inputs).Except(outputs).ToList();
 
-            Executor.StartExecutor(inputs, outputs, staticModulesWithoutInputOutputs);
+            Executor.StartExecutor(inputNames, inputs, outputs, staticModulesWithoutInputOutputs);
         }
 
         private List<Command>[] CreateCommandTimeline(List<Block> scheduledOperations, int time)

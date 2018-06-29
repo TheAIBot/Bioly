@@ -26,6 +26,7 @@ namespace BiolyViewer_Windows
         private BlockingCollection<string> PortStrings = new BlockingCollection<string>(new ConcurrentQueue<string>());
         private SerialPort Port = null;
         private Thread SerialSendThread = null;
+        private List<string> InputNames;
 
 
         public SimulatorConnector(ChromiumWebBrowser browser, int width, int height)
@@ -73,8 +74,10 @@ namespace BiolyViewer_Windows
             }
         }
 
-        public override void StartExecutor(List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules)
+        public override void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules)
         {
+            this.InputNames = inputNames;
+
             StringBuilder inputBuilder = new StringBuilder();
             foreach (Module input in inputs)
             {
@@ -159,6 +162,30 @@ namespace BiolyViewer_Windows
         public override V WaitForResponse<V>()
         {
             throw new NotImplementedException("Doesn't supported feedback from board.");
+        }
+
+        public override void UpdateDropletData(List<Dictionary<string, float>> dropsConcentrations)
+        {
+            string inputNamesAsString = $"[{String.Join(", ", InputNames.Select(x => "\"" + x.Split('#')[0] + "\""))}]";
+
+            List<string> dropsConcentrationsStrings = new List<string>();
+            foreach (Dictionary<string, float> concentrationInfo in dropsConcentrations)
+            {
+                float[] concentrations = new float[InputNames.Count];
+                int i = 0;
+                foreach (string inputName in InputNames)
+                {
+                    concentrationInfo.TryGetValue(inputName, out float concentration);
+                    concentrations[i] = concentration;
+                    i++;
+                }
+
+                dropsConcentrationsStrings.Add($"[{String.Join(", ", concentrations)}]");
+            }
+
+            string dropletsInfo = $"[{String.Join(", ", dropsConcentrationsStrings)}]";
+
+            ExecuteJs($"ShowDropletsInformation({inputNamesAsString}, {dropletsInfo});");
         }
 
         protected override string ConvertCommand(List<Command> commands)

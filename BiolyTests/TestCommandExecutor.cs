@@ -21,8 +21,13 @@ namespace BiolyTests
         {
         }
 
-        public override void StartExecutor(List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules)
+        public override void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules)
         {
+        }
+
+        public override void UpdateDropletData(List<Dictionary<string, float>> dropsConcentrations)
+        {
+            throw new NotImplementedException();
         }
 
         public override V WaitForResponse<V>()

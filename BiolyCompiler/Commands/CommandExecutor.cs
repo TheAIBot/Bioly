@@ -9,7 +9,7 @@ namespace BiolyCompiler.Commands
     {
         protected readonly List<string> QueuedCommands = new List<string>();
 
-        public abstract void StartExecutor(List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules);
+        public abstract void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules);
         public abstract void QueueCommands(List<Command> commands);
         public abstract void SendCommands();
         public abstract V WaitForResponse<V>();
