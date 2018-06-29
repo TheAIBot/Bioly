@@ -7,6 +7,7 @@ using Priority_Queue;
 using BiolyCompiler.Modules;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
+using MoreLinq;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -98,7 +99,7 @@ namespace BiolyCompiler.Scheduling
                 }
                 else if (currentNode.value is WasteUsage)
                 {
-                    currentNodeExecutionTime = 100000000; //100.000.000
+                    currentNodeExecutionTime = 2; //100.000.000
                 }
                 else if (!Schedule.IsSpecialCaseOperation(currentNode.value) && !(currentNode.value is StaticUseageBlock))
                 {
@@ -111,7 +112,6 @@ namespace BiolyCompiler.Scheduling
 
                 //A min priority queue is used, so the priority is inverted.
                 currentNode.value.priority = -(lenghtOfLongestPathToNode[i] + currentNodeExecutionTime);
-                //(*) Fix above to also include currentNodes execution time.
                 foreach (var node in currentNode.getOutgoingEdges())
                 {
                     //Update the lenght of the paths:
@@ -123,6 +123,7 @@ namespace BiolyCompiler.Scheduling
                     }
                 }
             }
+            Dfg.Nodes.Select(node => node.value).Where(operation => operation is WasteUsage).ForEach(wasteUsage => wasteUsage.priority = -100000000);
             //The dfg is inverted back to normal:
             Dfg.InvertEdges();
 

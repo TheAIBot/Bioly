@@ -124,7 +124,7 @@ namespace BiolyCompiler
         {
             DFG<Block> runningGraph = graph.StartDFG;
 
-            Board board = new Board(width, height);
+            Board board = new Board(2*width, 2*height);
             ModuleLibrary library = new ModuleLibrary();
             Dictionary<string, Module> staticModules = new Dictionary<string, Module>();
 
@@ -256,7 +256,7 @@ namespace BiolyCompiler
                         if (dropletCount > 0)
                         {
                             List<FluidInput> fluidInputs = new List<FluidInput>();
-                            fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, true));
+                            fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, false));
 
                             bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
                         }

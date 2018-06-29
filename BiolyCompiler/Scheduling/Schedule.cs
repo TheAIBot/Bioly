@@ -101,7 +101,7 @@ namespace BiolyCompiler.Scheduling
                     NameOfInputFluids.Add(fluidType.FluidName);
                 }
                 else {
-                    Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board);
+                    Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board, AllUsedModules);
                     StaticModules.Add(staticDeclaration.ModuleName, staticModule);
                 }
 
@@ -185,6 +185,7 @@ namespace BiolyCompiler.Scheduling
             int currentTime = 0;
             board = ListSchedulingSetup(assay, board, library, currentTime);
             SimplePriorityQueue<Block, int> readyOperations = assay.GetReadyOperations();
+            Console.Write("");
             //currentTime = 0;
 
             //Continue until all operations have been scheduled:
@@ -202,7 +203,7 @@ namespace BiolyCompiler.Scheduling
                     //Else a module that can execute the operation needs to be found and placed on the board:
                     Module operationExecutingModule = (topPriorityOperation is StaticUseageBlock staticOperation) ?
                                                        StaticModules[staticOperation.ModuleName] :
-                                                       library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board);
+                                                       library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board, AllUsedModules);
                     topPriorityOperation.Bind(operationExecutingModule, FluidVariableLocations);
 
                     //For debuging:
