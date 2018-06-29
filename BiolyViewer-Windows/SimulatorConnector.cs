@@ -181,7 +181,7 @@ namespace BiolyViewer_Windows
                     i++;
                 }
 
-                dropsConcentrationsStrings.Add($"[{String.Join(", ", concentrations)}]");
+                dropsConcentrationsStrings.Add($"[{String.Join(", ", concentrations.Select(x => x.ToString(CultureInfo.InvariantCulture)))}]");
             }
 
             string dropletsInfo = $"[{String.Join(", ", dropsConcentrationsStrings)}]";

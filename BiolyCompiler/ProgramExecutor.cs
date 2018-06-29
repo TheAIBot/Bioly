@@ -83,22 +83,22 @@ namespace BiolyCompiler
                     {
                         usedElectrodes[i] = false;
                     }
-                    foreach (List<Command> commands in commandTimeline)
-                    {
-                        if (commands == null)
-                        {
-                            continue;
-                        }
+                    //foreach (List<Command> commands in commandTimeline)
+                    //{
+                    //    if (commands == null)
+                    //    {
+                    //        continue;
+                    //    }
 
-                        foreach (Command command in commands)
-                        {
-                            if (command.Type == CommandType.ELECTRODE_ON ||
-                                command.Type == CommandType.ELECTRODE_OFF)
-                            {
-                                usedElectrodes[command.Y * width + command.X] = true;
-                            }
-                        }
-                    }
+                    //    foreach (Command command in commands)
+                    //    {
+                    //        if (command.Type == CommandType.ELECTRODE_ON ||
+                    //            command.Type == CommandType.ELECTRODE_OFF)
+                    //        {
+                    //            usedElectrodes[command.Y * width + command.X] = true;
+                    //        }
+                    //    }
+                    //}
                 }
 
                 StartExecutor(OptimizedDFG, staticModules.Select(pair => pair.Value).ToList(), usedElectrodes);

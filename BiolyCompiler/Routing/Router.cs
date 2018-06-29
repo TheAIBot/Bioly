@@ -232,6 +232,7 @@ namespace BiolyCompiler.Routing
             source.distanceFromSource = 0;
 
             SimplePriorityQueue<RoutingInformation, int> priorityQueue = new SimplePriorityQueue<RoutingInformation, int>();
+            priorityQueue.
             foreach (var node in dijkstraGraph)
             {
                 priorityQueue.Enqueue(node, node.distanceFromSource);
