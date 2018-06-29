@@ -13,6 +13,7 @@ namespace BiolyCompiler.Commands
         public abstract void QueueCommands(List<Command> commands);
         public abstract void SendCommands();
         public abstract V WaitForResponse<V>();
+        public abstract void UpdateDropletData(List<Dictionary<string, float>> dropsConcentrations);
         protected abstract T ConvertCommand(List<Command> commands);
     }
 }
