@@ -464,14 +464,11 @@ namespace BiolyTests
                 string firstInputName = dropletNames[random.Next(dropletNames.Length)];
                 string secondInputName = dropletNames.Where(x => x != firstInputName).ToArray()[random.Next(dropletNames.Length - 2)];
 
-                int firstInputDropletCount = random.Next(1, droplets[firstInputName] + 1);
-                int secondInputDropletCount = random.Next(1, droplets[secondInputName] + 1);
+                int firstInputDropletCount = random.Next(1, 4);
+                int secondInputDropletCount = random.Next(1, 4);
 
-                bool firstInputUseAll = random.Next(2) == 0;
-                bool secondInputUseAll = random.Next(2) == 0;
-
-                firstInputDropletCount  = firstInputUseAll  ? droplets[firstInputName]  : Math.Min(firstInputDropletCount , droplets[firstInputName]);
-                secondInputDropletCount = secondInputUseAll ? droplets[secondInputName] : Math.Min(secondInputDropletCount, droplets[secondInputName]);
+                firstInputDropletCount  = Math.Min(firstInputDropletCount , droplets[firstInputName]);
+                secondInputDropletCount = Math.Min(secondInputDropletCount, droplets[secondInputName]);
 
                 switch (random.Next(16))
                 {
@@ -525,7 +522,7 @@ namespace BiolyTests
 
                             droplets[firstInputName] -= firstInputDropletCount;
                             droplets[secondInputName] -= secondInputDropletCount;
-                            segmentNames.Add(AddUnionSegment(outputFluidName, firstInputName, firstInputDropletCount, firstInputUseAll, secondInputName, secondInputDropletCount, secondInputUseAll));
+                            segmentNames.Add(AddUnionSegment(outputFluidName, firstInputName, firstInputDropletCount, false, secondInputName, secondInputDropletCount, false));
 
                             if (droplets.ContainsKey(outputFluidName))
                             {
@@ -541,7 +538,7 @@ namespace BiolyTests
                         {
                             string outputModule = outputModuleNames[random.Next(outputModuleNames.Count)];
                             droplets[firstInputName] -= firstInputDropletCount;
-                            segmentNames.Add(AddOutputSegment(firstInputName, outputModule, firstInputDropletCount, firstInputUseAll));
+                            segmentNames.Add(AddOutputSegment(firstInputName, outputModule, firstInputDropletCount, false));
                             break;
                         }
                 }
@@ -575,7 +572,17 @@ namespace BiolyTests
                 SetScope(scopeName);
                 Dictionary<string, int> scopedDroplets = droplets.ToDictionary();
                 string guardedBlock = AddRandomBasicBlock(maxBasicBlockSize, random, scopedDroplets, outputModuleNames, heaterModuleNames);
-                scopedDroplets.Intersect(droplets).ToList().ForEach(x => droplets[x.Key] = x.Value);
+                foreach (string fluidName in droplets.Keys.ToArray())
+                {
+                    if (scopedDroplets.ContainsKey(fluidName))
+                    {
+                        droplets[fluidName] = scopedDroplets[fluidName];
+                    }
+                    else
+                    {
+                        droplets.Remove(fluidName);
+                    }
+                }
                 if (controlFlowCount > 0 && random.Next(2) == 0)
                 {
                     AddRandomControlFlow(ref controlFlowCount, maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames, scopeName);
