@@ -413,7 +413,7 @@ namespace BiolyTests
             for (int i = 0; i < 5; i++)
             {
                 string fluidName = GetUniqueName();
-                int dropletCount = random.Next(10, 20);
+                int dropletCount = random.Next(10, 100);
                 AddInputBlock(fluidName, dropletCount);
                 droplets.Add(fluidName, dropletCount);
             }
@@ -462,13 +462,10 @@ namespace BiolyTests
                 string outputFluidName = random.Next(4) == 0 ? dropletNames[random.Next(dropletNames.Length)] : GetUniqueName();
 
                 string firstInputName = dropletNames[random.Next(dropletNames.Length)];
-                string secondInputName = dropletNames.Where(x => x != firstInputName).ToArray()[random.Next(dropletNames.Length - 2)];
+                string secondInputName = dropletNames.Where(x => x != firstInputName).ToArray()[random.Next(dropletNames.Length - 1)];
 
-                int firstInputDropletCount = random.Next(1, 4);
-                int secondInputDropletCount = random.Next(1, 4);
-
-                firstInputDropletCount  = Math.Min(firstInputDropletCount , droplets[firstInputName]);
-                secondInputDropletCount = Math.Min(secondInputDropletCount, droplets[secondInputName]);
+                int firstInputDropletCount = Math.Min(random.Next(1, 4), droplets[firstInputName]);
+                int secondInputDropletCount = Math.Min(random.Next(1, 4), droplets[secondInputName]);
 
                 switch (random.Next(16))
                 {
@@ -480,7 +477,7 @@ namespace BiolyTests
                         {
                             string heaterModule = heaterModuleNames[random.Next(heaterModuleNames.Count)];
                             droplets[firstInputName] -= 1;
-                            segmentNames.Add(AddHeaterSegment(outputFluidName, heaterModule, random.Next(0, 1000), random.Next(0, 1000), firstInputName, 1, false));
+                            segmentNames.Add(AddHeaterSegment(outputFluidName, heaterModule, 0, random.Next(0, 1000), firstInputName, 1, false));
 
                             if (droplets.ContainsKey(outputFluidName))
                             {

@@ -75,14 +75,14 @@ namespace BiolyCompiler
                     return;
                 }
 
-                Dictionary<string, List<Droplet>> outputtedDroplets;
+                Dictionary<string, List<IDropletSource>> outputtedDroplets;
                 (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules, out outputtedDroplets);
 
                 List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
                 bool[] usedElectrodes = GetusedElectrodes(width, height, commandTimeline, EnableSparseElectrodes);
 
                 StartExecutor(OptimizedDFG, staticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
-                Executor.UpdateDropletData(outputtedDroplets.Values.SelectMany(x => x.Select(y => y.FluidConcentrations)).ToList());
+                Executor.UpdateDropletData(outputtedDroplets.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
                 SendCommands(commandTimeline, ref oldRectangles, boards);
             }
             else
@@ -440,7 +440,7 @@ namespace BiolyCompiler
 
        
        static int numberOfDFGsHandled = 0;
-        private static (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out Dictionary<string, List<Droplet>> outputtedDroplets)
+        private static (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out Dictionary<string, List<IDropletSource>> outputtedDroplets)
         {
             numberOfDFGsHandled++;
             Schedule scheduler = new Schedule();

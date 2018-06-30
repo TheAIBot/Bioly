@@ -319,7 +319,7 @@ namespace BiolyTests.ParseBlockTests
                 try
                 {
                     JSProgram program = new JSProgram();
-                    program.Render = true;
+                    program.Render = false;
 
                     program.CreateCDFG(10, 20, random);
                     TestTools.ExecuteJS(program);
@@ -331,6 +331,7 @@ namespace BiolyTests.ParseBlockTests
 
                     TestCommandExecutor commandExecutor = new TestCommandExecutor();
                     ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(commandExecutor);
+                    programExecutor.TimeBetweenCommands = 0;
                     programExecutor.EnableOptimizations = false;
                     programExecutor.Run(100, 100, result.Item1, false);
                 }

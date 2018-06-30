@@ -28,7 +28,7 @@ namespace BiolyTests
             processes.ToList().ForEach(x => KillProcessTree(x.Id));
 
             ChromeOptions options = new ChromeOptions();
-            //options.AddArgument("--headless");
+            options.AddArgument("--headless");
 
             IWebDriver browser = new ChromeDriver(options);
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
