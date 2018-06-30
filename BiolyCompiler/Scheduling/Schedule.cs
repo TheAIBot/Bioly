@@ -225,7 +225,7 @@ namespace BiolyCompiler.Scheduling
                 //When operations finishes, while the routing associated with nextOperation was performed, 
                 //this needs to be handled. Note that handleFinishingOperations will also wait for operations to finish, 
                 //in the case that there are no more operations that can be executed, before this happen:
-                (currentTime, board) = HandleFinishingOperations(currentTime, assay, board);
+                (currentTime, board) = HandleFinishingOperations(nextOperation, currentTime, assay, board);
                 readyOperations = assay.GetReadyOperations();
                 DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             }
@@ -458,7 +458,7 @@ namespace BiolyCompiler.Scheduling
             return board;
         }
         
-        public (int, Board) HandleFinishingOperations(int currentTime, Assay assay, Board board)
+        public (int, Board) HandleFinishingOperations(Block nextOperation, int currentTime, Assay assay, Board board)
         {
             SimplePriorityQueue<Block, int> readyOperations = assay.GetReadyOperations();
 
@@ -468,7 +468,7 @@ namespace BiolyCompiler.Scheduling
 
             //If some operations finishes (or one needs to wait for this to happen, before any more scheduling can happen), 
             //the board needs to be saved:
-            if (AreOperationsFinishing(currentTime, readyOperations))
+            if (AreOperationsFinishing(currentTime, readyOperations) && !(nextOperation is VariableBlock))
             {
                 boardAtDifferentTimes.Add(currentTime, board);
                 board = board.Copy();

@@ -309,42 +309,5 @@ namespace BiolyTests.ParseBlockTests
                 TestTools.ClearWorkspace();
             }
         }
-
-        [TestMethod]
-        public void ParseRandomCDFG()
-        {
-            Random random = new Random(15231);
-            for (int i = 0; i < 100; i++)
-            {
-                try
-                {
-                    JSProgram program = new JSProgram();
-                    program.Render = false;
-
-                    program.CreateCDFG(10, 20, random);
-                    TestTools.ExecuteJS(program);
-
-                    string xml = TestTools.GetWorkspaceString();
-                    var result = XmlParser.Parse(xml);
-
-                    Assert.AreEqual(0, result.Item2.Count, result.Item2.FirstOrDefault()?.Message);
-
-                    TestCommandExecutor commandExecutor = new TestCommandExecutor();
-                    ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(commandExecutor);
-                    programExecutor.TimeBetweenCommands = 0;
-                    programExecutor.EnableOptimizations = false;
-                    programExecutor.Run(100, 100, result.Item1, false);
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-
-
-
-
-            }
-        }
     }
 }
