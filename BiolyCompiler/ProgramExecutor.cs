@@ -30,7 +30,7 @@ namespace BiolyCompiler
         public bool ShowEmptyRectangles = true;
         public bool EnableOptimizations = true;
         public bool EnableGarbageCollection = true;
-        public bool EnableSparseSimulator = true;
+        public bool EnableSparseElectrodes = true;
         public readonly CancellationTokenSource KeepRunning = new CancellationTokenSource();
         public DFG<Block> OptimizedDFG = null;
 
@@ -39,13 +39,8 @@ namespace BiolyCompiler
             this.Executor = executor;
         }
 
-        public void Run(int width, int height, string xmlText)
+        public void Run(int width, int height, CDFG graph, bool alreadyOptimized)
         {
-            (CDFG graph, List<ParseException> exceptions) = XmlParser.Parse(xmlText);
-            if (exceptions.Count > 0)
-            {
-                return;
-            }
             DFG<Block> runningGraph = graph.StartDFG;
 
             Board board = new Board(width, height);
@@ -66,7 +61,14 @@ namespace BiolyCompiler
 
             if (CanOptimizeCDFG(graph) && EnableOptimizations)
             {
-                OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
+                if (alreadyOptimized)
+                {
+                    OptimizedDFG = runningGraph;
+                }
+                else
+                {
+                    OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
+                }
 
                 if (KeepRunning.IsCancellationRequested)
                 {
@@ -75,31 +77,9 @@ namespace BiolyCompiler
 
                 Dictionary<string, List<Droplet>> outputtedDroplets;
                 (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules, out outputtedDroplets);
-                bool[] usedElectrodes = new bool[width * height];
-                List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
-                if (EnableSparseSimulator)
-                {
-                    for (int i = 0; i < usedElectrodes.Length; i++)
-                    {
-                        usedElectrodes[i] = false;
-                    }
-                    //foreach (List<Command> commands in commandTimeline)
-                    //{
-                    //    if (commands == null)
-                    //    {
-                    //        continue;
-                    //    }
 
-                    //    foreach (Command command in commands)
-                    //    {
-                    //        if (command.Type == CommandType.ELECTRODE_ON ||
-                    //            command.Type == CommandType.ELECTRODE_OFF)
-                    //        {
-                    //            usedElectrodes[command.Y * width + command.X] = true;
-                    //        }
-                    //    }
-                    //}
-                }
+                List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
+                bool[] usedElectrodes = GetusedElectrodes(width, height, commandTimeline, EnableSparseElectrodes);
 
                 StartExecutor(OptimizedDFG, staticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
                 Executor.UpdateDropletData(outputtedDroplets.Values.SelectMany(x => x.Select(y => y.FluidConcentrations)).ToList());
@@ -143,6 +123,36 @@ namespace BiolyCompiler
                     runningGraph = GetNextGraph(graph, runningGraph, Executor, variables, controlStack, scopedVariables, dropPositions);
                 }
             }
+        }
+
+        private static bool[] GetusedElectrodes(int width, int height, List<Command>[] commandTimeline, bool enableSparseElectrodes)
+        {
+            bool[] usedElectrodes = new bool[width * height];
+            for (int i = 0; i < usedElectrodes.Length; i++)
+            {
+                usedElectrodes[i] = false;
+            }
+            if (enableSparseElectrodes)
+            {
+                foreach (List<Command> commands in commandTimeline)
+                {
+                    if (commands == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (Command command in commands)
+                    {
+                        if (command.Type == CommandType.ELECTRODE_ON ||
+                            command.Type == CommandType.ELECTRODE_OFF)
+                        {
+                            usedElectrodes[command.Y * width + command.X] = true;
+                        }
+                    }
+                }
+            }
+
+            return usedElectrodes;
         }
 
         public static bool CanOptimizeCDFG(CDFG cdfg)

@@ -1,6 +1,7 @@
 ﻿using BiolyCompiler;
 using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Parser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -86,7 +87,7 @@ namespace BiolyTests
             ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
             programExecutor.TimeBetweenCommands = 0;
             programExecutor.ShowEmptyRectangles = false;
-            programExecutor.Run(10, 10, xml);
+            programExecutor.Run(10, 10, XmlParser.Parse(xml).Item1, false);
 
             return executor.Commands;
         }
