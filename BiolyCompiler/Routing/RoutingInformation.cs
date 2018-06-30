@@ -20,5 +20,16 @@ namespace BiolyCompiler.Routing
             this.x = x;
             this.y = y;
         }
+
+        public override bool Equals(object obj)
+        {
+            return  obj is RoutingInformation routingObject &&
+                    this.x == routingObject.x && this.y == routingObject.y;
+        }
+
+        public override int GetHashCode()
+        {
+            return (x + 1) * (y + 1);
+        }
     }
 }

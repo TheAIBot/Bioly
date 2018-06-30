@@ -206,11 +206,11 @@ namespace BiolyCompiler.Routing
             //Dijkstras algorithm, based on the one seen on wikipedia.
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
             //and then inverts the route.
-            (var dijkstraGraph, var priorityQueue) = SetUpInitialDijsktraGraph(targetInput, board);
+            (var visitedNodes, var queue) = SetUpInitialDijsktraGraph(targetInput, board);
 
-            while (priorityQueue.Count > 0)
+            while (queue.Count > 0)
             {
-                RoutingInformation currentNode = priorityQueue.Dequeue();
+                RoutingInformation currentNode = queue.Dequeue();
                 Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
 
                 if (isUnreachableNode(currentNode))
@@ -222,49 +222,57 @@ namespace BiolyCompiler.Routing
                     continue;
 
                 //go through all neighbors
-                UpdateAllNeighborPriorities(board, dijkstraGraph, priorityQueue, currentNode);
+                UpdateAllNeighborPriorities(board, visitedNodes, queue, currentNode);
             }
             //If no route was found:
             throw new InternalRuntimeException("No route to the desired component could be found");
         }
 
-        private static (RoutingInformation[,], SimplePriorityQueue<RoutingInformation, int>) SetUpInitialDijsktraGraph(IDropletSource targetInput, Board board)
+        private static (Dictionary<RoutingInformation, RoutingInformation>, Queue<RoutingInformation>) SetUpInitialDijsktraGraph(IDropletSource targetInput, Board board)
         {
-            RoutingInformation[,] dijkstraGraph = createDijkstraGraph(board);
+            //RoutingInformation[,] dijkstraGraph = createDijkstraGraph(board);
             (int startingXPos, int startingYPos) = targetInput.GetMiddleOfSource();
-            RoutingInformation source = dijkstraGraph[startingXPos, startingYPos];
+            //RoutingInformation source = dijkstraGraph[startingXPos, startingYPos];
+            RoutingInformation source = new RoutingInformation(startingXPos, startingYPos);
+            Dictionary<RoutingInformation, RoutingInformation> visistedNodes = new Dictionary<RoutingInformation, RoutingInformation>();
+            visistedNodes.Add(source,source);
             source.distanceFromSource = 0;
 
-            SimplePriorityQueue<RoutingInformation, int> priorityQueue = new SimplePriorityQueue<RoutingInformation, int>();
-            foreach (var node in dijkstraGraph)
-            {
-                priorityQueue.Enqueue(node, node.distanceFromSource);
-            }
-            return (dijkstraGraph, priorityQueue);
+            Queue<RoutingInformation> queue = new Queue<RoutingInformation>();
+            queue.Enqueue(source);
+            return (visistedNodes, queue);
         }
         
 
-        private static void UpdateAllNeighborPriorities(Board board, RoutingInformation[,] dijkstraGraph, SimplePriorityQueue<RoutingInformation, int> priorityQueue, RoutingInformation currentNode)
+        private static void UpdateAllNeighborPriorities(Board board, Dictionary<RoutingInformation, RoutingInformation> visistedNodes, Queue<RoutingInformation> queue, RoutingInformation currentNode)
         {
             if (0 < currentNode.x)
-                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x - 1, currentNode.y]);
+                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x - 1, currentNode.y);
             if (0 < currentNode.y)
-                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y - 1]);
+                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x, currentNode.y - 1);
             if (currentNode.x < board.width - 1)
-                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x + 1, currentNode.y]);
+                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x + 1, currentNode.y);
             if (currentNode.y < board.heigth - 1)
-                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y + 1]);
+                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x, currentNode.y + 1);
         }
 
-        private static void UpdateNeighborPriority(SimplePriorityQueue<RoutingInformation, int> priorityQueue, RoutingInformation currentNode, RoutingInformation neighbor)
+        private static void UpdateNeighborPriority(Queue<RoutingInformation> queue, RoutingInformation currentNode, Dictionary<RoutingInformation, RoutingInformation> visistedNodes, int neighborXPos, int neighborYPos)
         {
+            RoutingInformation neighbor;
+            RoutingInformation newNeighborNode = new RoutingInformation(neighborXPos, neighborYPos);
+            if (visistedNodes.TryGetValue(newNeighborNode, out neighbor))
+                return; // A shorter path to the node has already been found.
+            else {
+                neighbor = newNeighborNode;
+                visistedNodes.Add(neighbor, neighbor);
+            }
             //Unit lenght distances, and thus the distance is incremented with a +1.
             int distanceToNeighborFromCurrent = currentNode.distanceFromSource + 1;
             if (distanceToNeighborFromCurrent < neighbor.distanceFromSource)
             {
                 neighbor.distanceFromSource = distanceToNeighborFromCurrent;
                 neighbor.previous = currentNode;
-                priorityQueue.UpdatePriority(neighbor, neighbor.distanceFromSource);
+                queue.Enqueue(neighbor);
             }
         }
 
