@@ -45,7 +45,8 @@ namespace BiolyTests.RoutingTests
             Assert.IsTrue(isAnActualRoute(route, board));
             Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Has detected collision while this shouldn't be possible");
             Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
-            Assert.AreEqual(route.getEndTime(), startTime + droplet.Shape.x + droplet.Shape.y);
+            Assert.AreEqual(droplet.Shape.x + droplet.Shape.y + 1, route.route.Count);
+            Assert.AreEqual(startTime + (droplet.Shape.x + droplet.Shape.y)*2 + 1, route.getEndTime());
         }
 
 
@@ -94,14 +95,14 @@ namespace BiolyTests.RoutingTests
             Droplet droplet1 = new Droplet(fluidType1);
             Droplet droplet2 = new Droplet(fluidType1);
             Droplet droplet3 = new Droplet(fluidType1);
-            sourceModule.Shape.x = 0;
-            sourceModule.Shape.y = 0;
-            droplet1.Shape.x = 10;
-            droplet1.Shape.y = 10;
-            droplet2.Shape.x = 0;
-            droplet2.Shape.y = 10;
-            droplet3.Shape.x = 10;
-            droplet3.Shape.y = 0;
+            sourceModule.Shape.x = 0 ; sourceModule.Shape.y = 0;
+
+            droplet1.Shape.x     = 10; droplet1.Shape.y     = 10;
+
+            droplet2.Shape.x     = 0 ; droplet2.Shape.y     = 10;
+
+            droplet3.Shape.x     = 10; droplet3.Shape.y     = 0;
+
             Board board = new Board(20, 20);
             Dictionary<string, BoardFluid> kage = new Dictionary<string, BoardFluid>();
             kage.Add("test1", fluidType1);
@@ -130,16 +131,17 @@ namespace BiolyTests.RoutingTests
             Assert.IsTrue(routes[0].startTime        == startTime);
             Assert.IsTrue(routes[0].getEndTime() + 1 == routes[1].startTime);
             Assert.IsTrue(routes[1].getEndTime() + 1 == endtime);
-            Assert.AreEqual(10 + 1 + 7 + 1 + startTime, endtime);
+            Assert.AreEqual(((droplet3.Shape.x)*2 + 1) + 1 + ((droplet2.Shape.y + 3)*2 + 1) + 1 + startTime, endtime);
+
             //The modules will be placed again, to check hasCorrectStartAndEnding:
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            Assert.IsTrue(hasCorrectStartAndEnding(routes[0], board, droplet2, sourceModule.GetInputLayout().Droplets[0]));
-            Assert.IsTrue(hasCorrectStartAndEnding(routes[1], board, droplet3, sourceModule.GetInputLayout().Droplets[1]));
+            Assert.IsTrue(hasCorrectStartAndEnding(routes[0], board, droplet3, sourceModule.GetInputLayout().Droplets[0]));
+            Assert.IsTrue(hasCorrectStartAndEnding(routes[1], board, droplet2, sourceModule.GetInputLayout().Droplets[1]));
             Assert.IsTrue(isAnActualRoute(routes[0], board));
-            Assert.IsTrue(hasNoCollisions(routes[0], board, sourceModule, droplet2), "Obstacle not avoided: the path has a collisition");
+            Assert.IsTrue(hasNoCollisions(routes[0], board, sourceModule, droplet3), "Obstacle not avoided: the path has a collisition");
             Assert.IsTrue(isAnActualRoute(routes[1], board));
-            Assert.IsTrue(hasNoCollisions(routes[1], board, sourceModule, droplet3), "Obstacle not avoided: the path has a collisition");
+            Assert.IsTrue(hasNoCollisions(routes[1], board, sourceModule, droplet2), "Obstacle not avoided: the path has a collisition");
         }
 
         [TestMethod]
@@ -191,7 +193,7 @@ namespace BiolyTests.RoutingTests
             Assert.IsTrue(routes1[0].startTime == startTime);
             Assert.IsTrue(routes1[0].getEndTime() + 1 == routes2[0].startTime);
             Assert.IsTrue(routes2[0].getEndTime() + 1 == endtime);
-            Assert.AreEqual(10 + 1 + 7 + 1 + startTime, endtime);
+            Assert.AreEqual((10 + 1 + 7 + 1)*2 + startTime, endtime);
             //The modules will be placed again, to check hasCorrectStartAndEnding:
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);

@@ -46,17 +46,17 @@ namespace BiolyTests.ModulesTests
             Assert.AreEqual(0, mixingOperation.StartTime);
             Assert.IsTrue(mixingOperation.StartTime + mixingOperation.BoundModule.OperationTime <= mixingOperation.EndTime);
             //Two droplets needs to be routed: the routes should be shorter than 10:
-            Assert.IsTrue(mixingOperation.EndTime <= mixingOperation.StartTime + mixingOperation.BoundModule.OperationTime + 10*2);
+            Assert.IsTrue(mixingOperation.EndTime <= mixingOperation.StartTime + mixingOperation.BoundModule.OperationTime + 20*2);
 
             List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
-            Assert.AreEqual(2, boardAtDifferentTimes[0].PlacedModules.Values.Count);
-            Assert.AreEqual(3, boardAtDifferentTimes[1].PlacedModules.Values.Count);
-            Assert.AreEqual(4, boardAtDifferentTimes[2].PlacedModules.Values.Count);
-            Assert.AreEqual(mixingOperation.BoundModule, boardAtDifferentTimes[1].PlacedModules.Values.ToList()[2]);
+            Assert.AreEqual(3, boardAtDifferentTimes[0].PlacedModules.Values.Count);
+            Assert.AreEqual(4, boardAtDifferentTimes[1].PlacedModules.Values.Count);
+            Assert.AreEqual(5, boardAtDifferentTimes[2].PlacedModules.Values.Count);
+            Assert.AreEqual(mixingOperation.BoundModule, boardAtDifferentTimes[1].PlacedModules.Values.ToList()[3]);
 
             //The routed droplets should be placed at the input/output locations of the mixer
-            Droplet droplet1 = (Droplet) boardAtDifferentTimes[2].PlacedModules.Values.ToList()[2];
-            Droplet droplet2 = (Droplet) boardAtDifferentTimes[2].PlacedModules.Values.ToList()[3];
+            Droplet droplet1 = (Droplet) boardAtDifferentTimes[2].PlacedModules.Values.ToList()[3];
+            Droplet droplet2 = (Droplet) boardAtDifferentTimes[2].PlacedModules.Values.ToList()[4];
             Route route1 = mixingOperation.InputRoutes[op1Name][0];
             Route route2 = mixingOperation.InputRoutes[op2Name][0];
             Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route1, board, (InputModule)inputOperation1.BoundModule, droplet1));
@@ -100,13 +100,13 @@ namespace BiolyTests.ModulesTests
             Assert.IsTrue  (fluidTransfer2.EndTime <= fluidTransfer2.StartTime + 5);
 
             List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
-            Assert.AreEqual(1, boardAtDifferentTimes[0].PlacedModules.Values.Count);
-            Assert.AreEqual(1 + numberOfDropletsTransfered, boardAtDifferentTimes[1].PlacedModules.Values.Count);
-            Assert.AreEqual(1 + numberOfDropletsTransfered, boardAtDifferentTimes[2].PlacedModules.Values.Count);
+            Assert.AreEqual(2, boardAtDifferentTimes[0].PlacedModules.Values.Count);
+            Assert.AreEqual(2 + numberOfDropletsTransfered, boardAtDifferentTimes[1].PlacedModules.Values.Count);
+            Assert.AreEqual(2 + numberOfDropletsTransfered, boardAtDifferentTimes[2].PlacedModules.Values.Count);
             //The first couple of droplets should have been renamed:
             for (int i = 0; i < numberOfDropletsTransfered; i++)
             {
-                Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.Values.ToList()[i + 1];
+                Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.Values.ToList()[i + 2];
                 if (i < numberOfDropletsRenamed) {
                     Assert.AreEqual(op2Name, droplet.GetFluidType().FluidName);
                     Assert.IsTrue(schedule.FluidVariableLocations[op2Name].dropletSources.Contains(droplet));
@@ -150,11 +150,11 @@ namespace BiolyTests.ModulesTests
             Assert.AreEqual(initialNumberOfDroplets - numberOfDropletsTransfered, ((InputModule)inputOperation.BoundModule).DropletCount);
 
             List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
-            Assert.AreEqual(1, boardAtDifferentTimes[0].PlacedModules.Values.Count);
-            Assert.AreEqual(1 + numberOfDropletsTransfered, boardAtDifferentTimes[1].PlacedModules.Values.Count);
+            Assert.AreEqual(2, boardAtDifferentTimes[0].PlacedModules.Values.Count);
+            Assert.AreEqual(2 + numberOfDropletsTransfered, boardAtDifferentTimes[1].PlacedModules.Values.Count);
             for (int i = 0; i < numberOfDropletsTransfered; i++)
             {
-                Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.Values.ToList()[i + 1];
+                Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.Values.ToList()[i + 2];
                 Assert.IsTrue(droplet != null);
                 Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
             }
@@ -232,18 +232,18 @@ namespace BiolyTests.ModulesTests
             Assert.AreEqual(heaterOperation1, schedule.ScheduledOperations[0]);
             Assert.AreEqual(heaterOperation2, schedule.ScheduledOperations[1]);
             Assert.IsTrue(heaterOperation1.Time <= heaterOperation1.EndTime);
-            Assert.IsTrue(heaterOperation1.EndTime <= heaterOperation1.Time + 20);
+            Assert.IsTrue(heaterOperation1.EndTime <= heaterOperation1.Time + 30);
             Assert.IsTrue(heaterOperation1.EndTime + 1 == heaterOperation2.StartTime);
             Assert.IsTrue(heaterOperation2.StartTime + heaterOperation2.Time <= heaterOperation2.EndTime);
-            Assert.IsTrue(heaterOperation2.EndTime <= heaterOperation2.StartTime + heaterOperation2.Time + 20);
+            Assert.IsTrue(heaterOperation2.EndTime <= heaterOperation2.StartTime + heaterOperation2.Time + 30);
             //It should first of all place both the heater and the input. 
             //Moreover, it should then route to the heater, and then out of the heater, two times:
             List<Board> boardAtDifferentTimes = schedule.boardAtDifferentTimes.Select(pair => pair.Value).ToList();
-            Assert.AreEqual(2, boardAtDifferentTimes[0].PlacedModules.Values.Count);
+            Assert.AreEqual(3, boardAtDifferentTimes[0].PlacedModules.Values.Count);
             for (int i = 1; i < boardAtDifferentTimes.Count; i++)
             {
                 int isDropletOnTheBoard = (i % 2 == 0)? 1: 0;
-                Assert.AreEqual(2 + isDropletOnTheBoard, boardAtDifferentTimes[i].PlacedModules.Values.Count, "Failure at i=" + i);
+                Assert.AreEqual(3 + isDropletOnTheBoard, boardAtDifferentTimes[i].PlacedModules.Values.Count, "Failure at i=" + i);
             }
             Route fromInputToHeater     = heaterOperation1.InputRoutes[inputOperation.OriginalOutputVariable][0];
             Route fromHeaterToDroplet   = heaterOperation1.OutputRoutes[heaterOperation1.OriginalOutputVariable][0];
