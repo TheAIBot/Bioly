@@ -6,6 +6,10 @@ using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Graphs;
+using BiolyCompiler.Parser;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -166,6 +170,25 @@ namespace BiolyTests
             AddConnection(a, Fluid.INPUT_FLUID_FIELD_NAME, b);
             AddConnection(b, Mixer.FirstInputFieldName , c);
             AddConnection(b, Mixer.SecondInputFieldName, d);
+
+            CurrentScope.Add(a);
+            return a;
+        }
+
+        public string AddUnionSegment(string outputName, string inputNameA, int amountA, bool useAllFluidA, string inputNameB, int amountB, bool useAllFluidB)
+        {
+            string a = GetUniqueName();
+            string b = GetUniqueName();
+            string c = GetUniqueName();
+            string d = GetUniqueName();
+            AddBlock(a, Fluid.XML_TYPE_NAME);
+            AddBlock(b, Union.XML_TYPE_NAME);
+            AddBasicInputBlock(c, inputNameA, amountA, useAllFluidA);
+            AddBasicInputBlock(d, inputNameB, amountB, useAllFluidB);
+            SetField(a, Fluid.OUTPUT_FLUID_FIELD_NAME, outputName);
+            AddConnection(a, Fluid.INPUT_FLUID_FIELD_NAME, b);
+            AddConnection(b, Union.FIRST_INPUT_FIELD_NAME, c);
+            AddConnection(b, Union.SECOND_INPUT_FIELD_NAME, d);
 
             CurrentScope.Add(a);
             return a;
@@ -352,7 +375,7 @@ namespace BiolyTests
                     secondInputName = fluidNames[random.Next(fluidNames.Count)];
                 }
 
-                switch (random.Next(4))
+                switch (random.Next(5))
                 {
                     case 0:
                         AddHeaterSegment(outputFluidName, heaterModuleName, random.Next(0, 1000), random.Next(0, 1000), firstInputName, random.Next(), GetRandomBool(random));
@@ -370,9 +393,214 @@ namespace BiolyTests
                         AddOutputSegment(firstInputName, outputModuleName, random.Next(), GetRandomBool(random));
                         fluidNames.Remove(firstInputName);
                         break;
+                    case 4:
+                        string renameName = random.Next(2) == 0 ? outputFluidName : fluidNames[random.Next(fluidNames.Count)];
+                        AddUnionSegment(renameName, firstInputName, random.Next(), GetRandomBool(random), secondInputName, random.Next(), GetRandomBool(random));
+                        break;
                 }
             }
             Finish();
+        }
+
+        public void CreateCDFG(int controlFlowCount, int maxBasicBlockSize, Random random = null)
+        {
+            random = random ?? new Random();
+
+            Dictionary<string, int> droplets = new Dictionary<string, int>();
+            List<string> outputModuleNames = new List<string>();
+            List<string> heaterModuleNames = new List<string>();
+
+            for (int i = 0; i < 5; i++)
+            {
+                string fluidName = GetUniqueName();
+                int dropletCount = random.Next(10, 20);
+                AddInputBlock(fluidName, dropletCount);
+                droplets.Add(fluidName, dropletCount);
+            }
+
+            for (int i = 0; i < 5; i++)
+            {
+                string moduleName = GetUniqueName();
+                AddOutputDeclarationBlock(moduleName);
+                outputModuleNames.Add(moduleName);
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                string moduleName = GetUniqueName();
+                AddHeaterDeclarationBlock(moduleName);
+                heaterModuleNames.Add(moduleName);
+            }
+
+            AddRandomBasicBlock(maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames);
+
+            while (controlFlowCount > 0 && droplets.Count > 1)
+            {
+                AddRandomControlFlow(ref controlFlowCount, maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames, JSProgram.DEFAULT_SCOPE_NAME);
+            }
+
+            if (droplets.Count > 1)
+            {
+                AddRandomBasicBlock(maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames);
+            }
+
+            Finish();
+        }
+
+        private string AddRandomBasicBlock(int maxBasicBlockSize, Random random, Dictionary<string, int> droplets, List<string> outputModuleNames, List<string> heaterModuleNames)
+        {
+            List<string> segmentNames = new List<string>();
+            int segmentsCount = random.Next(maxBasicBlockSize / 3, maxBasicBlockSize);
+            for (int i = 0; i < segmentsCount; i++)
+            {
+                if (droplets.Count < 2)
+                {
+                    return segmentNames.First();
+                }
+                
+                string[] dropletNames = droplets.Keys.ToArray();
+
+                string outputFluidName = random.Next(4) == 0 ? dropletNames[random.Next(dropletNames.Length)] : GetUniqueName();
+
+                string firstInputName = dropletNames[random.Next(dropletNames.Length)];
+                string secondInputName = dropletNames.Where(x => x != firstInputName).ToArray()[random.Next(dropletNames.Length - 2)];
+
+                int firstInputDropletCount = random.Next(1, droplets[firstInputName] + 1);
+                int secondInputDropletCount = random.Next(1, droplets[secondInputName] + 1);
+
+                bool firstInputUseAll = random.Next(2) == 0;
+                bool secondInputUseAll = random.Next(2) == 0;
+
+                firstInputDropletCount  = firstInputUseAll  ? droplets[firstInputName]  : Math.Min(firstInputDropletCount , droplets[firstInputName]);
+                secondInputDropletCount = secondInputUseAll ? droplets[secondInputName] : Math.Min(secondInputDropletCount, droplets[secondInputName]);
+
+                switch (random.Next(16))
+                {
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                        {
+                            string heaterModule = heaterModuleNames[random.Next(heaterModuleNames.Count)];
+                            droplets[firstInputName] -= 1;
+                            segmentNames.Add(AddHeaterSegment(outputFluidName, heaterModule, random.Next(0, 1000), random.Next(0, 1000), firstInputName, 1, false));
+
+                            if (droplets.ContainsKey(outputFluidName))
+                            {
+                                droplets[outputFluidName] = 1;
+                            }
+                            else
+                            {
+                                droplets.Add(outputFluidName, 1);
+                            }
+                            break;
+                        }
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                        {
+
+                            droplets[firstInputName] -= 1;
+                            droplets[secondInputName] -= 1;
+                            segmentNames.Add(AddMixerSegment(outputFluidName, firstInputName, 1, false, secondInputName, 1, false));
+
+                            if (droplets.ContainsKey(outputFluidName))
+                            {
+                                droplets[outputFluidName] = 2;
+                            }
+                            else
+                            {
+                                droplets.Add(outputFluidName, 2);
+                            }
+                            break;
+                        }
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                    case 14:
+                        {
+
+                            droplets[firstInputName] -= firstInputDropletCount;
+                            droplets[secondInputName] -= secondInputDropletCount;
+                            segmentNames.Add(AddUnionSegment(outputFluidName, firstInputName, firstInputDropletCount, firstInputUseAll, secondInputName, secondInputDropletCount, secondInputUseAll));
+
+                            if (droplets.ContainsKey(outputFluidName))
+                            {
+                                droplets[outputFluidName] = firstInputDropletCount + secondInputDropletCount;
+                            }
+                            else
+                            {
+                                droplets.Add(outputFluidName, firstInputDropletCount + secondInputDropletCount);
+                            }
+                            break;
+                        }
+                    case 15:
+                        {
+                            string outputModule = outputModuleNames[random.Next(outputModuleNames.Count)];
+                            droplets[firstInputName] -= firstInputDropletCount;
+                            segmentNames.Add(AddOutputSegment(firstInputName, outputModule, firstInputDropletCount, firstInputUseAll));
+                            break;
+                        }
+                }
+
+                if (droplets[firstInputName] <= 0)
+                {
+                    droplets.Remove(firstInputName);
+                }
+                if (droplets[secondInputName] <= 0)
+                {
+                    droplets.Remove(secondInputName);
+                }
+            }
+
+            return segmentNames.First();
+        }
+
+        private void AddRandomControlFlow(ref int controlFlowCount, int maxBasicBlockSize, Random random, Dictionary<string, int> droplets, List<string> outputModuleNames, List<string> heaterModuleNames, string prevScopeName)
+        {
+            while (controlFlowCount > 0)
+            {
+                if (droplets.Count < 2)
+                {
+                    return;
+                }
+
+                controlFlowCount--;
+
+                string scopeName = GetUniqueName();
+                AddScope(scopeName);
+                SetScope(scopeName);
+                Dictionary<string, int> scopedDroplets = droplets.ToDictionary();
+                string guardedBlock = AddRandomBasicBlock(maxBasicBlockSize, random, scopedDroplets, outputModuleNames, heaterModuleNames);
+                scopedDroplets.Intersect(droplets).ToList().ForEach(x => droplets[x.Key] = x.Value);
+                if (controlFlowCount > 0 && random.Next(2) == 0)
+                {
+                    AddRandomControlFlow(ref controlFlowCount, maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames, scopeName);
+                }
+                SetScope(prevScopeName);
+
+                switch (random.Next(1))
+                {
+                    case 0:
+                        {
+                            string left = AddConstantBlock(random.Next(2) == 0 ? 3 : 2);
+                            string right = AddConstantBlock(3);
+                            string conditionalBlock = AddBoolOPBlock(BoolOPTypes.EQ, left, right);
+
+                            AddIfSegment(conditionalBlock, guardedBlock);
+                            break;
+                        }
+                    //case 1:
+                    //    {
+                    //        string conditionalBlock = AddConstantBlock(random.Next(11));
+                    //        AddRepeatSegment(conditionalBlock, guardedBlock);
+                    //        break;
+                    //    }
+                }
+            }
         }
 
         private bool GetRandomBool(Random random)

@@ -185,12 +185,16 @@ namespace BiolyCompiler.Routing
                     break;
                 case InputModule dropletSource:
                     if (1 < dropletSource.DropletCount) dropletSource.DecrementDropletCount();
-                    else if (dropletSource.DropletCount == 1) {
+                    else if (dropletSource.DropletCount == 1)
+                    {
                         dropletSource.GetFluidType().dropletSources.Remove(dropletSource);
                         dropletSource.DecrementDropletCount();
                         //board.FastTemplateRemove(dropletSource); 
                     }
-                    else throw new InternalRuntimeException("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
+                    else
+                    {
+                        throw new InternalRuntimeException("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.GetFluidType().FluidName);
+                    }
                     break;
                 default:
                     throw new InternalRuntimeException("Unhandled droplet source: " + route.routedDroplet.ToString());
