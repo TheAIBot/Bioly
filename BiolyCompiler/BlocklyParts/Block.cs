@@ -9,6 +9,7 @@ using BiolyCompiler.Commands;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using System.Linq;
 using BiolyCompiler.Graphs;
+using System.Threading;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -45,7 +46,7 @@ namespace BiolyCompiler.BlocklyParts
             inputNumbers = inputNumbers ?? EmptyNumberList;
             inputFluids?.Where(x => x != null).ToList().ForEach(x => inputNumbers.AddRange(x?.InputNumbers));
             this.InputNumbers = inputNumbers ?? EmptyNumberList;
-            this.OutputVariable = $"N{nameID}";
+            this.OutputVariable = $"N{Interlocked.Increment(ref nameID)}";
             nameID++;
             this.BlockID = blockID;
             this.OriginalOutputVariable = output ?? DEFAULT_NAME;

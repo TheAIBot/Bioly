@@ -413,7 +413,7 @@ namespace BiolyTests
             for (int i = 0; i < 5; i++)
             {
                 string fluidName = GetUniqueName();
-                int dropletCount = random.Next(10, 100);
+                int dropletCount = random.Next(100, 200);
                 AddInputBlock(fluidName, dropletCount);
                 droplets.Add(fluidName, dropletCount);
             }
@@ -586,7 +586,7 @@ namespace BiolyTests
                 }
                 SetScope(prevScopeName);
 
-                switch (random.Next(1))
+                switch (random.Next(2))
                 {
                     case 0:
                         {
@@ -599,7 +599,7 @@ namespace BiolyTests
                         }
                     case 1:
                         {
-                            string conditionalBlock = AddConstantBlock(random.Next(11));
+                            string conditionalBlock = AddConstantBlock(random.Next(1, 4));
                             AddRepeatSegment(conditionalBlock, guardedBlock);
                             break;
                         }
