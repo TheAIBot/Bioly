@@ -25,7 +25,7 @@ namespace BiolyCompiler.Graphs
             IngoingEdges.Add(source);
         }
 
-        public List<Node<N>> getIngoingEdges()
+        public List<Node<N>> GetIngoingEdges()
         {
             return IngoingEdges;
         }
@@ -36,5 +36,12 @@ namespace BiolyCompiler.Graphs
             return OutgoingEdges;
         }
 
+        
+        public void InvertEdges()
+        {
+            var temp = OutgoingEdges;
+            OutgoingEdges = IngoingEdges;
+            IngoingEdges = temp;
+        }
     }
 }

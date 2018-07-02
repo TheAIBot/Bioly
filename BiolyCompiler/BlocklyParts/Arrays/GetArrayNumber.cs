@@ -52,7 +52,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new GetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);
         }
 
-        public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
@@ -62,18 +62,6 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             }
 
             int index = (int)floatIndex;
-            if (index < 0 || index >= arrayLength)
-            {
-                throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
-            }
-
-            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
-        }
-
-        public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
-        {
-            int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
-            int index = (int)IndexBlock.Run(variables, executor, dropPositions);
             if (index < 0 || index >= arrayLength)
             {
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);

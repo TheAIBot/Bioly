@@ -26,10 +26,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCreateNonEmptyAssay()
         {
-            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<FluidBlock> { }, null, null);
-            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, null, null);
-            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, null, null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -44,10 +44,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCorrectIntialReadyOperationsParallelDFG()
         {
-            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, null, null);
-            TestBlock operation2 = new TestBlock(new List<FluidBlock> { }, null, null);
-            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, null, null);
-            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, null, null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -69,10 +69,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCorrectIntialReadyOperationsNonParallelDFG()
         {
-            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", null);
-            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1 }, "op2", null);
-            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", null);
-            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, "op4", null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", new TestModule());
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1 }, "op2", new TestModule());
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", new TestModule());
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, "op4", new TestModule());
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -104,10 +104,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestUpdateReadyOperations1Dependecy()
         {
-            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", null);
-            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1 }, "op2", null);
-            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", null);
-            TestBlock operation4 = new TestBlock(new List<FluidBlock> { operation3 }, "op4", null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", new TestModule());
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1 }, "op2", new TestModule());
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", new TestModule());
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { operation3 }, "op4", new TestModule());
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -139,10 +139,10 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestUpdateReadyOperationsMultiDependecy()
         {
-            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", null);
-            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", null);
-            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1, operation3 }, "op2", null);
-            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, "op4", null);
+            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, "op1", new TestModule());
+            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, "op3", new TestModule());
+            TestBlock operation2 = new TestBlock(new List<FluidBlock> { operation1, operation3 }, "op2", new TestModule());
+            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, "op4", new TestModule());
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
@@ -188,12 +188,6 @@ namespace BiolyTests.AssayTests
             Assert.IsFalse(dfg.Nodes[3].value.IsDone);
         }
         
-        //[TestMethod]
-        public void TestCalculateCriticalPath()
-        {
-            Assert.Fail("Have not been implemented yet.");
-        }
-
 
 
     }

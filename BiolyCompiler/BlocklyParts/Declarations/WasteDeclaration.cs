@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Modules;
+﻿using BiolyCompiler.Graphs;
+using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
 using System;
@@ -12,7 +13,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
     {
         public const string XML_TYPE_NAME = "wasteDeclaration";
 
-        public WasteDeclaration(string moduleName, XmlNode node, string id) : base(moduleName, false, null, id)
+        public WasteDeclaration(string moduleName, string id) : base(moduleName, false, null, id)
         {
 
         }
@@ -24,7 +25,12 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             Validator.CheckVariableName(id, moduleName);
             parserInfo.AddVariable(id, VariableType.WASTE, moduleName);
 
-            return new WasteDeclaration(moduleName, node, id);
+            return new WasteDeclaration(moduleName, id);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        {
+            return new WasteDeclaration(ModuleName, BlockID);
         }
 
         public override Module getAssociatedModule()

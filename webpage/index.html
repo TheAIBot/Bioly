@@ -115,10 +115,15 @@
 		</div>
 		<div class="side" id="rightSide">
 			<button class="tab tabLink" id="graphTab"     onclick="openTab(event, 'graphDiv');        return false;">Graph</button>
+			<button class="tab tabLink" id="infoTab"      onclick="openTab(event, 'InfoDiv');        return false;">Info</button>
 			<button class="tab tabLink" id="simulatorTab" onclick="openTab(event, 'simulatorCanvas'); return false;">Simulator</button>
 			<button class="tab tabLink" id="settingsTab"  onclick="openTab(event, 'settingsDiv');     return false;">Settings</button>
 			<div class="tabContent">
 				<div    class="tabItemContent" id="graphDiv"></div>
+				<div    class="tabItemContent" id="InfoDiv">
+					<table id="dropsTable" style="width:100%">
+					</table>
+				</div>
 				<canvas class="tabItemContent" id="simulatorCanvas"></canvas>
 				<div    class="tabItemContent" id="settingsDiv">
 					<div>
@@ -166,6 +171,14 @@
 						<div class="settingsPlacement">
 							<span>Create graph</span>
 							<input class="settingInput" id="createGraphSettingSetting" type="checkbox" onclick="webUpdater.settingsChanged(getSettings());">
+						</div>
+						<div class="settingsPlacement">
+							<span>Enable optimizations</span>
+							<input class="settingInput" id="enableOptimizationsSetting" type="checkbox" onclick="webUpdater.settingsChanged(getSettings());">
+						</div>
+						<div class="settingsPlacement">
+							<span>Enable GC</span>
+							<input class="settingInput" id="enableGCSetting" type="checkbox" onclick="webUpdater.settingsChanged(getSettings());">
 						</div>
 					</div>
 				</div>

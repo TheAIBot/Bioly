@@ -29,6 +29,8 @@ namespace BiolyViewer_Windows
             this.Settings = settings;
         }
 
+        CancellationTokenSource cancelSource = null;
+
         public void Update(string xml)
         {
             try
@@ -37,15 +39,36 @@ namespace BiolyViewer_Windows
                 if (exceptions.Count == 0)
                 {
                     string js = String.Empty;
+                    bool optimizedCDFG = false;
                     if (Settings.CreateGraph)
                     {
+                        if (ProgramExecutor<string>.CanOptimizeCDFG(cdfg) && Settings.EnableOptimizations)
+                        {
+                            int boardWidth = Settings.BoardWidth;
+                            int boardHeight = Settings.BoardHeight;
+
+                            CDFG newCdfg = new CDFG();
+                            cancelSource?.Cancel();
+
+                            cancelSource = new CancellationTokenSource();
+                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg, cancelSource.Token, Settings.EnableGC));
+
+                            if (cancelSource.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
+                            cdfg = newCdfg;
+                            cdfg.StartDFG = cdfg.Nodes.First().dfg;
+                            optimizedCDFG = true;
+                        }
                         (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
                         js = $"setGraph({nodes}, {edges});";
                     }
                     js += $"ClearErrors();";
                     Browser.ExecuteScriptAsync(js);
 
-                    RunSimulator(xml);
+                    RunSimulator(cdfg, optimizedCDFG);
                 }
                 else
                 {
@@ -58,12 +81,14 @@ namespace BiolyViewer_Windows
             }
             catch (ParseException e)
             {
-                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"{e.Message.Replace('\"', '\'')}\");");
+                string message = $"ShowUnexpectedError(\"{e.Message.Replace('\"', ' ').Replace('\'', ' ')}\");";
+                Browser.ExecuteScriptAsync(message);
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
             catch (Exception e)
             {
-                Browser.ExecuteScriptAsync($"ShowUnexpectedError(\"Unexpected error.\n{e.Message.Replace('\"', '\'')}\");");
+                string message = $"ShowUnexpectedError(\"{e.Message.Replace('\"', ' ').Replace('\'', ' ')}\");";
+                Browser.ExecuteScriptAsync(message);
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
         }
@@ -72,13 +97,13 @@ namespace BiolyViewer_Windows
         object simulatorLocker = new object();
         ProgramExecutor<string> CurrentlyExecutionProgram = null;
 
-        private void RunSimulator(string xml)
+        private void RunSimulator(CDFG cdfg, bool alreadyOptimized)
         {
             lock (simulatorLocker)
             {
                 if (CurrentlyExecutionProgram != null)
                 {
-                    CurrentlyExecutionProgram.Running = false;
+                    CurrentlyExecutionProgram.KeepRunning.Cancel();
                 }
                 simulatorThread?.Join();
                 simulatorThread = new Thread(() =>
@@ -88,13 +113,15 @@ namespace BiolyViewer_Windows
                         int boardWidth = Settings.BoardWidth;
                         int boardHeight = Settings.BoardHeight;
                         int timeBetweenCommands = (int)((1f / Settings.CommandFrequency) * 1000);
-                        bool showEmptyRectangles = Settings.ShowEmptyRectangles;
                         using (SimulatorConnector executor = new SimulatorConnector(Browser, boardWidth, boardHeight))
                         {
                             CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
                             CurrentlyExecutionProgram.TimeBetweenCommands = timeBetweenCommands;
-                            CurrentlyExecutionProgram.ShowEmptyRectangles = showEmptyRectangles;
-                            CurrentlyExecutionProgram.Run(boardWidth, boardHeight, xml);
+                            CurrentlyExecutionProgram.ShowEmptyRectangles = Settings.ShowEmptyRectangles;
+                            CurrentlyExecutionProgram.EnableOptimizations = Settings.EnableOptimizations;
+                            CurrentlyExecutionProgram.EnableGarbageCollection = Settings.EnableGC;
+
+                            CurrentlyExecutionProgram.Run(boardWidth, boardHeight, cdfg, alreadyOptimized);
                         }
                     }
                     catch (InternalRuntimeException e)

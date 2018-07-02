@@ -28,12 +28,8 @@ namespace BiolyCompiler.Modules
 
         public override List<Command> GetModuleCommands(ref int time)
         {
-            time += 1;
-            return new List<Command>()
-            {
-                new Command(InputLayout.Droplets[0].Shape.x, InputLayout.Droplets[0].Shape.y, 
-                CommandType.ELECTRODE_OFF, time)
-            };
+            time += OperationTime;
+            return new List<Command>() { new Command(InputLayout.Droplets[0].Shape.getCenterPosition().Item1, InputLayout.Droplets[0].Shape.getCenterPosition().Item2, CommandType.ELECTRODE_OFF, time) };
         }
     }
 }

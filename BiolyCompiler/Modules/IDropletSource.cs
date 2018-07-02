@@ -9,6 +9,8 @@ namespace BiolyCompiler.Modules
     {
         BoardFluid GetFluidType();
 
+        Dictionary<string, float> GetFluidConcentrations();
+
         void SetFluidType(BoardFluid newFluidType);
 
         (int,int) GetMiddleOfSource();

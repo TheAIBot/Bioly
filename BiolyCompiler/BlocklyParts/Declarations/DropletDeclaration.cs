@@ -6,6 +6,7 @@ using System.Xml;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.TypeSystem;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts.Declarations
 {
@@ -14,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
         public const string INPUT_FLUID_FIELD_NAME = "dropletName";
         public const string XML_TYPE_NAME = "dropletDeclaration";
 
-        public DropletDeclaration(string output, XmlNode node, string id) : base("moduleName-" + id, true, output, id)
+        public DropletDeclaration(string output, string id) : base("moduleName-" + id, true, output, id)
         {
         }
 
@@ -29,9 +30,22 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             Validator.CheckVariableName(id, output);
             parserInfo.AddVariable(id, VariableType.FLUID, output);
 
-            return new DropletDeclaration(output, node, id);
+            return new DropletDeclaration(output, id);
         }
-        
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        {
+            if (renamer.ContainsKey(OriginalOutputVariable))
+            {
+                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+            }
+            else
+            {
+                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+            }
+            return new DropletDeclaration(OriginalOutputVariable + namePostfix, BlockID);
+        }
+
         public override Module getAssociatedModule()
         {
             return new Droplet(new BoardFluid(OriginalOutputVariable));

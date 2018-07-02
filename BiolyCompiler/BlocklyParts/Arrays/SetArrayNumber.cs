@@ -64,11 +64,13 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            throw new InternalRuntimeException("This method is not supported for.");
+            return NumberBlock.Run(variables, executor, dropPositions);
         }
 
-        public override (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
+        public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
+            base.Update(variables, executor, dropPositions);
+
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
             if (float.IsInfinity(floatIndex) || float.IsNaN(floatIndex))
@@ -82,11 +84,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
             }
 
-            string arrayIndexName = FluidArray.GetArrayIndexName(ArrayName, index);
-            return (arrayIndexName, NumberBlock.Run(variables, executor, dropPositions));
+            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
         }
-
-
 
         public override string ToXml()
         {

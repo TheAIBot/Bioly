@@ -1,4 +1,5 @@
-﻿using BiolyCompiler.Parser;
+﻿using BiolyCompiler.Graphs;
+using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public const string USE_ALL_FLUID_FIELD_NAME = "useAllFluid";
         public const string XML_TYPE_NAME = "getFluid";
 
-        public BasicInput(string id, string fluidName, string originalFluidName, int inputAmountInDroplets, bool useAllFluid) : 
+        public BasicInput(string id, string fluidName, string originalFluidName, float inputAmountInDroplets, bool useAllFluid) : 
             base(id, fluidName, originalFluidName, inputAmountInDroplets, useAllFluid, null)
         {
 
@@ -32,10 +33,17 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             parserInfo.MostRecentVariableRef.TryGetValue(originalFluidName, out string correctedName);
 
             string fluidName = correctedName ?? NO_FLUID_NAME;
-            int amountInML = (int)node.GetNodeWithAttributeValue(FLUID_AMOUNT_FIELD_NAME).TextToFloat(id);
+            float amountInML = node.GetNodeWithAttributeValue(FLUID_AMOUNT_FIELD_NAME).TextToFloat(id);
             bool useAllFluid = FluidInput.StringToBool(node.GetNodeWithAttributeValue(USE_ALL_FLUID_FIELD_NAME).InnerText);
 
             return new BasicInput(id, fluidName, originalFluidName, amountInML, useAllFluid);
+        }
+
+        public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        {
+            renamer.TryGetValue(OriginalFluidName, out string correctedName);
+            mostRecentRef.TryGetValue(correctedName, out string fluidName);
+            return new BasicInput(ID, fluidName, correctedName, AmountInML, UseAllFluid);
         }
 
         public override string ToXml()

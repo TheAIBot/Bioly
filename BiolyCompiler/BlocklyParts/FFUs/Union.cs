@@ -49,11 +49,32 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Union(inputs, output, id);
         }
 
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        {
+            if (!renamer.ContainsKey(OriginalOutputVariable))
+            {
+                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+            }
+
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+
+            renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+            return new Union(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+        }
+
 
         public override List<Command> ToCommands()
         {
             int time = 0;
             List<Command> routeCommands = new List<Command>();
+
+            //add commands for waste routes. They must be before the other routes
+            foreach (List<Route> wasteRouteList in WasteRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                wasteRouteList.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
+            }
+
             foreach (List<Route> routes in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
             {
                 routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
@@ -82,7 +103,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override string ToString()
         {
-            return "Union";
+            return "Union: " + OriginalOutputVariable;
         }
     }
 }

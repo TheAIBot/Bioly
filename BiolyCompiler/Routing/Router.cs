@@ -49,7 +49,7 @@ namespace BiolyCompiler.Routing
         /// <param name="currentTime"></param>
         /// <param name="outputOperation"></param>
         /// <returns></returns>
-        public static int RouteDropletsToOutput(Board board, int currentTime, OutputUsage outputOperation, Dictionary<string, BoardFluid> FluidVariableLocations)
+        public static int RouteDropletsToOutput(Board board, int currentTime, FluidBlock outputOperation, Dictionary<string, BoardFluid> FluidVariableLocations)
         {
             int originalStartTime = currentTime;
             if (outputOperation.BoundModule.GetInputLayout().Droplets.Count == 0)
@@ -140,14 +140,26 @@ namespace BiolyCompiler.Routing
             return (dropletInputs, emptyRectangles);
         }
 
-        private static Route RouteSingleDropletToModule(FluidBlock operation, Board board, int currentTime, Droplet dropletInput)
+
+        public static Route RouteSingleDropletToModule(Module module, Board board, int currentTime, Droplet dropletInput)
         {
             BoardFluid InputFluidType = dropletInput.GetFluidType();
             if (InputFluidType.GetNumberOfDropletsAvailable() < 1) throw new RuntimeException("There isn't enough droplets of type " + InputFluidType.FluidName +
-                                                                                       " avaiable, to satisfy the requirement of the module: " + operation.BoundModule.ToString());
+                                                                                              " avaiable, to satisfy the requirement of the module: " + module.ToString());
             //Routes a droplet of type InputFluid to the module.
-            Route route = DetermineRouteToModule(haveReachedDropletOfTargetType(dropletInput), operation.BoundModule, dropletInput, board, currentTime); //Will be included as part of a later step.
+            Route route = DetermineRouteToModule(haveReachedDropletOfTargetType(dropletInput), module, dropletInput, board, currentTime); //Will be included as part of a later step.
             if (route == null) throw new InternalRuntimeException("No route found. This should not be possible.");
+            
+            //The droplet has been "used up"/it is now inside a module, 
+            //so it needs to be removed from its original position:
+            RemoveRoutedDropletFromBoard(board, route);
+            return route;
+        }
+
+        public static Route RouteSingleDropletToModule(FluidBlock operation, Board board, int currentTime, Droplet dropletInput)
+        {
+            BoardFluid InputFluidType = dropletInput.GetFluidType();
+            Route route = RouteSingleDropletToModule(operation.BoundModule, board, currentTime, dropletInput);
 
             //The route is added to the module's routes:
             List<Route> inputRoutes;
@@ -158,10 +170,6 @@ namespace BiolyCompiler.Routing
                 operation.InputRoutes.Add(InputFluidType.FluidName, inputRoutes);
             }
             inputRoutes.Add(route);
-            //The droplet has been "used up"/it is now inside a module, 
-            //so it needs to be removed from its original position:
-            RemoveRoutedDropletFromBoard(board, route);
-
             return route;
         }
 
@@ -177,12 +185,16 @@ namespace BiolyCompiler.Routing
                     break;
                 case InputModule dropletSource:
                     if (1 < dropletSource.DropletCount) dropletSource.DecrementDropletCount();
-                    else if (dropletSource.DropletCount == 1) {
+                    else if (dropletSource.DropletCount == 1)
+                    {
                         dropletSource.GetFluidType().dropletSources.Remove(dropletSource);
                         dropletSource.DecrementDropletCount();
                         //board.FastTemplateRemove(dropletSource); 
                     }
-                    else throw new InternalRuntimeException("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.ToString());
+                    else
+                    {
+                        throw new InternalRuntimeException("The droplet spawner has a negative droplet count. Droplet source: " + dropletSource.GetFluidType().FluidName);
+                    }
                     break;
                 default:
                     throw new InternalRuntimeException("Unhandled droplet source: " + route.routedDroplet.ToString());
@@ -194,11 +206,11 @@ namespace BiolyCompiler.Routing
             //Dijkstras algorithm, based on the one seen on wikipedia.
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
             //and then inverts the route.
-            (var dijkstraGraph, var priorityQueue) = SetUpInitialDijsktraGraph(targetInput, board);
+            (var visitedNodes, var queue) = SetUpInitialDijsktraGraph(targetInput, board);
 
-            while (priorityQueue.Count > 0)
+            while (queue.Count > 0)
             {
-                RoutingInformation currentNode = priorityQueue.Dequeue();
+                RoutingInformation currentNode = queue.Dequeue();
                 Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
 
                 if (isUnreachableNode(currentNode))
@@ -210,49 +222,57 @@ namespace BiolyCompiler.Routing
                     continue;
 
                 //go through all neighbors
-                UpdateAllNeighborPriorities(board, dijkstraGraph, priorityQueue, currentNode);
+                UpdateAllNeighborPriorities(board, visitedNodes, queue, currentNode);
             }
             //If no route was found:
             throw new InternalRuntimeException("No route to the desired component could be found");
         }
 
-        private static (RoutingInformation[,], SimplePriorityQueue<RoutingInformation, int>) SetUpInitialDijsktraGraph(IDropletSource targetInput, Board board)
+        private static (Dictionary<RoutingInformation, RoutingInformation>, Queue<RoutingInformation>) SetUpInitialDijsktraGraph(IDropletSource targetInput, Board board)
         {
-            RoutingInformation[,] dijkstraGraph = createDijkstraGraph(board);
+            //RoutingInformation[,] dijkstraGraph = createDijkstraGraph(board);
             (int startingXPos, int startingYPos) = targetInput.GetMiddleOfSource();
-            RoutingInformation source = dijkstraGraph[startingXPos, startingYPos];
+            //RoutingInformation source = dijkstraGraph[startingXPos, startingYPos];
+            RoutingInformation source = new RoutingInformation(startingXPos, startingYPos);
+            Dictionary<RoutingInformation, RoutingInformation> visistedNodes = new Dictionary<RoutingInformation, RoutingInformation>();
+            visistedNodes.Add(source,source);
             source.distanceFromSource = 0;
 
-            SimplePriorityQueue<RoutingInformation, int> priorityQueue = new SimplePriorityQueue<RoutingInformation, int>();
-            foreach (var node in dijkstraGraph)
-            {
-                priorityQueue.Enqueue(node, node.distanceFromSource);
-            }
-            return (dijkstraGraph, priorityQueue);
+            Queue<RoutingInformation> queue = new Queue<RoutingInformation>();
+            queue.Enqueue(source);
+            return (visistedNodes, queue);
         }
         
 
-        private static void UpdateAllNeighborPriorities(Board board, RoutingInformation[,] dijkstraGraph, SimplePriorityQueue<RoutingInformation, int> priorityQueue, RoutingInformation currentNode)
+        private static void UpdateAllNeighborPriorities(Board board, Dictionary<RoutingInformation, RoutingInformation> visistedNodes, Queue<RoutingInformation> queue, RoutingInformation currentNode)
         {
             if (0 < currentNode.x)
-                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x - 1, currentNode.y]);
+                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x - 1, currentNode.y);
             if (0 < currentNode.y)
-                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y - 1]);
+                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x, currentNode.y - 1);
             if (currentNode.x < board.width - 1)
-                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x + 1, currentNode.y]);
+                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x + 1, currentNode.y);
             if (currentNode.y < board.heigth - 1)
-                UpdateNeighborPriority(priorityQueue, currentNode, dijkstraGraph[currentNode.x, currentNode.y + 1]);
+                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x, currentNode.y + 1);
         }
 
-        private static void UpdateNeighborPriority(SimplePriorityQueue<RoutingInformation, int> priorityQueue, RoutingInformation currentNode, RoutingInformation neighbor)
+        private static void UpdateNeighborPriority(Queue<RoutingInformation> queue, RoutingInformation currentNode, Dictionary<RoutingInformation, RoutingInformation> visistedNodes, int neighborXPos, int neighborYPos)
         {
+            RoutingInformation neighbor;
+            RoutingInformation newNeighborNode = new RoutingInformation(neighborXPos, neighborYPos);
+            if (visistedNodes.TryGetValue(newNeighborNode, out neighbor))
+                return; // A shorter path to the node has already been found.
+            else {
+                neighbor = newNeighborNode;
+                visistedNodes.Add(neighbor, neighbor);
+            }
             //Unit lenght distances, and thus the distance is incremented with a +1.
             int distanceToNeighborFromCurrent = currentNode.distanceFromSource + 1;
             if (distanceToNeighborFromCurrent < neighbor.distanceFromSource)
             {
                 neighbor.distanceFromSource = distanceToNeighborFromCurrent;
                 neighbor.previous = currentNode;
-                priorityQueue.UpdatePriority(neighbor, neighbor.distanceFromSource);
+                queue.Enqueue(neighbor);
             }
         }
 

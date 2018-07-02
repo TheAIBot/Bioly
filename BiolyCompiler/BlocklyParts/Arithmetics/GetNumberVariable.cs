@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using BiolyCompiler.TypeSystem;
@@ -42,10 +43,6 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            if (!variables.ContainsKey(VariableName))
-            {
-                Console.Write("");
-            }
             return variables[VariableName];
         }
 

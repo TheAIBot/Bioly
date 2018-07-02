@@ -33,6 +33,20 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new Fluid(inputs, output, id);
         }
 
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        {
+            if (!renamer.ContainsKey(OriginalOutputVariable))
+            {
+                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+            }
+
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+
+            renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+            return new Fluid(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+        }
+
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
@@ -61,6 +75,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             int time = 0;
             List<Command> routeCommands = new List<Command>();
+
+
+            //add commands for waste routes. They must be before the other routes
+            foreach (List<Route> wasteRouteList in WasteRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                wasteRouteList.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
+            }
+
             foreach (List<Route> routes in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
             {
                 routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));

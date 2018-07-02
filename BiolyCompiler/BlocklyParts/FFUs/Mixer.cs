@@ -8,6 +8,9 @@ using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Graphs;
+using System.Linq;
+using BiolyCompiler.Routing;
+using MoreLinq;
 
 namespace BiolyCompiler.BlocklyParts.FFUs
 {
@@ -48,6 +51,22 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Mixer(inputs, output, id);
         }
 
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        {
+            List<FluidInput> inputFluids = new List<FluidInput>();
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+
+            if (renamer.ContainsKey(OriginalOutputVariable))
+            {
+                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+            }
+            else
+            {
+                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+            }
+            return new Mixer(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+        }
+
         public override string ToString()
         {
             return "Mixer";
@@ -55,7 +74,29 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override Module getAssociatedModule()
         {
-            return new MixerModule(30);
+            return new MixerModule(100);
+        }
+
+        public override void UpdateInternalDropletConcentrations()
+        {
+            List<Route> allRoutes = new List<Route>();
+            InputRoutes.Select(pair => pair.Value).ForEach(listOfRoutes => allRoutes.AddRange(listOfRoutes));
+            if (allRoutes.Count != 2) throw new NotImplementedException("Currently only mixing two droplets is supported.");
+            Dictionary<string, float> dropletConcentrations1  = allRoutes[0].routedDroplet.GetFluidConcentrations();
+            Dictionary<string, float> dropletConcentrations2  = allRoutes[1].routedDroplet.GetFluidConcentrations();
+
+            HashSet<string> allFluidParts = dropletConcentrations1.Keys.Union(dropletConcentrations2.Keys).ToHashSet();
+            foreach (var fluidName in allFluidParts)
+            {
+                dropletConcentrations1.TryGetValue(fluidName, out float concentration1);
+                dropletConcentrations2.TryGetValue(fluidName, out float concentration2);
+
+                float sumOfConcetrations = concentration1 + concentration2;
+
+                BoundModule.GetOutputLayout().Droplets[0].FluidConcentrations[fluidName] = sumOfConcetrations / 2;
+                BoundModule.GetOutputLayout().Droplets[1].FluidConcentrations[fluidName] = sumOfConcetrations / 2;
+            }
+
         }
     }
 }

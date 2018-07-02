@@ -12,6 +12,8 @@ namespace BiolyCompiler.Commands
         REMOVE_AREA,
         SENSOR_START,
         SENSOR_STOP,
-        SET_HEATER
+        SET_HEATER,
+        START_EXECUTING_BLOCK,
+        STOP_EXECUTING_BLOCK
     }
 }

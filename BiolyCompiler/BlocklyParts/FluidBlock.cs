@@ -10,6 +10,7 @@ using System.Text;
 using MoreLinq;
 using BiolyCompiler.Exceptions.ParserExceptions;
 using BiolyCompiler.Exceptions;
+using BiolyCompiler.Graphs;
 
 namespace BiolyCompiler.BlocklyParts
 {
@@ -19,11 +20,16 @@ namespace BiolyCompiler.BlocklyParts
         public Module BoundModule = null;
         //The key is the input fluid name, see InputVariables.
         public Dictionary<string, List<Route>> InputRoutes = new Dictionary<string, List<Route>>();
+        //For garbage collection:
+        public Dictionary<string, List<Route>> WasteRoutes = new Dictionary<string, List<Route>>();
+
 
         public FluidBlock(bool canBeOutput, List<FluidInput> inputFluids, List<string> inputNumbers, string output, string id) : 
             base(canBeOutput, inputFluids, inputNumbers, output, id)
         {
         }
+
+        public abstract Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix);
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
@@ -71,6 +77,18 @@ namespace BiolyCompiler.BlocklyParts
         {
             int time = 0;
             List<Command> commands = new List<Command>();
+            
+            if (!(this is StaticBlock))
+            {
+                //show module on simulator
+                commands.Add(new AreaCommand(BoundModule.Shape, CommandType.SHOW_AREA, 0));
+            }
+
+            //add commands for waste routes. They must be before the other routes
+            foreach (List<Route> wasteRouteList in WasteRoutes.Values.OrderBy(routes => routes.First().startTime))
+            {
+                wasteRouteList.ForEach(route => commands.AddRange(route.ToCommands(ref time)));
+            }
 
             //add commands for the routes
             foreach (List<Route> routeList in InputRoutes.Values.OrderBy(routes => routes.First().startTime))
@@ -80,6 +98,12 @@ namespace BiolyCompiler.BlocklyParts
 
             //add commands for the module itself
             commands.AddRange(BoundModule.GetModuleCommands(ref time));
+
+            if (!(this is StaticBlock))
+            {
+                //remove module from simulator
+                commands.Add(new AreaCommand(BoundModule.Shape, CommandType.REMOVE_AREA, time));
+            }
 
             return commands;
         }
@@ -93,6 +117,18 @@ namespace BiolyCompiler.BlocklyParts
         {
             this.BoundModule = null;
             InputRoutes.Clear();
+            WasteRoutes.Clear();
+        }
+
+        public virtual void UpdateInternalDropletConcentrations()
+        {
+            List<Route> allRoutes = new List<Route>();
+            InputRoutes.Select(pair => pair.Value).ForEach(list => allRoutes.AddRange(list));
+            List<IDropletSource> dropletInputs = allRoutes.Select(route => route.routedDroplet).ToList();
+            for (int i = 0; i < dropletInputs.Count; i++)
+            {
+                BoundModule.GetOutputLayout().Droplets[i].SetFluidConcentrations(dropletInputs[i]);
+            }
         }
     }
 }
