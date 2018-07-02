@@ -20,12 +20,6 @@ namespace EvaluationProjectFramework
             {
                 Directory.CreateDirectory("unoptimizedPrograms");
             }
-            int[] numbers = new int[100];
-            for (int i = 0; i < 100; i++)
-            {
-                numbers[i] = i + 1;
-            }
-
 
             List<perf_data> unoptimizedDatas = new List<perf_data>();
             List<perf_data> optimizedDatas = new List<perf_data>();
@@ -33,7 +27,7 @@ namespace EvaluationProjectFramework
             int nameID = 0;
             Random random = new Random(15231);
             TestTools tools = new TestTools();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 2000; i++)
             {
                 try
                 {

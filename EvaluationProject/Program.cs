@@ -92,7 +92,7 @@ namespace EvaluationProject
                 }
                 catch (Exception e)
                 {
-                    Console.Write(e.Message + Environment.NewLine + e.StackTrace);
+                    //Console.Write(e.Message + Environment.NewLine + e.StackTrace);
                     i--;
                 }
 

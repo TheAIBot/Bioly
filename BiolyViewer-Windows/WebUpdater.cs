@@ -42,7 +42,7 @@ namespace BiolyViewer_Windows
                     bool optimizedCDFG = false;
                     if (Settings.CreateGraph)
                     {
-                        if (ProgramExecutor<string>.CanOptimizeCDFG(cdfg))
+                        if (ProgramExecutor<string>.CanOptimizeCDFG(cdfg) && Settings.EnableOptimizations)
                         {
                             int boardWidth = Settings.BoardWidth;
                             int boardHeight = Settings.BoardHeight;
