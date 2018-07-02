@@ -56,6 +56,8 @@ namespace BiolyCompiler
             List<(int, int, int, int)> oldRectangles = null;
             bool firstRun = true;
 
+            Dictionary<string, List<IDropletSource>> sumOutputtedDropelts = new Dictionary<string, List<IDropletSource>>();
+
             controlStack.Push(null);
             scopedVariables.Push(new List<string>());
 
@@ -78,6 +80,7 @@ namespace BiolyCompiler
                 Dictionary<string, List<IDropletSource>> outputtedDroplets;
                 (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules, out outputtedDroplets, EnableGarbageCollection);
 
+
                 List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
                 bool[] usedElectrodes = GetusedElectrodes(width, height, commandTimeline, EnableSparseElectrodes);
 
@@ -95,7 +98,18 @@ namespace BiolyCompiler
                     runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, dropPositions));
 
                     HashSet<string> fluidVariablesBefore = dropPositions.Keys.ToHashSet();
-                    (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules, out _, EnableGarbageCollection);
+                    (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules, out Dictionary<string, List<IDropletSource>> outputtedDroplets, EnableGarbageCollection);
+                    foreach (var item in outputtedDroplets)
+                    {
+                        if (sumOutputtedDropelts.ContainsKey(item.Key))
+                        {
+                            sumOutputtedDropelts[item.Key].AddRange(item.Value);
+                        }
+                        else
+                        {
+                            sumOutputtedDropelts.Add(item.Key, item.Value);
+                        }
+                    }
                     HashSet<string> fluidVariablesAfter = dropPositions.Keys.ToHashSet();
                     scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
@@ -122,6 +136,8 @@ namespace BiolyCompiler
                     runningGraph.Nodes.ForEach(x => x.value.Reset());
                     runningGraph = GetNextGraph(graph, runningGraph, Executor, variables, controlStack, scopedVariables, dropPositions);
                 }
+
+                Executor.UpdateDropletData(sumOutputtedDropelts.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
             }
         }
 
