@@ -144,12 +144,12 @@ namespace BiolyCompiler
         private static bool[] GetusedElectrodes(int width, int height, List<Command>[] commandTimeline, bool enableSparseElectrodes)
         {
             bool[] usedElectrodes = new bool[width * height];
-            for (int i = 0; i < usedElectrodes.Length; i++)
-            {
-                usedElectrodes[i] = false;
-            }
             if (enableSparseElectrodes)
             {
+                for (int i = 0; i < usedElectrodes.Length; i++)
+                {
+                    usedElectrodes[i] = false;
+                }
                 foreach (List<Command> commands in commandTimeline)
                 {
                     if (commands == null)
@@ -165,6 +165,13 @@ namespace BiolyCompiler
                             usedElectrodes[command.Y * width + command.X] = true;
                         }
                     }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < usedElectrodes.Length; i++)
+                {
+                    usedElectrodes[i] = true;
                 }
             }
 
