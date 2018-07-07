@@ -114,7 +114,8 @@ namespace BiolyViewer_Windows
             }
 
             string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
-            Browser.ExecuteScriptAsync($"startBlockly({allPrograms});");
+            string startBlockly = $"startBlockly({allPrograms});";
+            Browser.ExecuteScriptAsync(startBlockly);
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
