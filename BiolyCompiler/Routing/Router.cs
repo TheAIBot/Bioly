@@ -81,8 +81,10 @@ namespace BiolyCompiler.Routing
                                                        .Where(rectangle => rectangle.isEmpty)
                                                        .ToHashSet();
 
-            foreach (var outsideRectangle in outsideEmptyRectangle) {
-                foreach (var insideRectangle in layoutEmptyRectangles) {
+            foreach (var outsideRectangle in outsideEmptyRectangle)
+            {
+                foreach (var insideRectangle in layoutEmptyRectangles)
+                {
                     outsideRectangle.ConnectIfAdjacent(insideRectangle);
                 }
             }
@@ -111,8 +113,10 @@ namespace BiolyCompiler.Routing
             }
 
 
-            foreach (var outsideRectangle in outsideEmptyRectangle) {
-                foreach (var insideRectangle in duplicateLayoutEmptyRectangles) {
+            foreach (var outsideRectangle in outsideEmptyRectangle)
+            {
+                foreach (var insideRectangle in duplicateLayoutEmptyRectangles)
+                {
                     outsideRectangle.AdjacentRectangles.Remove(insideRectangle);
                     insideRectangle.AdjacentRectangles.Remove(outsideRectangle);
                 }
@@ -206,7 +210,13 @@ namespace BiolyCompiler.Routing
             //Dijkstras algorithm, based on the one seen on wikipedia.
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
             //and then inverts the route.
-            (var visitedNodes, var queue) = SetUpInitialDijsktraGraph(targetInput, board);
+            (int startingXPos, int startingYPos) = targetInput.GetMiddleOfSource();
+            bool[,] visitedNodes = new bool[board.width, board.heigth];
+            RoutingInformation source = new RoutingInformation(startingXPos, startingYPos, null, 0);
+            visitedNodes[startingXPos, startingYPos] = true;
+
+            Queue<RoutingInformation> queue = new Queue<RoutingInformation>();
+            queue.Enqueue(source);
 
             while (queue.Count > 0)
             {
@@ -214,12 +224,18 @@ namespace BiolyCompiler.Routing
                 Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
 
                 if (isUnreachableNode(currentNode))
+                {
                     throw new InternalRuntimeException("No route to the desired component could be found. Desired droplet type: " + targetInput.GetFluidType().FluidName);
+                }
                 else if (hasReachedTarget(moduleAtCurrentNode, currentNode)) //Have reached the desired target
+                {
                     return GetRouteFromSourceToTarget(currentNode, (IDropletSource)moduleAtCurrentNode, startTime);
+                }
                 //No collisions with other modules are allowed (except the starting module):
                 else if (hasCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
+                {
                     continue;
+                }
 
                 //go through all neighbors
                 UpdateAllNeighborPriorities(board, visitedNodes, queue, currentNode);
@@ -227,84 +243,38 @@ namespace BiolyCompiler.Routing
             //If no route was found:
             throw new InternalRuntimeException("No route to the desired component could be found");
         }
-
-        private static (Dictionary<RoutingInformation, RoutingInformation>, Queue<RoutingInformation>) SetUpInitialDijsktraGraph(IDropletSource targetInput, Board board)
-        {
-            //RoutingInformation[,] dijkstraGraph = createDijkstraGraph(board);
-            (int startingXPos, int startingYPos) = targetInput.GetMiddleOfSource();
-            //RoutingInformation source = dijkstraGraph[startingXPos, startingYPos];
-            RoutingInformation source = new RoutingInformation(startingXPos, startingYPos);
-            Dictionary<RoutingInformation, RoutingInformation> visistedNodes = new Dictionary<RoutingInformation, RoutingInformation>();
-            visistedNodes.Add(source,source);
-            source.distanceFromSource = 0;
-
-            Queue<RoutingInformation> queue = new Queue<RoutingInformation>();
-            queue.Enqueue(source);
-            return (visistedNodes, queue);
-        }
         
 
-        private static void UpdateAllNeighborPriorities(Board board, Dictionary<RoutingInformation, RoutingInformation> visistedNodes, Queue<RoutingInformation> queue, RoutingInformation currentNode)
+        private static void UpdateAllNeighborPriorities(Board board, bool[,] visistedNodes, Queue<RoutingInformation> queue, RoutingInformation currentNode)
         {
             if (0 < currentNode.x)
+            {
                 UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x - 1, currentNode.y);
+            }
             if (0 < currentNode.y)
+            {
                 UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x, currentNode.y - 1);
+            }
             if (currentNode.x < board.width - 1)
+            {
                 UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x + 1, currentNode.y);
+            }
             if (currentNode.y < board.heigth - 1)
+            {
                 UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x, currentNode.y + 1);
+            }
         }
 
-        private static void UpdateNeighborPriority(Queue<RoutingInformation> queue, RoutingInformation currentNode, Dictionary<RoutingInformation, RoutingInformation> visistedNodes, int neighborXPos, int neighborYPos)
+        private static void UpdateNeighborPriority(Queue<RoutingInformation> queue, RoutingInformation currentNode, bool[,] visistedNodes, int neighborXPos, int neighborYPos)
         {
-            RoutingInformation neighbor;
-            RoutingInformation newNeighborNode = new RoutingInformation(neighborXPos, neighborYPos);
-            if (visistedNodes.TryGetValue(newNeighborNode, out neighbor))
+            if (visistedNodes[neighborXPos, neighborYPos])
+            {
                 return; // A shorter path to the node has already been found.
-            else {
-                neighbor = newNeighborNode;
-                visistedNodes.Add(neighbor, neighbor);
             }
-            //Unit lenght distances, and thus the distance is incremented with a +1.
-            int distanceToNeighborFromCurrent = currentNode.distanceFromSource + 1;
-            if (distanceToNeighborFromCurrent < neighbor.distanceFromSource)
-            {
-                neighbor.distanceFromSource = distanceToNeighborFromCurrent;
-                neighbor.previous = currentNode;
-                queue.Enqueue(neighbor);
-            }
-        }
 
-        public List<Droplet> GetInternalDropletExstractionOrder(HeaterModule module)
-        {
-            List<Droplet> dropletRoutingOrder = new List<Droplet>();
-            ModuleLayout outputLayout = module.GetOutputLayout();
-            HashSet<Droplet> internalDroplets = outputLayout.Droplets.ToHashSet();
-            HashSet<Rectangle> internalEmptyRectangles = outputLayout.EmptyRectangles.ToHashSet();
-            HashSet<Rectangle> internalRectangles = new HashSet<Rectangle>(internalEmptyRectangles);
-            internalEmptyRectangles.UnionWith(internalDroplets.Select(droplet => droplet.Shape));
-            HashSet<Rectangle> outsideEmptyRectangle = module.Shape.AdjacentRectangles
-                                                       .Where(rectangle => rectangle.isEmpty)
-                                                       .ToHashSet();
-
-            foreach (var externalRectangle in outsideEmptyRectangle)
-                foreach (var internalRectangle in internalRectangles)
-                    externalRectangle.ConnectIfAdjacent(internalRectangle);
-            
-            //Breadth first seach, starting from the outside empty rectangles, to find the correct order of extraction:
-            
-
-
-            foreach (var externalRectangle in outsideEmptyRectangle)
-            {
-                foreach (var internalRectangle in internalRectangles)
-                {
-                    externalRectangle.AdjacentRectangles.Remove(internalRectangle);
-                    internalRectangle.AdjacentRectangles.Remove(externalRectangle);
-                }
-            }
-            return null;
+            RoutingInformation neighbor = new RoutingInformation(neighborXPos, neighborYPos, currentNode, currentNode.distanceFromSource + 1);
+            visistedNodes[neighborXPos, neighborYPos] = true;
+            queue.Enqueue(neighbor);
         }
 
         private static bool hasCollisionWithOtherModules(Module sourceModule, Module moduleAtCurrentNode)
@@ -336,15 +306,13 @@ namespace BiolyCompiler.Routing
             //Currently, the route ends at the edges of the droplets location: it will need to be routed to the middle:
             while (dropletMiddleX - routeInfo.x != 0)
             {
-                RoutingInformation nextPosition = new RoutingInformation(routeInfo.x + ((dropletMiddleX - routeInfo.x > 0) ? 1 : -1), routeInfo.y);
-                nextPosition.previous = routeInfo;
-                routeInfo = nextPosition;
+                int newX = routeInfo.x + ((dropletMiddleX - routeInfo.x > 0) ? 1 : -1);
+                routeInfo = new RoutingInformation(newX, routeInfo.y, routeInfo, 0);
             }
             while (dropletMiddleY - routeInfo.y != 0)
             {
-                RoutingInformation nextPosition = new RoutingInformation(routeInfo.x, routeInfo.y + ((dropletMiddleY - routeInfo.y > 0) ? 1 : -1));
-                nextPosition.previous = routeInfo;
-                routeInfo = nextPosition;
+                int newY = routeInfo.y + ((dropletMiddleY - routeInfo.y > 0) ? 1 : -1);
+                routeInfo = new RoutingInformation(routeInfo.x, newY, routeInfo, 0);
             }
             //Now the droplet is at the middle.
             List<RoutingInformation> routeNodes = new List<RoutingInformation>();
@@ -364,21 +332,6 @@ namespace BiolyCompiler.Routing
         {
             Route route = DetermineRouteToModule(haveReachedSpecifficModule(oldDropletPosition), newDropletPosition, newDropletPosition, board, startTime);
             return route;
-        }
-
-        private static RoutingInformation[,] createDijkstraGraph(Board board)
-        {
-            RoutingInformation[,] dijkstraGraph = new RoutingInformation[board.width, board.heigth];
-
-            for (int x = 0; x < dijkstraGraph.GetLength(0); x++)
-            {
-                for (int y = 0; y < dijkstraGraph.GetLength(1); y++)
-                {
-                    dijkstraGraph[x, y] = new RoutingInformation(x, y);
-                }
-            }
-
-            return dijkstraGraph;
         }
     }
 }

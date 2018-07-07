@@ -10,26 +10,24 @@ namespace BiolyCompiler.Routing
      */
     public class RoutingInformation
     {
-        public int distanceFromSource = Int32.MaxValue;
-        public RoutingInformation previous = null;
         public readonly int x;
         public readonly int y;
+        public readonly RoutingInformation previous;
+        public readonly int distanceFromSource;
 
-        public RoutingInformation(int x, int y)
+        public RoutingInformation(int x, int y, RoutingInformation prev, int distance)
         {
             this.x = x;
             this.y = y;
+            previous = prev;
+            distanceFromSource = distance;
         }
 
         public override bool Equals(object obj)
         {
             return  obj is RoutingInformation routingObject &&
-                    this.x == routingObject.x && this.y == routingObject.y;
-        }
-
-        public override int GetHashCode()
-        {
-            return (x + 1) * (y + 1);
+                    this.x == routingObject.x && 
+                    this.y == routingObject.y;
         }
     }
 }
