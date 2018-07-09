@@ -22,6 +22,9 @@ namespace BiolyTests.ScheduleTests
     [TestClass]
     public class TestSchedule
     {
+        [TestInitialize]
+        public void ClearWorkspace() => TestTools.ClearWorkspace();
+
         [TestMethod]
         public void TestRemoveOperation()
         {
@@ -412,6 +415,410 @@ namespace BiolyTests.ScheduleTests
             Assert.AreEqual(operationLast, schedule.ScheduledOperations[6]);
             Board lastBoard = schedule.boardAtDifferentTimes.ToList().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToList().Last();
             Assert.IsTrue(BiolyTests.PlacementTests.TestBoard.doAdjacencyGraphContainTheCorrectNodes(lastBoard));
+        }
+
+        [TestMethod]
+        public void TestScheduleOneSeqMixer()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddInputBlock("b", 10);
+            program.AddMixerSegment("c", "a", 1, false, "b", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(1, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Mixer);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 9);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoSeqMixers()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddInputBlock("b", 10);
+            program.AddMixerSegment("c", "a", 1, false, "b", 1, false);
+            program.AddMixerSegment("d", "c", 1, false, "b", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Mixer);
+            Assert.IsTrue(scheduledBlocks[1] is Mixer);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 2);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoSeqMixersOverrideName()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddInputBlock("b", 10);
+            program.AddMixerSegment("c", "a", 1, false, "b", 1, false);
+            program.AddMixerSegment("c", "c", 1, false, "b", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Mixer);
+            Assert.IsTrue(scheduledBlocks[1] is Mixer);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoParMixers()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddInputBlock("b", 10);
+            program.AddMixerSegment("c", "a", 1, false, "b", 1, false);
+            program.AddMixerSegment("d", "a", 1, false, "b", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Mixer);
+            Assert.IsTrue(scheduledBlocks[1] is Mixer);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 2);
+        }
+
+        [TestMethod]
+        public void TestScheduleOneSeqHeater()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddHeaterDeclarationBlock("b");
+            program.AddHeaterSegment("c", "b", 10, 27, "a", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(1, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is HeaterUsage);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoSeqHeaters()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddHeaterDeclarationBlock("b");
+            program.AddHeaterSegment("c", "b", 10, 27, "a", 1, false);
+            program.AddHeaterSegment("d", "b", 10, 27, "c", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is HeaterUsage);
+            Assert.IsTrue(scheduledBlocks[1] is HeaterUsage);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 0);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 1);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoSeqHeatersOverrideName()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddHeaterDeclarationBlock("b");
+            program.AddHeaterSegment("c", "b", 10, 27, "a", 1, false);
+            program.AddHeaterSegment("c", "b", 10, 27, "c", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is HeaterUsage);
+            Assert.IsTrue(scheduledBlocks[1] is HeaterUsage);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoParHeaters()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddHeaterDeclarationBlock("b");
+            program.AddHeaterSegment("c", "b", 10, 27, "a", 1, false);
+            program.AddHeaterSegment("d", "b", 10, 27, "a", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is HeaterUsage);
+            Assert.IsTrue(scheduledBlocks[1] is HeaterUsage);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 1);
+        }
+
+        [TestMethod]
+        public void TestScheduleOneSeqRenamer()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddFluidSegment("b", "a", 4, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(1, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Fluid);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 6);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 4);
+        }
+
+        [TestMethod]
+        public void TestScheduleOneSeqRenamersOverrideName()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddFluidSegment("b", "b", 1, true);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(1, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Fluid);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 10);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 0);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoSeqRenamers()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddFluidSegment("b", "a", 4, false);
+            program.AddFluidSegment("c", "b", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Fluid);
+            Assert.IsTrue(scheduledBlocks[1] is Fluid);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 6);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 3);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoParRenamers()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddFluidSegment("b", "a", 4, false);
+            program.AddFluidSegment("c", "a", 1, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Fluid);
+            Assert.IsTrue(scheduledBlocks[1] is Fluid);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 5);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 4);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+        }
+
+        [TestMethod]
+        public void TestScheduleOneSeqUnion()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddInputBlock("b", 10);
+            program.AddUnionSegment("c", "a", 1, false, "b", 3, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(1, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Union);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 4);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoSeqUnions()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddInputBlock("b", 10);
+            program.AddUnionSegment("c", "a", 1, false, "b", 3, false);
+            program.AddUnionSegment("d", "a", 1, false, "c", 2, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Union);
+            Assert.IsTrue(scheduledBlocks[1] is Union);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 3);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoSeqUnionsOverrideName()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddInputBlock("b", 10);
+            program.AddUnionSegment("c", "a", 1, false, "b", 3, false);
+            program.AddUnionSegment("c", "a", 1, false, "c", 2, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Union);
+            Assert.IsTrue(scheduledBlocks[1] is Union);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 3);
+        }
+
+        [TestMethod]
+        public void TestScheduleTwoParUnions()
+        {
+            JSProgram program = new JSProgram();
+            program.AddInputBlock("a", 10);
+            program.AddInputBlock("b", 10);
+            program.AddUnionSegment("c", "a", 1, false, "b", 3, false);
+            program.AddUnionSegment("d", "a", 1, false, "b", 2, false);
+            program.Finish();
+
+            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
+            Assert.AreEqual(0, exceptions.Count);
+
+            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            Assert.AreEqual(2, scheduledBlocks.Count);
+            Assert.IsTrue(scheduledBlocks[0] is Union);
+            Assert.IsTrue(scheduledBlocks[1] is Union);
+
+            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 5);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 4);
+            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 3);
+        }
+
+        private static Schedule ScheduleDFG(DFG<Block> dfg)
+        {
+            Assay assay = new Assay(dfg);
+            Board board = new Board(20, 20);
+            ModuleLibrary library = new ModuleLibrary();
+
+            Schedule schedule = new Schedule();
+            schedule.PlaceStaticModules(dfg.Nodes.Select(x => x.value).OfType<StaticDeclarationBlock>().ToList(), board, library);
+            schedule.ListScheduling(assay, board, library);
+            return schedule;
+        }
+
+        private static void CheckFluidInfo(Dictionary<string, BoardFluid> fluids, string fluidName, int expectedDroplets)
+        {
+            Assert.IsTrue(fluids.ContainsKey(fluidName));
+            Assert.AreEqual(fluids[fluidName].GetNumberOfDropletsAvailable(), expectedDroplets);
         }
     }
 }

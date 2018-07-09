@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Diagnostics;
 using System.Management;
+using BiolyCompiler.Parser;
+using BiolyCompiler.Graphs;
+using BiolyCompiler.Exceptions.ParserExceptions;
 
 namespace BiolyTests
 {
@@ -103,6 +106,15 @@ namespace BiolyTests
         {
             string xml = GetWorkspaceString();
             return StringToXmlBlock(xml);
+        }
+
+        public static (CDFG cdfg, List<ParseException> exceptions) ParseProgram(JSProgram program)
+        {
+            ExecuteJS(program);
+
+            string xml = GetWorkspaceString();
+            //Assert.Fail(xml);
+            return XmlParser.Parse(xml);
         }
 
         public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
