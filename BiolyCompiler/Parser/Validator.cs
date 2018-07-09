@@ -9,7 +9,7 @@ namespace BiolyCompiler.Parser
     public static class Validator
     {
         public const string INLINE_PROGRAM_SPECIAL_SEPARATOR = "#¤#";
-        public const string FLUID_ARRAY_SPECIAL_SEPARATOR = "@#@";
+        public const string FLUID_ARRAY_SPECIAL_SEPARATOR = "#@#";
         private const string SPECIAL_SEPARATORS = "(" + INLINE_PROGRAM_SPECIAL_SEPARATOR + "|" + FLUID_ARRAY_SPECIAL_SEPARATOR + ")";
 
         public static void ValueWithinRange(string id, float value, float min, float max)

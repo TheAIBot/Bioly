@@ -17,12 +17,12 @@ namespace BiolyCompiler
     {
         public static void makeDebugCorrectnessChecks(Board board, SimplePriorityQueue<FluidBlock> runningOperations, List<Module> usedModules)
         {
-            #if DEBUG
-                //Debug.WriteLine(board.print(usedModules));
-            #endif
-            checkAdjacencyMatrixCorrectness(board);
-            checkIsBoardPerfectlyPartitioned(board);
-            checkAllDropletsHasCorrectConcentrations(board);
+            //#if DEBUG
+            //    //Debug.WriteLine(board.print(usedModules));
+            //#endif
+            //checkAdjacencyMatrixCorrectness(board);
+            //checkIsBoardPerfectlyPartitioned(board);
+            //checkAllDropletsHasCorrectConcentrations(board);
         }
 
         private static void checkAllDropletsHasCorrectConcentrations(Board board)
@@ -73,8 +73,8 @@ namespace BiolyCompiler
 
         public static void checkAdjacencyMatrixCorrectness(Board board)
         {
-            if (!doAdjacencyGraphContainTheCorrectNodes(board))
-                throw new InternalRuntimeException("The boards adjacency graph does not match up with the placed modules and empty rectangles.");
+            //if (!doAdjacencyGraphContainTheCorrectNodes(board))
+            //    throw new InternalRuntimeException("The boards adjacency graph does not match up with the placed modules and empty rectangles.");
         }
 
 

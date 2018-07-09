@@ -80,7 +80,7 @@ namespace BiolyCompiler.Modules
             bool canBePlaced = board.FastTemplatePlace(module);
             if (!canBePlaced)
             {
-                Console.WriteLine(board.print(usedModules));
+                //Console.WriteLine(board.print(usedModules));
                 throw new RuntimeException("Module \"" + module.ToString() + "\" can't be placed");
             }
             //Now that the module has been placed, the internal rectangles in the module layout can be modified, such that they are placed correctly.

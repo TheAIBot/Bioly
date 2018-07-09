@@ -407,15 +407,17 @@ namespace BiolyTests
             random = random ?? new Random();
 
             Dictionary<string, int> droplets = new Dictionary<string, int>();
+            HashSet<string> inputNames = new HashSet<string>();
             List<string> outputModuleNames = new List<string>();
             List<string> heaterModuleNames = new List<string>();
 
             for (int i = 0; i < 5; i++)
             {
                 string fluidName = GetUniqueName();
-                int dropletCount = random.Next(10, 100);
+                int dropletCount = random.Next(100, 200);
                 AddInputBlock(fluidName, dropletCount);
                 droplets.Add(fluidName, dropletCount);
+                inputNames.Add(fluidName);
             }
 
             for (int i = 0; i < 5; i++)
@@ -431,22 +433,22 @@ namespace BiolyTests
                 heaterModuleNames.Add(moduleName);
             }
 
-            AddRandomBasicBlock(maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames);
+            AddRandomBasicBlock(maxBasicBlockSize, random, droplets, inputNames, outputModuleNames, heaterModuleNames);
 
             while (controlFlowCount > 0 && droplets.Count > 1)
             {
-                AddRandomControlFlow(ref controlFlowCount, maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames, JSProgram.DEFAULT_SCOPE_NAME);
+                AddRandomControlFlow(ref controlFlowCount, maxBasicBlockSize, random, droplets, inputNames, outputModuleNames, heaterModuleNames, JSProgram.DEFAULT_SCOPE_NAME);
             }
 
             if (droplets.Count > 1)
             {
-                AddRandomBasicBlock(maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames);
+                AddRandomBasicBlock(maxBasicBlockSize, random, droplets, inputNames, outputModuleNames, heaterModuleNames);
             }
 
             Finish();
         }
 
-        private string AddRandomBasicBlock(int maxBasicBlockSize, Random random, Dictionary<string, int> droplets, List<string> outputModuleNames, List<string> heaterModuleNames)
+        private string AddRandomBasicBlock(int maxBasicBlockSize, Random random, Dictionary<string, int> droplets, HashSet<string> inputNames, List<string> outputModuleNames, List<string> heaterModuleNames)
         {
             List<string> segmentNames = new List<string>();
             int segmentsCount = random.Next(maxBasicBlockSize / 3, maxBasicBlockSize);
@@ -459,7 +461,8 @@ namespace BiolyTests
                 
                 string[] dropletNames = droplets.Keys.ToArray();
 
-                string outputFluidName = random.Next(4) == 27 ? dropletNames[random.Next(dropletNames.Length)] : GetUniqueName();
+                string[] dropletNamesNoInputs = dropletNames.Except(inputNames).ToArray();
+                string outputFluidName = random.Next(4) == 0 && dropletNamesNoInputs.Length > 0 ? dropletNamesNoInputs[random.Next(dropletNamesNoInputs.Length)] : GetUniqueName();
 
                 string firstInputName = dropletNames[random.Next(dropletNames.Length)];
                 string secondInputName = dropletNames.Where(x => x != firstInputName).ToArray()[random.Next(dropletNames.Length - 1)];
@@ -477,7 +480,7 @@ namespace BiolyTests
                         {
                             string heaterModule = heaterModuleNames[random.Next(heaterModuleNames.Count)];
                             droplets[firstInputName] -= 1;
-                            segmentNames.Add(AddHeaterSegment(outputFluidName, heaterModule, 100, random.Next(0, 1000), firstInputName, 1, false));
+                            segmentNames.Add(AddHeaterSegment(outputFluidName, heaterModule, 0, random.Next(0, 1000), firstInputName, 1, false));
 
                             if (droplets.ContainsKey(outputFluidName))
                             {
@@ -553,7 +556,7 @@ namespace BiolyTests
             return segmentNames.First();
         }
 
-        private void AddRandomControlFlow(ref int controlFlowCount, int maxBasicBlockSize, Random random, Dictionary<string, int> droplets, List<string> outputModuleNames, List<string> heaterModuleNames, string prevScopeName)
+        private void AddRandomControlFlow(ref int controlFlowCount, int maxBasicBlockSize, Random random, Dictionary<string, int> droplets, HashSet<string> inputNames, List<string> outputModuleNames, List<string> heaterModuleNames, string prevScopeName)
         {
             while (controlFlowCount > 0)
             {
@@ -568,7 +571,7 @@ namespace BiolyTests
                 AddScope(scopeName);
                 SetScope(scopeName);
                 Dictionary<string, int> scopedDroplets = droplets.ToDictionary();
-                string guardedBlock = AddRandomBasicBlock(maxBasicBlockSize, random, scopedDroplets, outputModuleNames, heaterModuleNames);
+                string guardedBlock = AddRandomBasicBlock(maxBasicBlockSize, random, scopedDroplets, inputNames, outputModuleNames, heaterModuleNames);
                 foreach (string fluidName in droplets.Keys.ToArray())
                 {
                     if (scopedDroplets.ContainsKey(fluidName))
@@ -582,11 +585,11 @@ namespace BiolyTests
                 }
                 if (controlFlowCount > 0 && random.Next(2) == 0)
                 {
-                    AddRandomControlFlow(ref controlFlowCount, maxBasicBlockSize, random, droplets, outputModuleNames, heaterModuleNames, scopeName);
+                    AddRandomControlFlow(ref controlFlowCount, maxBasicBlockSize, random, droplets, inputNames, outputModuleNames, heaterModuleNames, scopeName);
                 }
                 SetScope(prevScopeName);
 
-                switch (random.Next(1))
+                switch (random.Next(2))
                 {
                     case 0:
                         {
@@ -599,7 +602,7 @@ namespace BiolyTests
                         }
                     case 1:
                         {
-                            string conditionalBlock = AddConstantBlock(random.Next(11));
+                            string conditionalBlock = AddConstantBlock(random.Next(1, 4));
                             AddRepeatSegment(conditionalBlock, guardedBlock);
                             break;
                         }

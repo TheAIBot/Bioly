@@ -10,7 +10,7 @@ namespace BiolyCompiler.Modules
     {
         private BoardFluid FluidType;
         public readonly int Capacity;
-        public Dictionary<string, double> FluidConcentrations = new Dictionary<string, double>();
+        public Dictionary<string, float> FluidConcentrations = new Dictionary<string, float>();
         public int DropletCount { get; private set; }
 
         public InputModule(BoardFluid fluidType, int capacity) : base(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0, 1, null)
@@ -76,7 +76,7 @@ namespace BiolyCompiler.Modules
             fluidType.dropletSources.Add(this);
         }
 
-        public Dictionary<string, double> GetFluidConcentrations()
+        public Dictionary<string, float> GetFluidConcentrations()
         {
             return FluidConcentrations;
         }

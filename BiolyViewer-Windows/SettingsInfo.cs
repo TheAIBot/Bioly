@@ -25,6 +25,7 @@ namespace BiolyViewer_Windows
         private const string CREATE_GRAPH_SETTING_NAME = "createGraphSettingSetting";
         private const string ENABLE_OPTIMIZATIONS_SETTING_NAME = "enableOptimizationsSetting";
         private const string ENABLE_GC_SETTING_NAME = "enableGCSetting";
+        private const string ENABLE_SPARSE_BOARD_SETTING_NAME = "enableSparseBoardSetting";
 
         public Dictionary<string, object> Settings = new Dictionary<string, object>();
 
@@ -40,6 +41,7 @@ namespace BiolyViewer_Windows
         public bool CreateGraph => (bool)Settings[CREATE_GRAPH_SETTING_NAME];
         public bool EnableOptimizations => (bool)Settings[ENABLE_OPTIMIZATIONS_SETTING_NAME];
         public bool EnableGC => (bool)Settings[ENABLE_GC_SETTING_NAME];
+        public bool EnableSparseBoard => (bool)Settings[ENABLE_SPARSE_BOARD_SETTING_NAME];
 
         public SettingsInfo()
         {
@@ -56,6 +58,7 @@ namespace BiolyViewer_Windows
             Settings.Add(CREATE_GRAPH_SETTING_NAME             , true);
             Settings.Add(ENABLE_OPTIMIZATIONS_SETTING_NAME     , true);
             Settings.Add(ENABLE_GC_SETTING_NAME                , true);
+            Settings.Add(ENABLE_SPARSE_BOARD_SETTING_NAME      , false);
         }
 
         public void LoadSettings(string path)

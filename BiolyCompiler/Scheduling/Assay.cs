@@ -23,7 +23,8 @@ namespace BiolyCompiler.Scheduling
         //only one operation must be there at a time, and only when the heater is not in use.
         public Dictionary<string, (bool, SimplePriorityQueue<Block, int>)> StaticModuleOperations = new Dictionary<string, (bool, SimplePriorityQueue<Block, int>)>();
 
-        public Assay(DFG<Block> dfg){
+        public Assay(DFG<Block> dfg)
+        {
             this.Dfg = dfg;
             CalculateCriticalPath(); //Giving the nodes the correct priority.
             //Set ready nodes
@@ -58,7 +59,8 @@ namespace BiolyCompiler.Scheduling
                 {
                     usedHeaterModules.Add(heaterOperation.ModuleName);
                     StaticModuleOperations[heaterOperation.ModuleName].Item2.Enqueue(heaterOperation, heaterOperation.priority);
-                } else ReadyOperations.Enqueue(operation, operation.priority);
+                }
+                else ReadyOperations.Enqueue(operation, operation.priority);
             }
 
             //Only one operation for each static module must be in ReadyOperations at the same time:
@@ -73,7 +75,8 @@ namespace BiolyCompiler.Scheduling
             }
         }
 
-        private void CalculateCriticalPath(){
+        private void CalculateCriticalPath()
+        {
             //Inverting is necessary for the correct calculations:
             Dfg.InvertEdges();
             //Its a DAG, so a topological sorting exists:
@@ -129,27 +132,30 @@ namespace BiolyCompiler.Scheduling
 
         }
 
-        private List<Node<Block>> GetTopologicalSortedDFG(DFG<Block> dfg) {
+        private List<Node<Block>> GetTopologicalSortedDFG(DFG<Block> dfg)
+        {
             //Can be done in O(n+m) time. A simpler algorithm will however be used here.
             //No real reason to use a stack except for the easy .pop method. Could be a list.
-            Stack<Node<Block>>              nodesWithDegree0 = new Stack<Node<Block>>();
-            List<(Node<Block>, int)>        nodesAndDegree      = new List<(Node<Block>, int)>();
-            List<Node<Block>>               topologicalSorting  = new List<Node<Block>>();
+            Stack<Node<Block>> nodesWithDegree0 = new Stack<Node<Block>>();
+            List<(Node<Block>, int)> nodesAndDegree = new List<(Node<Block>, int)>();
+            List<Node<Block>> topologicalSorting = new List<Node<Block>>();
             //Works on basis of the pointers, which is what is desired:
-            Dictionary<Node<Block>, int>    nodeToIndex         = new Dictionary<Node<Block>, int>();
-            
+            Dictionary<Node<Block>, int> nodeToIndex = new Dictionary<Node<Block>, int>();
 
-            foreach (var node in dfg.Nodes) {
+
+            foreach (var node in dfg.Nodes)
+            {
                 nodeToIndex.Add(node, nodesAndDegree.Count());
                 nodesAndDegree.Add((node, node.GetIngoingEdges().Count()));
-                if (node.GetIngoingEdges().Count() == 0) {
+                if (node.GetIngoingEdges().Count() == 0)
+                {
                     nodesWithDegree0.Push(node);
                 }
             }
 
             //One by one adding the nodes to the topological sorting,
             //by one by one removing the vertices with degree 0.
-            while(nodesWithDegree0.Count() > 0)
+            while (nodesWithDegree0.Count() > 0)
             {
                 var currentNode = nodesWithDegree0.Pop();
                 topologicalSorting.Add(currentNode);
@@ -159,7 +165,8 @@ namespace BiolyCompiler.Scheduling
                     int indexOfNode = nodeToIndex[node];
                     (_, int ingoingEdgeCount) = nodesAndDegree[indexOfNode];
                     nodesAndDegree[indexOfNode] = (node, ingoingEdgeCount - 1);
-                    if (ingoingEdgeCount - 1 == 0) {
+                    if (ingoingEdgeCount - 1 == 0)
+                    {
                         nodesWithDegree0.Push(node);
                     }
                 }
@@ -167,17 +174,18 @@ namespace BiolyCompiler.Scheduling
             }
 
             //Checking for errors in the code:
-            if (topologicalSorting.Count != Dfg.Nodes.Count)    throw new Exception("Logic error: not all nodes are included in the topological sorting. Expected " + Dfg.Nodes.Count + " and has" + topologicalSorting.Count());
-            if (!nodesAndDegree.All(pair => pair.Item2 == 0))   throw new Exception("Logic error: some nodes do not have degree 0 when adding them to the topological sorting");
+            if (topologicalSorting.Count != Dfg.Nodes.Count) throw new Exception("Logic error: not all nodes are included in the topological sorting. Expected " + Dfg.Nodes.Count + " and has" + topologicalSorting.Count());
+            if (!nodesAndDegree.All(pair => pair.Item2 == 0)) throw new Exception("Logic error: some nodes do not have degree 0 when adding them to the topological sorting");
 
 
             return topologicalSorting;
         }
-        
-        public SimplePriorityQueue<Block, int> GetReadyOperations(){
+
+        public SimplePriorityQueue<Block, int> GetReadyOperations()
+        {
             return ReadyOperations;
         }
-        
+
         public void UpdateReadyOperations(Block operation)
         {
             //If it has already been registred as finished, then ignore the operation:

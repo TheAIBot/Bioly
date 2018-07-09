@@ -39,23 +39,28 @@ namespace BiolyViewer_Windows
                 if (exceptions.Count == 0)
                 {
                     string js = String.Empty;
+                    bool optimizedCDFG = false;
                     if (Settings.CreateGraph)
                     {
-                        if (ProgramExecutor<string>.CanOptimizeCDFG(cdfg))
+                        if (ProgramExecutor<string>.CanOptimizeCDFG(cdfg) && Settings.EnableOptimizations)
                         {
                             int boardWidth = Settings.BoardWidth;
                             int boardHeight = Settings.BoardHeight;
+
                             CDFG newCdfg = new CDFG();
                             cancelSource?.Cancel();
+
                             cancelSource = new CancellationTokenSource();
-                            CancellationToken token = cancelSource.Token;
-                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg, token, Settings.EnableGC));
+                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG(boardWidth, boardHeight, cdfg, cancelSource.Token, Settings.EnableGC));
+
                             if (cancelSource.IsCancellationRequested)
                             {
                                 return;
                             }
+
                             cdfg = newCdfg;
                             cdfg.StartDFG = cdfg.Nodes.First().dfg;
+                            optimizedCDFG = true;
                         }
                         (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
                         js = $"setGraph({nodes}, {edges});";
@@ -63,7 +68,7 @@ namespace BiolyViewer_Windows
                     js += $"ClearErrors();";
                     Browser.ExecuteScriptAsync(js);
 
-                    RunSimulator(xml);
+                    RunSimulator(cdfg, optimizedCDFG);
                 }
                 else
                 {
@@ -92,7 +97,7 @@ namespace BiolyViewer_Windows
         object simulatorLocker = new object();
         ProgramExecutor<string> CurrentlyExecutionProgram = null;
 
-        private void RunSimulator(string xml)
+        private void RunSimulator(CDFG cdfg, bool alreadyOptimized)
         {
             lock (simulatorLocker)
             {
@@ -115,8 +120,9 @@ namespace BiolyViewer_Windows
                             CurrentlyExecutionProgram.ShowEmptyRectangles = Settings.ShowEmptyRectangles;
                             CurrentlyExecutionProgram.EnableOptimizations = Settings.EnableOptimizations;
                             CurrentlyExecutionProgram.EnableGarbageCollection = Settings.EnableGC;
+                            CurrentlyExecutionProgram.EnableSparseElectrodes = Settings.EnableSparseBoard;
 
-                            CurrentlyExecutionProgram.Run(boardWidth, boardHeight, xml);
+                            CurrentlyExecutionProgram.Run(boardWidth, boardHeight, cdfg, alreadyOptimized);
                         }
                     }
                     catch (InternalRuntimeException e)
