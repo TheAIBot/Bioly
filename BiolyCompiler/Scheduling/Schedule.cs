@@ -188,35 +188,33 @@ namespace BiolyCompiler.Scheduling
 
             foreach (Block nextOperation in assay)
             {
-                if (IsSpecialCaseOperation(nextOperation))
+                switch (nextOperation)
                 {
-                    (currentTime, board) = HandleSpecialCases(assay, board, currentTime, nextOperation);
+                    case VariableBlock varBlock:
+                        HandleVariableOperation(currentTime, varBlock);
+                        assay.UpdateReadyOperations(varBlock);
+                        break;
+                    case Union unionBlock:
+                        (currentTime, board) = HandleUnionOperation(assay, board, currentTime, unionBlock);
+                        assay.UpdateReadyOperations(unionBlock);
+                        break;
+                    case StaticDeclarationBlock decBlock:
+                        assay.UpdateReadyOperations(decBlock);
+                        break;
+                    case Fluid renameBlock:
+                        (currentTime, board) = HandleFluidTransfers(assay, board, currentTime, renameBlock);
+                        assay.UpdateReadyOperations(renameBlock);
+                        break;
+                    case SetArrayFluid arrayRenameBlock:
+                        (currentTime, board) = HandleFluidTransfers(assay, board, currentTime, arrayRenameBlock);
+                        assay.UpdateReadyOperations(arrayRenameBlock);
+                        break;
+                    case FluidBlock fluidBlock:
+                        currentTime = HandleFluidOperations(board, library, currentTime, fluidBlock);
+                        break;
+                    default:
+                        throw new InternalRuntimeException("The given block/operation type is unhandeled by the scheduler. " + Environment.NewLine + "The operation is: " + nextOperation.ToString());
                 }
-                else if (nextOperation is FluidBlock topPriorityOperation)
-                {
-                    //If nextOperation is associated with a static module, 
-                    //this needs to be chosen as the module to execute the operation.
-                    //Else a module that can execute the operation needs to be found and placed on the board:
-                    Module operationExecutingModule = (topPriorityOperation is StaticUseageBlock staticOperation) ?
-                                                       StaticModules[staticOperation.ModuleName] :
-                                                       library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board, AllUsedModules);
-                    topPriorityOperation.Bind(operationExecutingModule, FluidVariableLocations);
-
-                    //For debuging:
-                    if (!(topPriorityOperation is StaticUseageBlock)) AllUsedModules.Add(operationExecutingModule);
-                    DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-
-                    //If the module can't be placed, one must wait until there is enough space for it:
-                    if (operationExecutingModule == null) throw new RuntimeException("Not enough space for a module: this is not handeled yet");
-
-                    //Now all the droplet that the module should operate on, needs to be delivered to it.
-                    //By construction, there will be a route from the droplets to the module, 
-                    //and so it will always be possible for this routing to be done:
-                    currentTime = RouteDropletsToModuleAndUpdateSchedule(board, currentTime, topPriorityOperation, operationExecutingModule);
-                    DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                }
-                else throw new InternalRuntimeException("The given block/operation type is unhandeled by the scheduler. " +
-                                         "The operation is: " + nextOperation.ToString());
 
                 //When operations finishes, while the routing associated with nextOperation was performed, 
                 //this needs to be handled. Note that handleFinishingOperations will also wait for operations to finish, 
@@ -224,9 +222,34 @@ namespace BiolyCompiler.Scheduling
                 (currentTime, board) = HandleFinishingOperations(nextOperation, currentTime, assay, board);
                 DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             }
-
+            
             SortScheduledOperations();
             return GetCompletionTime();
+        }
+
+        private int HandleFluidOperations(Board board, ModuleLibrary library, int currentTime, FluidBlock topPriorityOperation)
+        {
+            //If nextOperation is associated with a static module, 
+            //this needs to be chosen as the module to execute the operation.
+            //Else a module that can execute the operation needs to be found and placed on the board:
+            Module operationExecutingModule = (topPriorityOperation is StaticUseageBlock staticOperation) ?
+                                               StaticModules[staticOperation.ModuleName] :
+                                               library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board, AllUsedModules);
+            topPriorityOperation.Bind(operationExecutingModule, FluidVariableLocations);
+
+            //For debuging:
+            if (!(topPriorityOperation is StaticUseageBlock)) AllUsedModules.Add(operationExecutingModule);
+            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+
+            //If the module can't be placed, one must wait until there is enough space for it:
+            if (operationExecutingModule == null) throw new RuntimeException("Not enough space for a module: this is not handeled yet");
+
+            //Now all the droplet that the module should operate on, needs to be delivered to it.
+            //By construction, there will be a route from the droplets to the module, 
+            //and so it will always be possible for this routing to be done:
+            currentTime = RouteDropletsToModuleAndUpdateSchedule(board, currentTime, topPriorityOperation, operationExecutingModule);
+            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+            return currentTime;
         }
 
         private void SortScheduledOperations()
@@ -365,41 +388,6 @@ namespace BiolyCompiler.Scheduling
 
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
             return (currentTime, board);
-        }
-
-        private (int, Board) HandleSpecialCases(Assay assay, Board board, int currentTime, Block nextOperation)
-        {
-            if (nextOperation is VariableBlock)
-            {
-                HandleVariableOperation(currentTime, nextOperation);
-                assay.UpdateReadyOperations(nextOperation);
-            }
-            else if (nextOperation is Union)
-            {
-                (currentTime, board) = HandleUnionOperation(assay, board, currentTime, (Union)nextOperation);
-                assay.UpdateReadyOperations(nextOperation);
-            }
-            else if (nextOperation is StaticDeclarationBlock)
-            {
-                assay.UpdateReadyOperations(nextOperation);
-            }
-            else if (nextOperation is Fluid || nextOperation is SetArrayFluid)
-            {
-                (currentTime, board) = HandleFluidTransfers(assay, board, currentTime, (FluidBlock)nextOperation);
-                assay.UpdateReadyOperations(nextOperation);
-            }
-            else throw new InternalRuntimeException("An operation has been categorized as a special operation, but it is not handeled. " +
-                                     "The operation is: " + nextOperation.ToString());
-            return (currentTime, board);
-        }
-
-        public static bool IsSpecialCaseOperation(Block nextOperation)
-        {
-            return (nextOperation is VariableBlock || 
-                    nextOperation is Union || 
-                    nextOperation is StaticDeclarationBlock || 
-                    nextOperation is Fluid ||
-                    nextOperation is SetArrayFluid);
         }
 
         private int RouteDropletsToModuleAndUpdateSchedule(Board board, int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)

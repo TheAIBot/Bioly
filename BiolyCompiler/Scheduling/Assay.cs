@@ -9,6 +9,7 @@ using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using MoreLinq;
 using System.Collections;
+using BiolyCompiler.BlocklyParts.Arrays;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -107,7 +108,11 @@ namespace BiolyCompiler.Scheduling
                 {
                     currentNodeExecutionTime = 2; //100.000.000
                 }
-                else if (!Schedule.IsSpecialCaseOperation(currentNode.value) && !(currentNode.value is StaticUseageBlock))
+                else if (!(currentNode.value is VariableBlock ||
+                           currentNode.value is Union ||
+                           currentNode.value is StaticDeclarationBlock ||
+                           currentNode.value is Fluid ||
+                           currentNode.value is SetArrayFluid) && !(currentNode.value is StaticUseageBlock))
                 {
                     currentNodeExecutionTime = ((FluidBlock)currentNode.value).getAssociatedModule().OperationTime; //Operation involving a module with an execution time.
                 }
