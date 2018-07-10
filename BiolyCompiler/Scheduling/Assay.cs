@@ -8,20 +8,21 @@ using BiolyCompiler.Modules;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
 using MoreLinq;
+using System.Collections;
 
 namespace BiolyCompiler.Scheduling
 {
 
-    public class Assay
+    public class Assay : IEnumerable<Block>
     {
-        public DFG<Block> Dfg;
+        private DFG<Block> Dfg;
         private Dictionary<Block, Node<Block>> OperationToNode = new Dictionary<Block, Node<Block>>();
-        public SimplePriorityQueue<Block, int> ReadyOperations = new SimplePriorityQueue<Block, int>();
-        public Dictionary<string, Module> StaticModules { get; private set; }
+        private SimplePriorityQueue<Block, int> ReadyOperations = new SimplePriorityQueue<Block, int>();
+        private Dictionary<string, Module> StaticModules;
         //For each static module, it contains a priority queue of the ready operations associated with the module,
         //and a bool of whether or not ReadyOperations contains one of those operations, or if the heater is in use: 
         //only one operation must be there at a time, and only when the heater is not in use.
-        public Dictionary<string, (bool, SimplePriorityQueue<Block, int>)> StaticModuleOperations = new Dictionary<string, (bool, SimplePriorityQueue<Block, int>)>();
+        private Dictionary<string, (bool, SimplePriorityQueue<Block, int>)> StaticModuleOperations = new Dictionary<string, (bool, SimplePriorityQueue<Block, int>)>();
 
         public Assay(DFG<Block> dfg)
         {
@@ -88,7 +89,9 @@ namespace BiolyCompiler.Scheduling
             //Below the lenght of the longest paths are calculated, in the inverted dfg:
 
             for (int i = 0; i < topologicalSorting.Count; i++)
+            {
                 nodeToIndex.Add(topologicalSorting[i], i);
+            }
 
 
             for (int i = 0; i < topologicalSorting.Count; i++)
@@ -126,7 +129,9 @@ namespace BiolyCompiler.Scheduling
                     }
                 }
             }
-            Dfg.Nodes.Select(node => node.value).Where(operation => operation is WasteUsage).ForEach(wasteUsage => wasteUsage.priority = -100000000);
+            Dfg.Nodes.Select(node => node.value)
+                     .Where(operation => operation is WasteUsage)
+                     .ForEach(wasteUsage => wasteUsage.priority = -100000000);
             //The dfg is inverted back to normal:
             Dfg.InvertEdges();
 
@@ -134,59 +139,23 @@ namespace BiolyCompiler.Scheduling
 
         private List<Node<Block>> GetTopologicalSortedDFG(DFG<Block> dfg)
         {
-            //Can be done in O(n+m) time. A simpler algorithm will however be used here.
-            //No real reason to use a stack except for the easy .pop method. Could be a list.
-            Stack<Node<Block>> nodesWithDegree0 = new Stack<Node<Block>>();
-            List<(Node<Block>, int)> nodesAndDegree = new List<(Node<Block>, int)>();
-            List<Node<Block>> topologicalSorting = new List<Node<Block>>();
-            //Works on basis of the pointers, which is what is desired:
-            Dictionary<Node<Block>, int> nodeToIndex = new Dictionary<Node<Block>, int>();
+            List<Node<Block>> topologicalSorted = new List<Node<Block>>();
+            List<Node<Block>> rank = new List<Node<Block>>();
+            rank.AddRange(dfg.Input);
 
-
-            foreach (var node in dfg.Nodes)
+            do
             {
-                nodeToIndex.Add(node, nodesAndDegree.Count());
-                nodesAndDegree.Add((node, node.GetIngoingEdges().Count()));
-                if (node.GetIngoingEdges().Count() == 0)
-                {
-                    nodesWithDegree0.Push(node);
-                }
-            }
+                topologicalSorted.AddRange(rank);
 
-            //One by one adding the nodes to the topological sorting,
-            //by one by one removing the vertices with degree 0.
-            while (nodesWithDegree0.Count() > 0)
-            {
-                var currentNode = nodesWithDegree0.Pop();
-                topologicalSorting.Add(currentNode);
-                foreach (var node in currentNode.getOutgoingEdges())
-                {
-                    //Decrease the ingoing edge count for the nodes that currenNode points to:
-                    int indexOfNode = nodeToIndex[node];
-                    (_, int ingoingEdgeCount) = nodesAndDegree[indexOfNode];
-                    nodesAndDegree[indexOfNode] = (node, ingoingEdgeCount - 1);
-                    if (ingoingEdgeCount - 1 == 0)
-                    {
-                        nodesWithDegree0.Push(node);
-                    }
-                }
+                rank = rank.SelectMany(x => x.getOutgoingEdges())
+                           .Distinct()
+                           .ToList();
+            } while (rank.Count > 0);
 
-            }
-
-            //Checking for errors in the code:
-            if (topologicalSorting.Count != Dfg.Nodes.Count) throw new Exception("Logic error: not all nodes are included in the topological sorting. Expected " + Dfg.Nodes.Count + " and has" + topologicalSorting.Count());
-            if (!nodesAndDegree.All(pair => pair.Item2 == 0)) throw new Exception("Logic error: some nodes do not have degree 0 when adding them to the topological sorting");
-
-
-            return topologicalSorting;
+            return topologicalSorted;
         }
 
-        public SimplePriorityQueue<Block, int> GetReadyOperations()
-        {
-            return ReadyOperations;
-        }
-
-        public void UpdateReadyOperations(Block operation)
+        private void UpdateReadyOperations(Block operation)
         {
             //If it has already been registred as finished, then ignore the operation:
             if (operation.IsDone) return;
@@ -237,14 +206,24 @@ namespace BiolyCompiler.Scheduling
             }
         }
 
-        public bool hasUnfinishedOperations()
-        {
-            return !OperationToNode.All(node => node.Key.IsDone || (node.Key is VariableBlock && !((VariableBlock)node.Key).CanBeScheduled));
-        }
-
         public void SetStaticModules(Dictionary<string, Module> staticModules)
         {
             this.StaticModules = staticModules;
+        }
+
+        public IEnumerator<Block> GetEnumerator()
+        {
+            while (ReadyOperations.Count > 0)
+            {
+                Block ready = ReadyOperations.Dequeue();
+                yield return ready;
+                UpdateReadyOperations(ready);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
