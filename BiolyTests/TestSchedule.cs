@@ -429,15 +429,18 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
+            List <Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(1, scheduledBlocks.Count);
             Assert.IsTrue(scheduledBlocks[0] is Mixer);
 
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 9);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -453,7 +456,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -464,6 +468,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 2);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -479,7 +485,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -489,6 +496,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -504,7 +513,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -515,6 +525,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 2);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -529,7 +541,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(1, scheduledBlocks.Count);
@@ -537,6 +550,8 @@ namespace BiolyTests.ScheduleTests
 
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -552,7 +567,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -562,6 +578,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 0);
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 1);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -577,7 +595,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -586,6 +605,8 @@ namespace BiolyTests.ScheduleTests
 
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -601,7 +622,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -611,6 +633,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 1);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -624,7 +648,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(1, scheduledBlocks.Count);
@@ -632,6 +657,8 @@ namespace BiolyTests.ScheduleTests
 
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 6);
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 4);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -645,7 +672,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(1, scheduledBlocks.Count);
@@ -653,6 +681,8 @@ namespace BiolyTests.ScheduleTests
 
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 10);
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 0);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -667,7 +697,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -677,6 +708,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 6);
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 3);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -691,7 +724,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -701,6 +735,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 5);
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 4);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -715,7 +751,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(1, scheduledBlocks.Count);
@@ -724,6 +761,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 4);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -739,7 +778,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -750,6 +790,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 3);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -765,7 +807,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -775,6 +818,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 3);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
         [TestMethod]
@@ -790,7 +835,8 @@ namespace BiolyTests.ScheduleTests
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             Assert.AreEqual(0, exceptions.Count);
 
-            Schedule scheduler = ScheduleDFG(cdfg.StartDFG);
+            var data = ScheduleDFG(cdfg.StartDFG);
+            Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(2, scheduledBlocks.Count);
@@ -801,9 +847,11 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 5);
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 4);
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 3);
+
+            VerifyDFGTimings(cdfg.StartDFG, data.time);
         }
 
-        private static Schedule ScheduleDFG(DFG<Block> dfg)
+        private static (Schedule scheduler, int time) ScheduleDFG(DFG<Block> dfg)
         {
             Assay assay = new Assay(dfg);
             Board board = new Board(20, 20);
@@ -811,14 +859,49 @@ namespace BiolyTests.ScheduleTests
 
             Schedule schedule = new Schedule();
             schedule.PlaceStaticModules(dfg.Nodes.Select(x => x.value).OfType<StaticDeclarationBlock>().ToList(), board, library);
-            schedule.ListScheduling(assay, board, library);
-            return schedule;
+            int time = schedule.ListScheduling(assay, board, library);
+            return (schedule, time);
         }
 
         private static void CheckFluidInfo(Dictionary<string, BoardFluid> fluids, string fluidName, int expectedDroplets)
         {
             Assert.IsTrue(fluids.ContainsKey(fluidName));
             Assert.AreEqual(fluids[fluidName].GetNumberOfDropletsAvailable(), expectedDroplets);
+        }
+
+        private static void VerifyDFGTimings(DFG<Block> dfg, int completionTime)
+        {
+            List<Node<Block>> rank = new List<Node<Block>>();
+            rank.AddRange(dfg.Input.Where(x => x.value is FluidBlock));
+
+            do
+            {
+                foreach (Node<Block> node in rank)
+                {
+                    if (node.value is StaticDeclarationBlock)
+                    {
+                        continue;
+                    }
+
+                    Assert.IsTrue(node.value.StartTime <= node.value.EndTime);
+                    Assert.IsTrue(node.value.EndTime <= completionTime);
+
+                    foreach (Node<Block> dependableNode in node.getOutgoingEdges())
+                    {
+                        if (!(dependableNode.value is FluidBlock))
+                        {
+                            continue;
+                        }
+
+                        Assert.IsTrue(node.value.EndTime <= dependableNode.value.StartTime);
+                    }
+                }
+
+                List<Node<Block>> newRank = rank.SelectMany(x => x.getOutgoingEdges())
+                                                .Where(x => x.value is FluidBlock)
+                                                .ToList();
+                rank = newRank;
+            } while (rank.Count > 0);
         }
     }
 }
