@@ -15,7 +15,7 @@ namespace BiolyCompiler.Scheduling
 
     public class Assay : IEnumerable<Block>
     {
-        private DFG<Block> Dfg;
+        public DFG<Block> Dfg;
         private Dictionary<Block, Node<Block>> OperationToNode = new Dictionary<Block, Node<Block>>();
         private SimplePriorityQueue<Block, int> ReadyOperations = new SimplePriorityQueue<Block, int>();
         private Dictionary<string, Module> StaticModules;
@@ -155,7 +155,7 @@ namespace BiolyCompiler.Scheduling
             return topologicalSorted;
         }
 
-        private void UpdateReadyOperations(Block operation)
+        public void UpdateReadyOperations(Block operation)
         {
             //If it has already been registred as finished, then ignore the operation:
             if (operation.IsDone) return;
@@ -211,13 +211,21 @@ namespace BiolyCompiler.Scheduling
             this.StaticModules = staticModules;
         }
 
+        public bool IsEmpty()
+        {
+            return ReadyOperations.Count == 0;
+        }
+
+        public SimplePriorityQueue<Block, int> GetReadyOperations()
+        {
+            return ReadyOperations;
+        }
+
         public IEnumerator<Block> GetEnumerator()
         {
             while (ReadyOperations.Count > 0)
             {
-                Block ready = ReadyOperations.Dequeue();
-                yield return ready;
-                UpdateReadyOperations(ready);
+                yield return ReadyOperations.Dequeue();
             }
         }
 

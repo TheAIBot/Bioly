@@ -227,12 +227,10 @@ namespace BiolyCompiler
                 scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
                 runningGraph.Nodes.ForEach(x => x.value.IsDone = false);
-                Assay fisk = new Assay(runningGraph);
 
-                var cake = fisk.GetReadyOperations();
-                while (cake.Count > 0)
+                Assay fisk = new Assay(runningGraph);
+                foreach (Block toCopy in fisk)
                 {
-                    Block toCopy = cake.Dequeue();
                     if (toCopy is FluidBlock fluidBlockToCopy)
                     {
                         if (!variablePostfixes.ContainsKey(toCopy.OriginalOutputVariable))
