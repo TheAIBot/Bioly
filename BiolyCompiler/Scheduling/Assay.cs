@@ -145,15 +145,17 @@ namespace BiolyCompiler.Scheduling
         private List<Node<Block>> GetTopologicalSortedDFG(DFG<Block> dfg)
         {
             List<Node<Block>> topologicalSorted = new List<Node<Block>>();
-            List<Node<Block>> rank = new List<Node<Block>>();
-            rank.AddRange(dfg.Input);
+            HashSet<Node<Block>> alreadyAdded = new HashSet<Node<Block>>();
+            List<Node<Block>> rank = dfg.Input;
 
             do
             {
                 topologicalSorted.AddRange(rank);
+                rank.ForEach(x => alreadyAdded.Add(x));
 
                 rank = rank.SelectMany(x => x.getOutgoingEdges())
                            .Distinct()
+                           .Except(alreadyAdded)
                            .ToList();
             } while (rank.Count > 0);
 
