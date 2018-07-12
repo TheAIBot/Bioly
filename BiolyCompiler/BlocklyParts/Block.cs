@@ -77,7 +77,8 @@ namespace BiolyCompiler.BlocklyParts
         {
             if (obj is Block blockObj)
             {
-                return blockObj.GetType() == this.GetType() && blockObj.OutputVariable == this.OutputVariable;
+                return blockObj.GetType() == this.GetType() && 
+                       blockObj.OutputVariable == this.OutputVariable;
             }
             return false;
         }

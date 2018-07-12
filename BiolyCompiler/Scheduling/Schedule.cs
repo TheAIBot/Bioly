@@ -133,49 +133,61 @@ namespace BiolyCompiler.Scheduling
 
         private (BoardFluid, int) RecordNewFluidType(string fluidName, Board board, int currentTime, FluidBlock operation)
         {
-            if (FluidVariableLocations.ContainsKey(fluidName))
+            //If there already are droplets associated with the fluid name
+            //they must be overwritten or moved to a waste module
+            if (FluidVariableLocations.TryGetValue(fluidName, out BoardFluid oldFluidType))
             {
-                //If there already are droplets associated with the fluid name, they must be overwritten, or moved to a waste module:
-                BoardFluid oldFluidType = FluidVariableLocations[fluidName];
-                List<IDropletSource> dropletSources = new List<IDropletSource>(oldFluidType.dropletSources);
                 if (SHOULD_DO_GARBAGE_COLLECTION)
                 {
-                    int numberOfDropletsToRoute = oldFluidType.GetNumberOfDropletsAvailable();
-                    WasteModule waste = (WasteModule) StaticModules[WASTE_MODULE_NAME];
-                    waste.GetInputLayout().Droplets[0].FakeSetFluidType(oldFluidType);
-                    Droplet dropletInput = waste.GetInputLayout().Droplets[0];
-
-                    List<Route> wasteRoutes = new List<Route>();
-                    for (int i = 0; i < numberOfDropletsToRoute; i++)
-                    {
-                        Route route = Router.RouteSingleDropletToModule(waste, board, currentTime, dropletInput);
-                        wasteRoutes.Add(route);
-                        //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
-                        //This will give an overhead of +1 for the operation starting time, for each droplet routed:
-                        currentTime = route.getEndTime() + 1;
-                    }
-                    if (wasteRoutes.Count > 0)
-                    {
-                        operation.WasteRoutes.Add(oldFluidType.FluidName, wasteRoutes);
-                    }
-                    DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+                    currentTime = DoGarbageCollection(board, currentTime, operation, oldFluidType);
                 }
                 else
                 {
-                    //This is done by changing their internal names,
-                    //so they can never be used in any operation later on.
-                    BoardFluid overwrittingFluidType = new BoardFluid(WASTE_FLUIDNAME_STRING);
-                    foreach (var dropletSource in dropletSources)
-                    {
-                        dropletSource.SetFluidType(overwrittingFluidType);
-                    }
-                }                
+                    DiscardDroplets(oldFluidType);
+                }
             }
+
             BoardFluid fluidType = new BoardFluid(fluidName);
             FluidVariableLocations[fluidName] = fluidType;
             return (fluidType, currentTime);
         }
-        
+
+        private static void DiscardDroplets(BoardFluid oldFluidType)
+        {
+            //This is done by changing their internal names,
+            //so they can never be used in any operation later on.
+            BoardFluid overwrittingFluidType = new BoardFluid(WASTE_FLUIDNAME_STRING);
+            List<IDropletSource> dropletSources = new List<IDropletSource>(oldFluidType.dropletSources);
+            foreach (var dropletSource in dropletSources)
+            {
+                dropletSource.SetFluidType(overwrittingFluidType);
+            }
+        }
+
+        private int DoGarbageCollection(Board board, int currentTime, FluidBlock operation, BoardFluid oldFluidType)
+        {
+            int numberOfDropletsToRoute = oldFluidType.GetNumberOfDropletsAvailable();
+            WasteModule waste = (WasteModule)StaticModules[WASTE_MODULE_NAME];
+            waste.GetInputLayout().Droplets[0].FakeSetFluidType(oldFluidType);
+            Droplet dropletInput = waste.GetInputLayout().Droplets[0];
+
+            List<Route> wasteRoutes = new List<Route>();
+            for (int i = 0; i < numberOfDropletsToRoute; i++)
+            {
+                Route route = Router.RouteSingleDropletToModule(waste, board, currentTime, dropletInput);
+                wasteRoutes.Add(route);
+                //The route is scheduled sequentially, so the end time of the current route (+1) should be the start of the next.
+                //This will give an overhead of +1 for the operation starting time, for each droplet routed:
+                currentTime = route.getEndTime() + 1;
+            }
+            if (wasteRoutes.Count > 0)
+            {
+                operation.WasteRoutes.Add(oldFluidType.FluidName, wasteRoutes);
+            }
+            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+            return currentTime;
+        }
+
         /**
             Implements/based on the list scheduling based algorithm found in 
             "Fault-tolerant digital microfluidic biochips - compilation and synthesis" page 72.
@@ -337,9 +349,11 @@ namespace BiolyCompiler.Scheduling
             BoardFluid targetFluidType;
             (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OriginalOutputVariable, board, currentTime, nextOperation);
 
-            BoardFluid inputFluid;
-            FluidVariableLocations.TryGetValue(input.OriginalFluidName, out inputFluid);
-            if (inputFluid == null) throw new InternalRuntimeException("Fluid of type \"" + input.OriginalFluidName + "\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
+            FluidVariableLocations.TryGetValue(input.OriginalFluidName, out BoardFluid inputFluid);
+            if (inputFluid == null)
+            {
+                throw new InternalRuntimeException($"Fluid of type \"{input.OriginalFluidName}\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
+            }
 
             (currentTime, board) = ExtractAndReassignDroplets(board, currentTime, nextOperation, requiredDroplets, targetFluidType, inputFluid);
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
@@ -348,10 +362,10 @@ namespace BiolyCompiler.Scheduling
             return (currentTime, board);
         }
 
-        private void HandleVariableOperation(int currentTime, Block nextOperation)
+        private void HandleVariableOperation(int currentTime, VariableBlock nextOperation)
         {
             //This is a mathematical operation, and it should be scheduled to run as soon as possible
-            if ((nextOperation as VariableBlock).CanBeScheduled)
+            if (nextOperation.CanBeScheduled)
             {
                 //This is a mathematical operation, and it should be scheduled to run as soon as possible
                 UpdateSchedule(nextOperation, currentTime, currentTime);
@@ -371,13 +385,17 @@ namespace BiolyCompiler.Scheduling
             BoardFluid intermediateFluidtype;
             (intermediateFluidtype, currentTime) = RecordNewFluidType(RENAME_FLUIDNAME_STRING, board, currentTime, nextOperation);
 
-            BoardFluid inputFluid1;
-            FluidVariableLocations.TryGetValue(input1.OriginalFluidName, out inputFluid1);
-            if (inputFluid1 == null) (inputFluid1, currentTime) = RecordNewFluidType(input1.OriginalFluidName, board, currentTime, nextOperation);
+            FluidVariableLocations.TryGetValue(input1.OriginalFluidName, out BoardFluid inputFluid1);
+            if (inputFluid1 == null)
+            {
+                (inputFluid1, currentTime) = RecordNewFluidType(input1.OriginalFluidName, board, currentTime, nextOperation);
+            }
 
-            BoardFluid inputFluid2;
-            FluidVariableLocations.TryGetValue(input2.OriginalFluidName, out inputFluid2);
-            if (inputFluid2 == null) (inputFluid2, currentTime) = RecordNewFluidType(input2.OriginalFluidName, board, currentTime, nextOperation);
+            FluidVariableLocations.TryGetValue(input2.OriginalFluidName, out BoardFluid inputFluid2);
+            if (inputFluid2 == null)
+            {
+                (inputFluid2, currentTime) = RecordNewFluidType(input2.OriginalFluidName, board, currentTime, nextOperation);
+            }
 
             (currentTime, board) = ExtractAndReassignDroplets(board, currentTime, nextOperation, requiredDroplets1, intermediateFluidtype, inputFluid1);
             (currentTime, board) = ExtractAndReassignDroplets(board, currentTime, nextOperation, requiredDroplets2, intermediateFluidtype, inputFluid2);

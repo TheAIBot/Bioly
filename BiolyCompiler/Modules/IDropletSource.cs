@@ -13,7 +13,7 @@ namespace BiolyCompiler.Modules
 
         void SetFluidType(BoardFluid newFluidType);
 
-        (int,int) GetMiddleOfSource();
+        (int x, int y) GetMiddleOfSource();
 
         bool IsInMiddleOfSource(RoutingInformation location);
     }
