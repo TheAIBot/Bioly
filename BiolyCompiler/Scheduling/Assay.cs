@@ -10,6 +10,7 @@ using BiolyCompiler.BlocklyParts.Misc;
 using MoreLinq;
 using System.Collections;
 using BiolyCompiler.BlocklyParts.Arrays;
+using BiolyCompiler.Exceptions;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -79,67 +80,47 @@ namespace BiolyCompiler.Scheduling
 
         private void CalculateCriticalPath()
         {
-            //Inverting is necessary for the correct calculations:
-            Dfg.InvertEdges();
-            //Its a DAG, so a topological sorting exists:
-            List<Node<Block>> topologicalSorting = GetTopologicalSortedDFG(Dfg);
-            int[] lenghtOfLongestPathToNode = new int[topologicalSorting.Count];
-            //The dictionary works on basis of the pointers, which is what is desired:
-            Dictionary<Node<Block>, int> nodeToIndex = new Dictionary<Node<Block>, int>();
+            List<Node<Block>> rank = Dfg.Output;
 
-            //Below the lenght of the longest paths are calculated, in the inverted dfg:
-
-            for (int i = 0; i < topologicalSorting.Count; i++)
+            do
             {
-                nodeToIndex.Add(topologicalSorting[i], i);
-            }
-
-
-            for (int i = 0; i < topologicalSorting.Count; i++)
-            {
-                var currentNode = topologicalSorting[i];
-                int currentNodeExecutionTime;
-
-                if (currentNode.value is HeaterUsage heaterUsage)
+                foreach (Node<Block> node in rank)
                 {
-                    currentNodeExecutionTime = heaterUsage.Time; //Heaters have an extra time variable.
-                }
-                else if (currentNode.value is WasteUsage)
-                {
-                    currentNodeExecutionTime = 2; //100.000.000
-                }
-                else if (!(currentNode.value is VariableBlock ||
-                           currentNode.value is Union ||
-                           currentNode.value is StaticDeclarationBlock ||
-                           currentNode.value is Fluid ||
-                           currentNode.value is SetArrayFluid) && !(currentNode.value is StaticUseageBlock))
-                {
-                    currentNodeExecutionTime = ((FluidBlock)currentNode.value).getAssociatedModule().OperationTime; //Operation involving a module with an execution time.
-                }
-                else
-                {
-                    currentNodeExecutionTime = 0; //Special case operations does not have any inherent execution time
-                }
-
-                //A min priority queue is used, so the priority is inverted.
-                currentNode.value.priority = -(lenghtOfLongestPathToNode[i] + currentNodeExecutionTime);
-                foreach (var node in currentNode.getOutgoingEdges())
-                {
-                    //Update the lenght of the paths:
-                    int indexOfNode = nodeToIndex[node];
-                    int currentLength = lenghtOfLongestPathToNode[indexOfNode];
-                    if (currentLength < lenghtOfLongestPathToNode[i] + currentNodeExecutionTime)
+                    foreach (Node<Block> backNode in node.GetIngoingEdges())
                     {
-                        lenghtOfLongestPathToNode[indexOfNode] = lenghtOfLongestPathToNode[i] + currentNodeExecutionTime;
+                        int newPriority = node.value.priority;
+                        switch (backNode.value)
+                        {
+                            case HeaterUsage block:
+                                newPriority -= block.Time;
+                                break;
+                            case VariableBlock block1:
+                            case Union block2:
+                            case StaticDeclarationBlock block3:
+                            case Fluid block4:
+                            case SetArrayFluid block5:
+                                newPriority -= 0;
+                                break;
+                            case FluidBlock block:
+                                newPriority -= block.getAssociatedModule().OperationTime;
+                                break;
+                            default:
+                                throw new InternalRuntimeException($"Calculating critical path doesn't handle the block type {backNode.GetType().ToString()}.");
+                        }
+
+                        backNode.value.priority = Math.Min(backNode.value.priority, newPriority);
                     }
                 }
-            }
-            Dfg.Nodes.Select(node => node.value)
-                     .Where(operation => operation is WasteUsage)
-                     .ForEach(wasteUsage => wasteUsage.priority = -100000000);
-            //The dfg is inverted back to normal:
-            Dfg.InvertEdges();
 
+                rank = rank.SelectMany(x => x.GetIngoingEdges())
+                           .Distinct()
+                           .ToList();
+            } while (rank.Count > 0);
+
+            Dfg.Nodes.Where(x => x.value is WasteUsage)
+                     .ForEach(x => x.value.priority = int.MinValue);
+            Dfg.Nodes.Where(x => x.value is StaticDeclarationBlock)
+                     .ForEach(x => x.value.priority = int.MaxValue);
         }
 
         private List<Node<Block>> GetTopologicalSortedDFG(DFG<Block> dfg)

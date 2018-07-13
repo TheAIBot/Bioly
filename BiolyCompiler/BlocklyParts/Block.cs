@@ -34,7 +34,7 @@ namespace BiolyCompiler.BlocklyParts
 
         //For the scheduling:
         public bool IsDone = false;
-        public int priority = Int32.MaxValue;
+        public int priority = 0;
         public int StartTime = -1;
         public int EndTime = -1;
 
