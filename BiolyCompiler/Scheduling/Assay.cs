@@ -17,10 +17,9 @@ namespace BiolyCompiler.Scheduling
 
     public class Assay : IEnumerable<Block>
     {
-        public DFG<Block> Dfg;
-        private Dictionary<Block, Node<Block>> OperationToNode = new Dictionary<Block, Node<Block>>();
-        private SimplePriorityQueue<Block, int> ReadyOperations = new SimplePriorityQueue<Block, int>();
-        private Dictionary<string, Module> StaticModules;
+        public readonly DFG<Block> Dfg;
+        private readonly Dictionary<Block, Node<Block>> OperationToNode = new Dictionary<Block, Node<Block>>();
+        private readonly SimplePriorityQueue<Block, int> ReadyOperations = new SimplePriorityQueue<Block, int>();
         //For each static module, it contains a priority queue of the ready operations associated with the module,
         //and a bool of whether or not ReadyOperations contains one of those operations, or if the heater is in use: 
         //only one operation must be there at a time, and only when the heater is not in use.
@@ -172,11 +171,6 @@ namespace BiolyCompiler.Scheduling
                     }
                 }
             }
-        }
-
-        public void SetStaticModules(Dictionary<string, Module> staticModules)
-        {
-            this.StaticModules = staticModules;
         }
 
         public bool IsEmpty()

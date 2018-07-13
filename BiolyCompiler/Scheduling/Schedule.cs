@@ -440,7 +440,6 @@ namespace BiolyCompiler.Scheduling
 
         private Board ListSchedulingSetup(Assay assay, Board board, ModuleLibrary library, int startTime)
         {
-            assay.SetStaticModules(StaticModules);
             library.allocateModules(assay);
             library.sortLibrary();
             AllUsedModules.AddRange(board.PlacedModules.Values);
