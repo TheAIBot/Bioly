@@ -123,26 +123,6 @@ namespace BiolyCompiler.Scheduling
                      .ForEach(x => x.value.priority = int.MaxValue);
         }
 
-        private List<Node<Block>> GetTopologicalSortedDFG(DFG<Block> dfg)
-        {
-            List<Node<Block>> topologicalSorted = new List<Node<Block>>();
-            HashSet<Node<Block>> alreadyAdded = new HashSet<Node<Block>>();
-            List<Node<Block>> rank = dfg.Input;
-
-            do
-            {
-                topologicalSorted.AddRange(rank);
-                rank.ForEach(x => alreadyAdded.Add(x));
-
-                rank = rank.SelectMany(x => x.getOutgoingEdges())
-                           .Distinct()
-                           .Except(alreadyAdded)
-                           .ToList();
-            } while (rank.Count > 0);
-
-            return topologicalSorted;
-        }
-
         public void UpdateReadyOperations(Block operation)
         {
             //If it has already been registred as finished, then ignore the operation:
