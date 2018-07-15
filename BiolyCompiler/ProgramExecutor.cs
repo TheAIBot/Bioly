@@ -144,12 +144,12 @@ namespace BiolyCompiler
         private static bool[] GetusedElectrodes(int width, int height, List<Command>[] commandTimeline, bool enableSparseElectrodes)
         {
             bool[] usedElectrodes = new bool[width * height];
-            for (int i = 0; i < usedElectrodes.Length; i++)
-            {
-                usedElectrodes[i] = false;
-            }
             if (enableSparseElectrodes)
             {
+                for (int i = 0; i < usedElectrodes.Length; i++)
+                {
+                    usedElectrodes[i] = false;
+                }
                 foreach (List<Command> commands in commandTimeline)
                 {
                     if (commands == null)
@@ -165,6 +165,13 @@ namespace BiolyCompiler
                             usedElectrodes[command.Y * width + command.X] = true;
                         }
                     }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < usedElectrodes.Length; i++)
+                {
+                    usedElectrodes[i] = true;
                 }
             }
 
@@ -220,12 +227,10 @@ namespace BiolyCompiler
                 scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
                 runningGraph.Nodes.ForEach(x => x.value.IsDone = false);
-                Assay fisk = new Assay(runningGraph);
 
-                var cake = fisk.GetReadyOperations();
-                while (cake.Count > 0)
+                Assay fisk = new Assay(runningGraph);
+                foreach (Block toCopy in fisk)
                 {
-                    Block toCopy = cake.Dequeue();
                     if (toCopy is FluidBlock fluidBlockToCopy)
                     {
                         if (!variablePostfixes.ContainsKey(toCopy.OriginalOutputVariable))

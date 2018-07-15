@@ -71,7 +71,7 @@ namespace BiolyCompiler.Modules
 
         public void SetFluidType(BoardFluid fluidType)
         {
-            if (this.FluidType != null) this.FluidType.dropletSources.Remove(this);
+            this.FluidType?.dropletSources.Remove(this);
             this.FluidType = fluidType;
             fluidType.dropletSources.Add(this);
         }

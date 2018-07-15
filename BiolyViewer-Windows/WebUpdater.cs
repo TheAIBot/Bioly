@@ -120,6 +120,7 @@ namespace BiolyViewer_Windows
                             CurrentlyExecutionProgram.ShowEmptyRectangles = Settings.ShowEmptyRectangles;
                             CurrentlyExecutionProgram.EnableOptimizations = Settings.EnableOptimizations;
                             CurrentlyExecutionProgram.EnableGarbageCollection = Settings.EnableGC;
+                            CurrentlyExecutionProgram.EnableSparseElectrodes = Settings.EnableSparseBoard;
 
                             CurrentlyExecutionProgram.Run(boardWidth, boardHeight, cdfg, alreadyOptimized);
                         }

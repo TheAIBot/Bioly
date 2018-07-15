@@ -71,12 +71,6 @@ namespace BiolyCompiler.Graphs
             source.AddOutgoingEdge(target);
             target.AddIngoingEdge(source);
         }
-
-        public void InvertEdges()
-        {
-            foreach (var node in Nodes)
-                node.InvertEdges();
-        }
     }
 }
 
