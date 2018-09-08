@@ -29,18 +29,15 @@ namespace BiolyCompiler.Scheduling
         public Dictionary<string, Module> StaticModules = new Dictionary<string, Module>();
         public SimplePriorityQueue<FluidBlock> CurrentlyRunningOpertions = new SimplePriorityQueue<FluidBlock>();
         public List<Block> ScheduledOperations = new List<Block>();
-        public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
-        public const int IGNORED_TIME_DIFFERENCE = 30; 
-        private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
-        private const string WASTE_FLUIDNAME_STRING  = "waste - fluidtype #";
-        public const string WASTE_MODULE_NAME = "waste @ module";
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
         public Dictionary<string, List<IDropletSource>> OutputtedDroplets = new Dictionary<string, List<IDropletSource>>();
 
-        public Schedule(){
-
-        }
+        public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
+        public const int IGNORED_TIME_DIFFERENCE = 30;
+        private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
+        private const string WASTE_FLUIDNAME_STRING = "waste - fluidtype #";
+        public const string WASTE_MODULE_NAME = "waste @ module";
         
         private static Board getCurrentBoard()
         {
