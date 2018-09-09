@@ -80,34 +80,31 @@ namespace BiolyCompiler.Modules
             //Uses the  Shorter Segment (SSEG) approach to splitting the rectangle in to smaller pieces, after placing the module.
             //This means it will place the module in the recangle, and split the remaining area into two rectangle, 
             //based on which segments extending from the rectangle (see FTP algorithm papier) that are shortest:
-            Rectangle TopRectangle;
-            Rectangle RightRectangle;
-            int VerticalSegmentLenght = this.height - rectangle.height;
-            int HorizontalSegmentLenght = this.width - rectangle.width;
-            if (ShouldSplitAtHorizontalLineSegment(VerticalSegmentLenght, HorizontalSegmentLenght)){ //Split at the horizontal line segment:
-                TopRectangle = new Rectangle(this.width, VerticalSegmentLenght);
-                RightRectangle = new Rectangle(HorizontalSegmentLenght, rectangle.height);
-            }else { //Split at the vertical line segment:
-                TopRectangle = new Rectangle(rectangle.width, VerticalSegmentLenght);
-                RightRectangle = new Rectangle(HorizontalSegmentLenght, this.height);
-            }
 
             rectangle.PlaceAt(this.x, this.y);
-            TopRectangle.PlaceAt(this.x, rectangle.getTopmostYPosition() + 1);
-            RightRectangle.PlaceAt(rectangle.getRightmostXPosition() + 1, this.y);
+            Rectangle TopRectangle = null;
+            Rectangle RightRectangle = null;
+            int VerticalSegmentLenght = this.height - rectangle.height;
+            int HorizontalSegmentLenght = this.width - rectangle.width;
+            bool doHorizontalSplit = ShouldSplitAtHorizontalLineSegment(VerticalSegmentLenght, HorizontalSegmentLenght);
 
-            //If the line segments has size = 0, the rectangles has an area of 0, 
-            //and as such they can be discarded:
+            if (VerticalSegmentLenght != 0)
+            {
+                int recWidth = doHorizontalSplit ? this.width : rectangle.width;
+                TopRectangle = new Rectangle(recWidth, VerticalSegmentLenght);
+                TopRectangle.PlaceAt(this.x, rectangle.getTopmostYPosition() + 1);
 
-            if (VerticalSegmentLenght == 0) TopRectangle = null;
-            else {
                 ComputeAdjacencyList(TopRectangle);
                 TopRectangle.AdjacentRectangles.Add(rectangle);
                 rectangle.AdjacentRectangles.Add(TopRectangle);
             }
-            if (HorizontalSegmentLenght == 0) RightRectangle = null;
-            else
+
+            if (HorizontalSegmentLenght != 0)
             {
+                int recHeight = doHorizontalSplit ? rectangle.height : this.height;
+                RightRectangle = new Rectangle(HorizontalSegmentLenght, recHeight);
+                RightRectangle.PlaceAt(rectangle.getRightmostXPosition() + 1, this.y);
+
                 ComputeAdjacencyList(RightRectangle);
                 RightRectangle.AdjacentRectangles.Add(rectangle);
                 rectangle.AdjacentRectangles.Add(RightRectangle);
@@ -136,15 +133,21 @@ namespace BiolyCompiler.Modules
         private void CheckThatTheRectanglesDividesTheRectanglePerfectly(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
         {
             if (splittingRectangle1.getArea() + splittingRectangle2.GetArea() != this.getArea())
+            {
                 throw new InternalRuntimeException("The sum of the area of the two rectangles that are supposed to split the rectangle into two, " +
                                     "do not equal the area of the split rectangle.");
+            }
             else if (splittingRectangle1.width == 0 || splittingRectangle1.height == 0 ||
                      splittingRectangle2.width == 0 || splittingRectangle2.height == 0)
+            {
                 throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle, must both have a non-zero size.");
+            }
             //else if (splittingRectangle1.isOverlappingWith(splittingRectangle2))
             //    throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle into two are overlapping");
             else if (!(splittingRectangle1.isCompletlyInside(this) && splittingRectangle2.isCompletlyInside(this)))
+            {
                 throw new InternalRuntimeException("At least one of the two rectangles that are supposed to split the rectangle into two, are not competly contained in the rectangle.");
+            }
         }
 
         private bool isOverlappingWith(Rectangle splittingRectangle)
