@@ -10,16 +10,21 @@ namespace BiolyCompiler.Modules
 {
     public class Rectangle
     {
-        public int height, width;
-        public int x, y; //Coordinates for lower left corner.
+        public int height;
+        public int width;
+        public int x;
+        public int y; //Coordinates for lower left corner.
         //Used by the FTP algorithm for deleting rectangles.
-        public HashSet<Rectangle>  AdjacentRectangles    = new HashSet<Rectangle>();
+        public HashSet<Rectangle> AdjacentRectangles = new HashSet<Rectangle>();
         public bool isEmpty = true;
 
 
         public Rectangle(int width, int height)
         {
-            if (width < 0 || height < 0) throw new InternalRuntimeException("A rectangle must have a non-negative height and width: (width, height)=(" + width + ", " + height + ") is not allowed.");
+            if (width < 0 || height < 0)
+            {
+                throw new InternalRuntimeException("A rectangle must have a non-negative height and width: (width, height)=(" + width + ", " + height + ") is not allowed.");
+            }
             this.height = height;
             this.width = width;
         }
@@ -28,7 +33,7 @@ namespace BiolyCompiler.Modules
         {
             PlaceAt(x, y);
         }
-        
+
         public Rectangle(Rectangle rectangle) : this(rectangle.width, rectangle.height, rectangle.x, rectangle.y) { isEmpty = rectangle.isEmpty; }
 
         public void PlaceAt(int x, int y)
@@ -54,7 +59,11 @@ namespace BiolyCompiler.Modules
                 this.AdjacentRectangles.Add(insideRectangle);
                 insideRectangle.AdjacentRectangles.Add(this);
                 return true;
-            } else return false;
+            }
+            else
+            {
+                return false;
+            }
         }
 
 
@@ -122,7 +131,6 @@ namespace BiolyCompiler.Modules
 
         public void splitRectangleInTwo(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
         {
-            CheckThatTheRectanglesDividesTheRectanglePerfectly(splittingRectangle1, splittingRectangle2);
             RemoveAdjacencies();
             splittingRectangle1.AdjacentRectangles.Add(splittingRectangle2);
             splittingRectangle2.AdjacentRectangles.Add(splittingRectangle1);
@@ -130,52 +138,9 @@ namespace BiolyCompiler.Modules
             ComputeAdjacencyList(splittingRectangle2);
         }
 
-        private void CheckThatTheRectanglesDividesTheRectanglePerfectly(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
-        {
-            if (splittingRectangle1.getArea() + splittingRectangle2.GetArea() != this.getArea())
-            {
-                throw new InternalRuntimeException("The sum of the area of the two rectangles that are supposed to split the rectangle into two, " +
-                                    "do not equal the area of the split rectangle.");
-            }
-            else if (splittingRectangle1.width == 0 || splittingRectangle1.height == 0 ||
-                     splittingRectangle2.width == 0 || splittingRectangle2.height == 0)
-            {
-                throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle, must both have a non-zero size.");
-            }
-            //else if (splittingRectangle1.isOverlappingWith(splittingRectangle2))
-            //    throw new InternalRuntimeException("The two rectangles that are supposed to split the rectangle into two are overlapping");
-            else if (!(splittingRectangle1.isCompletlyInside(this) && splittingRectangle2.isCompletlyInside(this)))
-            {
-                throw new InternalRuntimeException("At least one of the two rectangles that are supposed to split the rectangle into two, are not competly contained in the rectangle.");
-            }
-        }
-
-        private bool isOverlappingWith(Rectangle splittingRectangle)
-        {
-            //Based on https://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
-            bool xOverlap = valueInRange(x, splittingRectangle.x, splittingRectangle.x + splittingRectangle.width) ||
-                            valueInRange(splittingRectangle.x, x, x + width);
-
-            bool yOverlap = valueInRange(y, splittingRectangle.y, splittingRectangle.y + splittingRectangle.height) ||
-                            valueInRange(splittingRectangle.y, y, y + height);
-
-            return xOverlap && yOverlap;
-        }
-
         private bool valueInRange(int value, int min, int max)
         {
             return min <= value && value <= max;
-        }
-
-        private bool isCompletlyInside(Rectangle rectangle)
-        {
-            return (rectangle.x <= x && x + width  <= rectangle.x + rectangle.width  && 
-                    rectangle.y <= y && y + height <= rectangle.y + rectangle.height);
-        }
-
-        private int getArea()
-        {
-            return width * height;
         }
 
         private static bool ShouldSplitAtHorizontalLineSegment(int VerticalSegmentLenght, int HorizontalSegmentLenght)
@@ -201,7 +166,7 @@ namespace BiolyCompiler.Modules
             AdjacentRectangles.Clear();
         }
 
-        
+
         public bool MergeWithOtherRectangles(Board board)
         {
             //Recursivly merge with neighboring rectangles, which sides lines up perfectly with the current rectangle:
@@ -236,7 +201,8 @@ namespace BiolyCompiler.Modules
                 rectangle.AdjacentRectangles.Remove(adjacentRectangle);
             }
             HashSet<Rectangle> copyAdjacentRectangles = new HashSet<Rectangle>(AdjacentRectangles);
-            foreach (var rectangle in AdjacentRectangles) {
+            foreach (var rectangle in AdjacentRectangles)
+            {
                 rectangle.AdjacentRectangles.Remove(this);
             }
             this.AdjacentRectangles.Clear();
@@ -258,7 +224,7 @@ namespace BiolyCompiler.Modules
                     throw new InternalRuntimeException("A rectangle can only be joined on the sides left, right, top or bottom, not " + side.ToString());
             }
             //It is important that it is the current rectangle that is changed.
-            this.width  = mergedRectangle.width;
+            this.width = mergedRectangle.width;
             this.height = mergedRectangle.height;
             this.x = mergedRectangle.x;
             this.y = mergedRectangle.y;
@@ -270,14 +236,16 @@ namespace BiolyCompiler.Modules
             AdjacentRectangles.Remove(this);
             //Duplicates have been removed automaticly, as AdjacentRectangles is a set.
             //The adjacent rectangles own adjacent rectangles also needs to be updated.
-            foreach (var rectangle in AdjacentRectangles) {
+            foreach (var rectangle in AdjacentRectangles)
+            {
                 rectangle.AdjacentRectangles.Add(this);
             }
         }
 
         public bool SplitMerge(Board board)
         {
-            foreach (var adjacentRectangle in AdjacentRectangles) {
+            foreach (var adjacentRectangle in AdjacentRectangles)
+            {
                 if (!adjacentRectangle.isEmpty) continue;
                 (var formsLShapedSegment, var side, var extendDirection) = FormsLSegment(this, adjacentRectangle);
                 if (formsLShapedSegment)
@@ -287,7 +255,8 @@ namespace BiolyCompiler.Modules
                     (var candidateNewRectangle, var candidateNewAdjacentRectangle, bool isAnActualImprovement) = GetLShapeInformation(adjacentRectangle, side, extendDirection);
 
                     //To avoid eternal recursion, the L shape should only be split, if it is an actual improvement, not if it does not matter.
-                    if (isAnActualImprovement) { 
+                    if (isAnActualImprovement)
+                    {
                         HashSet<Rectangle> allAdjacentRectangles = new HashSet<Rectangle>();
                         allAdjacentRectangles.UnionWith(this.AdjacentRectangles);
                         allAdjacentRectangles.UnionWith(adjacentRectangle.AdjacentRectangles);
@@ -331,7 +300,7 @@ namespace BiolyCompiler.Modules
         private void TransformToGivenRectangle(Rectangle rectangle)
         {
             this.x = rectangle.x; this.y = rectangle.y;
-            this.width  = rectangle.width;
+            this.width = rectangle.width;
             this.height = rectangle.height;
         }
 
@@ -344,7 +313,8 @@ namespace BiolyCompiler.Modules
             //It is an actual improvement, if it wants to split at the segment different from the current situation, and it does not want to split it in the current maner.
             if (side.Equals(RectangleSide.Top) || side.Equals(RectangleSide.Bottom))
             {
-                if (this.width < adjacentRectangle.width) {
+                if (this.width < adjacentRectangle.width)
+                {
                     int extendOffset = ((extendDirection == RectangleSide.Right) ? this.width : 0);
                     horizontalSegment = this.width;
                     verticalSegment = adjacentRectangle.height;
@@ -354,7 +324,8 @@ namespace BiolyCompiler.Modules
                         candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, this.y - adjacentRectangle.height);
                     candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width - this.width, adjacentRectangle.height, adjacentRectangle.x + extendOffset, adjacentRectangle.y);
                 }
-                else {
+                else
+                {
                     int extendOffset = ((extendDirection == RectangleSide.Right) ? adjacentRectangle.width : 0);
                     horizontalSegment = adjacentRectangle.width;
                     verticalSegment = this.height;
@@ -367,8 +338,8 @@ namespace BiolyCompiler.Modules
 
 
                 //Split matters, if a split is favored one way, and not the other.
-                bool doesSplitMatter = ( ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment) && !ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment)) ||
-                                       ( ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment) && !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment));
+                bool doesSplitMatter = (ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment) && !ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment)) ||
+                                       (ShouldSplitAtHorizontalLineSegment(horizontalSegment, verticalSegment) && !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment));
                 bool isAlreadyOptimallySplit = ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment);
                 if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);
                 else return (candidateNewRectangle, candidateNewAdjacentRectangle, true);
@@ -414,19 +385,19 @@ namespace BiolyCompiler.Modules
             //It forms an L segment, if for any of the corners of rectangle, adjacent rectangle "starts" there:
             //for example if the lower right corner of rectangle is at the same position of the lower left corner of adjacentRectangle.
             (var rectangleLowerLeft, var rectangleLowerRight, var rectangleTopLeft, var rectangleTopRight) = rectangle.GetRectangleCorners();
-            (var adjacentLowerLeft , var adjacentLowerRight , var adjacentTopLeft , var adjacentTopRight ) = adjacentRectangle.GetRectangleCorners();
+            (var adjacentLowerLeft, var adjacentLowerRight, var adjacentTopLeft, var adjacentTopRight) = adjacentRectangle.GetRectangleCorners();
 
-            if (rectangleLowerRight.Equals(adjacentLowerLeft))      return (true, RectangleSide.Right,  RectangleSide.Top);   //It is to the right, and it extends upwards.
-            else if (rectangleTopRight.Equals(adjacentTopLeft))     return (true, RectangleSide.Right,  RectangleSide.Bottom);//It is to the right, and it extends downwards.
+            if (rectangleLowerRight.Equals(adjacentLowerLeft)) return (true, RectangleSide.Right, RectangleSide.Top);   //It is to the right, and it extends upwards.
+            else if (rectangleTopRight.Equals(adjacentTopLeft)) return (true, RectangleSide.Right, RectangleSide.Bottom);//It is to the right, and it extends downwards.
 
-            else if (rectangleTopRight.Equals(adjacentLowerRight))  return (true, RectangleSide.Top,    RectangleSide.Left);
-            else if (rectangleTopLeft.Equals(adjacentLowerLeft))    return (true, RectangleSide.Top,    RectangleSide.Right);
+            else if (rectangleTopRight.Equals(adjacentLowerRight)) return (true, RectangleSide.Top, RectangleSide.Left);
+            else if (rectangleTopLeft.Equals(adjacentLowerLeft)) return (true, RectangleSide.Top, RectangleSide.Right);
 
-            else if (rectangleTopLeft.Equals(adjacentTopRight))     return (true, RectangleSide.Left,   RectangleSide.Bottom);
-            else if (rectangleLowerLeft.Equals(adjacentLowerRight)) return (true, RectangleSide.Left,   RectangleSide.Top);
+            else if (rectangleTopLeft.Equals(adjacentTopRight)) return (true, RectangleSide.Left, RectangleSide.Bottom);
+            else if (rectangleLowerLeft.Equals(adjacentLowerRight)) return (true, RectangleSide.Left, RectangleSide.Top);
 
-            else if (rectangleLowerLeft.Equals(adjacentTopLeft))    return (true, RectangleSide.Bottom, RectangleSide.Right);
-            else if (rectangleLowerRight.Equals(adjacentTopRight))  return (true, RectangleSide.Bottom, RectangleSide.Left);
+            else if (rectangleLowerLeft.Equals(adjacentTopLeft)) return (true, RectangleSide.Bottom, RectangleSide.Right);
+            else if (rectangleLowerRight.Equals(adjacentTopRight)) return (true, RectangleSide.Bottom, RectangleSide.Left);
 
             else return (false, RectangleSide.None, RectangleSide.None);
         }
@@ -436,30 +407,30 @@ namespace BiolyCompiler.Modules
             //They can merge if the rectangles line up on a side. They can only line up on one side.
 
             //Below:
-            if (adjacentRectangle.getTopmostYPosition() + 1 == y && 
-                adjacentRectangle.x == x && 
+            if (adjacentRectangle.getTopmostYPosition() + 1 == y &&
+                adjacentRectangle.x == x &&
                 width == adjacentRectangle.width)
             {
                 return (RectangleSide.Bottom, true);
             }
             //Above:
-            else if (this.getTopmostYPosition() + 1 == adjacentRectangle.y && 
-                     adjacentRectangle.x == x && 
+            else if (this.getTopmostYPosition() + 1 == adjacentRectangle.y &&
+                     adjacentRectangle.x == x &&
                      width == adjacentRectangle.width)
             {
                 return (RectangleSide.Top, true);
             }
             //Left
-            else if (adjacentRectangle.getRightmostXPosition() + 1 == x && 
-                     adjacentRectangle.y == y && 
+            else if (adjacentRectangle.getRightmostXPosition() + 1 == x &&
+                     adjacentRectangle.y == y &&
                      height == adjacentRectangle.height)
             {
                 return (RectangleSide.Left, true);
 
             }
             //Right
-            else if (this.getRightmostXPosition() + 1 == adjacentRectangle.x && 
-                     adjacentRectangle.y == y && 
+            else if (this.getRightmostXPosition() + 1 == adjacentRectangle.x &&
+                     adjacentRectangle.y == y &&
                      height == adjacentRectangle.height)
             {
                 return (RectangleSide.Right, true);
@@ -469,8 +440,10 @@ namespace BiolyCompiler.Modules
 
         private void ComputeAdjacencyList(Rectangle newRectangle)
         {
-            foreach (var formerAdjacentRectangle in AdjacentRectangles) {
-                if (newRectangle.IsAdjacent(formerAdjacentRectangle)) {
+            foreach (var formerAdjacentRectangle in AdjacentRectangles)
+            {
+                if (newRectangle.IsAdjacent(formerAdjacentRectangle))
+                {
                     newRectangle.AdjacentRectangles.Add(formerAdjacentRectangle);
                     formerAdjacentRectangle.AdjacentRectangles.Add(newRectangle);
                 }
@@ -478,14 +451,14 @@ namespace BiolyCompiler.Modules
             //Also do for the other sides.
         }
 
-        
+
         public bool IsAdjacent(Rectangle rectangle)
         {
             //Adjacency depends on which side that the rectangles are closest - left, right top or bottom.
-            bool isAdjacentToTheLeft  = (rectangle.getRightmostXPosition() + 1 == this.x   && isOverlappingInterval(y, getTopmostYPosition()  , rectangle.y, rectangle.getTopmostYPosition()));
-            bool isAdjacentBelow      = (rectangle.getTopmostYPosition()   + 1 == this.y   && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
-            bool isAdjacentToTheRight = (rectangle.x == this.getRightmostXPosition() + 1   && isOverlappingInterval(y, getTopmostYPosition()  , rectangle.y, rectangle.getTopmostYPosition()));
-            bool isAdjacentAbove      = (rectangle.y == this.getTopmostYPosition() + 1     && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
+            bool isAdjacentToTheLeft = (rectangle.getRightmostXPosition() + 1 == this.x  && isOverlappingInterval(y, getTopmostYPosition(), rectangle.y, rectangle.getTopmostYPosition()));
+            bool isAdjacentBelow     = (rectangle.getTopmostYPosition()   + 1 == this.y  && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
+            bool isAdjacentToTheRight = (rectangle.x == this.getRightmostXPosition() + 1 && isOverlappingInterval(y, getTopmostYPosition(), rectangle.y, rectangle.getTopmostYPosition()));
+            bool isAdjacentAbove      = (rectangle.y == this.getTopmostYPosition()   + 1 && isOverlappingInterval(x, getRightmostXPosition(), rectangle.x, rectangle.getRightmostXPosition()));
             return isAdjacentToTheLeft || isAdjacentToTheRight || isAdjacentBelow || isAdjacentAbove;
         }
 
@@ -512,7 +485,7 @@ namespace BiolyCompiler.Modules
 
         public override string ToString()
         {
-            return "Rectangle. Width = " + width + ", Height = " + height + ", x = " + x + ", y = " + y; 
+            return "Rectangle. Width = " + width + ", Height = " + height + ", x = " + x + ", y = " + y;
         }
 
         public override int GetHashCode()
@@ -522,7 +495,7 @@ namespace BiolyCompiler.Modules
             //that could result in that value.
 
             //The +1 is to avoid everything becoming 0, if one value is 0.
-            return (height+1) * (width+1) * (x+1) * (y+1);
+            return (height + 1) * (width + 1) * (x + 1) * (y + 1);
         }
 
         public override bool Equals(object obj)
@@ -531,9 +504,9 @@ namespace BiolyCompiler.Modules
             if (rectangleObj == null)
                 return false;
             else return rectangleObj.height == height &&
-                        rectangleObj.width  == width  &&
-                        rectangleObj.x      == x      &&
-                        rectangleObj.y      == y;
+                        rectangleObj.width == width &&
+                        rectangleObj.x == x &&
+                        rectangleObj.y == y;
             //It will not compare adjacency lists.
         }
 
@@ -543,7 +516,7 @@ namespace BiolyCompiler.Modules
         /// <returns>(LowerLeft, LowerRight, TopLeft, TopRight)</returns>
         public (Point, Point, Point, Point) GetRectangleCorners()
         {
-            return (new Point(x, y), new Point(x + width, y), new Point(x, y+height), new Point(x+width, y+height));
+            return (new Point(x, y), new Point(x + width, y), new Point(x, y + height), new Point(x + width, y + height));
         }
     }
 }
