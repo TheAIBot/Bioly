@@ -318,10 +318,8 @@ namespace BiolyCompiler.Modules
                     int extendOffset = ((extendDirection == RectangleSide.Right) ? this.width : 0);
                     horizontalSegment = this.width;
                     verticalSegment = adjacentRectangle.height;
-                    if (side == RectangleSide.Top)
-                        candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, this.y);
-                    else
-                        candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, this.y - adjacentRectangle.height);
+                    int yPos = side == RectangleSide.Top ? this.y : this.y - adjacentRectangle.height;
+                    candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, yPos);
                     candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width - this.width, adjacentRectangle.height, adjacentRectangle.x + extendOffset, adjacentRectangle.y);
                 }
                 else
@@ -329,10 +327,8 @@ namespace BiolyCompiler.Modules
                     int extendOffset = ((extendDirection == RectangleSide.Right) ? adjacentRectangle.width : 0);
                     horizontalSegment = adjacentRectangle.width;
                     verticalSegment = this.height;
-                    if (side == RectangleSide.Top)
-                        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, adjacentRectangle.y - this.height);
-                    else
-                        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, adjacentRectangle.y);
+                    int yPos = side == RectangleSide.Top ? adjacentRectangle.y - this.height : adjacentRectangle.y;
+                    candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, yPos);
                     candidateNewRectangle = new Rectangle(this.width - adjacentRectangle.width, this.height, this.x + extendOffset, this.y);
                 }
 
@@ -351,10 +347,8 @@ namespace BiolyCompiler.Modules
                     int extendOffset = (extendDirection == RectangleSide.Top) ? this.height : 0;
                     horizontalSegment = adjacentRectangle.width;
                     verticalSegment = this.height;
-                    if (side == RectangleSide.Right)
-                        candidateNewRectangle = new Rectangle(this.width + adjacentRectangle.width, this.height, this.x, this.y);
-                    else
-                        candidateNewRectangle = new Rectangle(this.width + adjacentRectangle.width, this.height, this.x - adjacentRectangle.width, this.y);
+                    int xPos = side == RectangleSide.Right ? this.x : this.x - adjacentRectangle.width;
+                    candidateNewRectangle = new Rectangle(this.width + adjacentRectangle.width, this.height, xPos, this.y);
                     candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height - this.height, adjacentRectangle.x, adjacentRectangle.y + extendOffset);
                 }
                 else
@@ -362,10 +356,8 @@ namespace BiolyCompiler.Modules
                     int extendOffset = (extendDirection == RectangleSide.Top) ? adjacentRectangle.height : 0;
                     horizontalSegment = this.width;
                     verticalSegment = adjacentRectangle.height;
-                    if (side == RectangleSide.Right)
-                        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width + this.width, adjacentRectangle.height, adjacentRectangle.x - this.width, adjacentRectangle.y);
-                    else
-                        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width + this.width, adjacentRectangle.height, adjacentRectangle.x, adjacentRectangle.y);
+                    int xPos = side == RectangleSide.Right ? adjacentRectangle.x - this.width : adjacentRectangle.x;
+                    candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width + this.width, adjacentRectangle.height, xPos, adjacentRectangle.y);
                     candidateNewRectangle = new Rectangle(this.width, this.height - adjacentRectangle.height, this.x, this.y + extendOffset);
                 }
 
@@ -377,7 +369,10 @@ namespace BiolyCompiler.Modules
                 if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);
                 else return (candidateNewRectangle, candidateNewAdjacentRectangle, true);
             }
-            else throw new InternalRuntimeException("Logic error.");
+            else
+            {
+                throw new InternalRuntimeException("Logic error.");
+            }
         }
 
         private static (bool, RectangleSide, RectangleSide) FormsLSegment(Rectangle rectangle, Rectangle adjacentRectangle)
