@@ -299,7 +299,8 @@ namespace BiolyCompiler.Modules
 
         private void TransformToGivenRectangle(Rectangle rectangle)
         {
-            this.x = rectangle.x; this.y = rectangle.y;
+            this.x = rectangle.x;
+            this.y = rectangle.y;
             this.width = rectangle.width;
             this.height = rectangle.height;
         }
@@ -350,53 +351,103 @@ namespace BiolyCompiler.Modules
 
         private (Rectangle, Rectangle) GetLShapeInformation(Rectangle adjacentRectangle, RectangleSide side, RectangleSide extendDirection)
         {
-
-
-            Rectangle candidateNewRectangle;
-            Rectangle candidateNewAdjacentRectangle;
-            //It is an actual improvement, if it wants to split at the segment different from the current situation, and it does not want to split it in the current maner.
-            if (side.Equals(RectangleSide.Top) || side.Equals(RectangleSide.Bottom))
+            Rectangle smaller;
+            Rectangle bigger;
+            if ((side == RectangleSide.Top || side == RectangleSide.Bottom) && this.width < adjacentRectangle.width ||
+                (side == RectangleSide.Left || side == RectangleSide.Right) && this.height < adjacentRectangle.height)
             {
-                if (this.width < adjacentRectangle.width)
-                {
-                    int extendOffset = ((extendDirection == RectangleSide.Right) ? this.width : 0);
-                    int yPos = side == RectangleSide.Top ? this.y : this.y - adjacentRectangle.height;
-                    candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, yPos);
-                    candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width - this.width, adjacentRectangle.height, adjacentRectangle.x + extendOffset, adjacentRectangle.y);
-                }
-                else
-                {
-                    int extendOffset = ((extendDirection == RectangleSide.Right) ? adjacentRectangle.width : 0);
-                    int yPos = side == RectangleSide.Top ? adjacentRectangle.y - this.height : adjacentRectangle.y;
-                    candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, yPos);
-                    candidateNewRectangle = new Rectangle(this.width - adjacentRectangle.width, this.height, this.x + extendOffset, this.y);
-                }
-
-                return (candidateNewRectangle, candidateNewAdjacentRectangle);
-            }
-            else if (side.Equals(RectangleSide.Left) || side.Equals(RectangleSide.Right))
-            {
-                if (this.height < adjacentRectangle.height)
-                {
-                    int extendOffset = (extendDirection == RectangleSide.Top) ? this.height : 0;
-                    int xPos = side == RectangleSide.Right ? this.x : this.x - adjacentRectangle.width;
-                    candidateNewRectangle = new Rectangle(this.width + adjacentRectangle.width, this.height, xPos, this.y);
-                    candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height - this.height, adjacentRectangle.x, adjacentRectangle.y + extendOffset);
-                }
-                else
-                {
-                    int extendOffset = (extendDirection == RectangleSide.Top) ? adjacentRectangle.height : 0;
-                    int xPos = side == RectangleSide.Right ? adjacentRectangle.x - this.width : adjacentRectangle.x;
-                    candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width + this.width, adjacentRectangle.height, xPos, adjacentRectangle.y);
-                    candidateNewRectangle = new Rectangle(this.width, this.height - adjacentRectangle.height, this.x, this.y + extendOffset);
-                }
-
-                return (candidateNewRectangle, candidateNewAdjacentRectangle);
+                smaller = this;
+                bigger = adjacentRectangle;
             }
             else
             {
-                throw new InternalRuntimeException("Logic error.");
+                smaller = adjacentRectangle;
+                bigger = this;
+                switch (side)
+                {
+                    case RectangleSide.Left:
+                        side = RectangleSide.Right;
+                        break;
+                    case RectangleSide.Right:
+                        side = RectangleSide.Left;
+                        break;
+                    case RectangleSide.Top:
+                        side = RectangleSide.Bottom;
+                        break;
+                    case RectangleSide.Bottom:
+                        side = RectangleSide.Top;
+                        break;
+                    default:
+                        break;
+                }
             }
+
+
+            if (side == RectangleSide.Top || side == RectangleSide.Bottom)
+            {
+                int movedXPos = extendDirection == RectangleSide.Right ? smaller.width : 0;
+                int movedYPos = side == RectangleSide.Bottom ? bigger.height : 0;
+                Rectangle newSmaller = new Rectangle(smaller.width, smaller.height + bigger.height, smaller.x, smaller.y - movedYPos);
+                Rectangle newBigger = new Rectangle(bigger.width - smaller.width, bigger.height, bigger.x + movedXPos, bigger.y);
+                return (newSmaller, newBigger);
+            }
+            else
+            {
+                int movedXPos = side == RectangleSide.Left ? bigger.width : 0;
+                int movedYPos = extendDirection == RectangleSide.Top ? smaller.height : 0;
+                Rectangle newSmaller = new Rectangle(smaller.width + bigger.width, smaller.height, smaller.x - movedXPos, smaller.y);
+                Rectangle newBigger = new Rectangle(bigger.width, bigger.height - smaller.height, bigger.x, bigger.y + movedYPos);
+                return (newSmaller, newBigger);
+            }
+
+
+
+
+            //Rectangle candidateNewRectangle;
+            //Rectangle candidateNewAdjacentRectangle;
+            ////It is an actual improvement, if it wants to split at the segment different from the current situation, and it does not want to split it in the current maner.
+            //if (side == RectangleSide.Top || side == RectangleSide.Bottom)
+            //{
+            //    if (this.width < adjacentRectangle.width)
+            //    {
+            //        int extendOffset = ((extendDirection == RectangleSide.Right) ? this.width : 0);
+            //        int yPos = side == RectangleSide.Top ? this.y : this.y - adjacentRectangle.height;
+            //        candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, yPos);
+            //        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width - this.width, adjacentRectangle.height, adjacentRectangle.x + extendOffset, adjacentRectangle.y);
+            //    }
+            //    else
+            //    {
+            //        int extendOffset = ((extendDirection == RectangleSide.Right) ? adjacentRectangle.width : 0);
+            //        int yPos = side == RectangleSide.Top ? adjacentRectangle.y - this.height : adjacentRectangle.y;
+            //        candidateNewRectangle = new Rectangle(this.width - adjacentRectangle.width, this.height, this.x + extendOffset, this.y);
+            //        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, yPos);
+            //    }
+
+            //    return (candidateNewRectangle, candidateNewAdjacentRectangle);
+            //}
+            //else if (side == RectangleSide.Left || side == RectangleSide.Right)
+            //{
+            //    if (this.height < adjacentRectangle.height)
+            //    {
+            //        int extendOffset = (extendDirection == RectangleSide.Top) ? this.height : 0;
+            //        int xPos = side == RectangleSide.Right ? this.x : this.x - adjacentRectangle.width;
+            //        candidateNewRectangle = new Rectangle(this.width + adjacentRectangle.width, this.height, xPos, this.y);
+            //        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height - this.height, adjacentRectangle.x, adjacentRectangle.y + extendOffset);
+            //    }
+            //    else
+            //    {
+            //        int extendOffset = (extendDirection == RectangleSide.Top) ? adjacentRectangle.height : 0;
+            //        int xPos = side == RectangleSide.Right ? adjacentRectangle.x - this.width : adjacentRectangle.x;
+            //        candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width + this.width, adjacentRectangle.height, xPos, adjacentRectangle.y);
+            //        candidateNewRectangle = new Rectangle(this.width, this.height - adjacentRectangle.height, this.x, this.y + extendOffset);
+            //    }
+
+            //    return (candidateNewRectangle, candidateNewAdjacentRectangle);
+            //}
+            //else
+            //{
+            //    throw new InternalRuntimeException("Logic error.");
+            //}
         }
 
         private static (bool, RectangleSide, RectangleSide) FormsLSegment(Rectangle rectangle, Rectangle adjacentRectangle)
