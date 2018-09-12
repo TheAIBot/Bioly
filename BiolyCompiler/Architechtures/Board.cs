@@ -5,7 +5,6 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Exceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
-using BiolyCompiler.Modules.RectangleSides;
 using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
 using MoreLinq;
