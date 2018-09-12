@@ -250,13 +250,13 @@ namespace BiolyCompiler.Modules
                 (var formsLShapedSegment, var side, var extendDirection) = FormsLSegment(this, adjacentRectangle);
                 if (formsLShapedSegment)
                 {
-                    //The horizontal and vertical segment of the L shape needs to be found, 
-                    //to evaluate whether or not the L shape should split up into different rectangles than rectangle and adjacentRectangle.
-                    (var candidateNewRectangle, var candidateNewAdjacentRectangle, bool isAnActualImprovement) = GetLShapeInformation(adjacentRectangle, side, extendDirection);
-
                     //To avoid eternal recursion, the L shape should only be split, if it is an actual improvement, not if it does not matter.
-                    if (isAnActualImprovement)
+                    if (IsLSplitWorthIt(adjacentRectangle, side))
                     {
+                        //The horizontal and vertical segment of the L shape needs to be found, 
+                        //to evaluate whether or not the L shape should split up into different rectangles than rectangle and adjacentRectangle.
+                        (var candidateNewRectangle, var candidateNewAdjacentRectangle) = GetLShapeInformation(adjacentRectangle, side, extendDirection);
+
                         HashSet<Rectangle> allAdjacentRectangles = new HashSet<Rectangle>();
                         allAdjacentRectangles.UnionWith(this.AdjacentRectangles);
                         allAdjacentRectangles.UnionWith(adjacentRectangle.AdjacentRectangles);
@@ -304,10 +304,54 @@ namespace BiolyCompiler.Modules
             this.height = rectangle.height;
         }
 
-        private (Rectangle, Rectangle, bool) GetLShapeInformation(Rectangle adjacentRectangle, RectangleSide side, RectangleSide extendDirection)
+        private bool IsLSplitWorthIt(Rectangle adjacentRectangle, RectangleSide side)
         {
             int horizontalSegment;
             int verticalSegment;
+            bool isAlreadyOptimallySplit;
+
+            //Check if splitting even improves the rectangles
+            if (side == RectangleSide.Top || side == RectangleSide.Bottom)
+            {
+                if (this.width < adjacentRectangle.width)
+                {
+                    horizontalSegment = this.width;
+                    verticalSegment = adjacentRectangle.height;
+                }
+                else
+                {
+                    horizontalSegment = adjacentRectangle.width;
+                    verticalSegment = this.height;
+                }
+                isAlreadyOptimallySplit = ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment);
+            }
+            else if (side == RectangleSide.Left || side == RectangleSide.Right)
+            {
+                if (this.height < adjacentRectangle.height)
+                {
+                    horizontalSegment = adjacentRectangle.width;
+                    verticalSegment = this.height;
+                }
+                else
+                {
+                    horizontalSegment = this.width;
+                    verticalSegment = adjacentRectangle.height;
+                }
+                isAlreadyOptimallySplit = !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment);
+            }
+            else
+            {
+                throw new InternalRuntimeException("Logic error.");
+            }
+
+            bool doesSplitMatter = verticalSegment != horizontalSegment;
+            return doesSplitMatter && !isAlreadyOptimallySplit;
+        }
+
+        private (Rectangle, Rectangle) GetLShapeInformation(Rectangle adjacentRectangle, RectangleSide side, RectangleSide extendDirection)
+        {
+
+
             Rectangle candidateNewRectangle;
             Rectangle candidateNewAdjacentRectangle;
             //It is an actual improvement, if it wants to split at the segment different from the current situation, and it does not want to split it in the current maner.
@@ -316,8 +360,6 @@ namespace BiolyCompiler.Modules
                 if (this.width < adjacentRectangle.width)
                 {
                     int extendOffset = ((extendDirection == RectangleSide.Right) ? this.width : 0);
-                    horizontalSegment = this.width;
-                    verticalSegment = adjacentRectangle.height;
                     int yPos = side == RectangleSide.Top ? this.y : this.y - adjacentRectangle.height;
                     candidateNewRectangle = new Rectangle(this.width, this.height + adjacentRectangle.height, this.x, yPos);
                     candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width - this.width, adjacentRectangle.height, adjacentRectangle.x + extendOffset, adjacentRectangle.y);
@@ -325,27 +367,18 @@ namespace BiolyCompiler.Modules
                 else
                 {
                     int extendOffset = ((extendDirection == RectangleSide.Right) ? adjacentRectangle.width : 0);
-                    horizontalSegment = adjacentRectangle.width;
-                    verticalSegment = this.height;
                     int yPos = side == RectangleSide.Top ? adjacentRectangle.y - this.height : adjacentRectangle.y;
                     candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height + this.height, adjacentRectangle.x, yPos);
                     candidateNewRectangle = new Rectangle(this.width - adjacentRectangle.width, this.height, this.x + extendOffset, this.y);
                 }
 
-
-                //Split matters, if a split is favored one way, and not the other.
-                bool doesSplitMatter = verticalSegment != horizontalSegment;
-                bool isAlreadyOptimallySplit = ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment);
-                if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);
-                else return (candidateNewRectangle, candidateNewAdjacentRectangle, true);
+                return (candidateNewRectangle, candidateNewAdjacentRectangle);
             }
             else if (side.Equals(RectangleSide.Left) || side.Equals(RectangleSide.Right))
             {
                 if (this.height < adjacentRectangle.height)
                 {
                     int extendOffset = (extendDirection == RectangleSide.Top) ? this.height : 0;
-                    horizontalSegment = adjacentRectangle.width;
-                    verticalSegment = this.height;
                     int xPos = side == RectangleSide.Right ? this.x : this.x - adjacentRectangle.width;
                     candidateNewRectangle = new Rectangle(this.width + adjacentRectangle.width, this.height, xPos, this.y);
                     candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width, adjacentRectangle.height - this.height, adjacentRectangle.x, adjacentRectangle.y + extendOffset);
@@ -353,19 +386,12 @@ namespace BiolyCompiler.Modules
                 else
                 {
                     int extendOffset = (extendDirection == RectangleSide.Top) ? adjacentRectangle.height : 0;
-                    horizontalSegment = this.width;
-                    verticalSegment = adjacentRectangle.height;
                     int xPos = side == RectangleSide.Right ? adjacentRectangle.x - this.width : adjacentRectangle.x;
                     candidateNewAdjacentRectangle = new Rectangle(adjacentRectangle.width + this.width, adjacentRectangle.height, xPos, adjacentRectangle.y);
                     candidateNewRectangle = new Rectangle(this.width, this.height - adjacentRectangle.height, this.x, this.y + extendOffset);
                 }
 
-
-                //Split matters, if a split is favored one way, and not the other.
-                bool doesSplitMatter = verticalSegment != horizontalSegment;
-                bool isAlreadyOptimallySplit = !ShouldSplitAtHorizontalLineSegment(verticalSegment, horizontalSegment);
-                if (!doesSplitMatter || isAlreadyOptimallySplit) return (null, null, false);
-                else return (candidateNewRectangle, candidateNewAdjacentRectangle, true);
+                return (candidateNewRectangle, candidateNewAdjacentRectangle);
             }
             else
             {
