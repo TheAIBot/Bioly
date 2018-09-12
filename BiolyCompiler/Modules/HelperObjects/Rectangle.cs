@@ -34,7 +34,10 @@ namespace BiolyCompiler.Modules
             PlaceAt(x, y);
         }
 
-        public Rectangle(Rectangle rectangle) : this(rectangle.width, rectangle.height, rectangle.x, rectangle.y) { isEmpty = rectangle.isEmpty; }
+        public Rectangle(Rectangle rectangle) : this(rectangle.width, rectangle.height, rectangle.x, rectangle.y)
+        {
+            isEmpty = rectangle.isEmpty;
+        }
 
         public void PlaceAt(int x, int y)
         {
@@ -389,20 +392,20 @@ namespace BiolyCompiler.Modules
         {
             //It forms an L segment, if for any of the corners of rectangle, adjacent rectangle "starts" there:
             //for example if the lower right corner of rectangle is at the same position of the lower left corner of adjacentRectangle.
-            (var rectangleLowerLeft, var rectangleLowerRight, var rectangleTopLeft, var rectangleTopRight) = rectangle.GetRectangleCorners();
-            (var adjacentLowerLeft, var adjacentLowerRight, var adjacentTopLeft, var adjacentTopRight) = adjacentRectangle.GetRectangleCorners();
+            var rectangleEdges = rectangle.GetRectangleCorners();
+            var adjacentEdges = adjacentRectangle.GetRectangleCorners();
 
-            if (rectangleLowerRight.Equals(adjacentLowerLeft)) return (true, RectangleSide.Right, RectangleSide.Top);   //It is to the right, and it extends upwards.
-            else if (rectangleTopRight.Equals(adjacentTopLeft)) return (true, RectangleSide.Right, RectangleSide.Bottom);//It is to the right, and it extends downwards.
+            if      (rectangleEdges.lowerRight == adjacentEdges.lowerLeft) return (true, RectangleSide.Right, RectangleSide.Top);   //It is to the right, and it extends upwards.
+            else if (rectangleEdges.topRight   == adjacentEdges.topLeft)   return (true, RectangleSide.Right, RectangleSide.Bottom);//It is to the right, and it extends downwards.
 
-            else if (rectangleTopRight.Equals(adjacentLowerRight)) return (true, RectangleSide.Top, RectangleSide.Left);
-            else if (rectangleTopLeft.Equals(adjacentLowerLeft)) return (true, RectangleSide.Top, RectangleSide.Right);
+            else if (rectangleEdges.topRight == adjacentEdges.lowerRight)  return (true, RectangleSide.Top, RectangleSide.Left);
+            else if (rectangleEdges.topLeft  == adjacentEdges.lowerLeft)   return (true, RectangleSide.Top, RectangleSide.Right);
 
-            else if (rectangleTopLeft.Equals(adjacentTopRight)) return (true, RectangleSide.Left, RectangleSide.Bottom);
-            else if (rectangleLowerLeft.Equals(adjacentLowerRight)) return (true, RectangleSide.Left, RectangleSide.Top);
+            else if (rectangleEdges.topLeft   == adjacentEdges.topRight)   return (true, RectangleSide.Left, RectangleSide.Bottom);
+            else if (rectangleEdges.lowerLeft == adjacentEdges.lowerRight) return (true, RectangleSide.Left, RectangleSide.Top);
 
-            else if (rectangleLowerLeft.Equals(adjacentTopLeft)) return (true, RectangleSide.Bottom, RectangleSide.Right);
-            else if (rectangleLowerRight.Equals(adjacentTopRight)) return (true, RectangleSide.Bottom, RectangleSide.Left);
+            else if (rectangleEdges.lowerLeft  == adjacentEdges.topLeft)   return (true, RectangleSide.Bottom, RectangleSide.Right);
+            else if (rectangleEdges.lowerRight == adjacentEdges.topRight)  return (true, RectangleSide.Bottom, RectangleSide.Left);
 
             else return (false, RectangleSide.None, RectangleSide.None);
         }
@@ -519,7 +522,7 @@ namespace BiolyCompiler.Modules
         /// Returns the four corners of the rectangle.
         /// </summary>
         /// <returns>(LowerLeft, LowerRight, TopLeft, TopRight)</returns>
-        public (Point, Point, Point, Point) GetRectangleCorners()
+        public (Point lowerLeft, Point lowerRight, Point topLeft, Point topRight) GetRectangleCorners()
         {
             return (new Point(x, y), new Point(x + width, y), new Point(x, y + height), new Point(x + width, y + height));
         }
