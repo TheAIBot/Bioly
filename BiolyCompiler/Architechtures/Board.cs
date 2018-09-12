@@ -5,7 +5,6 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Exceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
-using BiolyCompiler.Modules.RectangleSides;
 using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
 using MoreLinq;
@@ -119,78 +118,6 @@ namespace BiolyCompiler.Architechtures
             return false;
         }
 
-
-        //public (bool, Rectangle) PlaceBottomBufferedModuleInRectangle(Module module, Rectangle current)
-        //{
-        //    Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
-        //    //It reserves/places the area for the whole buffered rectangle
-        //    (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
-        //    EmptyRectangles.Remove(current);
-        //    if (topRectangle != null) EmptyRectangles.Add(topRectangle);
-        //    if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
-
-        //    //The placed buffered rectangle is divided up into smaller empty rectangles, that can be used for routing.
-        //    //Here a thin slice is cut off from the bottom, for the purpose of routing
-        //    Rectangle lowerBufferingRectangle = new Rectangle(bufferedRectangle.width, 1, bufferedRectangle.x, bufferedRectangle.y);
-        //    Rectangle remainingUpperRectangle = new Rectangle(bufferedRectangle.width, bufferedRectangle.height - 1, bufferedRectangle.x, bufferedRectangle.y + 1);
-        //    bufferedRectangle.splitRectangleInTwo(lowerBufferingRectangle, remainingUpperRectangle);
-        //    EmptyRectangles.Add(remainingUpperRectangle);
-        //    EmptyRectangles.Add(lowerBufferingRectangle);
-        //    //It needs to be checked, if with the buffer, one can still route to all other rectangles.
-        //    //If not, then one should fail.
-        //    if (DoesNotBlockRouteToAnyModuleOrEmptyRectangle(remainingUpperRectangle, module, EmptyRectangles, PlacedModules))
-        //    {
-        //        PlaceModuleInRectangle(module, remainingUpperRectangle);
-        //        return (true, null);
-        //    }
-        //    else
-        //    {
-        //        //Everything is returned to the same state as before:
-        //        //This must be done in a certain order, to avoid error cases, where one do not return to the original board.
-        //        Rectangle intermediateCurrent = remainingUpperRectangle.MergeWithRectangle(RectangleSide.Bottom, lowerBufferingRectangle);
-        //        EmptyRectangles.Remove(remainingUpperRectangle);
-        //        EmptyRectangles.Remove(lowerBufferingRectangle);
-
-        //        //A lot of conditionals, depending on the original splitting of topRectangle and rightRectangle:
-        //        if (topRectangle != null)
-        //        {
-        //            (RectangleSide side, bool canMerge) = intermediateCurrent.CanMerge(topRectangle);
-        //            if (canMerge)
-        //            {
-        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
-        //                if (rightRectangle != null)
-        //                {
-        //                    //It should then be able to merge
-        //                    (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //                    if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
-        //                    intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
-
-        //                }
-        //            }
-        //            else
-        //            { //Then the right rectangle must exists, and it can be merged with first
-        //                (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //                if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
-        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
-        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
-        //            }
-        //        }
-        //        else if (rightRectangle != null)
-        //        {
-        //            //It should then be able to merge
-        //            (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //            if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
-        //        }
-
-        //        if (topRectangle != null)   EmptyRectangles.Remove(topRectangle);
-        //        if (rightRectangle != null) EmptyRectangles.Remove(rightRectangle);
-        //        EmptyRectangles.Add(intermediateCurrent);
-        //        return (false, intermediateCurrent);
-        //    }
-
-
-        //}
-
         public bool PlaceCompletlyBufferedModuleInRectangle(Module module, Rectangle current)
         {
             Rectangle bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
@@ -231,11 +158,14 @@ namespace BiolyCompiler.Architechtures
         /// <param name="rectangle"></param>
         /// <param name="module"></param>
         /// <returns>true iff it is still possible to reach all modules and empty rectangles on the board</returns>
-        public static bool DoesNotBlockRouteToAnyModuleOrEmptyRectangle(Rectangle rectangle, Module module, Dictionary<Rectangle,Rectangle> emptyRectangles, Dictionary<Module, Module> placedModules)
+        public static bool DoesNotBlockRouteToAnyModuleOrEmptyRectangle(Rectangle rectangle, Module module, Dictionary<Rectangle, Rectangle> emptyRectangles, Dictionary<Module, Module> placedModules)
         {
             //If the board is empty, the placement is legal iff it leaves at least 1 empty rectangle:
-            if (emptyRectangles.Count == 1 && placedModules.Count == 0) return (module.Shape.width != rectangle.width || module.Shape.height != rectangle.height);
-            
+            if (emptyRectangles.Count == 1 && placedModules.Count == 0)
+            {
+                return (module.Shape.width != rectangle.width || module.Shape.height != rectangle.height);
+            }
+
 
             //The module is temporarily "placed" (but not really), to get the adjacency graph corresponding to the module being placed.
             //It is not really placed, as it would change EmptyRectangles, which is itterated over. Trust me, it would crash everything - Jesper.
@@ -244,7 +174,8 @@ namespace BiolyCompiler.Architechtures
 
             //The source empty rectangle for the search does not matter, as paths are symmetric:
             Rectangle randomEmptyRectangle = getEmptyAdjacentRectangle(module.Shape);
-            if (randomEmptyRectangle == null) {
+            if (randomEmptyRectangle == null)
+            {
                 //There were only one empty rectangle initally, and placing the module in it, filled the rectangle:
                 //The placed module is the removed, leaving the original board.
                 MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
@@ -261,13 +192,22 @@ namespace BiolyCompiler.Architechtures
             while (emptyRectanglesToVisit.Count > 0)
             {
                 Rectangle currentEmptyRectangle = emptyRectanglesToVisit.Dequeue();
-                foreach (var adjacentRectangle in currentEmptyRectangle.AdjacentRectangles) {
-                    if (adjacentRectangle == rectangle) throw new InternalRuntimeException("Logic error: no rectangles should currently be adjacent to this rectangle");
+                foreach (var adjacentRectangle in currentEmptyRectangle.AdjacentRectangles)
+                {
+                    if (adjacentRectangle == rectangle)
+                    {
+                        throw new InternalRuntimeException("Logic error: no rectangles should currently be adjacent to this rectangle");
+                    }
+
                     //if it is an empty rectangle, it should be visited:
                     if (adjacentRectangle.isEmpty && visitedEmptyRectangles.Add(adjacentRectangle))
+                    {
                         emptyRectanglesToVisit.Enqueue(adjacentRectangle);
-                    else if (!adjacentRectangle.isEmpty) 
-                        connectedModuleRectangles.Add(adjacentRectangle);                    
+                    }
+                    else if (!adjacentRectangle.isEmpty)
+                    {
+                        connectedModuleRectangles.Add(adjacentRectangle);
+                    }
                 }
             }
 
@@ -352,24 +292,6 @@ namespace BiolyCompiler.Architechtures
         {
             return (connectedModuleRectangles.Count == originalPlacedModules.Count   + extraPlacedModules && 
                     visitedEmptyRectangles.Count    == originalEmptyRectangles.Count + extraEmptyRectangles);
-        }
-
-        /// <summary>
-        /// Returns the rectangles that are only present in one of the two sets given.
-        /// </summary>
-        /// <param name="set1"></param>
-        /// <param name="set2"></param>
-        /// <returns></returns>
-        private HashSet<Rectangle> GetSetDifference(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
-        {
-            HashSet<Rectangle> differenceSet = new HashSet<Rectangle>();
-            foreach (var rectangle in set1)
-                if (!set2.Contains(rectangle))
-                    differenceSet.Add(rectangle);
-            foreach (var rectangle in set2)
-                if (!set1.Contains(rectangle))
-                    differenceSet.Add(rectangle);
-            return differenceSet;
         }
 
         private static void MergeToGetOriginalRectangle(Module module, Rectangle originalRectangle, Rectangle emptyTopRectangle, Rectangle emptyRightRectangle)

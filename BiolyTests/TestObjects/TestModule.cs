@@ -5,7 +5,6 @@ using BiolyCompiler.Scheduling;
 using BiolyCompiler.Architechtures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using BiolyCompiler.Modules.RectangleSides;
 using System.Linq;
 using BiolyCompiler.Routing;
 using BiolyCompiler.BlocklyParts;

@@ -17,12 +17,12 @@ namespace BiolyTests
         [TestInitialize()]
         public void ClearWorkspace() => TestTools.ClearWorkspace();
 
-        private string AddFluidBlock(JSProgram program)
+        private string AddFluidBlock(JSProgram program, string from, string to)
         {
-            return program.AddHeaterSegment("k", "z", 100, 1, "k", 1, false);
+            return program.AddHeaterSegment(to, "z", 100, 1, from, 1, false);
         }
 
-        private void nestIfs(JSProgram program, string prevScopeName, Queue<bool> enableIf)
+        private void nestIfs(JSProgram program, string prevScopeName, Queue<bool> enableIf, string from, string to)
         {
             string left = program.AddConstantBlock(enableIf.Dequeue() ? 3 : 2);
             string right = program.AddConstantBlock(3);
@@ -31,27 +31,28 @@ namespace BiolyTests
             string scopeName = program.GetUniqueName();
             program.AddScope(scopeName);
             program.SetScope(scopeName);
-            string guardedBlock = AddFluidBlock(program);
+            string guardedBlock = AddFluidBlock(program, from, to);
             if (enableIf.Count > 0)
             {
-                nestIfs(program, scopeName, enableIf);
+                nestIfs(program, scopeName, enableIf, to, to);
             }
             program.SetScope(prevScopeName);
 
             program.AddIfSegment(conditionalBlock, guardedBlock);
-            AddFluidBlock(program);
+            AddFluidBlock(program, to, to);
         }
 
         private JSProgram CreateProgramWithIfStatement(bool[][] enableIfs)
         {
             JSProgram program = new JSProgram();
             program.Render = true;
-            program.AddInputBlock("k", 1);
-            program.AddHeaterDeclarationBlock("z");            
+            program.AddInputBlock("a", 1);
+            program.AddHeaterDeclarationBlock("z");
 
+            AddFluidBlock(program, "a", "k");
             foreach (bool[] enableIf in enableIfs)
             {
-                nestIfs(program, JSProgram.DEFAULT_SCOPE_NAME, new Queue<bool>(enableIf));
+                nestIfs(program, JSProgram.DEFAULT_SCOPE_NAME, new Queue<bool>(enableIf), "k", "k");
             }
 
             program.Finish();
@@ -62,16 +63,17 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.Render = true;
-            program.AddInputBlock("k", 1);
+            program.AddInputBlock("a", 1);
             program.AddHeaterDeclarationBlock("z");
 
+            AddFluidBlock(program, "a", "k");
             foreach (bool enableIf in enableIfs)
             {
                 if (enableIf)
                 {
-                    AddFluidBlock(program);
+                    AddFluidBlock(program, "k", "k");
                 }
-                AddFluidBlock(program);
+                AddFluidBlock(program, "k", "k");
             }
 
             program.Finish();
@@ -146,34 +148,35 @@ namespace BiolyTests
             Assert.IsTrue(program1Commands.SequenceEqual(program2Commands));
         }
 
-        private void nestRepeats(JSProgram program, string prevScopeName, Queue<int> repeatTimes)
+        private void nestRepeats(JSProgram program, string prevScopeName, Queue<int> repeatTimes, string from, string to)
         {
             string times = program.AddConstantBlock(repeatTimes.Dequeue());
 
             string scopeName = program.GetUniqueName();
             program.AddScope(scopeName);
             program.SetScope(scopeName);
-            string guardedBlock = AddFluidBlock(program);
+            string guardedBlock = AddFluidBlock(program, from, to);
             if (repeatTimes.Count > 0)
             {
-                nestRepeats(program, scopeName, repeatTimes);
+                nestRepeats(program, scopeName, repeatTimes, to, to);
             }
             program.SetScope(prevScopeName);
 
             program.AddRepeatSegment(times, guardedBlock);
-            AddFluidBlock(program);
+            AddFluidBlock(program, to, to);
         }
 
         private JSProgram CreateProgramWithRepeatStatement(int[][] repeatTimes)
         {
             JSProgram program = new JSProgram();
             program.Render = true;
-            program.AddInputBlock("k", 1);
+            program.AddInputBlock("a", 1);
             program.AddHeaterDeclarationBlock("z");
 
+            AddFluidBlock(program, "a", "k");
             foreach (int[] repeats in repeatTimes)
             {
-                nestRepeats(program, JSProgram.DEFAULT_SCOPE_NAME, new Queue<int>(repeats));
+                nestRepeats(program, JSProgram.DEFAULT_SCOPE_NAME, new Queue<int>(repeats), "k", "k");
             }
 
             program.Finish();
@@ -183,12 +186,13 @@ namespace BiolyTests
         private JSProgram CreateProgramWithoutRepeatStatement(int repeatTimes)
         {
             JSProgram program = new JSProgram();
-            program.AddInputBlock("k", 1);
+            program.AddInputBlock("a", 1);
             program.AddHeaterDeclarationBlock("z");
 
+            AddFluidBlock(program, "a", "k");
             for (int i = 0; i < repeatTimes; i++)
             {
-                AddFluidBlock(program);
+                AddFluidBlock(program, "k", "k");
             }
 
             program.Finish();
@@ -253,7 +257,7 @@ namespace BiolyTests
         {
             JSProgram program = new JSProgram();
             program.Render = true;
-            program.AddInputBlock("k", 1);
+            program.AddInputBlock("a", 1);
             program.AddHeaterDeclarationBlock("z");
 
             string times = program.AddConstantBlock(whileTimes);
@@ -263,11 +267,11 @@ namespace BiolyTests
             string scopeName = program.GetUniqueName();
             program.AddScope(scopeName);
             program.SetScope(scopeName);
-            string guardedBlock = AddFluidBlock(program);
+            string guardedBlock = AddFluidBlock(program, "a", "k");
             program.SetScope(JSProgram.DEFAULT_SCOPE_NAME);
 
             program.AddRepeatSegment(times, guardedBlock);
-            AddFluidBlock(program);
+            AddFluidBlock(program, "k", "k");
 
             program.Finish();
             return program;

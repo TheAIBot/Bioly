@@ -6,8 +6,8 @@ namespace BiolyCompiler.Graphs
 {
     public class Node<N>
     {
-        private List<Node<N>> OutgoingEdges = new List<Node<N>>();
-        private List<Node<N>> IngoingEdges = new List<Node<N>>();
+        private readonly List<Node<N>> OutgoingEdges = new List<Node<N>>();
+        private readonly List<Node<N>> IngoingEdges = new List<Node<N>>();
         public readonly N value;
 
         public Node(N value)
@@ -34,14 +34,6 @@ namespace BiolyCompiler.Graphs
         public List<Node<N>> getOutgoingEdges()
         {
             return OutgoingEdges;
-        }
-
-        
-        public void InvertEdges()
-        {
-            var temp = OutgoingEdges;
-            OutgoingEdges = IngoingEdges;
-            IngoingEdges = temp;
         }
     }
 }

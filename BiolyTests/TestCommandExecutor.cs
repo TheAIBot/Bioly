@@ -27,7 +27,6 @@ namespace BiolyTests
 
         public override void UpdateDropletData(List<Dictionary<string, float>> dropsConcentrations)
         {
-            throw new NotImplementedException();
         }
 
         public override V WaitForResponse<V>()

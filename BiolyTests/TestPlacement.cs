@@ -5,11 +5,11 @@ using BiolyCompiler.Scheduling;
 using BiolyCompiler.Architechtures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using BiolyCompiler.Modules.RectangleSides;
 using System.Linq;
 using BiolyTests.TestObjects;
 using BiolyCompiler;
 using MoreLinq;
+using BiolyCompiler.Modules.HelperObjects;
 //using MoreLinq;
 
 namespace BiolyTests.PlacementTests

@@ -333,7 +333,8 @@ namespace BiolyTests.RectanglesWithModulesTests
             List<Rectangle> actualRectangles = GetAllRectanglesInGraph(mergerRectangle);
 
             Assert.AreEqual(0, actualRectangles.Except(board.EmptyRectangles.Values).Count());
-            Assert.AreEqual(0, expectedRectangles.Except(actualRectangles).Count(), Environment.NewLine + merger.ToString() + Environment.NewLine + RectanglesToString(actualRectangles, width, before.Length / width));
+            var asdsada = expectedRectangles.Except(actualRectangles).ToArray().Count();
+            Assert.AreEqual(0, asdsada, Environment.NewLine + merger.ToString() + Environment.NewLine + RectanglesToString(actualRectangles, width, before.Length / width));
         }
 
         [TestMethod]

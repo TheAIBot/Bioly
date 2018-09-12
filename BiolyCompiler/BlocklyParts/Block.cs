@@ -34,9 +34,9 @@ namespace BiolyCompiler.BlocklyParts
 
         //For the scheduling:
         public bool IsDone = false;
+        public int priority = 0;
         public int StartTime = -1;
         public int EndTime = -1;
-        public int priority = Int32.MaxValue;
 
         public Block(bool canBeOutput, List<FluidInput> inputFluids, List<string> inputNumbers, string output, string blockID)
         {
@@ -77,7 +77,8 @@ namespace BiolyCompiler.BlocklyParts
         {
             if (obj is Block blockObj)
             {
-                return blockObj.GetType() == this.GetType() && blockObj.OutputVariable == this.OutputVariable;
+                return blockObj.GetType() == this.GetType() && 
+                       blockObj.OutputVariable == this.OutputVariable;
             }
             return false;
         }
