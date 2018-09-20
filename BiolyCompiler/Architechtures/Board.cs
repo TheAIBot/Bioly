@@ -5,6 +5,7 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Exceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
+using BiolyCompiler.Modules.RectangleStuff.RectangleOptimizations;
 using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
 using MoreLinq;
@@ -330,7 +331,7 @@ namespace BiolyCompiler.Architechtures
 
             if (topRectangle != null)
             {
-                topRectangle.MergeWithOtherRectangles(board);
+                RectangleOptimizations.OptimizeRectangle(board, topRectangle);
             }
             if (rightRectangle != null)
             {
@@ -338,7 +339,7 @@ namespace BiolyCompiler.Architechtures
                 //we must ensure that the rectangle is actually placed on the board:
                 if (board.EmptyRectangles.TryGetValue(rightRectangle, out Rectangle rightRectangleInDictionary))
                 {
-                    rightRectangleInDictionary.MergeWithOtherRectangles(board);
+                    RectangleOptimizations.OptimizeRectangle(board, rightRectangleInDictionary);
                 }
             }
             
@@ -358,7 +359,7 @@ namespace BiolyCompiler.Architechtures
             emptyRectangle.isEmpty = true;
 
             ClearBoard(emptyRectangle);
-            emptyRectangle.MergeWithOtherRectangles(this);
+            RectangleOptimizations.OptimizeRectangle(this, emptyRectangle);
         }
         
         private void ClearBoard(Rectangle emptyRectangle)

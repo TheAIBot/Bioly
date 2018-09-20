@@ -88,6 +88,7 @@
   <ItemGroup>
     <Compile Include="JSProgram.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RectangleTestTools.cs" />
     <Compile Include="TestAssay.cs" />
     <Compile Include="TestCommandExecutor.cs" />
     <Compile Include="TestLibrary.cs" />

@@ -5,6 +5,7 @@ using System.Linq;
 using BiolyCompiler.Architechtures;
 using BiolyCompiler.Exceptions;
 using BiolyCompiler.Modules.HelperObjects;
+using BiolyCompiler.Modules.RectangleStuff.RectangleOptimizations;
 
 namespace BiolyCompiler.Modules
 {
@@ -66,6 +67,57 @@ namespace BiolyCompiler.Modules
             else
             {
                 return false;
+            }
+        }
+
+        public static void ReplaceRectangles(Rectangle[] toReplace, Rectangle replaceWith)
+        {
+            ReplaceRectangles(toReplace, new Rectangle[] { replaceWith });
+        }
+        public static void ReplaceRectangles(Rectangle toReplace, Rectangle[] replaceWith)
+        {
+            ReplaceRectangles(new Rectangle[] { toReplace }, replaceWith);
+        }
+        public static void ReplaceRectangles(Rectangle[] toReplace, Rectangle[] replaceWith)
+        {
+            //Collect all the connections and try them on the new rectangles
+            HashSet<Rectangle> allConnections = new HashSet<Rectangle>();
+            toReplace.ForEach(x => allConnections.UnionWith(x.AdjacentRectangles));
+
+            //Can't have references to the old rectangles as they are not in use anymore
+            toReplace.ForEach(x => allConnections.Remove(x));
+
+            //Some of the new rectangles will lie next to each other
+            // and they should ofcourse also be connected
+            replaceWith.ForEach(x => allConnections.Add(x));
+
+            //Now remove the old rectangles connections
+            toReplace.ForEach(x => x.Disconnect());
+
+            //Now for each new rectangle try the old rectangles connections.
+            //As all the rectangles habitate the same area they must have some of the connection
+            //in common
+            replaceWith.ForEach(x => x.Connect(allConnections));
+        }
+
+        public void Disconnect()
+        {
+            foreach (Rectangle adjacent in AdjacentRectangles)
+            {
+                adjacent.AdjacentRectangles.Remove(this);
+            }
+            AdjacentRectangles.Clear();
+        }
+
+        public void Connect(ICollection<Rectangle> connectTo)
+        {
+            foreach (Rectangle potentialConnection in connectTo)
+            {
+                if (potentialConnection.IsAdjacent(this))
+                {
+                    this.AdjacentRectangles.Add(potentialConnection);
+                    potentialConnection.AdjacentRectangles.Add(this);
+                }
             }
         }
 
@@ -146,7 +198,7 @@ namespace BiolyCompiler.Modules
             return min <= value && value <= max;
         }
 
-        private static bool ShouldSplitAtHorizontalLineSegment(int VerticalSegmentLenght, int HorizontalSegmentLenght)
+        public static bool ShouldSplitAtHorizontalLineSegment(int VerticalSegmentLenght, int HorizontalSegmentLenght)
         {
             return HorizontalSegmentLenght <= VerticalSegmentLenght;
         }
@@ -286,12 +338,12 @@ namespace BiolyCompiler.Modules
                             this.ConnectIfAdjacent(rectangle);
                         }
 
-                        this.MergeWithOtherRectangles(board);
+                        RectangleOptimizations.OptimizeRectangle(board, this);
                         //In the case that adjacentRectangle have been modified in the above merge, 
                         //we must ensure that the rectangle is actually placed on the board:
                         if (board.EmptyRectangles.TryGetValue(adjacentRectangle, out Rectangle adjacentRectangleInDictionary))
                         {
-                            adjacentRectangleInDictionary.MergeWithOtherRectangles(board);
+                            RectangleOptimizations.OptimizeRectangle(board, adjacentRectangleInDictionary);
                         }
                         return true;
                     }

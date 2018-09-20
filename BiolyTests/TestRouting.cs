@@ -41,9 +41,9 @@ namespace BiolyTests.RoutingTests
 
             int startTime = 55;
             Route route = Router.DetermineRouteToModule(Router.haveReachedDropletOfTargetType(inputLocation), sourceModule, inputLocation, board, startTime);
-            Assert.IsTrue(isAnActualRoute(route, board));
-            Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Has detected collision while this shouldn't be possible");
-            Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
+            Assert.IsTrue(IsAnActualRoute(route, board));
+            Assert.IsTrue(HasNoCollisions(route, board, sourceModule, droplet), "Has detected collision while this shouldn't be possible");
+            Assert.IsTrue(HasCorrectStartAndEnding(route, board, droplet, inputLocation));
             Assert.AreEqual(droplet.Shape.x + droplet.Shape.y + 1, route.route.Count);
             Assert.AreEqual(startTime + (droplet.Shape.x + droplet.Shape.y)*2 + 1, route.getEndTime());
         }
@@ -74,9 +74,9 @@ namespace BiolyTests.RoutingTests
 
             int startTime = 55;
             Route route = Router.DetermineRouteToModule(Router.haveReachedDropletOfTargetType(inputLocation), sourceModule, inputLocation, board, startTime);
-            Assert.IsTrue(isAnActualRoute(route, board));
-            Assert.IsTrue(hasNoCollisions(route, board, sourceModule, droplet), "Obstacle not avoided: the path has a collisition");
-            Assert.IsTrue(hasCorrectStartAndEnding(route, board, droplet, inputLocation));
+            Assert.IsTrue(IsAnActualRoute(route, board));
+            Assert.IsTrue(HasNoCollisions(route, board, sourceModule, droplet), "Obstacle not avoided: the path has a collisition");
+            Assert.IsTrue(HasCorrectStartAndEnding(route, board, droplet, inputLocation));
             //The manhatten distance to the target, is the lenght of the direct path to the target.
             //As the placed module should block the way somewhat, the path should be longer:
             Assert.IsTrue(route.getEndTime() > startTime + droplet.Shape.x + droplet.Shape.y);
@@ -135,12 +135,12 @@ namespace BiolyTests.RoutingTests
             //The modules will be placed again, to check hasCorrectStartAndEnding:
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            Assert.IsTrue(hasCorrectStartAndEnding(routes[0], board, droplet3, sourceModule.GetInputLayout().Droplets[0]));
-            Assert.IsTrue(hasCorrectStartAndEnding(routes[1], board, droplet2, sourceModule.GetInputLayout().Droplets[1]));
-            Assert.IsTrue(isAnActualRoute(routes[0], board));
-            Assert.IsTrue(hasNoCollisions(routes[0], board, sourceModule, droplet3), "Obstacle not avoided: the path has a collisition");
-            Assert.IsTrue(isAnActualRoute(routes[1], board));
-            Assert.IsTrue(hasNoCollisions(routes[1], board, sourceModule, droplet2), "Obstacle not avoided: the path has a collisition");
+            Assert.IsTrue(HasCorrectStartAndEnding(routes[0], board, droplet3, sourceModule.GetInputLayout().Droplets[0]));
+            Assert.IsTrue(HasCorrectStartAndEnding(routes[1], board, droplet2, sourceModule.GetInputLayout().Droplets[1]));
+            Assert.IsTrue(IsAnActualRoute(routes[0], board));
+            Assert.IsTrue(HasNoCollisions(routes[0], board, sourceModule, droplet3), "Obstacle not avoided: the path has a collisition");
+            Assert.IsTrue(IsAnActualRoute(routes[1], board));
+            Assert.IsTrue(HasNoCollisions(routes[1], board, sourceModule, droplet2), "Obstacle not avoided: the path has a collisition");
         }
 
         [TestMethod]
@@ -196,10 +196,10 @@ namespace BiolyTests.RoutingTests
             //The modules will be placed again, to check hasCorrectStartAndEnding:
             board.UpdateGridWithModulePlacement(droplet2, droplet2.Shape);
             board.UpdateGridWithModulePlacement(droplet3, droplet3.Shape);
-            Assert.IsTrue(hasCorrectStartAndEnding(routes1[0], board, droplet2, sourceModule.GetInputLayout().Droplets[0])); //Droplet 2 is close, and should therefore be routed first.
-            Assert.IsTrue(hasCorrectStartAndEnding(routes2[0], board, droplet3, sourceModule.GetInputLayout().Droplets[1]));
-            Assert.IsTrue(isAnActualRoute(routes1[0], board));
-            Assert.IsTrue(isAnActualRoute(routes2[0], board));
+            Assert.IsTrue(HasCorrectStartAndEnding(routes1[0], board, droplet2, sourceModule.GetInputLayout().Droplets[0])); //Droplet 2 is close, and should therefore be routed first.
+            Assert.IsTrue(HasCorrectStartAndEnding(routes2[0], board, droplet3, sourceModule.GetInputLayout().Droplets[1]));
+            Assert.IsTrue(IsAnActualRoute(routes1[0], board));
+            Assert.IsTrue(IsAnActualRoute(routes2[0], board));
         }
 
 
@@ -236,18 +236,128 @@ namespace BiolyTests.RoutingTests
             for (int i = 0; i < operation.InputRoutes[fluidType.FluidName].Count; i++)
             {
                 Route route = operation.InputRoutes[fluidType.FluidName][i];
-                Assert.IsTrue(isAnActualRoute(route, board));
-                Assert.IsTrue(hasNoCollisions(route, board, sourceModule, dropletSpawner), "Has detected collision while this shouldn't be possible");
-                Assert.IsTrue(hasCorrectStartAndEnding(route, board, dropletSpawner, sourceModule.GetInputLayout().Droplets[i]));
+                Assert.IsTrue(IsAnActualRoute(route, board));
+                Assert.IsTrue(HasNoCollisions(route, board, sourceModule, dropletSpawner), "Has detected collision while this shouldn't be possible");
+                Assert.IsTrue(HasCorrectStartAndEnding(route, board, dropletSpawner, sourceModule.GetInputLayout().Droplets[i]));
             }
         }
 
-        public static bool hasNoCollisions(Route route, Board board, Module sourceModule, IDropletSource targetDroplet)
+        [TestMethod]
+        public void TestTwoModulesRoute()
+        {
+            int[] boardArray =
+            {
+                -1, -1, -2, -2,
+                -1, -1, -2, -2,
+                -1, -1, -2, -2,
+                -1, -1, -2, -2,
+                -1, -1, -2, -2,
+            };
+
+            CheckAllRoutes(boardArray, 4);
+        }
+
+        [TestMethod]
+        public void TestTwoModulesRouteWithSeperator()
+        {
+            int[] boardArray =
+            {
+                -1, -1, 1, -2, -2,
+                -1, -1, 1, -2, -2,
+                -1, -1, 1, -2, -2,
+                -1, -1, 1, -2, -2,
+                -1, -1, 1, -2, -2,
+            };
+
+            CheckAllRoutes(boardArray, 5);
+        }
+
+        [TestMethod]
+        public void TestSimpleRoute()
+        {
+            int[] boardArray =
+            {
+                -1, -1, -2, -2, -2, -3, -3,
+                -1, -1, -2, -2, -2, -3, -3,
+                -1, -1,  1,  1,  1, -3, -3,
+                -1, -1, -4, -4, -4, -3, -3,
+                -1, -1, -4, -4, -4, -3, -3,
+            };
+
+            CheckAllRoutes(boardArray, 7);
+        }
+
+        [TestMethod]
+        public void TestBranchRoute()
+        {
+            int[] boardArray =
+            {
+                -1, -1, -1, 1, 1, -3, -3, -3, -3, 3, 3, -4, -4,
+                -1, -1, -1, 1, 1, -3, -3, -3, -3, 3, 3, -4, -4,
+                -2, -2, -2, 1, 1, -3, -3, -3, -3, 3, 3, -5, -5,
+                -2, -2, -2, 2, 2,  2,  2,  2,  2, 2, 2, -5, -5,
+                -2, -2, -2, 2, 2,  2,  2,  2,  2, 2, 2, -5, -5,
+                -2, -2, -2, 4, 4, -7, -7, -7, -7, 5, 5, -5, -5,
+                -6, -6, -6, 4, 4, -7, -7, -7, -7, 5, 5, -8, -8,
+                -6, -6, -6, 4, 4, -7, -7, -7, -7, 5, 5, -8, -8
+            };
+
+            CheckAllRoutes(boardArray, 13);
+        }
+
+        private static void CheckAllRoutes(int[] boardArray, int boardWidth)
+        {
+            var boardData = RectangleTestTools.ArrayToRectangles(boardArray, boardWidth, "random fluid name");
+
+            foreach (var startData in boardData.modules)
+            {
+                foreach (var endData in boardData.modules)
+                {
+                    if (startData.Item1 == endData.Item1)
+                    {
+                        continue;
+                    }
+
+                    CheckRoute(boardData, boardWidth, startData.Item2, endData.Item2);
+                }
+            }
+        }
+
+        private static void CheckRoute((Board board, List<(Rectangle, int)> rectangles, List<(Module, int)> modules) boardData, int boardWidth, int startModuleID, int endModuleID)
+        {
+            Module startModule = boardData.modules.Single(x => x.Item2 == startModuleID).Item1;
+            Module endModule   = boardData.modules.Single(x => x.Item2 == endModuleID).Item1;
+
+            Route route = Router.DetermineRouteToModule(Router.haveReachedSpecifficModule(endModule), startModule, (IDropletSource)startModule, boardData.board, 10);
+
+            string errorMessage = RouteOnBoard(boardData.rectangles.Select(x => x.Item1).ToList(), boardData.board.width, boardData.board.heigth, route);
+            Assert.IsTrue(route.route.Count > 0);
+            Assert.IsTrue(HasNoCollisions(route, boardData.board, startModule, (IDropletSource)endModule), errorMessage);
+            Assert.IsTrue(HasCorrectStartAndEnding(route, boardData.board, (IDropletSource)endModule, (IDropletSource)startModule), errorMessage);
+            Assert.IsTrue(IsAnActualRoute(route, boardData.board), errorMessage);
+        }
+
+        private static string RouteOnBoard(List<Rectangle> rectangles, int width, int height, Route route)
+        {
+            int[][] map = RectangleTestTools.RectangleIntMap(rectangles, width, height);
+            string[][] stringMap = map.Select(x => x.Select(y => String.Format("{0,2}", y)).ToArray()).ToArray();
+
+            foreach (var position in route.route)
+            {
+                stringMap[position.y][position.x] = " #";
+            }
+
+            return Environment.NewLine + String.Join(Environment.NewLine, stringMap.Select(x => String.Join(", ", x)));
+        }
+
+        public static bool HasNoCollisions(Route route, Board board, Module sourceModule, IDropletSource targetDroplet)
         {
             for (int i = 0; i < route.route.Count; i++)
             {
                 RoutingInformation node = route.route[i];
-                if (board.grid[node.x, node.y] != null && board.grid[node.x, node.y] != sourceModule && board.grid[node.x, node.y] != targetDroplet)
+                if (board.grid[node.x, node.y] != null && 
+                    board.grid[node.x, node.y] != sourceModule && 
+                    board.grid[node.x, node.y] != targetDroplet)
                 {
                     return false;
                 }
@@ -255,7 +365,7 @@ namespace BiolyTests.RoutingTests
             return true;
         }
 
-        public static bool hasCorrectStartAndEnding(Route route, Board board, IDropletSource source, IDropletSource inputLocation)
+        public static bool HasCorrectStartAndEnding(Route route, Board board, IDropletSource source, IDropletSource inputLocation)
         {
             RoutingInformation startOfPath = route.route[0];
             (int sourceX, int sourceY) = source.GetMiddleOfSource();
@@ -266,14 +376,14 @@ namespace BiolyTests.RoutingTests
                     route.route.Last().y == inputY;
         }
 
-        public static bool isAnActualRoute(Route route, Board board)
+        private static bool IsAnActualRoute(Route route, Board board)
         {
-            if (!isPlacedOnTheBoard(route.route[0].x, route.route[0].y, board)) return false;
+            if (!IsPlacedOnTheBoard(route.route[0].x, route.route[0].y, board)) return false;
             for (int i = 1; i < route.route.Count; i++)
             {
                 RoutingInformation priorPlacement = route.route[i - 1];
                 RoutingInformation currentPlacement = route.route[i];
-                if (!isPlacedOnTheBoard(currentPlacement.x, currentPlacement.y, board))
+                if (!IsPlacedOnTheBoard(currentPlacement.x, currentPlacement.y, board))
                 {
                     return false;
                 }
@@ -286,7 +396,7 @@ namespace BiolyTests.RoutingTests
             return true;
         }
 
-        public static bool isPlacedOnTheBoard(int x, int y, Board board)
+        private static bool IsPlacedOnTheBoard(int x, int y, Board board)
         {
             return (0 <= x && x < board.width &&
                     0 <= y && y < board.heigth);

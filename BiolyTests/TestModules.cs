@@ -59,8 +59,8 @@ namespace BiolyTests.ModulesTests
             Droplet droplet2 = (Droplet) boardAtDifferentTimes[2].PlacedModules.Values.ToList()[4];
             Route route1 = mixingOperation.InputRoutes[op1Name][0];
             Route route2 = mixingOperation.InputRoutes[op2Name][0];
-            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route1, board, (InputModule)inputOperation1.BoundModule, droplet1));
-            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(route2, board, (InputModule)inputOperation2.BoundModule, droplet2));
+            Assert.IsTrue(RoutingTests.TestRouting.HasCorrectStartAndEnding(route1, board, (InputModule)inputOperation1.BoundModule, droplet1));
+            Assert.IsTrue(RoutingTests.TestRouting.HasCorrectStartAndEnding(route2, board, (InputModule)inputOperation2.BoundModule, droplet2));
 
         }
 
@@ -116,7 +116,7 @@ namespace BiolyTests.ModulesTests
                     Assert.IsTrue(schedule.FluidVariableLocations[op1Name].dropletSources.Contains(droplet));
                 }
                 //Since the droplets have simply been renamed, they should still be placed the same place as before:
-                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
+                Assert.IsTrue(RoutingTests.TestRouting.HasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
             }
             Assert.AreEqual(3, schedule.FluidVariableLocations.Count);
             Assert.AreEqual(numberOfDropletsTransfered - numberOfDropletsRenamed, schedule.FluidVariableLocations[op1Name].GetNumberOfDropletsAvailable());
@@ -156,7 +156,7 @@ namespace BiolyTests.ModulesTests
             {
                 Droplet droplet = (Droplet)boardAtDifferentTimes[1].PlacedModules.Values.ToList()[i + 2];
                 Assert.IsTrue(droplet != null);
-                Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
+                Assert.IsTrue(RoutingTests.TestRouting.HasCorrectStartAndEnding(fluidTransfer1.InputRoutes[inputOperation.OriginalOutputVariable][i], board, (InputModule)inputOperation.BoundModule, droplet));
             }
         }
 
@@ -251,10 +251,10 @@ namespace BiolyTests.ModulesTests
             Route fromHeater2ToDroplet  = heaterOperation2.OutputRoutes[heaterOperation2.OriginalOutputVariable][0];
             Droplet droplet = (Droplet) boardAtDifferentTimes.Last().PlacedModules.Values.Last();
 
-            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fromInputToHeater   , board, (InputModule)inputOperation.BoundModule, heaterOperation1.BoundModule.GetInputLayout().Droplets[0]));
-            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fromHeaterToDroplet , board, (Droplet) heaterOperation1.BoundModule.GetInputLayout().Droplets[0],droplet));
-            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fromDropletToHeater2, board, droplet, heaterOperation2.BoundModule.GetInputLayout().Droplets[0]));
-            Assert.IsTrue(RoutingTests.TestRouting.hasCorrectStartAndEnding(fromHeater2ToDroplet, board, heaterOperation2.BoundModule.GetInputLayout().Droplets[0], droplet));
+            Assert.IsTrue(RoutingTests.TestRouting.HasCorrectStartAndEnding(fromInputToHeater   , board, (InputModule)inputOperation.BoundModule, heaterOperation1.BoundModule.GetInputLayout().Droplets[0]));
+            Assert.IsTrue(RoutingTests.TestRouting.HasCorrectStartAndEnding(fromHeaterToDroplet , board, (Droplet) heaterOperation1.BoundModule.GetInputLayout().Droplets[0],droplet));
+            Assert.IsTrue(RoutingTests.TestRouting.HasCorrectStartAndEnding(fromDropletToHeater2, board, droplet, heaterOperation2.BoundModule.GetInputLayout().Droplets[0]));
+            Assert.IsTrue(RoutingTests.TestRouting.HasCorrectStartAndEnding(fromHeater2ToDroplet, board, heaterOperation2.BoundModule.GetInputLayout().Droplets[0], droplet));
             
         }
     }
