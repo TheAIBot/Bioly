@@ -70,11 +70,15 @@ namespace BiolyCompiler.Architechtures
             //If a rectangle where the module can fit inside, was found, it can be placed in the best of those rectangles.
             //Else, it might be neccessary to "buffer" the module, by placing empty space around it, 
             //so that it doesn't block routing to other modules.
-            if (bestFitRectangle != null){
+            if (bestFitRectangle != null)
+            {
                 PlaceModuleInRectangle(module, bestFitRectangle, this);
                 return true;
             }
-            else return PlaceBufferedModule(module, candidateBufferedRectangles);
+            else
+            {
+                return PlaceBufferedModule(module, candidateBufferedRectangles);
+            }
         }
 
 
@@ -183,7 +187,7 @@ namespace BiolyCompiler.Architechtures
 
             //Breadth first search, finding all the empty rectangles and placed modules that can be visited.
             HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>() { randomEmptyRectangle };
-            HashSet<Rectangle> connectedModuleRectangles = new HashSet<Rectangle>();
+            HashSet<Rectangle> visitedModuleRectangles = new HashSet<Rectangle>();
             Queue<Rectangle> emptyRectanglesToVisit = new Queue<Rectangle>();
             emptyRectanglesToVisit.Enqueue(randomEmptyRectangle);
 
@@ -192,29 +196,40 @@ namespace BiolyCompiler.Architechtures
                 Rectangle currentEmptyRectangle = emptyRectanglesToVisit.Dequeue();
                 foreach (var adjacentRectangle in currentEmptyRectangle.AdjacentRectangles)
                 {
-                    if (adjacentRectangle == rectangle)
+                    //Is module
+                    if (!adjacentRectangle.isEmpty)
                     {
-                        throw new InternalRuntimeException("Logic error: no rectangles should currently be adjacent to this rectangle");
+                        visitedModuleRectangles.Add(adjacentRectangle);
                     }
-
-                    //if it is an empty rectangle, it should be visited:
-                    if (adjacentRectangle.isEmpty && visitedEmptyRectangles.Add(adjacentRectangle))
+                    //Has seen rectangle before
+                    else if (!visitedEmptyRectangles.Add(adjacentRectangle))
                     {
                         emptyRectanglesToVisit.Enqueue(adjacentRectangle);
-                    }
-                    else if (!adjacentRectangle.isEmpty)
-                    {
-                        connectedModuleRectangles.Add(adjacentRectangle);
                     }
                 }
             }
 
-            //The placed module is the removed, leaving the original board.
+            //Revert back to the original board
             Rectangle.ReplaceRectangles(splittedRectangles.allRectangles, rectangle);
 
+            //+1 because a module was added
+            bool visitedAllModules = placedModules.Count + 1 == visitedModuleRectangles.Count;
+            //Add the rectangles from the splitted rectangle array. - 2 because one rectangle is a module
+            //and another for the rectangle that was splitted up.
+            bool visitedAllEmptyRectangless = emptyRectangles.Count + splittedRectangles.allRectangles.Length - 2 == visitedEmptyRectangles.Count;
+
+            return visitedAllModules && visitedAllEmptyRectangless;
+
             //DebugTools.checkAdjacencyMatrixCorrectness(this);
-            bool visitsEverything = VisitsAllModulesAndEmptyRectangles(splittedRectangles.allRectangles.Length - 2, 1, visitedEmptyRectangles, connectedModuleRectangles, emptyRectangles, placedModules);
+            bool visitsEverything = VisitsAllModulesAndEmptyRectangles(splittedRectangles.allRectangles.Length - 2, 1, visitedEmptyRectangles, visitedModuleRectangles, emptyRectangles, placedModules);
             return visitsEverything;
+        }
+
+        private static bool VisitsAllModulesAndEmptyRectangles(int extraEmptyRectangles, int extraPlacedModules, HashSet<Rectangle> visitedEmptyRectangles,
+                                                       HashSet<Rectangle> connectedModuleRectangles, Dictionary<Rectangle, Rectangle> originalEmptyRectangles, Dictionary<Module, Module> originalPlacedModules)
+        {
+            return (connectedModuleRectangles.Count == originalPlacedModules.Count + extraPlacedModules &&
+                    visitedEmptyRectangles.Count == originalEmptyRectangles.Count + extraEmptyRectangles);
         }
 
         public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, Dictionary<Rectangle, Rectangle> outsideEmptyRectangles, Dictionary<Rectangle, Rectangle> layoutEmptyRectangles)
@@ -272,24 +287,6 @@ namespace BiolyCompiler.Architechtures
             }
 
             return randomEmptyRectangle;
-        }
-
-        /// <summary>
-        /// Compares the size of the given sets, to find if exactely the right rectangles and modules have been visisted.
-        /// It returns true if this is the case, else false.
-        /// </summary>
-        /// <param name="extraEmptyRectangles"></param>
-        /// <param name="extraPlacedModules"></param>
-        /// <param name="visitedEmptyRectangles"></param>
-        /// <param name="connectedModuleRectangles"></param>
-        /// <param name="originalEmptyRectangles"></param>
-        /// <param name="originalPlacedModules"></param>
-        /// <returns></returns>
-        private static bool VisitsAllModulesAndEmptyRectangles(int extraEmptyRectangles, int extraPlacedModules, HashSet<Rectangle> visitedEmptyRectangles, 
-                                                               HashSet<Rectangle> connectedModuleRectangles, Dictionary<Rectangle, Rectangle> originalEmptyRectangles, Dictionary<Module, Module> originalPlacedModules)
-        {
-            return (connectedModuleRectangles.Count == originalPlacedModules.Count   + extraPlacedModules && 
-                    visitedEmptyRectangles.Count    == originalEmptyRectangles.Count + extraEmptyRectangles);
         }
 
         public void PlaceModuleInRectangle(Module module, Rectangle bestFitRectangle, Board board)
