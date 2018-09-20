@@ -167,22 +167,19 @@ namespace BiolyCompiler.Architechtures
                 return (module.Shape.width != rectangle.width || module.Shape.height != rectangle.height);
             }
 
+            var splittedRectangles = Rectangle.SplitIntoSmallerRectangles(rectangle, module.Shape);
+            splittedRectangles.newSmaller.isEmpty = false;
 
-            //The module is temporarily "placed" (but not really), to get the adjacency graph corresponding to the module being placed.
-            //It is not really placed, as it would change EmptyRectangles, which is itterated over. Trust me, it would crash everything - Jesper.
-            (Rectangle emptyTopRectangle, Rectangle emptyRightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
-            int extraEmptyRectangles = ((emptyTopRectangle == null) ? 0 : 1) + ((emptyRightRectangle == null) ? 0 : 1) - 1; //-1 as the initial rectangle is removed.
+            Rectangle.ReplaceRectangles(rectangle, splittedRectangles.allRectangles);
 
             //The source empty rectangle for the search does not matter, as paths are symmetric:
-            Rectangle randomEmptyRectangle = getEmptyAdjacentRectangle(module.Shape);
+            Rectangle randomEmptyRectangle = getEmptyAdjacentRectangle(splittedRectangles.newSmaller);
             if (randomEmptyRectangle == null)
             {
-                //There were only one empty rectangle initally, and placing the module in it, filled the rectangle:
-                //The placed module is the removed, leaving the original board.
-                MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
+                //Revert back to the original board
+                Rectangle.ReplaceRectangles(splittedRectangles.allRectangles, rectangle);
                 return false;
             }
-
 
             //Breadth first search, finding all the empty rectangles and placed modules that can be visited.
             HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>() { randomEmptyRectangle };
@@ -213,10 +210,10 @@ namespace BiolyCompiler.Architechtures
             }
 
             //The placed module is the removed, leaving the original board.
-            MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
+            Rectangle.ReplaceRectangles(splittedRectangles.allRectangles, rectangle);
 
             //DebugTools.checkAdjacencyMatrixCorrectness(this);
-            bool visitsEverything = VisitsAllModulesAndEmptyRectangles(extraEmptyRectangles, 1, visitedEmptyRectangles, connectedModuleRectangles, emptyRectangles, placedModules);
+            bool visitsEverything = VisitsAllModulesAndEmptyRectangles(splittedRectangles.allRectangles.Length - 2, 1, visitedEmptyRectangles, connectedModuleRectangles, emptyRectangles, placedModules);
             return visitsEverything;
         }
 
@@ -295,30 +292,11 @@ namespace BiolyCompiler.Architechtures
                     visitedEmptyRectangles.Count    == originalEmptyRectangles.Count + extraEmptyRectangles);
         }
 
-        private static void MergeToGetOriginalRectangle(Module module, Rectangle originalRectangle, Rectangle emptyTopRectangle, Rectangle emptyRightRectangle)
-        {
-            //Dummy rectangles to avoid constant null checks:
-            //The y=-5 position is to create unique hash values
-            if (emptyTopRectangle == null)   emptyTopRectangle = new Rectangle(0, 0, 0, -5);
-            if (emptyRightRectangle == null) emptyRightRectangle = new Rectangle(0, 0, 1, -5);
-            
-
-            foreach (var adjacentRectangle in originalRectangle.AdjacentRectangles)
-            {
-                adjacentRectangle.AdjacentRectangles.Remove(module.Shape);
-                adjacentRectangle.AdjacentRectangles.Remove(emptyTopRectangle);
-                adjacentRectangle.AdjacentRectangles.Remove(emptyRightRectangle);
-                //This must be latter than the removes, in the case that the module.shape has the same size as the merged rectangle, 
-                //curtesy of the equals methods.
-                adjacentRectangle.AdjacentRectangles.Add(originalRectangle);
-            }
-            module.Shape.AdjacentRectangles.Clear();
-
-            //ClearBoard(originalRectangle);
-        }
-
         public void PlaceModuleInRectangle(Module module, Rectangle bestFitRectangle, Board board)
         {
+            module.Shape = new Rectangle(module.Shape.width, module.Shape.height, bestFitRectangle.x, bestFitRectangle.y);
+            module.Shape.isEmpty = false;
+
             EmptyRectangles.Remove(bestFitRectangle);
             UpdateGridWithModulePlacement(module, bestFitRectangle);            
             (Rectangle topRectangle, Rectangle rightRectangle) = bestFitRectangle.SplitIntoSmallerRectangles(module.Shape);

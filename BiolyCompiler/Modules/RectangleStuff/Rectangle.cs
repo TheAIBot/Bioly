@@ -184,6 +184,39 @@ namespace BiolyCompiler.Modules
             return (TopRectangle, RightRectangle);
         }
 
+        public static (Rectangle[] allRectangles, Rectangle newSmaller) SplitIntoSmallerRectangles(Rectangle bigger, Rectangle smaller)
+        {
+            //need to move the smaller rectangle to the same position as the bigger rectangle
+            Rectangle newSmaller = new Rectangle(smaller.width, smaller.height, bigger.x, bigger.y);
+
+            if (bigger.width == newSmaller.width && 
+                bigger.height == newSmaller.height)
+            {
+                return (new Rectangle[] { newSmaller }, newSmaller);
+            }
+
+            int VerticalSegmentLenght = bigger.height - newSmaller.height;
+            int HorizontalSegmentLenght = bigger.width - newSmaller.width;
+            bool doHorizontalSplit = ShouldSplitAtHorizontalLineSegment(VerticalSegmentLenght, HorizontalSegmentLenght);
+
+            List<Rectangle> rectangles = new List<Rectangle>();
+            rectangles.Add(newSmaller);
+
+            if (VerticalSegmentLenght != 0)
+            {
+                int topRectangleWidth = doHorizontalSplit ? bigger.width : newSmaller.width;
+                rectangles.Add(new Rectangle(topRectangleWidth, VerticalSegmentLenght, bigger.x, newSmaller.getTopmostYPosition() + 1));
+            }
+
+            if (HorizontalSegmentLenght != 0)
+            {
+                int rightRectangleHeight = doHorizontalSplit ? newSmaller.height : bigger.height;
+                rectangles.Add(new Rectangle(HorizontalSegmentLenght, rightRectangleHeight, newSmaller.getRightmostXPosition() + 1, bigger.y));
+            }
+
+            return (rectangles.ToArray(), newSmaller);
+        }
+
         public void splitRectangleInTwo(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
         {
             RemoveAdjacencies();
