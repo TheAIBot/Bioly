@@ -303,7 +303,7 @@ namespace BiolyCompiler.Architechtures
             Rectangle.ReplaceRectangles(rectangle, newRectangles);
 
             //The source empty rectangle for the search does not matter, as paths are symmetric:
-            Rectangle randomEmptyRectangle = getEmptyAdjacentRectangle(newModuleRectangle);
+            Rectangle randomEmptyRectangle = newModuleRectangle.AdjacentRectangles.FirstOrDefault(x => x.isEmpty);
             if (randomEmptyRectangle == null)
             {
                 //Revert back to the original board
@@ -311,47 +311,36 @@ namespace BiolyCompiler.Architechtures
                 return false;
             }
 
-            //Breadth first search, finding all the empty rectangles and placed modules that can be visited.
-            HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>() { randomEmptyRectangle };
-            HashSet<Rectangle> visitedModuleRectangles = new HashSet<Rectangle>();
-            Queue<Rectangle> emptyRectanglesToVisit = new Queue<Rectangle>();
-            emptyRectanglesToVisit.Enqueue(randomEmptyRectangle);
+            HashSet<Rectangle> foundRectangles = new HashSet<Rectangle>();
+            Queue<Rectangle> rectanglesToCheck = new Queue<Rectangle>();
+            rectanglesToCheck.Enqueue(randomEmptyRectangle);
 
-            while (emptyRectanglesToVisit.Count > 0)
+            while (rectanglesToCheck.Count > 0)
             {
-                Rectangle currentEmptyRectangle = emptyRectanglesToVisit.Dequeue();
-                foreach (var adjacentRectangle in currentEmptyRectangle.AdjacentRectangles)
-                {
-                    ////Is module
-                    //if (!adjacentRectangle.isEmpty)
-                    //{
-                    //    visitedModuleRectangles.Add(adjacentRectangle);
-                    //}
-                    ////Hasn't seen rectangle before
-                    //else if (!visitedEmptyRectangles.Contains(adjacentRectangle))
-                    //{
-                    //    visitedEmptyRectangles.Add(adjacentRectangle);
-                    //    emptyRectanglesToVisit.Enqueue(adjacentRectangle);
-                    //}
+                Rectangle toCheck = rectanglesToCheck.Dequeue();
 
-                    if (adjacentRectangle.isEmpty && visitedEmptyRectangles.Add(adjacentRectangle))
-                        emptyRectanglesToVisit.Enqueue(adjacentRectangle);
-                    else if (!adjacentRectangle.isEmpty)
-                        visitedModuleRectangles.Add(adjacentRectangle);
+                foundRectangles.Add(toCheck);
+
+                if (!toCheck.isEmpty)
+                {
+                    continue;
+                }
+
+                foreach (var adjacent in toCheck.AdjacentRectangles)
+                {
+                    if (!foundRectangles.Contains(adjacent))
+                    {
+                        rectanglesToCheck.Enqueue(adjacent);
+                    }
                 }
             }
 
             //Revert back to the original board
             Rectangle.ReplaceRectangles(newRectangles, rectangle);
 
-
-            //+1 because a module was added
-            bool visitedAllModules = placedModules.Count + 1 == visitedModuleRectangles.Count;
-            //Add the rectangles from the splitted rectangle array. - 2 because one rectangle is a module
-            //and another for the rectangle that was splitted up.
-            bool visitedAllEmptyRectangless = emptyRectangles.Count + newRectangles.Length - 2 == visitedEmptyRectangles.Count;
-
-            return visitedAllModules && visitedAllEmptyRectangless;
+            //-1 to empty rectangles because it contains the rectangle that was replaced
+            //by the new rectangles
+            return foundRectangles.Count == newRectangles.Length + (emptyRectangles.Count - 1) + placedModules.Count;
         }
 
         public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, Dictionary<Rectangle, Rectangle> outsideEmptyRectangles, Dictionary<Rectangle, Rectangle> layoutEmptyRectangles)
