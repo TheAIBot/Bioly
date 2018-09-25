@@ -48,7 +48,12 @@ namespace BiolyCompiler.Modules
 
         public bool DoesRectangleFitInside(Rectangle rectangle)
         {
-            return rectangle.height <= this.height && rectangle.width <= this.width;
+            return DoesRectangleFitInside(rectangle.width, rectangle.height);;
+        }
+
+        public bool DoesRectangleFitInside(int w, int h)
+        {
+            return w <= this.width && h <= this.height;
         }
 
         public int GetArea()
@@ -184,7 +189,7 @@ namespace BiolyCompiler.Modules
             return (TopRectangle, RightRectangle);
         }
 
-        public static (Rectangle[] allRectangles, Rectangle newSmaller) SplitIntoSmallerRectangles(Rectangle bigger, Rectangle smaller)
+        public static (Rectangle top, Rectangle right, Rectangle newSmaller) SplitIntoSmallerRectangles(Rectangle bigger, Rectangle smaller)
         {
             //need to move the smaller rectangle to the same position as the bigger rectangle
             Rectangle newSmaller = new Rectangle(smaller.width, smaller.height, bigger.x, bigger.y);
@@ -192,29 +197,30 @@ namespace BiolyCompiler.Modules
             if (bigger.width == newSmaller.width && 
                 bigger.height == newSmaller.height)
             {
-                return (new Rectangle[] { newSmaller }, newSmaller);
+                return (null, null, newSmaller);
             }
 
             int VerticalSegmentLenght = bigger.height - newSmaller.height;
             int HorizontalSegmentLenght = bigger.width - newSmaller.width;
             bool doHorizontalSplit = ShouldSplitAtHorizontalLineSegment(VerticalSegmentLenght, HorizontalSegmentLenght);
 
-            List<Rectangle> rectangles = new List<Rectangle>();
-            rectangles.Add(newSmaller);
+
+            Rectangle top = null;
+            Rectangle bottom = null;
 
             if (VerticalSegmentLenght != 0)
             {
                 int topRectangleWidth = doHorizontalSplit ? bigger.width : newSmaller.width;
-                rectangles.Add(new Rectangle(topRectangleWidth, VerticalSegmentLenght, bigger.x, newSmaller.getTopmostYPosition() + 1));
+                top = new Rectangle(topRectangleWidth, VerticalSegmentLenght, bigger.x, newSmaller.getTopmostYPosition() + 1);
             }
 
             if (HorizontalSegmentLenght != 0)
             {
                 int rightRectangleHeight = doHorizontalSplit ? newSmaller.height : bigger.height;
-                rectangles.Add(new Rectangle(HorizontalSegmentLenght, rightRectangleHeight, newSmaller.getRightmostXPosition() + 1, bigger.y));
+                bottom = new Rectangle(HorizontalSegmentLenght, rightRectangleHeight, newSmaller.getRightmostXPosition() + 1, bigger.y);
             }
 
-            return (rectangles.ToArray(), newSmaller);
+            return (top, bottom, newSmaller);
         }
 
         public void splitRectangleInTwo(Rectangle splittingRectangle1, Rectangle splittingRectangle2)

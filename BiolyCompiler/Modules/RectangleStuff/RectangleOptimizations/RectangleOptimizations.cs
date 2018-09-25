@@ -9,8 +9,12 @@ namespace BiolyCompiler.Modules.RectangleStuff.RectangleOptimizations
     {
         public static void OptimizeRectangle(Board board, Rectangle firstToOptimize)
         {
+            OptimizeRectangles(board, new Rectangle[] { firstToOptimize });
+        }
+        public static void OptimizeRectangles(Board board, Rectangle[] readyToOptimize)
+        {
             Queue<Rectangle> rectanglesToOptimize = new Queue<Rectangle>();
-            rectanglesToOptimize.Enqueue(firstToOptimize);
+            readyToOptimize.ForEach(x => rectanglesToOptimize.Enqueue(x));
 
             while (rectanglesToOptimize.Count > 0)
             {

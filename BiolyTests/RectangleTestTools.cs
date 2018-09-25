@@ -56,6 +56,7 @@ namespace BiolyTests
                 {
                     Droplet module = new Droplet(fluid);
                     module.Shape = newRectangle;
+                    newRectangle.isEmpty = false;
                     board.PlacedModules.Add(module, module);
                     modules.Add((module, data.Key));
                     board.UpdateGridAtGivenLocation(module, newRectangle);
@@ -127,20 +128,117 @@ namespace BiolyTests
             return String.Join(Environment.NewLine, map.Select(x => String.Join(", ", x)));
         }
 
-        public static void CompareRectangles(int[] before, int[] after, int width, int merger)
+        public static void CompareBoardsAfterOptimized(int[] before, int[] after, int width, int merger)
         {
             (Board beforeBoard, List<(Rectangle rect, int id)> beforeRectangles, _) = ArrayToRectangles(before, width);
-            (Board afterBoard, List<(Rectangle rect, int id)> afterRectangles, _) = ArrayToRectangles(after, width);
+            (Board afterBoard, _, _) = ArrayToRectangles(after, width);
 
             Rectangle mergerRectangle = beforeRectangles.Single(x => x.id == merger).rect;
             RectangleOptimizations.OptimizeRectangle(beforeBoard, mergerRectangle);
 
-            List<Rectangle> expectedRectangles = afterRectangles.Select(x => x.rect).ToList();
-            List<Rectangle> actualRectangles = GetAllRectanglesInGraph(beforeBoard.EmptyRectangles.First().Key);
+            CompareBoards(beforeBoard, afterBoard, merger.ToString());
+        }
 
-            string errorMessage = Environment.NewLine + merger.ToString() + Environment.NewLine + RectanglesToString(actualRectangles, width, before.Length / width);
-            Assert.AreEqual(0, actualRectangles.Except(beforeBoard.EmptyRectangles.Values).Count(), errorMessage);
-            Assert.AreEqual(0, expectedRectangles.Except(actualRectangles).ToArray().Count(), errorMessage);
+        public static void CompareBoardsAfterPlacement(int[] before, int[] after, int width, Module toPlace)
+        {
+            (Board beforeBoard, _, _) = ArrayToRectangles(before, width);
+            (Board afterBoard, _, _) = ArrayToRectangles(after, width);
+
+            beforeBoard.FastTemplatePlace(toPlace);
+
+            CompareBoards(beforeBoard, afterBoard);
+        }
+
+        public static void CompareBoards(Board actualBoard, Board expectedBoard, string errorMessage = "")
+        {
+            List<Rectangle> actualRectangles = new List<Rectangle>();
+            actualBoard.EmptyRectangles.ForEach(x => actualRectangles.Add(x.Key));
+            actualBoard.PlacedModules.ForEach(x => actualRectangles.Add(x.Key.Shape));
+
+            errorMessage = Environment.NewLine + errorMessage + Environment.NewLine + RectanglesToString(actualRectangles, expectedBoard.width, expectedBoard.heigth);
+
+            Assert.AreEqual(expectedBoard.width, actualBoard.width);
+            Assert.AreEqual(expectedBoard.heigth, actualBoard.heigth);
+            CollectionAssert.AreEquivalent(expectedBoard.EmptyRectangles.ToList(), actualBoard.EmptyRectangles.ToList(), errorMessage);
+            CollectionAssert.AreEquivalent(expectedBoard.PlacedModules.Select(x => x.Key.Shape).ToList(), actualBoard.PlacedModules.Select(x => x.Key.Shape).ToList(), errorMessage);
+
+            Assert.IsTrue(DoesRectanglesOverlap(actualBoard), errorMessage);
+            Assert.IsTrue(CompareAdjacencyGraphs(actualBoard, expectedBoard), errorMessage);
+        }
+
+        private static bool DoesRectanglesOverlap(Board board)
+        {
+            bool DrawOnMap(bool[,] map, Rectangle rect)
+            {
+                for (int x = rect.x; x < rect.x + rect.width; x++)
+                {
+                    for (int y = rect.y; y < rect.y + rect.height; y++)
+                    {
+                        if (map[x, y])
+                        {
+                            return false;
+                        }
+                        map[x, y] = true;
+                    }
+                }
+
+                return true;
+            }
+
+            bool[,] rectMap = new bool[board.width, board.heigth];
+
+            foreach (var empty in board.EmptyRectangles)
+            {
+                if (!DrawOnMap(rectMap, empty.Key))
+                {
+                    return false;
+                }
+            }
+            foreach (var module in board.PlacedModules)
+            {
+                if (!DrawOnMap(rectMap, module.Key.Shape))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool CompareAdjacencyGraphs(Board actual, Board expected)
+        {
+            bool CompareAdjacencies(Rectangle actualRect, Rectangle expectedRect)
+            {
+                foreach (var adjacency in actualRect.AdjacentRectangles)
+                {
+                    if (!expectedRect.AdjacentRectangles.Contains(adjacency))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            foreach (var beforeEmpty in actual.EmptyRectangles)
+            {
+                Rectangle afterEmpty = expected.EmptyRectangles.Single(x => x.Key.Equals(beforeEmpty.Key)).Key;
+                if (!CompareAdjacencies(beforeEmpty.Key, afterEmpty))
+                {
+                    return false;
+                }
+            }
+
+            foreach (var beforeEmpty in actual.PlacedModules)
+            {
+                Rectangle afterEmpty = expected.PlacedModules.Single(x => x.Key.Shape.Equals(beforeEmpty.Key.Shape)).Key.Shape;
+                if (!CompareAdjacencies(beforeEmpty.Key.Shape, afterEmpty))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
