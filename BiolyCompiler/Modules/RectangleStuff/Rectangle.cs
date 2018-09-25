@@ -130,7 +130,6 @@ namespace BiolyCompiler.Modules
             }
         }
 
-
         /// <summary>
         /// Given a module, the rectangle is split up into three rectangles, 
         /// with one of the rectangles being the one associated with the module. 
@@ -146,53 +145,6 @@ namespace BiolyCompiler.Modules
         /// </summary>
         /// <param name="module">The module to be placed in the rectangle.</param>
         /// <returns>(TopRectangle, RightRectangle) from the split. They are null if they have either width = 0 or height = 0.</returns>
-        public (Rectangle, Rectangle) SplitIntoSmallerRectangles(Rectangle rectangle)
-        {
-            //The module is placed in the lower left corner of the rectangle.
-
-            //Uses the  Shorter Segment (SSEG) approach to splitting the rectangle in to smaller pieces, after placing the module.
-            //This means it will place the module in the recangle, and split the remaining area into two rectangle, 
-            //based on which segments extending from the rectangle (see FTP algorithm papier) that are shortest:
-
-            rectangle.PlaceAt(this.x, this.y);
-            Rectangle TopRectangle = null;
-            Rectangle RightRectangle = null;
-            int VerticalSegmentLenght = this.height - rectangle.height;
-            int HorizontalSegmentLenght = this.width - rectangle.width;
-            bool doHorizontalSplit = ShouldSplitAtHorizontalLineSegment(VerticalSegmentLenght, HorizontalSegmentLenght);
-
-            if (VerticalSegmentLenght != 0)
-            {
-                int recWidth = doHorizontalSplit ? this.width : rectangle.width;
-                TopRectangle = new Rectangle(recWidth, VerticalSegmentLenght);
-                TopRectangle.PlaceAt(this.x, rectangle.getTopmostYPosition() + 1);
-
-                ComputeAdjacencyList(TopRectangle);
-                TopRectangle.AdjacentRectangles.Add(rectangle);
-                rectangle.AdjacentRectangles.Add(TopRectangle);
-            }
-
-            if (HorizontalSegmentLenght != 0)
-            {
-                int recHeight = doHorizontalSplit ? rectangle.height : this.height;
-                RightRectangle = new Rectangle(HorizontalSegmentLenght, recHeight);
-                RightRectangle.PlaceAt(rectangle.getRightmostXPosition() + 1, this.y);
-
-                ComputeAdjacencyList(RightRectangle);
-                RightRectangle.AdjacentRectangles.Add(rectangle);
-                rectangle.AdjacentRectangles.Add(RightRectangle);
-            }
-
-            if (TopRectangle != null && RightRectangle != null)
-            {
-                TopRectangle.AdjacentRectangles.Add(RightRectangle);
-                RightRectangle.AdjacentRectangles.Add(TopRectangle);
-            }
-            RemoveAdjacencies(); //This line must be before the next line, curtesy of the adjacencies of rectangles being hashsets. 
-            ComputeAdjacencyList(rectangle);
-            return (TopRectangle, RightRectangle);
-        }
-
         public static (Rectangle top, Rectangle right, Rectangle newSmaller) SplitIntoSmallerRectangles(Rectangle bigger, Rectangle smaller)
         {
             //need to move the smaller rectangle to the same position as the bigger rectangle
@@ -227,51 +179,10 @@ namespace BiolyCompiler.Modules
             return (top, bottom, newSmaller);
         }
 
-        public void splitRectangleInTwo(Rectangle splittingRectangle1, Rectangle splittingRectangle2)
-        {
-            RemoveAdjacencies();
-            splittingRectangle1.AdjacentRectangles.Add(splittingRectangle2);
-            splittingRectangle2.AdjacentRectangles.Add(splittingRectangle1);
-            ComputeAdjacencyList(splittingRectangle1);
-            ComputeAdjacencyList(splittingRectangle2);
-        }
-
         public static bool ShouldSplitAtHorizontalLineSegment(int VerticalSegmentLenght, int HorizontalSegmentLenght)
         {
             return HorizontalSegmentLenght <= VerticalSegmentLenght;
         }
-
-        private void RemoveAdjacencies()
-        {
-            foreach (var adjacentRectangle in AdjacentRectangles)
-            {
-                adjacentRectangle.AdjacentRectangles.Remove(this);
-            }
-        }
-
-
-        private void TotalRemoveAdjacencies()
-        {
-            foreach (var adjacentRectangle in AdjacentRectangles)
-            {
-                adjacentRectangle.AdjacentRectangles.Remove(this);
-            }
-            AdjacentRectangles.Clear();
-        }
-
-        private void ComputeAdjacencyList(Rectangle newRectangle)
-        {
-            foreach (var formerAdjacentRectangle in AdjacentRectangles)
-            {
-                if (newRectangle.IsAdjacent(formerAdjacentRectangle))
-                {
-                    newRectangle.AdjacentRectangles.Add(formerAdjacentRectangle);
-                    formerAdjacentRectangle.AdjacentRectangles.Add(newRectangle);
-                }
-            }
-            //Also do for the other sides.
-        }
-
 
         public bool IsAdjacent(Rectangle rectangle)
         {
