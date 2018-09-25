@@ -75,6 +75,10 @@ namespace BiolyCompiler.Modules
             }
         }
 
+        public static void ReplaceRectangles(Rectangle toReplace, Rectangle replaceWith)
+        {
+            ReplaceRectangles(new Rectangle[] { toReplace }, new Rectangle[] { replaceWith });
+        }
         public static void ReplaceRectangles(Rectangle[] toReplace, Rectangle replaceWith)
         {
             ReplaceRectangles(toReplace, new Rectangle[] { replaceWith });
