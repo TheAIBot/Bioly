@@ -311,7 +311,10 @@ namespace BiolyCompiler.Scheduling
                         droplet.SetFluidConcentrations(inputModule);
                         AllUsedModules.Add(droplet);
                         bool couldPlace = board.FastTemplatePlace(droplet);
-                        if (!couldPlace) throw new RuntimeException("Not enough space for the fluid transfer.");
+                        if (!couldPlace)
+                        {
+                            throw new RuntimeException("Not enough space for the fluid transfer.");
+                        }
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         Route route = Router.RouteDropletToNewPosition(inputModule, droplet, board, currentTime);
                         currentTime = route.getEndTime() + 1;
@@ -507,7 +510,8 @@ namespace BiolyCompiler.Scheduling
 
                             //Temporarily placing a droplet on the initial position of the heater, for routing purposes:
                             Droplet routingDroplet = new Droplet(new BoardFluid("Routing @ droplet"));
-                            routingDroplet.Shape.PlaceAt(heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
+                            routingDroplet.Shape = Rectangle.Translocate(routingDroplet.Shape, heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
+
                             board.UpdateGridAtGivenLocation(routingDroplet, heaterOperation.BoundModule.Shape);
                             if (!couldBePlaced) throw new RuntimeException("Not enough space available to place a Droplet.");
                             Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, currentTime);

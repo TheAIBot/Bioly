@@ -20,9 +20,9 @@ namespace BiolyCompiler
             //#if DEBUG
             //    //Debug.WriteLine(board.print(usedModules));
             //#endif
-            //checkAdjacencyMatrixCorrectness(board);
-            //checkIsBoardPerfectlyPartitioned(board);
-            //checkAllDropletsHasCorrectConcentrations(board);
+            checkAdjacencyMatrixCorrectness(board);
+            checkIsBoardPerfectlyPartitioned(board);
+            checkAllDropletsHasCorrectConcentrations(board);
         }
 
         private static void checkAllDropletsHasCorrectConcentrations(Board board)
