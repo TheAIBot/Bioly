@@ -51,26 +51,34 @@ namespace BiolyViewer_Windows
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            SettingsInfo settings = new SettingsInfo();
-            settings.LoadSettings(SETTINGS_FILE_PATH);
-
-            this.Updater = new WebUpdater(Browser, settings);
-
-            Browser.Load("costum://index.html");
-            Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
-            Browser.JavascriptObjectRepository.Register("webUpdater", Updater, true);
-            //Wait for the MainFrame to finish loading
-            Browser.FrameLoadEnd += (s, args) =>
+            //Run in another thread to not block the UI
+            await Task.Run(() =>
             {
+                SettingsInfo settings = new SettingsInfo();
+                settings.LoadSettings(SETTINGS_FILE_PATH);
+
+                this.Updater = new WebUpdater(Browser, settings);
+
+                Browser.Load("costum://index.html");
+                Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
+                Browser.JavascriptObjectRepository.Register("webUpdater", Updater, true);
                 //Wait for the MainFrame to finish loading
-                if (args.Frame.IsMain)
+                Browser.FrameLoadEnd += async (s, args) =>
                 {
-                    GiveSettingsToJS(settings);
-                    GiveProgramsToJS();
-                }
-            };
+                    //Wait for the MainFrame to finish loading
+                    if (args.Frame.IsMain)
+                    {
+                        //Run in another thread to not block the UI
+                        await Task.Run(() =>
+                        {
+                            GiveSettingsToJS(settings);
+                            GiveProgramsToJS();
+                        });
+                    }
+                };
+            });
         }
 
         private void GiveSettingsToJS(SettingsInfo settings)
