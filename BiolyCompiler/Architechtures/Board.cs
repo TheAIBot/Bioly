@@ -314,41 +314,21 @@ namespace BiolyCompiler.Architechtures
             return printedBoard.ToString();
         }
 
-        public List<Droplet> replaceWithDroplets(FluidBlock finishedOperation, BoardFluid fluidType)
+        public List<Droplet> replaceWithDroplets(Module module, BoardFluid fluidType)
         {
-            Module operationExecutingModule = finishedOperation.BoundModule;
-            //Checks for each pair of adjacent rectangle to the module on the board, and the rectangles in the modules layout,
-            //if they are adjacent -> if so, it makes them adjacent.
-            List<Rectangle> allRectangles = operationExecutingModule.GetOutputLayout().GetAllRectanglesIncludingDroplets();
+            Rectangle[] allRectangles = module.GetOutputLayout().GetAllRectanglesIncludingDroplets();
+            Rectangle.ReplaceRectangles(module.Shape, allRectangles);
 
-            //Copied, as sets work in mysterious ways,
-            HashSet<Rectangle> adjacentRectangles = new HashSet<Rectangle>(operationExecutingModule.Shape.AdjacentRectangles);
+            List<Droplet> droplets = module.GetOutputLayout().Droplets;
+            droplets.ForEach(droplet => droplet.SetFluidType(fluidType));
 
-            foreach (var moduleAdjacentRectangle in adjacentRectangles)
-            {
-                //They are no longer adjacent.
-                moduleAdjacentRectangle.AdjacentRectangles.Remove(operationExecutingModule.Shape); 
-                foreach (var moduleLayoutRectangle in allRectangles)
-                {
-                    if (moduleAdjacentRectangle.IsAdjacent(moduleLayoutRectangle))
-                    {
-                        moduleAdjacentRectangle.AdjacentRectangles.Add(moduleLayoutRectangle);
-                        moduleLayoutRectangle.AdjacentRectangles.Add(moduleAdjacentRectangle);
-                    }
-                }
-            }
-            operationExecutingModule.Shape.AdjacentRectangles.Clear();
+            PlacedModules.Remove(module);
+            ClearBoard(module.Shape);
 
-            //The droplets in the module layout, have now had their associated rectangles placed on the board. 
-            //Thus it is only neccessary to change their fluidtype, to get the correct output.
+            allRectangles.Where(x => x.isEmpty).ForEach(x => EmptyRectangles.Add(x, x));
+            droplets.ForEach(x => UpdateGridWithModulePlacement(x));
 
-            PlacedModules.Remove(operationExecutingModule);
-            ClearBoard(operationExecutingModule.Shape);
-            operationExecutingModule.GetOutputLayout().ChangeFluidType(fluidType);
-            operationExecutingModule.GetOutputLayout().EmptyRectangles.ForEach(rectangle => EmptyRectangles.Add(rectangle, rectangle));
-            operationExecutingModule.GetOutputLayout().Droplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet));
-
-            return operationExecutingModule.GetOutputLayout().Droplets;
+            return droplets;
         }
 
         public Board Copy()

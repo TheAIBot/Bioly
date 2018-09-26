@@ -487,7 +487,7 @@ namespace BiolyCompiler.Scheduling
                         //leaving the droplets that is inside the module behind:
                         finishedOperation.UpdateInternalDropletConcentrations();
                         (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, board, currentTime, finishedOperation);
-                        List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
+                        List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation.BoundModule, dropletOutputFluid);
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         AllUsedModules.AddRange(replacingDroplets);
                     }
