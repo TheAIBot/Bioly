@@ -24,7 +24,7 @@ namespace BiolyTests.ScheduleTests
     public class TestSchedule
     {
         [TestInitialize]
-        public void ClearWorkspace() => TestTools.ClearWorkspace();
+        public void ResetWorkspace() => TestTools.ResetBrowser();
 
         [TestMethod]
         public void TestScheduleOneSeqMixer()
