@@ -106,7 +106,7 @@ namespace BiolyCompiler.Modules
             replaceWith.ForEach(x => allConnections.Add(x));
 
             //Now remove the old rectangles connections
-            toReplace.ForEach(x => x.Disconnect());
+            toReplace.ForEach(x => x.Disconnect(allConnections));
 
             //Now for each new rectangle try the old rectangles connections.
             //As all the rectangles habitate the same area they must have some of the connection
@@ -116,11 +116,22 @@ namespace BiolyCompiler.Modules
 
         public void Disconnect()
         {
-            foreach (Rectangle adjacent in AdjacentRectangles)
+            DisconnectFromThis(AdjacentRectangles);
+            AdjacentRectangles.Clear();
+        }
+
+        public void Disconnect(ICollection<Rectangle> toDisconnect)
+        {
+            DisconnectFromThis(toDisconnect);
+            AdjacentRectangles.ExceptWith(toDisconnect);
+        }
+
+        private void DisconnectFromThis(ICollection<Rectangle> toDisconnect)
+        {
+            foreach (Rectangle adjacent in toDisconnect)
             {
                 adjacent.AdjacentRectangles.Remove(this);
             }
-            AdjacentRectangles.Clear();
         }
 
         public void Connect(ICollection<Rectangle> connectTo)

@@ -226,7 +226,9 @@ namespace BiolyCompiler.Architechtures
             HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>(outsideEmptyRectangles);
             Queue<Rectangle> emptyRectanglesToVisit = new Queue<Rectangle>();
             foreach (var rectangle in outsideEmptyRectangles)
+            {
                 emptyRectanglesToVisit.Enqueue(rectangle);
+            }
 
             while (emptyRectanglesToVisit.Count > 0)
             {

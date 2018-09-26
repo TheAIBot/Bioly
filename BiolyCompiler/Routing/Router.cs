@@ -23,7 +23,7 @@ namespace BiolyCompiler.Routing
         {
             int originalStartTime = currentTime;
             //The order in which to route droplets to the module (where possible deadlocks are avoided)
-            List<Droplet> internalDropletRoutingOrder = GetModulesDropletRoutingOrder(operation, board);
+            Droplet[] internalDropletRoutingOrder = GetModulesDropletRoutingOrder(operation.BoundModule, board);
 
             foreach (var dropletInput in internalDropletRoutingOrder)
             {
@@ -71,23 +71,22 @@ namespace BiolyCompiler.Routing
             return currentTime;
         }
 
-        private static List<Droplet> GetModulesDropletRoutingOrder(FluidBlock operation, Board board)
+        private static Droplet[] GetModulesDropletRoutingOrder(Module module, Board board)
         {
-            List<Droplet> dropletRoutingOrder = new List<Droplet>();
-            ModuleLayout inputLayout = operation.BoundModule.GetInputLayout();
-            (var dropletInputs, var layoutEmptyRectangles) = GetDropletInputsAndInitiallyEmptyRectangles(inputLayout);
-            HashSet<Rectangle> duplicateLayoutEmptyRectangles = new HashSet<Rectangle>(layoutEmptyRectangles);
-            HashSet<Rectangle> outsideEmptyRectangle = operation.BoundModule.Shape.AdjacentRectangles
+            ModuleLayout inputLayout = module.GetInputLayout();
+            HashSet<Droplet> dropletInputs = new HashSet<Droplet>(inputLayout.Droplets);
+            Rectangle[] layoutRectangles = inputLayout.GetAllRectanglesIncludingDroplets();
+            //Also contains rectangles for droplets but in this case they are considered
+            //empty rectangles because they aren't filled with droplet yet
+            HashSet<Rectangle> layoutEmptyRectangles = layoutRectangles.ToHashSet();
+            HashSet<Rectangle> outsideEmptyRectangle = module.Shape.AdjacentRectangles
                                                        .Where(rectangle => rectangle.isEmpty)
                                                        .ToHashSet();
 
-            foreach (var outsideRectangle in outsideEmptyRectangle)
-            {
-                foreach (var insideRectangle in layoutEmptyRectangles)
-                {
-                    outsideRectangle.ConnectIfAdjacent(insideRectangle);
-                }
-            }
+            Rectangle.ReplaceRectangles(module.Shape, layoutRectangles);
+
+            Droplet[] dropletRoutingOrder = new Droplet[dropletInputs.Count];
+            int dropletIndex = 0;
 
             //A droplet needs to be routed to all interal droplets of the module.
             while (dropletInputs.Count > 0)
@@ -98,9 +97,11 @@ namespace BiolyCompiler.Routing
                     if (Board.DoesNotBlockConnectionToSourceEmptyRectangles(dropletInput, outsideEmptyRectangle, layoutEmptyRectangles))
                     {
                         hasDropletBeenRouted = true;
+                        dropletRoutingOrder[dropletIndex++] = dropletInput;
                         dropletInputs.Remove(dropletInput);
+                        //A droplet has now been placed in that module so
+                        //it's rectangle is no longer empty
                         layoutEmptyRectangles.Remove(dropletInput.Shape);
-                        dropletRoutingOrder.Add(dropletInput);
                         break;
                     }
 
@@ -108,42 +109,14 @@ namespace BiolyCompiler.Routing
                 if (!hasDropletBeenRouted)
                 {
                     throw new InternalRuntimeException("It is not possible to route a droplet to every internal droplet inside a module. This should always be possible." +
-                                        "The module is: " + operation.BoundModule.ToString());
+                                        "The module is: " + module.ToString());
                 }
             }
 
-
-            foreach (var outsideRectangle in outsideEmptyRectangle)
-            {
-                foreach (var insideRectangle in duplicateLayoutEmptyRectangles)
-                {
-                    outsideRectangle.AdjacentRectangles.Remove(insideRectangle);
-                    insideRectangle.AdjacentRectangles.Remove(outsideRectangle);
-                }
-            }
-
-            //And because if one has a 3x3 module with a droplet inside it, the code above completly disconnects it
-            //from all its adjacent rectangles, it is necessary to connect it again:
-
-            foreach (var outsideRectangle in outsideEmptyRectangle)
-            {
-                outsideRectangle.ConnectIfAdjacent(operation.BoundModule.Shape);
-            }
-
+            Rectangle.ReplaceRectangles(layoutRectangles, module.Shape);
 
             return dropletRoutingOrder;
         }
-        
-
-        private static (HashSet<Droplet>, HashSet<Rectangle>) GetDropletInputsAndInitiallyEmptyRectangles(ModuleLayout inputLayout)
-        {
-            HashSet<Droplet> dropletInputs = new HashSet<Droplet>(inputLayout.Droplets);
-            HashSet<Rectangle> emptyRectangles = new HashSet<Rectangle>(inputLayout.EmptyRectangles);
-            //Before any droplets have been placed, the internal layout is empty.
-            dropletInputs.ForEach(droplet => emptyRectangles.Add(droplet.Shape));
-            return (dropletInputs, emptyRectangles);
-        }
-
 
         public static Route RouteSingleDropletToModule(Module module, Board board, int currentTime, Droplet dropletInput)
         {
