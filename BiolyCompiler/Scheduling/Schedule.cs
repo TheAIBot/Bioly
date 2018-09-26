@@ -510,7 +510,8 @@ namespace BiolyCompiler.Scheduling
 
                             //Temporarily placing a droplet on the initial position of the heater, for routing purposes:
                             Droplet routingDroplet = new Droplet(new BoardFluid("Routing @ droplet"));
-                            routingDroplet.Shape.PlaceAt(heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
+                            routingDroplet.Shape = Rectangle.Translocate(routingDroplet.Shape, heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
+
                             board.UpdateGridAtGivenLocation(routingDroplet, heaterOperation.BoundModule.Shape);
                             if (!couldBePlaced) throw new RuntimeException("Not enough space available to place a Droplet.");
                             Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, currentTime);

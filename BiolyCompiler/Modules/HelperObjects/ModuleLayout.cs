@@ -95,17 +95,16 @@ namespace BiolyCompiler.Modules
         {
             //Changing the position of the rectangles and droplets changes their hashcodes, which are used for adjacencies.
             //Therefore it is "necessary" to recalculate them again. It can be made more efficient, if so desired, so that it runs in O(|E|) time.
-            foreach (var rectangle in EmptyRectangles)
+            for (int i = 0; i < EmptyRectangles.Count; i++)
             {
-                rectangle.x += x;
-                rectangle.y += y;
-                rectangle.AdjacentRectangles.Clear();
+                EmptyRectangles[i] = Rectangle.Translocate(EmptyRectangles[i], x, y);
+                EmptyRectangles[i].AdjacentRectangles.Clear();
             }
-            foreach (var droplet in Droplets)
+
+            for (int i = 0; i < Droplets.Count; i++)
             {
-                droplet.Shape.x += x;
-                droplet.Shape.y += y;
-                droplet.Shape.AdjacentRectangles.Clear();
+                Droplets[i].Shape = Rectangle.Translocate(Droplets[i].Shape, x, y);
+                Droplets[i].Shape.AdjacentRectangles.Clear(); ;
             }
 
             ConnectAdjacentRectangles(EmptyRectangles, Droplets);
@@ -138,8 +137,12 @@ namespace BiolyCompiler.Modules
                         differentFluidTypes.Add(fluidType.FluidName, fluidType);
                     }
                     CopyDroplet = new Droplet(fluidType);
-                } else CopyDroplet = new Droplet();
-                CopyDroplet.Shape.PlaceAt(droplet.Shape.x, droplet.Shape.y);
+                }
+                else
+                {
+                    CopyDroplet = new Droplet();
+                }
+                CopyDroplet.Shape = Rectangle.Translocate(CopyDroplet.Shape, droplet.Shape.x, droplet.Shape.y);
                 CopyOutputDroplets.Add(CopyDroplet);
             }
 

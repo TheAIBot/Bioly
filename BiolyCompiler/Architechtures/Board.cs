@@ -287,10 +287,9 @@ namespace BiolyCompiler.Architechtures
             }
         }
 
-        public void UpdateGridWithModulePlacement(Module module, Rectangle rectangleToPlaceAt)
+        public void UpdateGridWithModulePlacement(Module module)
         {
-            module.Shape.PlaceAt(rectangleToPlaceAt.x, rectangleToPlaceAt.y);
-            UpdateGridAtGivenLocation(module, rectangleToPlaceAt);
+            UpdateGridAtGivenLocation(module, module.Shape);
             PlacedModules.Add(module, module);
         }
 
@@ -347,7 +346,7 @@ namespace BiolyCompiler.Architechtures
             ClearBoard(operationExecutingModule.Shape);
             operationExecutingModule.GetOutputLayout().ChangeFluidType(fluidType);
             operationExecutingModule.GetOutputLayout().EmptyRectangles.ForEach(rectangle => EmptyRectangles.Add(rectangle, rectangle));
-            operationExecutingModule.GetOutputLayout().Droplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet, droplet.Shape));
+            operationExecutingModule.GetOutputLayout().Droplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet));
 
             return operationExecutingModule.GetOutputLayout().Droplets;
         }

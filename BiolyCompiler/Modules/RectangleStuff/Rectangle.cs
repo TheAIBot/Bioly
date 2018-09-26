@@ -11,10 +11,10 @@ namespace BiolyCompiler.Modules
 {
     public class Rectangle
     {
-        public int height;
-        public int width;
-        public int x;
-        public int y; //Coordinates for lower left corner.
+        public readonly int height;
+        public readonly int width;
+        public readonly int x;
+        public readonly int y; //Coordinates for lower left corner.
         //Used by the FTP algorithm for deleting rectangles.
         public HashSet<Rectangle> AdjacentRectangles = new HashSet<Rectangle>();
         public bool isEmpty = true;
@@ -32,7 +32,8 @@ namespace BiolyCompiler.Modules
 
         public Rectangle(int width, int height, int x, int y) : this(width, height)
         {
-            PlaceAt(x, y);
+            this.x = x;
+            this.y = y;
         }
 
         public Rectangle(Rectangle rectangle) : this(rectangle.width, rectangle.height, rectangle.x, rectangle.y)
@@ -40,10 +41,14 @@ namespace BiolyCompiler.Modules
             isEmpty = rectangle.isEmpty;
         }
 
-        public void PlaceAt(int x, int y)
+        public static Rectangle Translocate(Rectangle rectangle, int x, int y)
         {
-            this.x = x;
-            this.y = y;
+            Rectangle translocated = new Rectangle(rectangle.width, rectangle.height, rectangle.x + x, rectangle.y + y);
+            translocated.isEmpty = rectangle.isEmpty;
+            translocated.AdjacentRectangles = rectangle.AdjacentRectangles;
+            rectangle.AdjacentRectangles.Clear();
+
+            return translocated;
         }
 
         public bool DoesRectangleFitInside(Rectangle rectangle)
