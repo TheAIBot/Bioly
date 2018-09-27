@@ -52,8 +52,8 @@ namespace BiolyCompiler
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Stack<List<string>> scopedVariables = new Stack<List<string>>();
 
-            Dictionary<int, Board> boards = new Dictionary<int, Board>();
-            List<(int, int, int, int)> oldRectangles = null;
+            Dictionary<int, Rectangle[]> boardLayouts = new Dictionary<int, Rectangle[]>();
+            Rectangle[] oldRectangles = null;
             bool firstRun = true;
 
             Dictionary<string, List<IDropletSource>> sumOutputtedDropelts = new Dictionary<string, List<IDropletSource>>();
@@ -78,7 +78,7 @@ namespace BiolyCompiler
                 }
 
                 Dictionary<string, List<IDropletSource>> outputtedDroplets;
-                (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boards, library, ref dropPositions, ref staticModules, out outputtedDroplets, EnableGarbageCollection);
+                (List<Block> scheduledOperations, int time) = MakeSchedule(OptimizedDFG, ref board, ref boardLayouts, library, ref dropPositions, ref staticModules, out outputtedDroplets, EnableGarbageCollection);
 
 
                 List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
@@ -86,7 +86,7 @@ namespace BiolyCompiler
 
                 StartExecutor(OptimizedDFG, staticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
                 Executor.UpdateDropletData(outputtedDroplets.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
-                SendCommands(commandTimeline, ref oldRectangles, boards);
+                SendCommands(commandTimeline, ref oldRectangles, boardLayouts);
             }
             else
             { 
@@ -98,7 +98,7 @@ namespace BiolyCompiler
                     runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, dropPositions));
 
                     HashSet<string> fluidVariablesBefore = dropPositions.Keys.ToHashSet();
-                    (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules, out Dictionary<string, List<IDropletSource>> outputtedDroplets, EnableGarbageCollection);
+                    (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boardLayouts, library, ref dropPositions, ref staticModules, out Dictionary<string, List<IDropletSource>> outputtedDroplets, EnableGarbageCollection);
                     foreach (var item in outputtedDroplets)
                     {
                         if (sumOutputtedDropelts.ContainsKey(item.Key))
@@ -126,7 +126,7 @@ namespace BiolyCompiler
                     scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
                     List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
-                    SendCommands(commandTimeline, ref oldRectangles, boards);
+                    SendCommands(commandTimeline, ref oldRectangles, boardLayouts);
 
                     if (KeepRunning.IsCancellationRequested)
                     {
@@ -196,7 +196,7 @@ namespace BiolyCompiler
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Stack<List<string>> scopedVariables = new Stack<List<string>>();
 
-            Dictionary<int, Board> boards = new Dictionary<int, Board>();
+            Dictionary<int, Rectangle[]> boardLayouts = new Dictionary<int, Rectangle[]>();
 
             controlStack.Push(null);
             scopedVariables.Push(new List<string>());
@@ -216,7 +216,7 @@ namespace BiolyCompiler
                 runningGraph.Nodes.ForEach(node => node.value.Update<T>(variables, null, dropPositions));
 
                 HashSet<string> fluidVariablesBefore = dropPositions.Keys.ToHashSet();
-                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boards, library, ref dropPositions, ref staticModules, out _, useGC);
+                (List<Block> scheduledOperations, int time) = MakeSchedule(runningGraph, ref board, ref boardLayouts, library, ref dropPositions, ref staticModules, out _, useGC);
                 HashSet<string> fluidVariablesAfter = dropPositions.Keys.ToHashSet();
                 scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
@@ -391,7 +391,7 @@ namespace BiolyCompiler
             }
         }
 
-        private void SendCommands(List<Command>[] commandTimeline, ref List<(int, int, int, int)> oldRectangles, Dictionary<int, Board> boards)
+        private void SendCommands(List<Command>[] commandTimeline, ref Rectangle[] oldRectangles, Dictionary<int, Rectangle[]> boardLayouts)
         {
             int time = 0;
             foreach (List<Command> commands in commandTimeline)
@@ -418,39 +418,27 @@ namespace BiolyCompiler
 
                 if (ShowEmptyRectangles)
                 {
-                    Board leastBoard = null;
-                    int leastTime = int.MaxValue;
-                    foreach (var board in boards)
-                    {
-                        int boardTime = board.Key - time < 0 ? int.MaxValue : board.Key - time;
-                        if (leastBoard == null || boardTime < leastTime)
-                        {
-                            leastBoard = board.Value;
-                            leastTime = board.Key;
-                        }
-                    }
+                    Rectangle[] closestBoardLayout = boardLayouts.Where(x => x.Key <= time).Select(x => x.Value).LastOrDefault();
+                    closestBoardLayout = closestBoardLayout.Where(x => x.isEmpty).ToArray();
 
-                    List<(int, int, int, int)> closestBoardData = leastBoard.EmptyRectangles.Values
-                                                                                            .Select(rectangle => (rectangle.x, rectangle.y, rectangle.width, rectangle.height))
-                                                                                            .ToList();
-                    if (closestBoardData != oldRectangles && closestBoardData != null)
+                    if (closestBoardLayout != oldRectangles && closestBoardLayout != null)
                     {
-                        var rectanglesToRemove = oldRectangles?.Except(closestBoardData);
+                        var rectanglesToRemove = oldRectangles?.Except(closestBoardLayout);
                         if (rectanglesToRemove != null)
                         {
                             foreach (var x in rectanglesToRemove)
                             {
-                                removeAreaCommands.Add(new AreaCommand(x.Item1, x.Item2, x.Item3, x.Item4, CommandType.REMOVE_AREA, 0));
+                                removeAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.REMOVE_AREA, 0));
                             }
                         }
 
-                        var rectanglesToShow = closestBoardData.Except(oldRectangles ?? new List<(int, int, int, int)>());
+                        var rectanglesToShow = closestBoardLayout.Except(oldRectangles ?? new Rectangle[0]);
                         foreach (var x in rectanglesToShow)
                         {
-                            showAreaCommands.Add(new AreaCommand(x.Item1, x.Item2, x.Item3, x.Item4, CommandType.SHOW_AREA, 0));
+                            showAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.SHOW_AREA, 0));
                         }
                     }
-                    oldRectangles = closestBoardData ?? oldRectangles;
+                    oldRectangles = closestBoardLayout ?? oldRectangles;
                 }
 
                 if (removeAreaCommands.Count > 0)
@@ -480,7 +468,7 @@ namespace BiolyCompiler
 
        
        static int numberOfDFGsHandled = 0;
-        private static (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Board> boards, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out Dictionary<string, List<IDropletSource>> outputtedDroplets, bool enableGC)
+        private static (List<Block>, int) MakeSchedule(DFG<Block> runningGraph, ref Board board, ref Dictionary<int, Rectangle[]> boardLayout, ModuleLibrary library, ref Dictionary<string, BoardFluid> dropPositions, ref Dictionary<string, Module> staticModules, out Dictionary<string, List<IDropletSource>> outputtedDroplets, bool enableGC)
         {
             numberOfDFGsHandled++;
             Schedule scheduler = new Schedule();
@@ -500,8 +488,7 @@ namespace BiolyCompiler
 
             int time = scheduler.ListScheduling(assay, board, library);
 
-            board = scheduler.boardAtDifferentTimes.MaxBy(x => x.Key).Value;
-            boards = scheduler.boardAtDifferentTimes;
+            boardLayout = scheduler.rectanglesAtDifferentTimes;
             dropPositions = scheduler.FluidVariableLocations;
             staticModules = scheduler.StaticModules;
             outputtedDroplets = scheduler.OutputtedDroplets;

@@ -1,6 +1,7 @@
 ﻿using BiolyCompiler;
 using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.Commands;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -14,8 +15,8 @@ namespace BiolyTests
     [TestClass]
     public class TestProgramExecution
     {
-        [TestInitialize()]
-        public void ClearWorkspace() => TestTools.ClearWorkspace();
+        [TestInitialize]
+        public void ResetWorkspace() => TestTools.ResetBrowser();
 
         private string AddFluidBlock(JSProgram program, string from, string to)
         {
@@ -82,14 +83,12 @@ namespace BiolyTests
 
         private List<Command> GetProgramCommands(JSProgram program)
         {
-            ClearWorkspace();
-            TestTools.ExecuteJS(program);
-            string xml = TestTools.GetWorkspaceString();
+            (CDFG cdfg, _) = TestTools.ParseProgram(program);
             TestCommandExecutor executor = new TestCommandExecutor();
             ProgramExecutor<string> programExecutor = new ProgramExecutor<string>(executor);
             programExecutor.TimeBetweenCommands = 0;
             programExecutor.ShowEmptyRectangles = false;
-            programExecutor.Run(10, 10, XmlParser.Parse(xml).Item1, false);
+            programExecutor.Run(10, 10, cdfg, false);
 
             return executor.Commands;
         }

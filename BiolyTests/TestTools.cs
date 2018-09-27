@@ -23,6 +23,7 @@ namespace BiolyTests
     {
 
         internal static IWebDriver Browser { get; private set; } = null;
+        private static string BrowserPath;
 
         [AssemblyInitialize()]
         public static void AssemblyInit(TestContext context)
@@ -37,10 +38,15 @@ namespace BiolyTests
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string[] parts = baseDirectory.Split('\\');
             string[] requiredParts = parts.Take(parts.Length - 4).ToArray();
-            string path = "file:///" + String.Join("/", requiredParts) + "/webpage/index.html";
-            browser.Navigate().GoToUrl(path);
+            BrowserPath = "file:///" + String.Join("/", requiredParts) + "/webpage/index.html";
+            browser.Navigate().GoToUrl(BrowserPath);
 
             Browser = browser;
+        }
+
+        public static void ResetBrowser()
+        {
+            Browser.Navigate().GoToUrl(BrowserPath);
         }
 
         private static void KillProcessTree(int processID)
@@ -110,6 +116,7 @@ namespace BiolyTests
 
         public static (CDFG cdfg, List<ParseException> exceptions) ParseProgram(JSProgram program)
         {
+            ClearWorkspace();
             ExecuteJS(program);
 
             string xml = GetWorkspaceString();
