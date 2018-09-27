@@ -53,6 +53,9 @@ namespace BiolyViewer_Windows
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
+
+
             //Run in another thread to not block the UI
             await Task.Run(() =>
             {
