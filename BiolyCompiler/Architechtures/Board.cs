@@ -328,28 +328,21 @@ namespace BiolyCompiler.Architechtures
             return droplets;
         }
 
-        public Board Copy()
+        public Rectangle[] CopyAllRectangles()
         {
-            Board board = new Board(width, heigth);
-            board.EmptyRectangles.Clear();
+            Rectangle[] allRectangles = new Rectangle[EmptyRectangles.Count + PlacedModules.Count];
 
-            foreach (var module in PlacedModules.Values)
+            int index = 0;
+            foreach (var empty in EmptyRectangles)
             {
-                board.PlacedModules.Add(module, module);
+                allRectangles[index++] = new Rectangle(empty.Key);
             }
-            foreach (var rectangle in EmptyRectangles.Values)
+            foreach (var module in PlacedModules)
             {
-                board.EmptyRectangles.Add(rectangle, rectangle);
+                allRectangles[index++] = new Rectangle(module.Key.Shape);
             }
 
-            for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < heigth; j++)
-                {
-                    board.grid[i, j] = grid[i, j];
-                }
-            }
-            return board;
+            return allRectangles;
         }
     }
 }

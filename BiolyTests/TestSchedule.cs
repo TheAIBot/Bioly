@@ -23,6 +23,9 @@ namespace BiolyTests.ScheduleTests
     [TestClass]
     public class TestSchedule
     {
+        private const int BOARD_WIDTH = 20;
+        private const int BOARD_HEIGHT = 20;
+
         [TestInitialize]
         public void ResetWorkspace() => TestTools.ResetBrowser();
 
@@ -75,7 +78,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -130,7 +133,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -184,7 +187,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -239,7 +242,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -290,7 +293,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -344,7 +347,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -397,7 +400,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -451,7 +454,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -501,7 +504,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -551,7 +554,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -604,7 +607,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -657,7 +660,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -709,7 +712,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -764,7 +767,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -818,7 +821,7 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         [TestMethod]
@@ -873,13 +876,13 @@ namespace BiolyTests.ScheduleTests
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
-            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
+            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
         }
 
         private static (Schedule scheduler, int time) ScheduleDFG(DFG<Block> dfg, bool enableGC)
         {
             Assay assay = new Assay(dfg);
-            Board board = new Board(20, 20);
+            Board board = new Board(BOARD_WIDTH, BOARD_HEIGHT);
             ModuleLibrary library = new ModuleLibrary();
 
             Schedule schedule = new Schedule();

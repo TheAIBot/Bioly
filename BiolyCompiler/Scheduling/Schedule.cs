@@ -22,7 +22,7 @@ namespace BiolyCompiler.Scheduling
     {
         //Records how the board looks at all the times where the board have been changed. 
         //This is primarily for testing and visulization purposes.
-        public Dictionary<int, Board> boardAtDifferentTimes = new Dictionary<int, Board>();
+        public Dictionary<int, Rectangle[]> rectanglesAtDifferentTimes = new Dictionary<int, Rectangle[]>();
         // For debuging. Used when printing the board to the console, for visulization purposes.
         public List<Module> AllUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
@@ -331,8 +331,8 @@ namespace BiolyCompiler.Scheduling
             {
                 currentTime += 1; //Necessary for the recording of the board below.
             }
-            boardAtDifferentTimes.Add(currentTime, board);
-            board = board.Copy();
+
+            rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             currentTime += 2;
             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             return (currentTime, board);
@@ -443,13 +443,7 @@ namespace BiolyCompiler.Scheduling
             library.allocateModules(assay);
             library.sortLibrary();
             AllUsedModules.AddRange(board.PlacedModules.Values);
-            boardAtDifferentTimes.Add(startTime, board);
-
-            if (!assay.Dfg.Nodes.Select(node => node.value).All(operation => operation is VariableBlock))
-            {
-                DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                board = board.Copy();
-            }
+            rectanglesAtDifferentTimes.Add(startTime, board.CopyAllRectangles());
 
             return board;
         }
@@ -464,8 +458,7 @@ namespace BiolyCompiler.Scheduling
             //the board needs to be saved:
             if (AreOperationsFinishing(currentTime, assay) && !(nextOperation is VariableBlock))
             {
-                boardAtDifferentTimes.Add(currentTime, board);
-                board = board.Copy();
+                rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             }
 
             //In the case that operations are finishing (or there are no operations that can be executed, before this is true),
@@ -529,8 +522,7 @@ namespace BiolyCompiler.Scheduling
                     }
                     assay.UpdateReadyOperations(finishedOperation);
                 }
-                boardAtDifferentTimes.Add(currentTime, board);
-                board = board.Copy();
+                rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             }
 
             return (currentTime, board);

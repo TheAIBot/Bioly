@@ -189,26 +189,22 @@ namespace BiolyTests
 
         private static int[,] MakeOverlapMap(Board board)
         {
-            void DrawOnMap(int[,] map, Rectangle rect)
+            return MakeOverlapMap(board.CopyAllRectangles(), board.width, board.heigth);
+        }
+
+        private static int[,] MakeOverlapMap(Rectangle[] boardLayout, int width, int height)
+        {
+            int[,] overlapMap = new int[width, height];
+
+            foreach (Rectangle rect in boardLayout)
             {
                 for (int x = rect.x; x < rect.x + rect.width; x++)
                 {
                     for (int y = rect.y; y < rect.y + rect.height; y++)
                     {
-                        map[x, y]++;
+                        overlapMap[x, y]++;
                     }
                 }
-            }
-
-            int[,] overlapMap = new int[board.width, board.heigth];
-
-            foreach (var empty in board.EmptyRectangles)
-            {
-                DrawOnMap(overlapMap, empty.Key);
-            }
-            foreach (var module in board.PlacedModules)
-            {
-                DrawOnMap(overlapMap, module.Key.Shape);
             }
 
             return overlapMap;
@@ -250,23 +246,23 @@ namespace BiolyTests
             return true;
         }
 
-        public static void VerifyBoards(List<Board> boards)
+        public static void VerifyBoards(List<Rectangle[]> boardLayouts, int width, int height)
         {
-            boards.ForEach(x => VerifyBoard(x));
+            boardLayouts.ForEach(x => VerifyBoard(x, width, height));
         }
 
-        public static void VerifyBoard(Board board)
+        public static void VerifyBoard(Rectangle[] boardLayout, int width, int height)
         {
-            Assert.IsTrue(CoversWholeMap(board));
+            Assert.IsTrue(CoversWholeMap(boardLayout, width, height));
             //Assert.IsTrue(HasNessesaryConnections(board));
         }
 
-        private static bool CoversWholeMap(Board board)
+        private static bool CoversWholeMap(Rectangle[] boardLayout, int width, int height)
         {
-            int[,] overlapMap = MakeOverlapMap(board);
-            for (int x = 0; x < board.width; x++)
+            int[,] overlapMap = MakeOverlapMap(boardLayout, width, height);
+            for (int x = 0; x < width; x++)
             {
-                for (int y = 0; y < board.heigth; y++)
+                for (int y = 0; y < height; y++)
                 {
                     if (overlapMap[x, y] != 1)
                     {
