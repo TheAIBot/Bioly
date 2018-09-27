@@ -66,20 +66,6 @@ namespace BiolyCompiler.Modules
             return height * width;
         }
 
-        public bool ConnectIfAdjacent(Rectangle insideRectangle)
-        {
-            if (this.IsAdjacent(insideRectangle))
-            {
-                this.AdjacentRectangles.Add(insideRectangle);
-                insideRectangle.AdjacentRectangles.Add(this);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         public static void ReplaceRectangles(Rectangle toReplace, Rectangle replaceWith)
         {
             ReplaceRectangles(new Rectangle[] { toReplace }, new Rectangle[] { replaceWith });
@@ -119,13 +105,11 @@ namespace BiolyCompiler.Modules
             DisconnectFromThis(AdjacentRectangles);
             AdjacentRectangles.Clear();
         }
-
         public void Disconnect(ICollection<Rectangle> toDisconnect)
         {
             DisconnectFromThis(toDisconnect);
             AdjacentRectangles.ExceptWith(toDisconnect);
         }
-
         private void DisconnectFromThis(ICollection<Rectangle> toDisconnect)
         {
             foreach (Rectangle adjacent in toDisconnect)

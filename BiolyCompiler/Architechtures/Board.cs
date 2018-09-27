@@ -215,11 +215,6 @@ namespace BiolyCompiler.Architechtures
             return foundRectangles.Count == newRectangles.Length + (emptyRectangles.Count - 1) + placedModules.Count;
         }
 
-        public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, Dictionary<Rectangle, Rectangle> outsideEmptyRectangles, Dictionary<Rectangle, Rectangle> layoutEmptyRectangles)
-        {
-            return DoesNotBlockConnectionToSourceEmptyRectangles(dropletInput, outsideEmptyRectangles.Values.ToHashSet(), layoutEmptyRectangles.Values.ToHashSet());
-        }
-
         public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, HashSet<Rectangle> outsideEmptyRectangles, HashSet<Rectangle> layoutEmptyRectangles)
         {
             //Breadth first search, finding all the empty rectangles that can be visited.
@@ -295,7 +290,7 @@ namespace BiolyCompiler.Architechtures
             PlacedModules.Add(module, module);
         }
 
-        public String print(List<Module> allPlacedModules)
+        public string print(List<Module> allPlacedModules)
         {
             StringBuilder printedBoard = new StringBuilder();
             int paddingLenght = (int) Math.Log10(allPlacedModules.Count) + 1;
