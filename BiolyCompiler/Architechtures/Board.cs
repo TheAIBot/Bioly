@@ -332,8 +332,16 @@ namespace BiolyCompiler.Architechtures
         {
             Board board = new Board(width, heigth);
             board.EmptyRectangles.Clear();
-            foreach (var module in PlacedModules.Values) board.PlacedModules.Add(module, module);
-            foreach (var rectangle in EmptyRectangles.Values) board.EmptyRectangles.Add(rectangle, rectangle);
+
+            foreach (var module in PlacedModules.Values)
+            {
+                board.PlacedModules.Add(module, module);
+            }
+            foreach (var rectangle in EmptyRectangles.Values)
+            {
+                board.EmptyRectangles.Add(rectangle, rectangle);
+            }
+
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < heigth; j++)

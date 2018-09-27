@@ -164,6 +164,10 @@ namespace BiolyTests
 
             Assert.IsFalse(DoesRectanglesOverlap(actualBoard), errorMessage);
             Assert.IsTrue(CompareAdjacencyGraphs(actualBoard, expectedBoard), errorMessage);
+
+            Assert.IsTrue(CoversWholeExpectedMap(actualBoard, expectedBoard));
+            Assert.IsTrue(HasNessesaryConnections(actualBoard));
+            Assert.IsTrue(HasNessesaryConnections(expectedBoard));
         }
 
         private static bool DoesRectanglesOverlap(Board board)
@@ -254,7 +258,7 @@ namespace BiolyTests
         public static void VerifyBoard(Board board)
         {
             Assert.IsTrue(CoversWholeMap(board));
-            Assert.IsTrue(HasNessesaryConnections(board));
+            //Assert.IsTrue(HasNessesaryConnections(board));
         }
 
         private static bool CoversWholeMap(Board board)
@@ -265,6 +269,24 @@ namespace BiolyTests
                 for (int y = 0; y < board.heigth; y++)
                 {
                     if (overlapMap[x, y] != 1)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool CoversWholeExpectedMap(Board actual, Board expected)
+        {
+            int[,] actualOverlapMap = MakeOverlapMap(actual);
+            int[,] expectedOverlapMap = MakeOverlapMap(expected);
+            for (int x = 0; x < actual.width; x++)
+            {
+                for (int y = 0; y < actual.heigth; y++)
+                {
+                    if (actualOverlapMap[x, y] != expectedOverlapMap[x, y])
                     {
                         return false;
                     }

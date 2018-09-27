@@ -65,7 +65,7 @@ namespace BiolyTests.ScheduleTests
             var data = ScheduleDFG(cdfg.StartDFG, enableGC);
             Schedule scheduler = data.scheduler;
 
-            List <Block> scheduledBlocks = scheduler.ScheduledOperations;
+            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
             Assert.AreEqual(1, scheduledBlocks.Count);
             Assert.IsTrue(scheduledBlocks[0] is Mixer);
 
@@ -129,6 +129,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 2);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -181,6 +183,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -234,6 +238,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 2);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -283,6 +289,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -335,6 +343,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 1);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -386,6 +396,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -438,6 +450,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 1);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -486,6 +500,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 4);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -534,6 +550,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "b", 0);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -585,6 +603,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -636,6 +656,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -686,6 +708,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 4);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -739,6 +763,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 3);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -791,6 +817,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 3);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]
@@ -844,6 +872,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "d", 3);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         private static (Schedule scheduler, int time) ScheduleDFG(DFG<Block> dfg, bool enableGC)
