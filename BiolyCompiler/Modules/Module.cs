@@ -91,6 +91,11 @@ namespace BiolyCompiler.Modules
             } else return InputLayout;
         }
 
+        public bool HasOutputLayout()
+        {
+            return OutputLayout != null;
+        }
+
         private bool canContainPoints(List<Point> DropletOutputLocations)
         {
             foreach (var point in DropletOutputLocations)

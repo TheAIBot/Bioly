@@ -96,39 +96,46 @@ namespace BiolyCompiler.Architechtures
                     }
 
                     var bufferRectangles = CreateBufferedModuleRectangles(module, rectangle, useBuffer.left, useBuffer.right, useBuffer.top, useBuffer.bottom);
-                    if (DoesNotBlockRouteToAnyModuleOrEmptyRectangle(rectangle, bufferRectangles.all, bufferRectangles.center, module, EmptyRectangles, PlacedModules))
+                    if (IsBlockingRouteToModuleOrEmptyRectangle(rectangle, bufferRectangles.all, bufferRectangles.center))
                     {
-                        //Replace module rectangle with one that has the correct position on the board
-                        module.Shape = bufferRectangles.center;
-                        module.Shape.isEmpty = false;
-
-                        //Place the buffered module on theboard
-                        Rectangle.ReplaceRectangles(rectangle, bufferRectangles.all);
-
-                        //This reactangle has been replaced is therefore no longer a part of the board
-                        EmptyRectangles.Remove(rectangle);
-
-                        //The module has now been placed on the board so mark it on the map
-                        UpdateGridAtGivenLocation(module, module.Shape);
-                        PlacedModules.Add(module, module);
-
-                        //Add all new rectangles except the module rectangle to the list of empty rectangles as 
-                        //they have been added to the board
-                        Rectangle[] newEmptyRectangles = bufferRectangles.all.Where(x => x.isEmpty).ToArray();
-                        newEmptyRectangles.ForEach(x => EmptyRectangles.Add(x, x));
-
-                        //Now try and refactor the empty rectangles
-                        RectangleOptimizations.OptimizeRectangles(this, newEmptyRectangles);
-
-                        return true;
+                        continue;
                     }
+
+                    if (IsBlockingOutputLayoutModules(rectangle, bufferRectangles.all, bufferRectangles.center, module))
+                    {
+                        continue;
+                    }
+
+                    //Replace module rectangle with one that has the correct position on the board
+                    module.Shape = bufferRectangles.center;
+                    module.Shape.isEmpty = false;
+
+                    //Place the buffered module on theboard
+                    Rectangle.ReplaceRectangles(rectangle, bufferRectangles.all);
+
+                    //This reactangle has been replaced is therefore no longer a part of the board
+                    EmptyRectangles.Remove(rectangle);
+
+                    //The module has now been placed on the board so mark it on the map
+                    UpdateGridAtGivenLocation(module, module.Shape);
+                    PlacedModules.Add(module, module);
+
+                    //Add all new rectangles except the module rectangle to the list of empty rectangles as 
+                    //they have been added to the board
+                    Rectangle[] newEmptyRectangles = bufferRectangles.all.Where(x => x.isEmpty).ToArray();
+                    newEmptyRectangles.ForEach(x => EmptyRectangles.Add(x, x));
+
+                    //Now try and refactor the empty rectangles
+                    RectangleOptimizations.OptimizeRectangles(this, newEmptyRectangles);
+
+                    return true;
                 }
             }
 
             return false;
         }
 
-        public static (Rectangle[] all, Rectangle center) CreateBufferedModuleRectangles(Module module, Rectangle bigRectangle, bool leftBuffer, bool rightBuffer, bool topBuffer, bool bottomBuffer)
+        private static (Rectangle[] all, Rectangle center) CreateBufferedModuleRectangles(Module module, Rectangle bigRectangle, bool leftBuffer, bool rightBuffer, bool topBuffer, bool bottomBuffer)
         {
             int bufferWidth = module.Shape.width + (leftBuffer ? 1 : 0) + (rightBuffer ? 1 : 0);
             int bufferHeight = module.Shape.height + (topBuffer ? 1 : 0) + (bottomBuffer ? 1 : 0);
@@ -170,7 +177,7 @@ namespace BiolyCompiler.Architechtures
             return (rectangles.ToArray(), centerRectangle);
         }
 
-        public static bool DoesNotBlockRouteToAnyModuleOrEmptyRectangle(Rectangle rectangle, Rectangle[] newRectangles, Rectangle newModuleRectangle, Module module, Dictionary<Rectangle, Rectangle> emptyRectangles, Dictionary<Module, Module> placedModules)
+        private bool IsBlockingRouteToModuleOrEmptyRectangle(Rectangle rectangle, Rectangle[] newRectangles, Rectangle newModuleRectangle)
         {
             Rectangle.ReplaceRectangles(rectangle, newRectangles);
 
@@ -180,7 +187,7 @@ namespace BiolyCompiler.Architechtures
             {
                 //Revert back to the original board
                 Rectangle.ReplaceRectangles(newRectangles, rectangle);
-                return false;
+                return true;
             }
 
             HashSet<Rectangle> foundRectangles = new HashSet<Rectangle>();
@@ -212,7 +219,7 @@ namespace BiolyCompiler.Architechtures
 
             //-1 to empty rectangles because it contains the rectangle that was replaced
             //by the new rectangles
-            return foundRectangles.Count == newRectangles.Length + (emptyRectangles.Count - 1) + placedModules.Count;
+            return foundRectangles.Count != newRectangles.Length + (EmptyRectangles.Count - 1) + PlacedModules.Count;
         }
 
         public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, HashSet<Rectangle> outsideEmptyRectangles, HashSet<Rectangle> layoutEmptyRectangles)
@@ -247,6 +254,29 @@ namespace BiolyCompiler.Architechtures
 
             bool hasAllEmptyRectanglesBeenVisited = layoutEmptyRectangles.IsSubsetOf(visitedEmptyRectangles);
             return hasAllEmptyRectanglesBeenVisited;
+        }
+
+        private bool IsBlockingOutputLayoutModules(Rectangle rectangle, Rectangle[] otherRectangles, Rectangle newModuleRectangle, Module module)
+        {
+            if (!module.HasOutputLayout())
+            {
+                return false;
+            }
+
+            Rectangle[] moduleResult = module.GetOutputLayout().GetAllRectanglesIncludingDroplets();
+            moduleResult = moduleResult.Select(x => Rectangle.Translocate(x, newModuleRectangle.x, newModuleRectangle.y)).ToArray();
+
+            Rectangle[] allRectangles = otherRectangles.Union(moduleResult).ToArray();
+
+            foreach (var moduleRectangle in moduleResult.Where(x => !x.isEmpty))
+            {
+                if (IsBlockingRouteToModuleOrEmptyRectangle(rectangle, allRectangles, moduleRectangle))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void FastTemplateRemove(Module module)
