@@ -5,10 +5,12 @@ using BiolyCompiler.BlocklyParts;
 using BiolyCompiler.Exceptions;
 using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
-using BiolyCompiler.Modules.RectangleSides;
+using BiolyCompiler.Modules.RectangleStuff.RectangleOptimizations;
 using BiolyCompiler.Routing;
 using BiolyCompiler.Scheduling;
 using MoreLinq;
+using System.Linq;
+using System.Diagnostics;
 
 namespace BiolyCompiler.Architechtures
 {
@@ -17,21 +19,20 @@ namespace BiolyCompiler.Architechtures
         //Dummy class for now.
         public int heigth;
         public int width;
-        public Dictionary<Module, Module> PlacedModules           = new Dictionary<Module, Module>();
-        public Dictionary<Rectangle, Rectangle> EmptyRectangles   = new Dictionary<Rectangle, Rectangle>();
-        public Dictionary<string,BoardFluid> fluids = new Dictionary<string,BoardFluid>();
+        public Dictionary<Module, Module> PlacedModules = new Dictionary<Module, Module>();
+        public Dictionary<Rectangle, Rectangle> EmptyRectangles = new Dictionary<Rectangle, Rectangle>();
+        public Dictionary<string, BoardFluid> fluids = new Dictionary<string, BoardFluid>();
         public Module[,] grid;
 
 
         public Board(int width, int heigth)
         {
-            this.width  = width;
+            this.width = width;
             this.heigth = heigth;
-            this.grid = new Module[width,heigth];
+            this.grid = new Module[width, heigth];
             Rectangle emptyRectangle = new Rectangle(width, heigth);
             EmptyRectangles.Add(emptyRectangle, emptyRectangle);
         }
-
 
         /// <summary>
         /// Places a given module on the board, if it is deemed possible. 
@@ -48,240 +49,177 @@ namespace BiolyCompiler.Architechtures
         /// <returns>true if the module could be placed on the board, else false.</returns>
         public bool FastTemplatePlace(Module module)
         {
-            //2d range trees can be used here instead of a linear search, for better performance.
-            Rectangle bestFitRectangle = null;
-            int bestFitScore = Int32.MaxValue;
-            //Used when placing the module in any rectangle, blocks the routing.
-            List<Rectangle> candidateBufferedRectangles = new List<Rectangle>();
-            foreach (var rectangle in EmptyRectangles.Values)
+            var bufferConfigurations = new (bool left, bool right, bool top, bool bottom)[]
+{
+                (false, false, false, false),
+                (false, false, false, true ),
+                //(false, false, true , false),
+                //(false, true , false, false),
+                (true , false, false, false),
+
+                //(false, false, true , true ),
+                //(false, true , true , false),
+                //(true , true , false, false),
+                (true , false, false, true ),
+                //(false, true , false, true ),
+                //(true , false, true , false),
+
+                //(false, true , true , true ),
+                //(true , true , true , false),
+                //(true , true , false, true ),
+                //(true , false, true , true ),
+
+                //(true , true , true , true ),
+            };
+
+            List<Rectangle> sortedRectangles = new List<Rectangle>();
+            foreach (var emptyRect in EmptyRectangles)
             {
-                int Cost = RectangleCost(rectangle, module);
-                if (rectangle.DoesRectangleFitInside(module.Shape) && Cost < bestFitScore)
+                if (emptyRect.Key.DoesRectangleFitInside(module.Shape))
                 {
-                    candidateBufferedRectangles.Add(rectangle);
-                    if (DoesNotBlockRouteToAnyModuleOrEmptyRectangle(rectangle, module, EmptyRectangles, PlacedModules))
+                    sortedRectangles.Add(emptyRect.Key);
+                }
+            }
+            sortedRectangles.Sort((x, y) => x.GetArea() - y.GetArea());
+
+
+            foreach (Rectangle rectangle in sortedRectangles)
+            {
+                foreach (var useBuffer in bufferConfigurations)
+                {
+                    int bufferWidth = module.Shape.width + (useBuffer.left ? 1 : 0) + (useBuffer.right ? 1 : 0);
+                    int bufferHeight = module.Shape.height + (useBuffer.top ? 1 : 0) + (useBuffer.bottom ? 1 : 0);
+
+                    if (!rectangle.DoesRectangleFitInside(bufferWidth, bufferHeight))
                     {
-                        bestFitRectangle = rectangle;
-                        bestFitScore = Cost;
+                        continue;
                     }
 
+                    var bufferRectangles = CreateBufferedModuleRectangles(module, rectangle, useBuffer.left, useBuffer.right, useBuffer.top, useBuffer.bottom);
+                    if (IsBlockingRouteToModuleOrEmptyRectangle(rectangle, bufferRectangles.all, bufferRectangles.center))
+                    {
+                        continue;
+                    }
+
+                    if (IsBlockingOutputLayoutModules(rectangle, bufferRectangles.all, bufferRectangles.center, module))
+                    {
+                        continue;
+                    }
+
+                    //Replace module rectangle with one that has the correct position on the board
+                    module.Shape = bufferRectangles.center;
+                    module.Shape.isEmpty = false;
+
+                    //Place the buffered module on theboard
+                    Rectangle.ReplaceRectangles(rectangle, bufferRectangles.all);
+
+                    //This reactangle has been replaced is therefore no longer a part of the board
+                    EmptyRectangles.Remove(rectangle);
+
+                    //The module has now been placed on the board so mark it on the map
+                    UpdateGridAtGivenLocation(module, module.Shape);
+                    PlacedModules.Add(module, module);
+
+                    //Add all new rectangles except the module rectangle to the list of empty rectangles as 
+                    //they have been added to the board
+                    Rectangle[] newEmptyRectangles = bufferRectangles.all.Where(x => x.isEmpty).ToArray();
+                    newEmptyRectangles.ForEach(x => EmptyRectangles.Add(x, x));
+
+                    //Now try and refactor the empty rectangles
+                    RectangleOptimizations.OptimizeRectangles(this, newEmptyRectangles);
+
+                    return true;
                 }
             }
-            //If a rectangle where the module can fit inside, was found, it can be placed in the best of those rectangles.
-            //Else, it might be neccessary to "buffer" the module, by placing empty space around it, 
-            //so that it doesn't block routing to other modules.
-            if (bestFitRectangle != null){
-                PlaceModuleInRectangle(module, bestFitRectangle, this);
-                return true;
-            }
-            else return PlaceBufferedModule(module, candidateBufferedRectangles);
-        }
 
-
-        public bool PlaceBufferedModule(Module module, List<Rectangle> candidateRectangles)
-        {
-            //It is neccessary to buffer the module, so that droplets can be routed around it.
-            //First it will try with a smaller buffering area just above the module,
-            //and if this does not suffice, it will try with buffers around the whole module.
-            candidateRectangles.Sort((x, y) => RectangleCost(x, module) <= RectangleCost(y, module) ? 0 : 1);
-            Rectangle bufferedRectangle;
-            
-            //bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
-            //for (int i = 0; i < candidateRectangles.Count; i++)
-            //{
-            //    Rectangle current = candidateRectangles[i];
-            //    if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
-            //    {
-            //        (bool couldBePlaced, Rectangle newCurrentRectangle) = PlaceBottomBufferedModuleInRectangle(module, current);
-            //        if (couldBePlaced) return true;
-            //        else candidateRectangles[i] = newCurrentRectangle; //Necessary, as current has been replaced internally in the system with newCurrentRectangle.
-
-            //    }
-            //}
-            //DebugTools.checkAdjacencyMatrixCorrectness(this);
-            
-            //Bigger buffer in the case it failed:
-
-            //The intention is that it should have a one wide buffer on each side,
-            //so that droplets always can be routed around the module.
-            //This would make the rectangles unable to block any routing between modules.
-            bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
-            for (int i = 0; i < candidateRectangles.Count; i++)
-            {
-                Rectangle current = candidateRectangles[i];
-                if (candidateRectangles[i].DoesRectangleFitInside(bufferedRectangle))
-                {
-                    return PlaceCompletlyBufferedModuleInRectangle(module, current);
-                }
-            }
-            DebugTools.checkAdjacencyMatrixCorrectness(this);
-            //If the module can't be placed, even with some buffer space, then it can't be placed at all:
             return false;
         }
 
-
-        //public (bool, Rectangle) PlaceBottomBufferedModuleInRectangle(Module module, Rectangle current)
-        //{
-        //    Rectangle bufferedRectangle = new Rectangle(module.Shape.width, module.Shape.height + 1);
-        //    //It reserves/places the area for the whole buffered rectangle
-        //    (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
-        //    EmptyRectangles.Remove(current);
-        //    if (topRectangle != null) EmptyRectangles.Add(topRectangle);
-        //    if (rightRectangle != null) EmptyRectangles.Add(rightRectangle);
-
-        //    //The placed buffered rectangle is divided up into smaller empty rectangles, that can be used for routing.
-        //    //Here a thin slice is cut off from the bottom, for the purpose of routing
-        //    Rectangle lowerBufferingRectangle = new Rectangle(bufferedRectangle.width, 1, bufferedRectangle.x, bufferedRectangle.y);
-        //    Rectangle remainingUpperRectangle = new Rectangle(bufferedRectangle.width, bufferedRectangle.height - 1, bufferedRectangle.x, bufferedRectangle.y + 1);
-        //    bufferedRectangle.splitRectangleInTwo(lowerBufferingRectangle, remainingUpperRectangle);
-        //    EmptyRectangles.Add(remainingUpperRectangle);
-        //    EmptyRectangles.Add(lowerBufferingRectangle);
-        //    //It needs to be checked, if with the buffer, one can still route to all other rectangles.
-        //    //If not, then one should fail.
-        //    if (DoesNotBlockRouteToAnyModuleOrEmptyRectangle(remainingUpperRectangle, module, EmptyRectangles, PlacedModules))
-        //    {
-        //        PlaceModuleInRectangle(module, remainingUpperRectangle);
-        //        return (true, null);
-        //    }
-        //    else
-        //    {
-        //        //Everything is returned to the same state as before:
-        //        //This must be done in a certain order, to avoid error cases, where one do not return to the original board.
-        //        Rectangle intermediateCurrent = remainingUpperRectangle.MergeWithRectangle(RectangleSide.Bottom, lowerBufferingRectangle);
-        //        EmptyRectangles.Remove(remainingUpperRectangle);
-        //        EmptyRectangles.Remove(lowerBufferingRectangle);
-
-        //        //A lot of conditionals, depending on the original splitting of topRectangle and rightRectangle:
-        //        if (topRectangle != null)
-        //        {
-        //            (RectangleSide side, bool canMerge) = intermediateCurrent.CanMerge(topRectangle);
-        //            if (canMerge)
-        //            {
-        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
-        //                if (rightRectangle != null)
-        //                {
-        //                    //It should then be able to merge
-        //                    (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //                    if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
-        //                    intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
-
-        //                }
-        //            }
-        //            else
-        //            { //Then the right rectangle must exists, and it can be merged with first
-        //                (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //                if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
-        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(secondSide, rightRectangle);
-        //                intermediateCurrent = intermediateCurrent.MergeWithRectangle(side, topRectangle);
-        //            }
-        //        }
-        //        else if (rightRectangle != null)
-        //        {
-        //            //It should then be able to merge
-        //            (RectangleSide secondSide, bool canTotallyMerge) = intermediateCurrent.CanMerge(rightRectangle);
-        //            if (!canTotallyMerge) throw new internalRuntimeException("Logic error");
-        //        }
-
-        //        if (topRectangle != null)   EmptyRectangles.Remove(topRectangle);
-        //        if (rightRectangle != null) EmptyRectangles.Remove(rightRectangle);
-        //        EmptyRectangles.Add(intermediateCurrent);
-        //        return (false, intermediateCurrent);
-        //    }
-
-
-        //}
-
-        public bool PlaceCompletlyBufferedModuleInRectangle(Module module, Rectangle current)
+        private static (Rectangle[] all, Rectangle center) CreateBufferedModuleRectangles(Module module, Rectangle bigRectangle, bool leftBuffer, bool rightBuffer, bool topBuffer, bool bottomBuffer)
         {
-            Rectangle bufferedRectangle = new Rectangle(module.Shape.width + 2, module.Shape.height + 2);
-            //It reserves/places the area for the whole buffered rectangle
-            (Rectangle topRectangle, Rectangle rightRectangle) = current.SplitIntoSmallerRectangles(bufferedRectangle);
-            EmptyRectangles.Remove(current);
-            if (topRectangle != null) EmptyRectangles.Add(topRectangle, topRectangle);
-            if (rightRectangle != null) EmptyRectangles.Add(rightRectangle, rightRectangle);
+            int bufferWidth = module.Shape.width + (leftBuffer ? 1 : 0) + (rightBuffer ? 1 : 0);
+            int bufferHeight = module.Shape.height + (topBuffer ? 1 : 0) + (bottomBuffer ? 1 : 0);
 
-            //The placed buffered rectangle is divided up into smaller empty rectangles, that can be used for routing.
-            //This is done by first cutting a thin slice of the bottom off, and then a thin slice of the left. 
-            //Because of the initial size of bufferedRectangle, PlaceModuleInRectangle will handle the top and right part.
-            Rectangle lowerBufferingRectangle = new Rectangle(bufferedRectangle.width, 1, bufferedRectangle.x, bufferedRectangle.y);
-            Rectangle remainingUpperRectangle = new Rectangle(bufferedRectangle.width, bufferedRectangle.height - 1, bufferedRectangle.x, bufferedRectangle.y + 1);
-            bufferedRectangle.splitRectangleInTwo(lowerBufferingRectangle, remainingUpperRectangle);
-            EmptyRectangles.Add(lowerBufferingRectangle, lowerBufferingRectangle);
+            List<Rectangle> rectangles = new List<Rectangle>();
 
-            Rectangle leftBufferingRectangle = new Rectangle(1, remainingUpperRectangle.height, remainingUpperRectangle.x, remainingUpperRectangle.y);
-            Rectangle remainingRightRectangle = new Rectangle(remainingUpperRectangle.width - 1, remainingUpperRectangle.height, remainingUpperRectangle.x + 1, remainingUpperRectangle.y);
-            remainingUpperRectangle.splitRectangleInTwo(leftBufferingRectangle, remainingRightRectangle);
-            EmptyRectangles.Add(leftBufferingRectangle, leftBufferingRectangle);
-
-            PlaceModuleInRectangle(module, remainingRightRectangle, this);
-            return true;
-        }
-
-        /// <summary>
-        /// Checks if, without this rectangle, it is possible to reach all modules on the board,
-        /// and all empty rectangles, without having to go over fields reserved for the modules.
-        /// This is to ensure that it is always possible to route droplets between modules,
-        /// and to ensure that there isn't any space on the board (an empty rectangle) that simply can't be used.
-        /// 
-        /// To construct the correct adjacency graph for the board, the module is temporarily placed and is then removed,
-        /// giving the original board.
-        /// 
-        /// Checking that everything is connected is done using a Breadth first search, only moving between empty rectangles.
-        /// </summary>
-        /// <param name="rectangle"></param>
-        /// <param name="module"></param>
-        /// <returns>true iff it is still possible to reach all modules and empty rectangles on the board</returns>
-        public static bool DoesNotBlockRouteToAnyModuleOrEmptyRectangle(Rectangle rectangle, Module module, Dictionary<Rectangle,Rectangle> emptyRectangles, Dictionary<Module, Module> placedModules)
-        {
-            //If the board is empty, the placement is legal iff it leaves at least 1 empty rectangle:
-            if (emptyRectangles.Count == 1 && placedModules.Count == 0) return (module.Shape.width != rectangle.width || module.Shape.height != rectangle.height);
-            
-
-            //The module is temporarily "placed" (but not really), to get the adjacency graph corresponding to the module being placed.
-            //It is not really placed, as it would change EmptyRectangles, which is itterated over. Trust me, it would crash everything - Jesper.
-            (Rectangle emptyTopRectangle, Rectangle emptyRightRectangle) = rectangle.SplitIntoSmallerRectangles(module.Shape);
-            int extraEmptyRectangles = ((emptyTopRectangle == null) ? 0 : 1) + ((emptyRightRectangle == null) ? 0 : 1) - 1; //-1 as the initial rectangle is removed.
-
-            //The source empty rectangle for the search does not matter, as paths are symmetric:
-            Rectangle randomEmptyRectangle = getEmptyAdjacentRectangle(module.Shape);
-            if (randomEmptyRectangle == null) {
-                //There were only one empty rectangle initally, and placing the module in it, filled the rectangle:
-                //The placed module is the removed, leaving the original board.
-                MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
-                return false;
+            Rectangle bufferedRectangle = new Rectangle(bufferWidth, bufferHeight);
+            var splittedRectangle = Rectangle.SplitIntoSmallerRectangles(bigRectangle, bufferedRectangle);
+            if (bufferHeight < bigRectangle.height)
+            {
+                rectangles.Add(splittedRectangle.top);
+            }
+            if (bufferWidth < bigRectangle.width)
+            {
+                rectangles.Add(splittedRectangle.right);
             }
 
-
-            //Breadth first search, finding all the empty rectangles and placed modules that can be visited.
-            HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>() { randomEmptyRectangle };
-            HashSet<Rectangle> connectedModuleRectangles = new HashSet<Rectangle>();
-            Queue<Rectangle> emptyRectanglesToVisit = new Queue<Rectangle>();
-            emptyRectanglesToVisit.Enqueue(randomEmptyRectangle);
-
-            while (emptyRectanglesToVisit.Count > 0)
+            if (leftBuffer)
             {
-                Rectangle currentEmptyRectangle = emptyRectanglesToVisit.Dequeue();
-                foreach (var adjacentRectangle in currentEmptyRectangle.AdjacentRectangles) {
-                    if (adjacentRectangle == rectangle) throw new InternalRuntimeException("Logic error: no rectangles should currently be adjacent to this rectangle");
-                    //if it is an empty rectangle, it should be visited:
-                    if (adjacentRectangle.isEmpty && visitedEmptyRectangles.Add(adjacentRectangle))
-                        emptyRectanglesToVisit.Enqueue(adjacentRectangle);
-                    else if (!adjacentRectangle.isEmpty) 
-                        connectedModuleRectangles.Add(adjacentRectangle);                    
+                rectangles.Add(new Rectangle(1, bufferHeight - (topBuffer ? 1 : 0) - (bottomBuffer ? 1 : 0), splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0)));
+            }
+            if (rightBuffer)
+            {
+                rectangles.Add(new Rectangle(1, bufferHeight - (topBuffer ? 1 : 0) - (bottomBuffer ? 1 : 0), splittedRectangle.newSmaller.getRightmostXPosition() - 1 + (leftBuffer ? 1 : 0), splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0)));
+            }
+            if (topBuffer)
+            {
+                rectangles.Add(new Rectangle(bufferWidth, 1, splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.getTopmostYPosition() - 1 + (bottomBuffer ? 1 : 0)));
+            }
+            if (bottomBuffer)
+            {
+                rectangles.Add(new Rectangle(bufferWidth, 1, splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.y));
+            }
+
+            Rectangle centerRectangle = new Rectangle(module.Shape.width, module.Shape.height, splittedRectangle.newSmaller.x + (leftBuffer ? 1 : 0), splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0));
+            centerRectangle.isEmpty = false;
+            rectangles.Add(centerRectangle);
+
+            return (rectangles.ToArray(), centerRectangle);
+        }
+
+        private bool IsBlockingRouteToModuleOrEmptyRectangle(Rectangle rectangle, Rectangle[] newRectangles, Rectangle newModuleRectangle)
+        {
+            Rectangle.ReplaceRectangles(rectangle, newRectangles);
+
+            //The source empty rectangle for the search does not matter, as paths are symmetric:
+            Rectangle randomEmptyRectangle = newModuleRectangle.AdjacentRectangles.FirstOrDefault(x => x.isEmpty);
+            if (randomEmptyRectangle == null)
+            {
+                //Revert back to the original board
+                Rectangle.ReplaceRectangles(newRectangles, rectangle);
+                return true;
+            }
+
+            HashSet<Rectangle> foundRectangles = new HashSet<Rectangle>();
+            Queue<Rectangle> rectanglesToCheck = new Queue<Rectangle>();
+            rectanglesToCheck.Enqueue(randomEmptyRectangle);
+
+            while (rectanglesToCheck.Count > 0)
+            {
+                Rectangle toCheck = rectanglesToCheck.Dequeue();
+
+                foundRectangles.Add(toCheck);
+
+                if (!toCheck.isEmpty)
+                {
+                    continue;
+                }
+
+                foreach (var adjacent in toCheck.AdjacentRectangles)
+                {
+                    if (!foundRectangles.Contains(adjacent))
+                    {
+                        rectanglesToCheck.Enqueue(adjacent);
+                    }
                 }
             }
 
-            //The placed module is the removed, leaving the original board.
-            MergeToGetOriginalRectangle(module, rectangle, emptyTopRectangle, emptyRightRectangle);
+            //Revert back to the original board
+            Rectangle.ReplaceRectangles(newRectangles, rectangle);
 
-            //DebugTools.checkAdjacencyMatrixCorrectness(this);
-            bool visitsEverything = VisitsAllModulesAndEmptyRectangles(extraEmptyRectangles, 1, visitedEmptyRectangles, connectedModuleRectangles, emptyRectangles, placedModules);
-            return visitsEverything;
-        }
-
-        public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, Dictionary<Rectangle, Rectangle> outsideEmptyRectangles, Dictionary<Rectangle, Rectangle> layoutEmptyRectangles)
-        {
-            return DoesNotBlockConnectionToSourceEmptyRectangles(dropletInput, outsideEmptyRectangles.Values.ToHashSet(), layoutEmptyRectangles.Values.ToHashSet());
+            //-1 to empty rectangles because it contains the rectangle that was replaced
+            //by the new rectangles
+            return foundRectangles.Count != newRectangles.Length + (EmptyRectangles.Count - 1) + PlacedModules.Count;
         }
 
         public static bool DoesNotBlockConnectionToSourceEmptyRectangles(Droplet dropletInput, HashSet<Rectangle> outsideEmptyRectangles, HashSet<Rectangle> layoutEmptyRectangles)
@@ -290,7 +228,9 @@ namespace BiolyCompiler.Architechtures
             HashSet<Rectangle> visitedEmptyRectangles = new HashSet<Rectangle>(outsideEmptyRectangles);
             Queue<Rectangle> emptyRectanglesToVisit = new Queue<Rectangle>();
             foreach (var rectangle in outsideEmptyRectangles)
+            {
                 emptyRectanglesToVisit.Enqueue(rectangle);
+            }
 
             while (emptyRectanglesToVisit.Count > 0)
             {
@@ -315,128 +255,41 @@ namespace BiolyCompiler.Architechtures
             bool hasAllEmptyRectanglesBeenVisited = layoutEmptyRectangles.IsSubsetOf(visitedEmptyRectangles);
             return hasAllEmptyRectanglesBeenVisited;
         }
-        
-        /// <summary>
-        /// Return an empty rectangle adjacent to the given rectangle: and null if such a rectangle does not exist.
-        /// </summary>
-        /// <param name="rectangle"></param>
-        /// <returns></returns>
-        private static Rectangle getEmptyAdjacentRectangle(Rectangle rectangle)
+
+        private bool IsBlockingOutputLayoutModules(Rectangle rectangle, Rectangle[] otherRectangles, Rectangle newModuleRectangle, Module module)
         {
-            Rectangle randomEmptyRectangle = null;
-            foreach (var adjacentRectangle in rectangle.AdjacentRectangles)
+            if (!module.HasOutputLayout())
             {
-                if (adjacentRectangle.isEmpty)
+                return false;
+            }
+
+            Rectangle[] moduleResult = module.GetOutputLayout().GetAllRectanglesIncludingDroplets();
+            moduleResult = moduleResult.Select(x => Rectangle.Translocate(x, newModuleRectangle.x, newModuleRectangle.y)).ToArray();
+
+            Rectangle[] allRectangles = otherRectangles.Union(moduleResult).ToArray();
+
+            foreach (var moduleRectangle in moduleResult.Where(x => !x.isEmpty))
+            {
+                if (IsBlockingRouteToModuleOrEmptyRectangle(rectangle, allRectangles, moduleRectangle))
                 {
-                    randomEmptyRectangle = adjacentRectangle;
-                    break;
+                    return true;
                 }
             }
 
-            return randomEmptyRectangle;
-        }
-
-        /// <summary>
-        /// Compares the size of the given sets, to find if exactely the right rectangles and modules have been visisted.
-        /// It returns true if this is the case, else false.
-        /// </summary>
-        /// <param name="extraEmptyRectangles"></param>
-        /// <param name="extraPlacedModules"></param>
-        /// <param name="visitedEmptyRectangles"></param>
-        /// <param name="connectedModuleRectangles"></param>
-        /// <param name="originalEmptyRectangles"></param>
-        /// <param name="originalPlacedModules"></param>
-        /// <returns></returns>
-        private static bool VisitsAllModulesAndEmptyRectangles(int extraEmptyRectangles, int extraPlacedModules, HashSet<Rectangle> visitedEmptyRectangles, 
-                                                               HashSet<Rectangle> connectedModuleRectangles, Dictionary<Rectangle, Rectangle> originalEmptyRectangles, Dictionary<Module, Module> originalPlacedModules)
-        {
-            return (connectedModuleRectangles.Count == originalPlacedModules.Count   + extraPlacedModules && 
-                    visitedEmptyRectangles.Count    == originalEmptyRectangles.Count + extraEmptyRectangles);
-        }
-
-        /// <summary>
-        /// Returns the rectangles that are only present in one of the two sets given.
-        /// </summary>
-        /// <param name="set1"></param>
-        /// <param name="set2"></param>
-        /// <returns></returns>
-        private HashSet<Rectangle> GetSetDifference(HashSet<Rectangle> set1, HashSet<Rectangle> set2)
-        {
-            HashSet<Rectangle> differenceSet = new HashSet<Rectangle>();
-            foreach (var rectangle in set1)
-                if (!set2.Contains(rectangle))
-                    differenceSet.Add(rectangle);
-            foreach (var rectangle in set2)
-                if (!set1.Contains(rectangle))
-                    differenceSet.Add(rectangle);
-            return differenceSet;
-        }
-
-        private static void MergeToGetOriginalRectangle(Module module, Rectangle originalRectangle, Rectangle emptyTopRectangle, Rectangle emptyRightRectangle)
-        {
-            //Dummy rectangles to avoid constant null checks:
-            //The y=-5 position is to create unique hash values
-            if (emptyTopRectangle == null)   emptyTopRectangle = new Rectangle(0, 0, 0, -5);
-            if (emptyRightRectangle == null) emptyRightRectangle = new Rectangle(0, 0, 1, -5);
-            
-
-            foreach (var adjacentRectangle in originalRectangle.AdjacentRectangles)
-            {
-                adjacentRectangle.AdjacentRectangles.Remove(module.Shape);
-                adjacentRectangle.AdjacentRectangles.Remove(emptyTopRectangle);
-                adjacentRectangle.AdjacentRectangles.Remove(emptyRightRectangle);
-                //This must be latter than the removes, in the case that the module.shape has the same size as the merged rectangle, 
-                //curtesy of the equals methods.
-                adjacentRectangle.AdjacentRectangles.Add(originalRectangle);
-            }
-            module.Shape.AdjacentRectangles.Clear();
-
-            //ClearBoard(originalRectangle);
-        }
-
-        public void PlaceModuleInRectangle(Module module, Rectangle bestFitRectangle, Board board)
-        {
-            EmptyRectangles.Remove(bestFitRectangle);
-            UpdateGridWithModulePlacement(module, bestFitRectangle);            
-            (Rectangle topRectangle, Rectangle rightRectangle) = bestFitRectangle.SplitIntoSmallerRectangles(module.Shape);
-            if (topRectangle != null) {
-                EmptyRectangles.Add(topRectangle, topRectangle);
-            }
-            if (rightRectangle != null) {
-                EmptyRectangles.Add(rightRectangle, rightRectangle);
-            }
-
-            if (topRectangle != null)
-            {
-                topRectangle.MergeWithOtherRectangles(board);
-            }
-            if (rightRectangle != null)
-            {
-                //In the case that adjacentRectangle have been modified in the above merge, 
-                //we must ensure that the rectangle is actually placed on the board:
-                if (board.EmptyRectangles.TryGetValue(rightRectangle, out Rectangle rightRectangleInDictionary))
-                {
-                    rightRectangleInDictionary.MergeWithOtherRectangles(board);
-                }
-            }
-            
+            return false;
         }
 
         public void FastTemplateRemove(Module module)
         {
+            Rectangle emptyReplacement = new Rectangle(module.Shape.width, module.Shape.height, module.Shape.x, module.Shape.y);
+
+            Rectangle.ReplaceRectangles(module.Shape, emptyReplacement);
+
             PlacedModules.Remove(module);
-            //All dependencies on the rectangle from the module, should be moved to the new empty rectangle.
-            //It is easier to just create a new rectangle for the module:
-            Rectangle newModuleRectangle = new Rectangle(module.Shape);
-            Rectangle emptyRectangle = module.Shape;
-            module.Shape = newModuleRectangle;
+            EmptyRectangles.Add(emptyReplacement, emptyReplacement);
+            ClearBoard(emptyReplacement);
 
-            newModuleRectangle.isEmpty = false;
-            EmptyRectangles.Add(emptyRectangle, emptyRectangle);
-            emptyRectangle.isEmpty = true;
-
-            ClearBoard(emptyRectangle);
-            emptyRectangle.MergeWithOtherRectangles(this);
+            RectangleOptimizations.OptimizeRectangle(this, emptyReplacement);
         }
         
         private void ClearBoard(Rectangle emptyRectangle)
@@ -461,20 +314,13 @@ namespace BiolyCompiler.Architechtures
             }
         }
 
-        public void UpdateGridWithModulePlacement(Module module, Rectangle rectangleToPlaceAt)
+        public void UpdateGridWithModulePlacement(Module module)
         {
-            module.Shape.PlaceAt(rectangleToPlaceAt.x, rectangleToPlaceAt.y);
-            UpdateGridAtGivenLocation(module, rectangleToPlaceAt);
+            UpdateGridAtGivenLocation(module, module.Shape);
             PlacedModules.Add(module, module);
         }
-        
 
-        private int RectangleCost(Rectangle rectangle, Module module)
-        {
-            return Math.Abs(rectangle.GetArea() - module.Shape.GetArea());
-        }
-
-        public String print(List<Module> allPlacedModules)
+        public string print(List<Module> allPlacedModules)
         {
             StringBuilder printedBoard = new StringBuilder();
             int paddingLenght = (int) Math.Log10(allPlacedModules.Count) + 1;
@@ -495,57 +341,38 @@ namespace BiolyCompiler.Architechtures
             return printedBoard.ToString();
         }
 
-        public List<Droplet> replaceWithDroplets(FluidBlock finishedOperation, BoardFluid fluidType)
+        public List<Droplet> replaceWithDroplets(Module module, BoardFluid fluidType)
         {
-            Module operationExecutingModule = finishedOperation.BoundModule;
-            //Checks for each pair of adjacent rectangle to the module on the board, and the rectangles in the modules layout,
-            //if they are adjacent -> if so, it makes them adjacent.
-            List<Rectangle> allRectangles = operationExecutingModule.GetOutputLayout().GetAllRectanglesIncludingDroplets();
+            Rectangle[] allRectangles = module.GetOutputLayout().GetAllRectanglesIncludingDroplets();
+            Rectangle.ReplaceRectangles(module.Shape, allRectangles);
 
-            //Copied, as sets work in mysterious ways,
-            HashSet<Rectangle> adjacentRectangles = new HashSet<Rectangle>(operationExecutingModule.Shape.AdjacentRectangles);
+            List<Droplet> droplets = module.GetOutputLayout().Droplets;
+            droplets.ForEach(droplet => droplet.SetFluidType(fluidType));
 
-            foreach (var moduleAdjacentRectangle in adjacentRectangles)
-            {
-                //They are no longer adjacent.
-                moduleAdjacentRectangle.AdjacentRectangles.Remove(operationExecutingModule.Shape); 
-                foreach (var moduleLayoutRectangle in allRectangles)
-                {
-                    if (moduleAdjacentRectangle.IsAdjacent(moduleLayoutRectangle))
-                    {
-                        moduleAdjacentRectangle.AdjacentRectangles.Add(moduleLayoutRectangle);
-                        moduleLayoutRectangle.AdjacentRectangles.Add(moduleAdjacentRectangle);
-                    }
-                }
-            }
-            operationExecutingModule.Shape.AdjacentRectangles.Clear();
+            PlacedModules.Remove(module);
+            ClearBoard(module.Shape);
 
-            //The droplets in the module layout, have now had their associated rectangles placed on the board. 
-            //Thus it is only neccessary to change their fluidtype, to get the correct output.
+            allRectangles.Where(x => x.isEmpty).ForEach(x => EmptyRectangles.Add(x, x));
+            droplets.ForEach(x => UpdateGridWithModulePlacement(x));
 
-            PlacedModules.Remove(operationExecutingModule);
-            ClearBoard(operationExecutingModule.Shape);
-            operationExecutingModule.GetOutputLayout().ChangeFluidType(fluidType);
-            operationExecutingModule.GetOutputLayout().EmptyRectangles.ForEach(rectangle => EmptyRectangles.Add(rectangle, rectangle));
-            operationExecutingModule.GetOutputLayout().Droplets.ForEach(droplet => UpdateGridWithModulePlacement(droplet, droplet.Shape));
-
-            return operationExecutingModule.GetOutputLayout().Droplets;
+            return droplets;
         }
 
-        public Board Copy()
+        public Rectangle[] CopyAllRectangles()
         {
-            Board board = new Board(width, heigth);
-            board.EmptyRectangles.Clear();
-            foreach (var module in PlacedModules.Values) board.PlacedModules.Add(module, module);
-            foreach (var rectangle in EmptyRectangles.Values) board.EmptyRectangles.Add(rectangle, rectangle);
-            for (int i = 0; i < width; i++)
+            Rectangle[] allRectangles = new Rectangle[EmptyRectangles.Count + PlacedModules.Count];
+
+            int index = 0;
+            foreach (var empty in EmptyRectangles)
             {
-                for (int j = 0; j < heigth; j++)
-                {
-                    board.grid[i, j] = grid[i, j];
-                }
+                allRectangles[index++] = new Rectangle(empty.Key);
             }
-            return board;
+            foreach (var module in PlacedModules)
+            {
+                allRectangles[index++] = new Rectangle(module.Key.Shape);
+            }
+
+            return allRectangles;
         }
     }
 }

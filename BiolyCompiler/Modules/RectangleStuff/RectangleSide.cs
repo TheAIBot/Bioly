@@ -1,6 +1,6 @@
 using System;
 
-namespace BiolyCompiler.Modules.RectangleSides
+namespace BiolyCompiler.Modules.HelperObjects
 {
     
     public enum RectangleSide

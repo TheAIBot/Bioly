@@ -77,7 +77,7 @@ namespace BiolyCompiler.BlocklyParts
         {
             int time = 0;
             List<Command> commands = new List<Command>();
-            
+
             if (!(this is StaticBlock))
             {
                 //show module on simulator

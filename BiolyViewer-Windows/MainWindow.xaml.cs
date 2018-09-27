@@ -51,26 +51,51 @@ namespace BiolyViewer_Windows
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            SettingsInfo settings = new SettingsInfo();
-            settings.LoadSettings(SETTINGS_FILE_PATH);
+            //CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
+            //var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
+            //var parsedProgram = XmlParser.Parse(programData.programXml);
 
-            this.Updater = new WebUpdater(Browser, settings);
+            //for (int i = 0; i < 20; i++)
+            //{
+            //    BenchmarkExecutor executor = new BenchmarkExecutor();
+            //    ProgramExecutor<string> CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
+            //    CurrentlyExecutionProgram.TimeBetweenCommands = 0;
+            //    CurrentlyExecutionProgram.ShowEmptyRectangles = false;
+            //    CurrentlyExecutionProgram.EnableOptimizations = true;
+            //    CurrentlyExecutionProgram.EnableGarbageCollection = true;
+            //    CurrentlyExecutionProgram.EnableSparseElectrodes = false;
 
-            Browser.Load("costum://index.html");
-            Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
-            Browser.JavascriptObjectRepository.Register("webUpdater", Updater, true);
-            //Wait for the MainFrame to finish loading
-            Browser.FrameLoadEnd += (s, args) =>
+            //    CurrentlyExecutionProgram.Run(45, 45, parsedProgram.Item1, false);
+            //}
+
+            //Run in another thread to not block the UI
+            await Task.Run(() =>
             {
+                SettingsInfo settings = new SettingsInfo();
+                settings.LoadSettings(SETTINGS_FILE_PATH);
+
+                this.Updater = new WebUpdater(Browser, settings);
+
+                Browser.Load("costum://index.html");
+                Browser.JavascriptObjectRepository.Register("saver", new Saver(Browser), true);
+                Browser.JavascriptObjectRepository.Register("webUpdater", Updater, true);
                 //Wait for the MainFrame to finish loading
-                if (args.Frame.IsMain)
+                Browser.FrameLoadEnd += async (s, args) =>
                 {
-                    GiveSettingsToJS(settings);
-                    GiveProgramsToJS();
-                }
-            };
+                    //Wait for the MainFrame to finish loading
+                    if (args.Frame.IsMain)
+                    {
+                        //Run in another thread to not block the UI
+                        await Task.Run(() =>
+                        {
+                            GiveSettingsToJS(settings);
+                            GiveProgramsToJS();
+                        });
+                    }
+                };
+            });
         }
 
         private void GiveSettingsToJS(SettingsInfo settings)

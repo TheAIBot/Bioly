@@ -22,25 +22,22 @@ namespace BiolyCompiler.Scheduling
     {
         //Records how the board looks at all the times where the board have been changed. 
         //This is primarily for testing and visulization purposes.
-        public Dictionary<int, Board> boardAtDifferentTimes = new Dictionary<int, Board>();
+        public Dictionary<int, Rectangle[]> rectanglesAtDifferentTimes = new Dictionary<int, Rectangle[]>();
         // For debuging. Used when printing the board to the console, for visulization purposes.
         public List<Module> AllUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
         public Dictionary<string, Module> StaticModules = new Dictionary<string, Module>();
         public SimplePriorityQueue<FluidBlock> CurrentlyRunningOpertions = new SimplePriorityQueue<FluidBlock>();
         public List<Block> ScheduledOperations = new List<Block>();
-        public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
-        public const int IGNORED_TIME_DIFFERENCE = 30; 
-        private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
-        private const string WASTE_FLUIDNAME_STRING  = "waste - fluidtype #";
-        public const string WASTE_MODULE_NAME = "waste @ module";
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
         public Dictionary<string, List<IDropletSource>> OutputtedDroplets = new Dictionary<string, List<IDropletSource>>();
 
-        public Schedule(){
-
-        }
+        public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
+        public const int IGNORED_TIME_DIFFERENCE = 30;
+        private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
+        private const string WASTE_FLUIDNAME_STRING = "waste - fluidtype #";
+        public const string WASTE_MODULE_NAME = "waste @ module";
         
         private static Board getCurrentBoard()
         {
@@ -314,7 +311,10 @@ namespace BiolyCompiler.Scheduling
                         droplet.SetFluidConcentrations(inputModule);
                         AllUsedModules.Add(droplet);
                         bool couldPlace = board.FastTemplatePlace(droplet);
-                        if (!couldPlace) throw new RuntimeException("Not enough space for the fluid transfer.");
+                        if (!couldPlace)
+                        {
+                            throw new RuntimeException("Not enough space for the fluid transfer.");
+                        }
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         Route route = Router.RouteDropletToNewPosition(inputModule, droplet, board, currentTime);
                         currentTime = route.getEndTime() + 1;
@@ -331,8 +331,8 @@ namespace BiolyCompiler.Scheduling
             {
                 currentTime += 1; //Necessary for the recording of the board below.
             }
-            boardAtDifferentTimes.Add(currentTime, board);
-            board = board.Copy();
+
+            rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             currentTime += 2;
             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             return (currentTime, board);
@@ -443,13 +443,7 @@ namespace BiolyCompiler.Scheduling
             library.allocateModules(assay);
             library.sortLibrary();
             AllUsedModules.AddRange(board.PlacedModules.Values);
-            boardAtDifferentTimes.Add(startTime, board);
-
-            if (!assay.Dfg.Nodes.Select(node => node.value).All(operation => operation is VariableBlock))
-            {
-                DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                board = board.Copy();
-            }
+            rectanglesAtDifferentTimes.Add(startTime, board.CopyAllRectangles());
 
             return board;
         }
@@ -464,8 +458,7 @@ namespace BiolyCompiler.Scheduling
             //the board needs to be saved:
             if (AreOperationsFinishing(currentTime, assay) && !(nextOperation is VariableBlock))
             {
-                boardAtDifferentTimes.Add(currentTime, board);
-                board = board.Copy();
+                rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             }
 
             //In the case that operations are finishing (or there are no operations that can be executed, before this is true),
@@ -487,7 +480,7 @@ namespace BiolyCompiler.Scheduling
                         //leaving the droplets that is inside the module behind:
                         finishedOperation.UpdateInternalDropletConcentrations();
                         (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, board, currentTime, finishedOperation);
-                        List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation, dropletOutputFluid);
+                        List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation.BoundModule, dropletOutputFluid);
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         AllUsedModules.AddRange(replacingDroplets);
                     }
@@ -510,7 +503,8 @@ namespace BiolyCompiler.Scheduling
 
                             //Temporarily placing a droplet on the initial position of the heater, for routing purposes:
                             Droplet routingDroplet = new Droplet(new BoardFluid("Routing @ droplet"));
-                            routingDroplet.Shape.PlaceAt(heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
+                            routingDroplet.Shape = Rectangle.Translocate(routingDroplet.Shape, heaterOperation.BoundModule.Shape.x, heaterOperation.BoundModule.Shape.y);
+
                             board.UpdateGridAtGivenLocation(routingDroplet, heaterOperation.BoundModule.Shape);
                             if (!couldBePlaced) throw new RuntimeException("Not enough space available to place a Droplet.");
                             Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, currentTime);
@@ -528,8 +522,7 @@ namespace BiolyCompiler.Scheduling
                     }
                     assay.UpdateReadyOperations(finishedOperation);
                 }
-                boardAtDifferentTimes.Add(currentTime, board);
-                board = board.Copy();
+                rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             }
 
             return (currentTime, board);

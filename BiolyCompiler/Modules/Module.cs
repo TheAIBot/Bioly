@@ -49,10 +49,17 @@ namespace BiolyCompiler.Modules
         public static ModuleLayout GetDefaultSingleOutputOrInputLayout(Rectangle rectangle)
         {
             Droplet droplet = new Droplet();
-            (Rectangle TopRectangle, Rectangle RightRectangle) = rectangle.SplitIntoSmallerRectangles(droplet.Shape);
+            var newRectangles = Rectangle.SplitIntoSmallerRectangles(rectangle, droplet.Shape);
+            droplet.Shape = newRectangles.newSmaller;
             List<Rectangle> emptyRectangles = new List<Rectangle>();
-            if (TopRectangle != null) emptyRectangles.Add(TopRectangle);
-            if (RightRectangle != null) emptyRectangles.Add(RightRectangle);
+            if (newRectangles.top != null)
+            {
+                emptyRectangles.Add(newRectangles.top);
+            }
+            if (newRectangles.right != null)
+            {
+                emptyRectangles.Add(newRectangles.right);
+            }
             return new ModuleLayout(rectangle, emptyRectangles, new List<Droplet>() {droplet});
         }
         
@@ -82,6 +89,11 @@ namespace BiolyCompiler.Modules
             if (InputLayout == null) {
                 throw new InternalRuntimeException("The layout for the module \"" + this.ToString() + "\" have not been set/is null");
             } else return InputLayout;
+        }
+
+        public bool HasOutputLayout()
+        {
+            return OutputLayout != null;
         }
 
         private bool canContainPoints(List<Point> DropletOutputLocations)

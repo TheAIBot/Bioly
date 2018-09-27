@@ -8,10 +8,8 @@ namespace BiolyCompiler.Modules
     public class InfiniteModuleLayout : ModuleLayout
     {
         
-        public InfiniteModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : base(EmptyRectangles, OutputLocations)
+        public InfiniteModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : base(width, height, EmptyRectangles, OutputLocations)
         {
-            this.width = width;
-            this.height = height;
         }
 
 

@@ -10,10 +10,10 @@ namespace BiolyCompiler.Modules
     {
         //The empty rectangles and the output locations should partition the whole module, with no overlap.
         //It should also be done in such a way that the fast template placement merges everything correctly.
-        public List<Rectangle> EmptyRectangles;
-        public List<Droplet> Droplets;
-        public int width  { get; protected set; }
-        public int height { get; protected set; }
+        public readonly List<Rectangle> EmptyRectangles;
+        public readonly List<Droplet> Droplets;
+        public readonly int width;
+        public readonly int height;
 
 
         protected ModuleLayout(List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations)
@@ -22,12 +22,15 @@ namespace BiolyCompiler.Modules
             this.Droplets = OutputLocations;
         }
 
-        public ModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : this(EmptyRectangles, OutputLocations)
+        public ModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations)
         {
             this.width  = width;
             this.height = height;
-            CheckIsValidModuleDivision(EmptyRectangles, OutputLocations);
-            ConnectAdjacentRectangles(EmptyRectangles, OutputLocations);
+            this.EmptyRectangles = EmptyRectangles;
+            this.Droplets = OutputLocations;
+
+            CheckIsValidModuleDivision(EmptyRectangles, Droplets);
+            ConnectAdjacentRectangles(EmptyRectangles, Droplets);
         }
 
         public ModuleLayout(Rectangle moduleShape, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : this(moduleShape.width, moduleShape.height, EmptyRectangles, OutputLocations)
@@ -37,22 +40,8 @@ namespace BiolyCompiler.Modules
 
         private void ConnectAdjacentRectangles(List<Rectangle> emptyRectangles, List<Droplet> outputLocations)
         {
-            List<Rectangle> AllRectangles = new List<Rectangle>(emptyRectangles);
-            outputLocations.ForEach(droplet => AllRectangles.Add(droplet.Shape));
-            //For each pair of rectangles, if they are adjacent, connect them.
-            //As the graph of the rectangle is planar, i think it should be possible to do in linear time - Jesper
-            for (int i = 0; i < AllRectangles.Count; i++)
-            {
-                for (int j = i+1; j < AllRectangles.Count; j++)
-                {
-                    if (AllRectangles[i].IsAdjacent(AllRectangles[j]))
-                    {
-                        AllRectangles[i].AdjacentRectangles.Add(AllRectangles[j]);
-                        AllRectangles[j].AdjacentRectangles.Add(AllRectangles[i]);
-                    }
-                }
-            }
-
+            Rectangle[] allRectangles = GetAllRectanglesIncludingDroplets();
+            allRectangles.ForEach(x => x.Connect(allRectangles));
         }
 
         private void CheckIsValidModuleDivision(List<Rectangle> emptyRectangles, List<Droplet> outputLocations)
@@ -84,10 +73,20 @@ namespace BiolyCompiler.Modules
             Droplets.ForEach(droplet => droplet.SetFluidType(fluidType));
         }
 
-        public List<Rectangle> GetAllRectanglesIncludingDroplets()
+        public Rectangle[] GetAllRectanglesIncludingDroplets()
         {
-            List<Rectangle> allRectangles = new List<Rectangle>(EmptyRectangles);
-            allRectangles.AddRange(Droplets.Select(droplet => droplet.Shape));
+            Rectangle[] allRectangles = new Rectangle[EmptyRectangles.Count + Droplets.Count];
+
+            int index = 0;
+            for (int i = 0; i < EmptyRectangles.Count; i++)
+            {
+                allRectangles[index++] = EmptyRectangles[i];
+            }
+            for (int i = 0; i < Droplets.Count; i++)
+            {
+                allRectangles[index++] = Droplets[i].Shape;
+            }
+
             return allRectangles;
         }
 
@@ -95,17 +94,16 @@ namespace BiolyCompiler.Modules
         {
             //Changing the position of the rectangles and droplets changes their hashcodes, which are used for adjacencies.
             //Therefore it is "necessary" to recalculate them again. It can be made more efficient, if so desired, so that it runs in O(|E|) time.
-            foreach (var rectangle in EmptyRectangles)
+            for (int i = 0; i < EmptyRectangles.Count; i++)
             {
-                rectangle.x += x;
-                rectangle.y += y;
-                rectangle.AdjacentRectangles.Clear();
+                EmptyRectangles[i] = Rectangle.Translocate(EmptyRectangles[i], x, y);
+                EmptyRectangles[i].AdjacentRectangles.Clear();
             }
-            foreach (var droplet in Droplets)
+
+            for (int i = 0; i < Droplets.Count; i++)
             {
-                droplet.Shape.x += x;
-                droplet.Shape.y += y;
-                droplet.Shape.AdjacentRectangles.Clear();
+                Droplets[i].Shape = Rectangle.Translocate(Droplets[i].Shape, x, y);
+                Droplets[i].Shape.AdjacentRectangles.Clear(); ;
             }
 
             ConnectAdjacentRectangles(EmptyRectangles, Droplets);
@@ -138,8 +136,12 @@ namespace BiolyCompiler.Modules
                         differentFluidTypes.Add(fluidType.FluidName, fluidType);
                     }
                     CopyDroplet = new Droplet(fluidType);
-                } else CopyDroplet = new Droplet();
-                CopyDroplet.Shape.PlaceAt(droplet.Shape.x, droplet.Shape.y);
+                }
+                else
+                {
+                    CopyDroplet = new Droplet();
+                }
+                CopyDroplet.Shape = Rectangle.Translocate(CopyDroplet.Shape, droplet.Shape.x, droplet.Shape.y);
                 CopyOutputDroplets.Add(CopyDroplet);
             }
 

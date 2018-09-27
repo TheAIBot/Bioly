@@ -105,6 +105,7 @@
     <Compile Include="SettingsInfo.cs" />
     <Compile Include="SimpleGraph.cs" />
     <Compile Include="SimulatorConnector.cs" />
+    <Compile Include="BenchmarkExecutor.cs" />
     <Compile Include="WebUpdater.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

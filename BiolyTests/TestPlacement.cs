@@ -5,11 +5,11 @@ using BiolyCompiler.Scheduling;
 using BiolyCompiler.Architechtures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using BiolyCompiler.Modules.RectangleSides;
 using System.Linq;
 using BiolyTests.TestObjects;
 using BiolyCompiler;
 using MoreLinq;
+using BiolyCompiler.Modules.HelperObjects;
 //using MoreLinq;
 
 namespace BiolyTests.PlacementTests
@@ -67,55 +67,6 @@ namespace BiolyTests.PlacementTests
         public void TestFastTemplateRemoveSplitMerge()
         {
             Assert.Fail("Not implemented yet");
-        }
-
-
-        [TestMethod]
-        public void TestPlaceModuleWithCompleteBufferEmptyBoard()
-        {
-            int boardHeight = 20, boardWidth = 20;
-            Board board = new Board(boardWidth, boardHeight);
-            int width = 4, heigth = 4;
-            Module module = new TestModule(width, heigth, 2000);
-            Assert.IsTrue(board.PlaceCompletlyBufferedModuleInRectangle(module, board.EmptyRectangles.Values.First()));
-
-            //The division of the empty rectangles should be very specific:
-
-            Assert.AreEqual(4+2, board.EmptyRectangles.Values.Count);
-            Assert.IsTrue(board.EmptyRectangles.Values.Contains(new Rectangle(width + 2, 1, 0, 0)));
-            Assert.IsTrue(board.EmptyRectangles.Values.Contains(new Rectangle(1, heigth + 1, 0, 1)));
-            Assert.IsTrue(board.EmptyRectangles.Values.Contains(new Rectangle(width + 1, 1, 1, heigth + 1)));
-            Assert.IsTrue(board.EmptyRectangles.Values.Contains(new Rectangle(1, heigth, width + 1, 1)));
-            Assert.IsTrue(board.EmptyRectangles.Values.Contains(new Rectangle(boardWidth, boardHeight - heigth - 2, 0, heigth + 2)));
-            Assert.IsTrue(board.EmptyRectangles.Values.Contains(new Rectangle(boardWidth - width - 2, heigth + 2, width + 2, 0)));
-
-            for (int x = module.Shape.x; x <= module.Shape.getRightmostXPosition(); x++)
-            {
-                for (int y = module.Shape.y; y <= module.Shape.getTopmostYPosition(); y++)
-                {
-                    Assert.AreEqual(module, board.grid[x, y]);
-                }
-            }
-            foreach (var rectangle in board.EmptyRectangles.Values)
-            {
-                foreach (var rectangle2 in board.EmptyRectangles.Values)
-                {
-                    if (rectangle.IsAdjacent(rectangle2)) {
-                        Assert.IsTrue(rectangle.AdjacentRectangles.Contains(rectangle2));
-                        Assert.IsTrue(rectangle2.AdjacentRectangles.Contains(rectangle));
-                    } else {
-
-                        Assert.IsFalse(rectangle.AdjacentRectangles.Contains(rectangle2));
-                        Assert.IsFalse(rectangle2.AdjacentRectangles.Contains(rectangle));
-                    }
-                }
-            }
-            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
-            //When it has been deleted, everything should return to the state before:
-            board.FastTemplateRemove(module);
-            Assert.AreEqual(1, board.EmptyRectangles.Values.Count);
-            Assert.IsTrue(board.EmptyRectangles.Values.Contains(new Rectangle(boardWidth, boardHeight, 0, 0)));
-            Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
         }
 
         [TestMethod]
@@ -189,135 +140,6 @@ namespace BiolyTests.PlacementTests
             sameElements        = listEmptyRectangles[0].Where(rec => !board.EmptyRectangles.Values.Contains(rec)).ToList().Count == 0;
             Assert.IsTrue(sameElements);
             Assert.IsTrue(doAdjacencyGraphContainTheCorrectNodes(board));
-            
-        }
-
-        [TestMethod]
-        public void TestMergeWithOtherRectangles()
-        {
-            int boardWidth = 20;
-            int boardHeigth = 20;
-            Board board = new Board(boardWidth, boardHeigth);
-            //Based on an example given in the original article, page 16
-            Rectangle lowerLeft     = new Rectangle(10, 10,  0, 0);
-            Rectangle lowerRight    = new Rectangle(10, 15, 10, 0);
-            Rectangle topLeft       = new Rectangle( 5, 10,  0, 10);
-            Rectangle topRight      = new Rectangle(15,  5,  5, 15);
-            Rectangle middle        = new Rectangle( 5,  5,  5, 10);
-
-            board.EmptyRectangles.Clear();
-            board.EmptyRectangles.Add(lowerLeft, lowerLeft);
-            board.EmptyRectangles.Add(lowerRight, lowerRight);
-            board.EmptyRectangles.Add(topLeft, topLeft);
-            board.EmptyRectangles.Add(topRight, topRight);
-            board.EmptyRectangles.Add(middle, middle);
-            foreach (var rectangle1 in board.EmptyRectangles.Values)
-                foreach (var rectangle2 in board.EmptyRectangles.Values)
-                    rectangle1.ConnectIfAdjacent(rectangle2);
-            lowerRight.MergeWithOtherRectangles(board);
-            Assert.AreEqual(1, board.EmptyRectangles.Values.Count);
-            Rectangle rectangle = board.EmptyRectangles.Values.First();
-            Assert.AreEqual(boardWidth, rectangle.width);
-            Assert.AreEqual(boardHeigth, rectangle.height);
-            Assert.AreEqual(0, rectangle.x);
-            Assert.AreEqual(0, rectangle.y);
-            Assert.AreEqual(0, rectangle.AdjacentRectangles.Count);
-        }
-
-        [TestMethod]
-        public void TestSplitMergeLeftTallerRectangle()
-        {
-            int boardWidth = 20;
-            int boardHeigth = 20;
-            Board board = new Board(boardWidth, boardHeigth);
-
-            int rec1Width = boardWidth / 3, rec1Height = (3*boardHeigth) / 4, rec1x = boardWidth/2, rec1y = boardWidth / 2;
-            int rec2Width = boardWidth / 4, rec2Height = boardHeigth/2;
-
-            for (int x = 0; x <= (boardWidth/2)/2; x++)
-            {
-                for (int y = 10; y < boardHeigth + rec1Height + rec2Height + 5; y++)
-                {
-                    Rectangle rectangle1 = new Rectangle(rec1Width, rec1Height, rec1x, rec1y);
-                    Rectangle rectangle2 = new Rectangle(rec2Width, rec2Height, x, y);
-                    board.EmptyRectangles.Clear();
-                    board.EmptyRectangles.Add(rectangle1, rectangle1);
-                    board.EmptyRectangles.Add(rectangle2, rectangle2);
-                    if (rectangle1.ConnectIfAdjacent(rectangle2))
-                    {
-                        bool didSplit = rectangle1.SplitMerge(board);
-                        if (didSplit)
-                        {
-                            Assert.AreEqual(boardWidth / 4, x);
-                            Assert.AreEqual(2, board.EmptyRectangles.Values.Count());
-                            Assert.IsTrue(board.EmptyRectangles.Values.Contains(rectangle1));
-                            Assert.IsTrue(board.EmptyRectangles.Values.Contains(rectangle2));
-                            if ((y == rec1y))
-                            {
-                                Assert.AreEqual(rec1Height - rec2Height, rectangle1.height);
-                                Assert.AreEqual(rec1Width, rectangle1.width);
-                                Assert.AreEqual(rec1x, rectangle1.x);
-                                Assert.AreEqual(rec1y + rec2Height, rectangle1.y);
-
-                                Assert.AreEqual(rec2Height, rectangle2.height);
-                                Assert.AreEqual(rec2Width + rec1Width, rectangle2.width);
-                                Assert.AreEqual(x, rectangle2.x);
-                                Assert.AreEqual(y, rectangle2.y);
-                            }
-                            else if (y + rec2Height == rec1y + rec1Height)
-                            {
-                                Assert.AreEqual(rec1Height - rec2Height, rectangle1.height);
-                                Assert.AreEqual(rec1Width, rectangle1.width);
-                                Assert.AreEqual(rec1x, rectangle1.x);
-                                Assert.AreEqual(rec1y, rectangle1.x);
-
-                                Assert.AreEqual(rec2Height, rectangle2.height);
-                                Assert.AreEqual(rec2Width + rec1Width, rectangle2.width);
-                                Assert.AreEqual(x, rectangle2.x);
-                                Assert.AreEqual(y, rectangle2.y);
-                            }
-                            else Assert.Fail();
-                        } else
-                        {
-                            Assert.IsTrue( !((boardWidth / 4 == x) && (y == boardWidth / 2 || y + rectangle2.height == rectangle1.y + rectangle1.height)) );
-                        }
-                    }
-                }
-            }
-        }
-
-
-        [TestMethod]
-        public void TestMergeWithRectangleLeftSide()
-        {
-            int x = 43, y = 22, width = 6, height = 10;
-            Rectangle staticEmptyRectangle = new Rectangle(width, height, x, y);
-            for (int i = 0; i < x; i++)
-            {
-                for (int j = 0; j < 2 * (y + height); j++)
-                {
-                    for (int recWidth = 0; recWidth < 1.5 * width; recWidth++)
-                    {
-                        for (int recHeigth = 0; recHeigth < 1.5 * height; recHeigth++)
-                        {
-                            Rectangle nonStaticEmptyRectangle = new Rectangle(recWidth, recHeigth, i, j);
-                            (RectangleSide side, bool canMerge) = staticEmptyRectangle.CanMerge(nonStaticEmptyRectangle);
-                            if (nonStaticEmptyRectangle.getRightmostXPosition() + 1 == x && y == j && height == recHeigth)
-                            {
-                                Assert.AreEqual(RectangleSide.Left, side);
-                                Assert.IsTrue(canMerge);
-                                nonStaticEmptyRectangle.MergeWithRectangle(side, staticEmptyRectangle);
-                                Rectangle mergedRectangle = nonStaticEmptyRectangle;
-                                Assert.AreEqual(height, mergedRectangle.height);
-                                Assert.AreEqual(width + recWidth, mergedRectangle.width);
-                                Assert.AreEqual(x, mergedRectangle.x);
-                                Assert.AreEqual(y, mergedRectangle.y);
-                            }
-                            else Assert.IsFalse(canMerge, "Error at i = " + i + ", j = " + j + ", recWidth = " + recWidth + ", recHeight = " + recHeigth);
-                        }
-                    }
-                }
-            }
         }
         
         public static bool doAdjacencyGraphContainTheCorrectNodes(Board board)
