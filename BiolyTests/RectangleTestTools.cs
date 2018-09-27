@@ -125,7 +125,7 @@ namespace BiolyTests
         {
             int[][] map = RectangleIntMap(rectangles, width, height);
 
-            return String.Join(Environment.NewLine, map.Select(x => String.Join(", ", x)));
+            return String.Join(Environment.NewLine, map.Select(x => String.Join(", ", x.Select(z => String.Format("{0,2}", z)))));
         }
 
         public static void CompareBoardsAfterOptimized(int[] before, int[] after, int width, int merger)
