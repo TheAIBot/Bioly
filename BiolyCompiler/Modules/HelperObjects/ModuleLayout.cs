@@ -10,10 +10,10 @@ namespace BiolyCompiler.Modules
     {
         //The empty rectangles and the output locations should partition the whole module, with no overlap.
         //It should also be done in such a way that the fast template placement merges everything correctly.
-        public List<Rectangle> EmptyRectangles;
-        public List<Droplet> Droplets;
-        public int width  { get; protected set; }
-        public int height { get; protected set; }
+        public readonly List<Rectangle> EmptyRectangles;
+        public readonly List<Droplet> Droplets;
+        public readonly int width;
+        public readonly int height;
 
 
         protected ModuleLayout(List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations)
@@ -22,12 +22,15 @@ namespace BiolyCompiler.Modules
             this.Droplets = OutputLocations;
         }
 
-        public ModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : this(EmptyRectangles, OutputLocations)
+        public ModuleLayout(int width, int height, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations)
         {
             this.width  = width;
             this.height = height;
-            CheckIsValidModuleDivision(EmptyRectangles, OutputLocations);
-            ConnectAdjacentRectangles(EmptyRectangles, OutputLocations);
+            this.EmptyRectangles = EmptyRectangles;
+            this.Droplets = OutputLocations;
+
+            CheckIsValidModuleDivision(EmptyRectangles, Droplets);
+            ConnectAdjacentRectangles(EmptyRectangles, Droplets);
         }
 
         public ModuleLayout(Rectangle moduleShape, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : this(moduleShape.width, moduleShape.height, EmptyRectangles, OutputLocations)
@@ -37,22 +40,8 @@ namespace BiolyCompiler.Modules
 
         private void ConnectAdjacentRectangles(List<Rectangle> emptyRectangles, List<Droplet> outputLocations)
         {
-            List<Rectangle> AllRectangles = new List<Rectangle>(emptyRectangles);
-            outputLocations.ForEach(droplet => AllRectangles.Add(droplet.Shape));
-            //For each pair of rectangles, if they are adjacent, connect them.
-            //As the graph of the rectangle is planar, i think it should be possible to do in linear time - Jesper
-            for (int i = 0; i < AllRectangles.Count; i++)
-            {
-                for (int j = i+1; j < AllRectangles.Count; j++)
-                {
-                    if (AllRectangles[i].IsAdjacent(AllRectangles[j]))
-                    {
-                        AllRectangles[i].AdjacentRectangles.Add(AllRectangles[j]);
-                        AllRectangles[j].AdjacentRectangles.Add(AllRectangles[i]);
-                    }
-                }
-            }
-
+            Rectangle[] allRectangles = GetAllRectanglesIncludingDroplets();
+            allRectangles.ForEach(x => x.Connect(allRectangles));
         }
 
         private void CheckIsValidModuleDivision(List<Rectangle> emptyRectangles, List<Droplet> outputLocations)
