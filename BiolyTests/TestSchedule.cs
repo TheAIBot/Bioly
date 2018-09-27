@@ -74,6 +74,8 @@ namespace BiolyTests.ScheduleTests
             CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
+
+            RectangleTestTools.VerifyBoards(scheduler.boardAtDifferentTimes.Select(x => x.Value).ToList());
         }
 
         [TestMethod]

@@ -162,47 +162,52 @@ namespace BiolyTests
             CollectionAssert.AreEquivalent(expectedBoard.EmptyRectangles.ToList(), actualBoard.EmptyRectangles.ToList(), errorMessage);
             CollectionAssert.AreEquivalent(expectedBoard.PlacedModules.Select(x => x.Key.Shape).ToList(), actualBoard.PlacedModules.Select(x => x.Key.Shape).ToList(), errorMessage);
 
-            Assert.IsTrue(DoesRectanglesOverlap(actualBoard), errorMessage);
+            Assert.IsFalse(DoesRectanglesOverlap(actualBoard), errorMessage);
             Assert.IsTrue(CompareAdjacencyGraphs(actualBoard, expectedBoard), errorMessage);
         }
 
         private static bool DoesRectanglesOverlap(Board board)
         {
-            bool DrawOnMap(bool[,] map, Rectangle rect)
+            int[,] overlapMap = MakeOverlapMap(board);
+            for (int x = 0; x < board.width; x++)
+            {
+                for (int y = 0; y < board.heigth; y++)
+                {
+                    if (overlapMap[x,y] > 1)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static int[,] MakeOverlapMap(Board board)
+        {
+            void DrawOnMap(int[,] map, Rectangle rect)
             {
                 for (int x = rect.x; x < rect.x + rect.width; x++)
                 {
                     for (int y = rect.y; y < rect.y + rect.height; y++)
                     {
-                        if (map[x, y])
-                        {
-                            return false;
-                        }
-                        map[x, y] = true;
+                        map[x, y]++;
                     }
                 }
-
-                return true;
             }
 
-            bool[,] rectMap = new bool[board.width, board.heigth];
+            int[,] overlapMap = new int[board.width, board.heigth];
 
             foreach (var empty in board.EmptyRectangles)
             {
-                if (!DrawOnMap(rectMap, empty.Key))
-                {
-                    return false;
-                }
+                DrawOnMap(overlapMap, empty.Key);
             }
             foreach (var module in board.PlacedModules)
             {
-                if (!DrawOnMap(rectMap, module.Key.Shape))
-                {
-                    return false;
-                }
+                DrawOnMap(overlapMap, module.Key.Shape);
             }
 
-            return true;
+            return overlapMap;
         }
 
         private static bool CompareAdjacencyGraphs(Board actual, Board expected)
@@ -233,6 +238,54 @@ namespace BiolyTests
             {
                 Rectangle afterEmpty = expected.PlacedModules.Single(x => x.Key.Shape.Equals(beforeEmpty.Key.Shape)).Key.Shape;
                 if (!CompareAdjacencies(beforeEmpty.Key.Shape, afterEmpty))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static void VerifyBoards(List<Board> boards)
+        {
+            boards.ForEach(x => VerifyBoard(x));
+        }
+
+        public static void VerifyBoard(Board board)
+        {
+            Assert.IsTrue(CoversWholeMap(board));
+            Assert.IsTrue(HasNessesaryConnections(board));
+        }
+
+        private static bool CoversWholeMap(Board board)
+        {
+            int[,] overlapMap = MakeOverlapMap(board);
+            for (int x = 0; x < board.width; x++)
+            {
+                for (int y = 0; y < board.heigth; y++)
+                {
+                    if (overlapMap[x, y] != 1)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool HasNessesaryConnections(Board board)
+        {
+            List<(Rectangle, int)> allRectangles = new List<(Rectangle, int)>();
+            board.EmptyRectangles.ForEach(x => allRectangles.Add((x.Key, x.Key.AdjacentRectangles.Count)));
+            board.PlacedModules.ForEach(x => allRectangles.Add((x.Key.Shape, x.Key.Shape.AdjacentRectangles.Count)));
+
+            List<Rectangle> onlyRectangles = allRectangles.Select(x => x.Item1).ToList();
+            allRectangles.ForEach(x => x.Item1.Connect(onlyRectangles));
+
+            foreach (var rectangleData in allRectangles)
+            {
+                if (rectangleData.Item1.AdjacentRectangles.Count != rectangleData.Item2)
                 {
                     return false;
                 }
