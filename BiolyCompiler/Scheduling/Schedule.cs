@@ -38,11 +38,6 @@ namespace BiolyCompiler.Scheduling
         private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
         private const string WASTE_FLUIDNAME_STRING = "waste - fluidtype #";
         public const string WASTE_MODULE_NAME = "waste @ module";
-        
-        private static Board getCurrentBoard()
-        {
-            throw new InternalRuntimeException("Getting the current board hasn't been implemented yet.");
-        }
 
         private void UpdateSchedule(Block operation, int currentTime, int startTime)
         {
@@ -539,17 +534,6 @@ namespace BiolyCompiler.Scheduling
             }
 
             return batch;
-        }
-
-        public static Block RemoveOperation(SimplePriorityQueue<Block, int> readyOperations)
-        {
-            Block topPrioriyOperation = readyOperations.Dequeue();
-            return topPrioriyOperation;
-        }
-
-        private bool CanExecuteMoreOperations(SimplePriorityQueue<Block, int> readyOperations)
-        {
-            return readyOperations.Count > 0;
         }
 
         private bool AreOperationsFinishing(int startTime, Assay assay)
