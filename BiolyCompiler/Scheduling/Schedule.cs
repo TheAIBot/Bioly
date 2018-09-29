@@ -32,12 +32,19 @@ namespace BiolyCompiler.Scheduling
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
         public Dictionary<string, List<IDropletSource>> OutputtedDroplets = new Dictionary<string, List<IDropletSource>>();
+        private readonly Board board;
+        private readonly ModuleLibrary library = new ModuleLibrary();
 
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
         public const int IGNORED_TIME_DIFFERENCE = 30;
         private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
         private const string WASTE_FLUIDNAME_STRING = "waste - fluidtype #";
         public const string WASTE_MODULE_NAME = "waste @ module";
+
+        public Schedule(int width, int height)
+        {
+            this.board = new Board(width, height);
+        }
 
         private void UpdateSchedule(Block operation, int currentTime, int startTime)
         {
@@ -58,18 +65,8 @@ namespace BiolyCompiler.Scheduling
                 CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.EndTime);
             }
         }
-        
-        public void TransferFluidVariableLocationInformation(Dictionary<string, BoardFluid> fluidLocationInformation)
-        {
-            fluidLocationInformation.ForEach(pair => FluidVariableLocations.Add(pair.Key, pair.Value));
-        }
 
-        public void TransferStaticModulesInformation(Dictionary<string, Module> staticModulesInformation)
-        {
-            staticModulesInformation.ForEach(pair => StaticModules.Add(pair.Key, pair.Value));
-        }
-
-        public void PlaceStaticModules(List<StaticDeclarationBlock> staticDeclarations, Board board, ModuleLibrary library)
+        public void PlaceStaticModules(List<StaticDeclarationBlock> staticDeclarations)
         {
             foreach (var staticDeclaration in staticDeclarations)
             {
@@ -184,8 +181,15 @@ namespace BiolyCompiler.Scheduling
             Implements/based on the list scheduling based algorithm found in 
             "Fault-tolerant digital microfluidic biochips - compilation and synthesis" page 72.
          */
-        public int ListScheduling(Assay assay, Board board, ModuleLibrary library)
+        public int ListScheduling(DFG<Block> dfg)
         {
+            Assay assay = new Assay(dfg);
+
+            rectanglesAtDifferentTimes.Clear();
+            AllUsedModules.Clear();
+            ScheduledOperations.Clear();
+            OutputtedDroplets.Clear();
+
             //Setup:
             int currentTime = 0;
             ListSchedulingSetup(assay, board, library, currentTime);
@@ -225,6 +229,11 @@ namespace BiolyCompiler.Scheduling
                 //in the case that there are no more operations that can be executed, before this happen:
                 currentTime = HandleFinishingOperations(nextOperation, currentTime, assay, board);
                 DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+            }
+
+            if (CurrentlyRunningOpertions.Count > 0)
+            {
+                throw new InternalRuntimeException("ERROR!!!");
             }
             
             SortScheduledOperations();
