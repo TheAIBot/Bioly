@@ -57,7 +57,7 @@ namespace BiolyViewer_Windows
             //var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
             //var parsedProgram = XmlParser.Parse(programData.programXml);
 
-            //for (int i = 0; i < 20; i++)
+            //for (int i = 0; i < 1; i++)
             //{
             //    BenchmarkExecutor executor = new BenchmarkExecutor();
             //    ProgramExecutor<string> CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
@@ -69,6 +69,8 @@ namespace BiolyViewer_Windows
 
             //    CurrentlyExecutionProgram.Run(45, 45, parsedProgram.Item1, false);
             //}
+
+            //this.Close();
 
             //Run in another thread to not block the UI
             await Task.Run(() =>
@@ -145,7 +147,7 @@ namespace BiolyViewer_Windows
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Updater.Dispose();
+            Updater?.Dispose();
         }
     }
 }

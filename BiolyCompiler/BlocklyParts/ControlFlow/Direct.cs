@@ -15,8 +15,6 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public Direct(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            //XmlParser.ParseAndAddNodeToDFG(ref node, dfg, parserInfo);
-
             DFG<Block> nextDFG = XmlParser.ParseDFG(node, parserInfo, false, false);
 
             this.Cond = new Conditional(null, null, nextDFG);

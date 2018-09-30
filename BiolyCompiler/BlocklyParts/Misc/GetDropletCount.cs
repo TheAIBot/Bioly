@@ -23,9 +23,10 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public static Block Parser(XmlNode node, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string variableName = node.GetNodeWithAttributeValue(VARIABLE_FIELD_NAME).InnerText;
+            string id = ParseTools.ParseID(node);
+            string variableName = ParseTools.ParseString(node, VARIABLE_FIELD_NAME);
             parserInfo.CheckVariable(id, VariableType.FLUID, variableName);
+
             return new GetDropletCount(variableName, id, canBeScheduled);
         }
 

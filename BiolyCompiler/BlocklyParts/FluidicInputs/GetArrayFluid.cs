@@ -33,8 +33,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
         public static FluidInput Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool doVariableCheck = true)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
+            string id = ParseTools.ParseID(node);
+            string arrayName = ParseTools.ParseString(node, ARRAY_NAME_FIELD_NAME);
             if (doVariableCheck)
             {
                 parserInfo.CheckVariable(id, VariableType.FLUID_ARRAY, arrayName);
@@ -42,15 +42,11 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             parserInfo.MostRecentVariableRef.TryGetValue(arrayName, out string correctedName);
 
             string fluidName = correctedName ?? NO_FLUID_NAME;
-            float amountInML = node.GetNodeWithAttributeValue(FLUID_AMOUNT_FIELD_NAME).TextToFloat(id);
-            bool useAllFluid = FluidInput.StringToBool(node.GetNodeWithAttributeValue(USE_ALL_FLUID_FIELD_NAME).InnerText);
+            float amountInML = ParseTools.ParseFloat(node, parserInfo, id, FLUID_AMOUNT_FIELD_NAME);
+            bool useAllFluid = FluidInput.StringToBool(ParseTools.ParseString(node, USE_ALL_FLUID_FIELD_NAME));
 
-            VariableBlock indexBlock = null;
-            XmlNode indexNode = node.GetInnerBlockNode(INDEX_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block which define the index into the array."));
-            if (indexNode != null)
-            {
-                indexBlock = (VariableBlock)XmlParser.ParseBlock(indexNode, dfg, parserInfo, false, false);
-            }
+            VariableBlock indexBlock = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, INDEX_FIELD_NAME,
+                                       new MissingBlockException(id, "Missing block which define the index into the array."));
 
             dfg.AddNode(indexBlock);
 

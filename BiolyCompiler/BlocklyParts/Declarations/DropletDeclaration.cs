@@ -25,9 +25,8 @@ namespace BiolyCompiler.BlocklyParts.Declarations
 
         public static DropletDeclaration Parse(XmlNode node, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
-            Validator.CheckVariableName(id, output);
+            string id = ParseTools.ParseID(node);
+            string output = ParseTools.ParseString(node, INPUT_FLUID_FIELD_NAME);
             parserInfo.AddVariable(id, VariableType.FLUID, output);
 
             return new DropletDeclaration(output, id);
