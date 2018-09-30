@@ -108,9 +108,7 @@ namespace BiolyCompiler.Scheduling
 
         private Module getAndPlaceFirstPlaceableModule(FluidBlock operation, Board board)
         {
-            //Copying the module shouldn't be nessesary as afaics it does nothing.
-            //Still the code won't work without it for some reason.
-            Module optimalModuleTemplate = operation.getAssociatedModule().GetCopyOf();
+            Module optimalModuleTemplate = operation.getAssociatedModule();
 
             if (!board.FastTemplatePlace(optimalModuleTemplate))
             {
