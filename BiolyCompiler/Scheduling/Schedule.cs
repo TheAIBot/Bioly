@@ -33,7 +33,6 @@ namespace BiolyCompiler.Scheduling
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
         public Dictionary<string, List<IDropletSource>> OutputtedDroplets = new Dictionary<string, List<IDropletSource>>();
         private readonly Board board;
-        private readonly ModuleLibrary library = new ModuleLibrary();
 
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
         public const int IGNORED_TIME_DIFFERENCE = 30;
@@ -91,7 +90,7 @@ namespace BiolyCompiler.Scheduling
                     NameOfInputFluids.Add(fluidType.FluidName);
                 }
                 else {
-                    Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board, AllUsedModules);
+                    Module staticModule = getAndPlaceFirstPlaceableModule(staticDeclaration, board);
                     StaticModules.Add(staticDeclaration.ModuleName, staticModule);
                 }
 
@@ -105,6 +104,23 @@ namespace BiolyCompiler.Scheduling
                 waste.GetInputLayout().Reposition(waste.Shape.x, waste.Shape.y);
                 StaticModules.Add(WASTE_MODULE_NAME, waste);
             }
+        }
+
+        private Module getAndPlaceFirstPlaceableModule(FluidBlock operation, Board board)
+        {
+            //Copying the module shouldn't be nessesary as afaics it does nothing.
+            //Still the code won't work without it for some reason.
+            Module optimalModuleTemplate = operation.getAssociatedModule().GetCopyOf();
+
+            if (!board.FastTemplatePlace(optimalModuleTemplate))
+            {
+                board.FastTemplatePlace(optimalModuleTemplate);
+                //Console.WriteLine(board.print(usedModules));
+                throw new RuntimeException("Module \"" + optimalModuleTemplate.ToString() + "\" can't be placed");
+            }
+            //Now that the module has been placed, the internal rectangles in the module layout can be modified, such that they are placed correctly.
+            optimalModuleTemplate.RepositionLayout();
+            return optimalModuleTemplate;
         }
 
         private BoardFluid RecordCompletlyNewFluidType(FluidBlock operation) => RecordCompletlyNewFluidType(operation.OriginalOutputVariable);
@@ -247,7 +263,7 @@ namespace BiolyCompiler.Scheduling
             //Else a module that can execute the operation needs to be found and placed on the board:
             Module operationExecutingModule = (topPriorityOperation is StaticUseageBlock staticOperation) ?
                                                StaticModules[staticOperation.ModuleName] :
-                                               library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board, AllUsedModules);
+                                               getAndPlaceFirstPlaceableModule(topPriorityOperation, board);
             topPriorityOperation.Bind(operationExecutingModule, FluidVariableLocations);
 
             //For debuging:
@@ -444,8 +460,6 @@ namespace BiolyCompiler.Scheduling
 
         private void ListSchedulingSetup(Assay assay, int startTime)
         {
-            library.allocateModules(assay);
-            library.sortLibrary();
             AllUsedModules.AddRange(board.PlacedModules.Values);
             rectanglesAtDifferentTimes.Add(startTime, board.CopyAllRectangles());
         }
