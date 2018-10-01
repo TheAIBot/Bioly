@@ -43,7 +43,8 @@ namespace BiolyCompiler.Modules
             Rectangle[] allRectangles = GetAllRectanglesIncludingDroplets();
             foreach (var rectangle in allRectangles)
             {
-                for (int x = rectangle.x; x < rectangle.width + rectangle.x; x++){
+                for (int x = rectangle.x; x < rectangle.width + rectangle.x; x++)
+                {
                     for (int y = rectangle.y; y < rectangle.height + rectangle.y; y++)
                     {
                         if (grid[x, y])
@@ -55,11 +56,11 @@ namespace BiolyCompiler.Modules
                     }
                 }
             }
-            for (int i = 0; i < width; i++)
+            for (int x = 0; x < width; x++)
             {
-                for (int j = 0; j < height; j++)
+                for (int y = 0; y < height; y++)
                 {
-                    if (!grid[i, j])
+                    if (!grid[x, y])
                     {
                         throw new InternalRuntimeException("The given module layout does not divide the module perfectly up into droplets and empty rectangles, as required");
                     }
