@@ -28,16 +28,6 @@ namespace BiolyCompiler.Modules
         {
             DropletCount--;
         }
-                
-        public override Module GetCopyOf()
-        {
-            InputModule newInputModule = new InputModule(new BoardFluid(FluidType.FluidName), Capacity);
-            newInputModule.Shape = new Rectangle(Shape);
-            for (int i = Capacity - DropletCount; i > 0; i--) newInputModule.DecrementDropletCount();
-            newInputModule.InputLayout  = this.InputLayout.GetCopy();
-            newInputModule.OutputLayout = this.OutputLayout?.GetCopy();
-            return newInputModule;
-        }
         
         public override int getNumberOfInputs()
         {

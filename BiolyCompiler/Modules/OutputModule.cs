@@ -13,13 +13,6 @@ namespace BiolyCompiler.Modules
             OperationTime = 2;
             InputLayout = new InfiniteModuleLayout(InputLayout.width, InputLayout.height, InputLayout.EmptyRectangles, InputLayout.Droplets);
         }
-        
-        
-        public override Module GetCopyOf()
-        {
-            return new OutputModule();
-        }
-
 
         public override bool IsStaticModule()
         {

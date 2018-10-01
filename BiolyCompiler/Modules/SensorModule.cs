@@ -11,13 +11,6 @@ namespace BiolyCompiler.Modules
 
         }
 
-        public override Module GetCopyOf()
-        {
-            SensorModule sensor = new SensorModule();
-            sensor.Shape = new Rectangle(Shape);
-            return sensor;
-        }
-
         public override List<Command> GetModuleCommands(ref int time)
         {
             return new List<Command>();

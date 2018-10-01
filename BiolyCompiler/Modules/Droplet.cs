@@ -64,12 +64,6 @@ namespace BiolyCompiler.Modules
             return 0;
         }
 
-        public override Module GetCopyOf()
-        {
-            throw new InternalRuntimeException("This method is not suported.");
-        }
-
-
         public override List<Command> GetModuleCommands(ref int time)
         {
             throw new InternalRuntimeException("Droplet can't be converted into commands");

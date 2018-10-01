@@ -29,33 +29,29 @@ namespace BiolyCompiler.Modules
             this.EmptyRectangles = EmptyRectangles;
             this.Droplets = OutputLocations;
 
-            CheckIsValidModuleDivision(EmptyRectangles, Droplets);
-            ConnectAdjacentRectangles(EmptyRectangles, Droplets);
+            CheckIsValidModuleDivision();
+            ConnectAdjacentRectangles();
         }
 
         public ModuleLayout(Rectangle moduleShape, List<Rectangle> EmptyRectangles, List<Droplet> OutputLocations) : this(moduleShape.width, moduleShape.height, EmptyRectangles, OutputLocations)
         {
         }
 
-
-        private void ConnectAdjacentRectangles(List<Rectangle> emptyRectangles, List<Droplet> outputLocations)
-        {
-            Rectangle[] allRectangles = GetAllRectanglesIncludingDroplets();
-            allRectangles.ForEach(x => x.Connect(allRectangles));
-        }
-
-        private void CheckIsValidModuleDivision(List<Rectangle> emptyRectangles, List<Droplet> outputLocations)
+        private void CheckIsValidModuleDivision()
         {
             bool[,] grid = new bool[width, height];
-            List<Rectangle> AllRectangles = new List<Rectangle>(emptyRectangles);
-            outputLocations.ForEach(droplet => AllRectangles.Add(droplet.Shape));
-            foreach (var rectangle in AllRectangles)
+            Rectangle[] allRectangles = GetAllRectanglesIncludingDroplets();
+            foreach (var rectangle in allRectangles)
             {
-                for (int i = 0; i < rectangle.width; i++){
-                    for (int j = 0; j < rectangle.height; j++)
+                for (int x = rectangle.x; x < rectangle.width + rectangle.x; x++){
+                    for (int y = rectangle.y; y < rectangle.height + rectangle.y; y++)
                     {
-                        if (grid[i + rectangle.x, j + rectangle.y] == true) throw new InternalRuntimeException("In the current module, there is an overlap of rectangles");
-                        else grid[i + rectangle.x, j + rectangle.y] = true;
+                        if (grid[x, y])
+                        {
+                            throw new InternalRuntimeException("In the current module, there is an overlap of rectangles");
+                        }
+
+                        grid[x, y] = true;
                     }
                 }
             }
@@ -63,9 +59,18 @@ namespace BiolyCompiler.Modules
             {
                 for (int j = 0; j < height; j++)
                 {
-                    if (grid[i,j] == false) throw new InternalRuntimeException("The given module layout does not divide the module perfectly up into droplets and empty rectangles, as required");
+                    if (!grid[i, j])
+                    {
+                        throw new InternalRuntimeException("The given module layout does not divide the module perfectly up into droplets and empty rectangles, as required");
+                    }
                 }
             }
+        }
+
+        private void ConnectAdjacentRectangles()
+        {
+            Rectangle[] allRectangles = GetAllRectanglesIncludingDroplets();
+            allRectangles.ForEach(x => x.Connect(allRectangles));
         }
 
         public void ChangeFluidType(BoardFluid fluidType)
@@ -97,55 +102,14 @@ namespace BiolyCompiler.Modules
             for (int i = 0; i < EmptyRectangles.Count; i++)
             {
                 EmptyRectangles[i] = Rectangle.Translocate(EmptyRectangles[i], x, y);
-                EmptyRectangles[i].AdjacentRectangles.Clear();
             }
 
             for (int i = 0; i < Droplets.Count; i++)
             {
                 Droplets[i].Shape = Rectangle.Translocate(Droplets[i].Shape, x, y);
-                Droplets[i].Shape.AdjacentRectangles.Clear(); ;
             }
 
-            ConnectAdjacentRectangles(EmptyRectangles, Droplets);
-        }
-
-        /// <summary>
-        /// Creates a copy of the ModuleLayout. Note that it works by copying the rectangles and droplets that the layout is made of,
-        /// and creating a new layout based on this, so if any modifications have been made to the layout,
-        /// where the creation of the layout does not handle this, it will not be taken into account when creating the copy.
-        /// 
-        /// This can include things like changing the adjacencies of the empty rectangles.
-        /// </summary>
-        /// <returns></returns>
-        public ModuleLayout GetCopy()
-        {
-            List<Rectangle> CopyEmptyRectangles = new List<Rectangle>();
-            List<Droplet> CopyOutputDroplets = new List<Droplet>();
-            EmptyRectangles.ForEach(rectangle => CopyEmptyRectangles.Add(new Rectangle(rectangle)));
-            Dictionary<String, BoardFluid> differentFluidTypes = new Dictionary<string, BoardFluid>();
-            foreach (var droplet in Droplets)
-            {
-                Droplet CopyDroplet;
-                if (droplet.GetFluidType() != null)
-                {
-                    BoardFluid fluidType;
-                    differentFluidTypes.TryGetValue(droplet.GetFluidType().FluidName, out fluidType);
-                    if (fluidType == null)
-                    {
-                        fluidType = new BoardFluid(droplet.GetFluidType().FluidName);
-                        differentFluidTypes.Add(fluidType.FluidName, fluidType);
-                    }
-                    CopyDroplet = new Droplet(fluidType);
-                }
-                else
-                {
-                    CopyDroplet = new Droplet();
-                }
-                CopyDroplet.Shape = Rectangle.Translocate(CopyDroplet.Shape, droplet.Shape.x, droplet.Shape.y);
-                CopyOutputDroplets.Add(CopyDroplet);
-            }
-
-            return new ModuleLayout(new Rectangle(width, height), CopyEmptyRectangles, CopyOutputDroplets);
+            ConnectAdjacentRectangles();
         }
     }
 }

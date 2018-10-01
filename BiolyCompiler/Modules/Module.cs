@@ -113,11 +113,6 @@ namespace BiolyCompiler.Modules
             return this.GetType().ToString() + ", input/output = (" + getNumberOfInputs() + ", " + getNumberOfOutputs() + "), dimensions = {" + Shape.ToString() + "}, operation time = " + OperationTime;
         }
 
-        
-        //Returns a copy of the module (not taking adjacencies into account). 
-        //It is used for creating unique modules, for the binding process in the scheduling
-        public abstract Module GetCopyOf();
-
         //True iff the module is placed permenently on the board.
         public virtual bool IsStaticModule()
         {

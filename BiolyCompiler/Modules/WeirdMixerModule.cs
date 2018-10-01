@@ -32,16 +32,6 @@ namespace BiolyCompiler.Modules
             EmptyRectangles.Add(emptyRectangle);
             return new ModuleLayout(Shape, EmptyRectangles, OutputLocations);
         }
-        
-
-        public override Module GetCopyOf()
-        {
-            WeirdMixerModule mixer  = new WeirdMixerModule(OperationTime);
-            mixer.Shape = new Rectangle(this.Shape);
-            mixer.InputLayout  = this.InputLayout? .GetCopy();
-            mixer.OutputLayout = this.OutputLayout?.GetCopy();
-            return mixer;
-        }
 
         public override List<Command> GetModuleCommands(ref int time)
         {

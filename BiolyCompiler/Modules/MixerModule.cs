@@ -34,16 +34,6 @@ namespace BiolyCompiler.Modules
             OutputLocations.Add(output2);
             return new ModuleLayout(Shape, EmptyRectangles, OutputLocations);
         }
-        
-
-        public override Module GetCopyOf()
-        {
-            MixerModule mixer  = new MixerModule(OperationTime);
-            mixer.Shape = new Rectangle(this.Shape);
-            mixer.InputLayout  = this.InputLayout? .GetCopy();
-            mixer.OutputLayout = this.OutputLayout?.GetCopy();
-            return mixer;
-        }
 
         public override List<Command> GetModuleCommands(ref int time)
         {
