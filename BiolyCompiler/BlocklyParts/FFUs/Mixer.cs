@@ -19,6 +19,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public const string FirstInputFieldName = "inputFluidA";
         public const string SecondInputFieldName = "inputFluidB";
         public const string XmlTypeName = "mixer";
+        public const int OPERATION_TIME = 100;
 
         public Mixer(List<FluidInput> input, string output, string id) : base(true, input, null, output, id)
         {
@@ -64,7 +65,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override Module getAssociatedModule()
         {
-            return new MixerModule(100);
+            return new MixerModule(OPERATION_TIME);
         }
 
         public override void UpdateInternalDropletConcentrations()
