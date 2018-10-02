@@ -96,18 +96,6 @@ namespace BiolyCompiler.Modules
             return OutputLayout != null;
         }
 
-        private bool canContainPoints(List<Point> DropletOutputLocations)
-        {
-            foreach (var point in DropletOutputLocations)
-            {
-                if (point.X < 0 ||
-                    point.Y < 0 ||
-                    Shape.width  < point.X + Droplet.DROPLET_WIDTH || 
-                    Shape.height < point.Y + Droplet.DROPLET_HEIGHT) return false;
-            }
-            return true;
-        }
-
         public override String ToString()
         {
             return this.GetType().ToString() + ", input/output = (" + getNumberOfInputs() + ", " + getNumberOfOutputs() + "), dimensions = {" + Shape.ToString() + "}, operation time = " + OperationTime;

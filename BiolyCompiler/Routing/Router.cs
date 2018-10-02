@@ -178,31 +178,26 @@ namespace BiolyCompiler.Routing
             }
         }
 
-        public static Route DetermineRouteToModule(Func<Module, RoutingInformation, bool> hasReachedTarget, Module sourceModule, IDropletSource targetInput, Board board, int startTime)
+        public static Route DetermineRouteToModule(Func<Module, bool> hasReachedTarget, Module sourceModule, IDropletSource targetInput, Board board, int startTime)
         {
             //Dijkstras algorithm, based on the one seen on wikipedia.
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
             //and then inverts the route.
             (int startingXPos, int startingYPos) = targetInput.GetMiddleOfSource();
-            bool[,] visitedNodes = new bool[board.width, board.heigth];
-            RoutingInformation source = new RoutingInformation(startingXPos, startingYPos, null, 0);
-            visitedNodes[startingXPos, startingYPos] = true;
+            RouteDirection[,] routeMap = new RouteDirection[board.width, board.heigth];
+            routeMap[startingXPos, startingYPos] = RouteDirection.Start;
 
-            Queue<RoutingInformation> queue = new Queue<RoutingInformation>();
-            queue.Enqueue(source);
+            Queue<Point> queue = new Queue<Point>();
+            queue.Enqueue(new Point(startingXPos, startingYPos));
 
             while (queue.Count > 0)
             {
-                RoutingInformation currentNode = queue.Dequeue();
-                Module moduleAtCurrentNode = board.grid[currentNode.x, currentNode.y];
+                Point currentNode = queue.Dequeue();
+                Module moduleAtCurrentNode = board.grid[currentNode.X, currentNode.Y];
 
-                if (isUnreachableNode(currentNode))
+                if (hasReachedTarget(moduleAtCurrentNode)) //Have reached the desired target
                 {
-                    throw new InternalRuntimeException("No route to the desired component could be found. Desired droplet type: " + targetInput.GetFluidType().FluidName);
-                }
-                else if (hasReachedTarget(moduleAtCurrentNode, currentNode)) //Have reached the desired target
-                {
-                    return GetRouteFromSourceToTarget(currentNode, (IDropletSource)moduleAtCurrentNode, startTime);
+                    return GetRouteFromSourceToTarget(currentNode, routeMap, (IDropletSource)moduleAtCurrentNode, startTime);
                 }
                 //No collisions with other modules are allowed (except the starting module):
                 else if (hasCollisionWithOtherModules(sourceModule, moduleAtCurrentNode))
@@ -211,43 +206,42 @@ namespace BiolyCompiler.Routing
                 }
 
                 //go through all neighbors
-                UpdateAllNeighborPriorities(board, visitedNodes, queue, currentNode);
+                UpdateAllNeighborPriorities(board, routeMap, queue, currentNode);
             }
             //If no route was found:
             throw new InternalRuntimeException("No route to the desired component could be found");
         }
         
 
-        private static void UpdateAllNeighborPriorities(Board board, bool[,] visistedNodes, Queue<RoutingInformation> queue, RoutingInformation currentNode)
+        private static void UpdateAllNeighborPriorities(Board board, RouteDirection[,] routeMap, Queue<Point> queue, Point currentPos)
         {
-            if (0 < currentNode.x)
+            if (0 < currentPos.X)
             {
-                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x - 1, currentNode.y);
+                UpdateNeighborPriority(queue, routeMap, currentPos.X - 1, currentPos.Y, RouteDirection.Right);
             }
-            if (0 < currentNode.y)
+            if (0 < currentPos.Y)
             {
-                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x, currentNode.y - 1);
+                UpdateNeighborPriority(queue, routeMap, currentPos.X, currentPos.Y - 1, RouteDirection.Up);
             }
-            if (currentNode.x < board.width - 1)
+            if (currentPos.X < board.width - 1)
             {
-                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x + 1, currentNode.y);
+                UpdateNeighborPriority(queue, routeMap, currentPos.X + 1, currentPos.Y, RouteDirection.Left);
             }
-            if (currentNode.y < board.heigth - 1)
+            if (currentPos.Y < board.heigth - 1)
             {
-                UpdateNeighborPriority(queue, currentNode, visistedNodes, currentNode.x, currentNode.y + 1);
+                UpdateNeighborPriority(queue, routeMap, currentPos.X, currentPos.Y + 1, RouteDirection.Down);
             }
         }
 
-        private static void UpdateNeighborPriority(Queue<RoutingInformation> queue, RoutingInformation currentNode, bool[,] visistedNodes, int neighborXPos, int neighborYPos)
+        private static void UpdateNeighborPriority(Queue<Point> queue, RouteDirection[,] routeMap, int neighborXPos, int neighborYPos, RouteDirection directionToCurrentPos)
         {
-            if (visistedNodes[neighborXPos, neighborYPos])
+            if (routeMap[neighborXPos, neighborYPos] != RouteDirection.None)
             {
                 return; // A shorter path to the node has already been found.
             }
 
-            RoutingInformation neighbor = new RoutingInformation(neighborXPos, neighborYPos, currentNode, currentNode.distanceFromSource + 1);
-            visistedNodes[neighborXPos, neighborYPos] = true;
-            queue.Enqueue(neighbor);
+            routeMap[neighborXPos, neighborYPos] = directionToCurrentPos;
+            queue.Enqueue(new Point(neighborXPos, neighborYPos));
         }
 
         private static bool hasCollisionWithOtherModules(Module sourceModule, Module moduleAtCurrentNode)
@@ -255,49 +249,57 @@ namespace BiolyCompiler.Routing
             return !(moduleAtCurrentNode == null || moduleAtCurrentNode == sourceModule);
         }
 
-        private static bool isUnreachableNode(RoutingInformation currentNode)
-        {
-            return currentNode.distanceFromSource == Int32.MaxValue;
-        }
-
         public delegate bool TargetFunction(Module moduleAtCurrentNode, RoutingInformation currentNode);
 
-        public static Func<Module, RoutingInformation, bool> haveReachedSpecifficModule(Object targetModule) {
-            return (moduleAtCurrentNode, location) => targetModule.Equals(moduleAtCurrentNode);
+        public static Func<Module, bool> haveReachedSpecifficModule(Object targetModule) {
+            return (moduleAtCurrentNode) => targetModule.Equals(moduleAtCurrentNode);
         }
 
-        public static Func<Module, RoutingInformation, bool> haveReachedDropletOfTargetType(Droplet targetDroplet)
+        public static Func<Module, bool> haveReachedDropletOfTargetType(Droplet targetDroplet)
         {
-            return (moduleAtCurrentNode, location) => moduleAtCurrentNode is IDropletSource dropletSource &&
-                                                      targetDroplet        is IDropletSource dropletTarget &&
-                                                      dropletSource.GetFluidType().Equals(dropletTarget.GetFluidType());
+            return (moduleAtCurrentNode) => moduleAtCurrentNode is IDropletSource dropletSource &&
+                                            targetDroplet       is IDropletSource dropletTarget &&
+                                            dropletSource.GetFluidType().Equals(dropletTarget.GetFluidType());
         }
 
-        private static Route GetRouteFromSourceToTarget(RoutingInformation routeInfo, IDropletSource routedDroplet, int startTime)
+        private static Route GetRouteFromSourceToTarget(Point routeInfo, RouteDirection[,] routeMap, IDropletSource routedDroplet, int startTime)
         {
             (int dropletMiddleX, int dropletMiddleY) = routedDroplet.GetMiddleOfSource();
-            //Currently, the route ends at the edges of the droplets location: it will need to be routed to the middle:
-            while (dropletMiddleX - routeInfo.x != 0)
-            {
-                int newX = routeInfo.x + ((dropletMiddleX - routeInfo.x > 0) ? 1 : -1);
-                routeInfo = new RoutingInformation(newX, routeInfo.y, routeInfo, 0);
-            }
-            while (dropletMiddleY - routeInfo.y != 0)
-            {
-                int newY = routeInfo.y + ((dropletMiddleY - routeInfo.y > 0) ? 1 : -1);
-                routeInfo = new RoutingInformation(routeInfo.x, newY, routeInfo, 0);
-            }
-            //Now the droplet is at the middle.
-            List<RoutingInformation> routeNodes = new List<RoutingInformation>();
-            while (routeInfo.previous != null)
-            {
-                routeNodes.Add(routeInfo);
-                routeInfo = routeInfo.previous;
 
+            int movementsToCenter = Math.Abs(dropletMiddleX - routeInfo.X) + Math.Abs(dropletMiddleY - routeInfo.Y);
+            Point[] toDropletCenter = new Point[movementsToCenter];
+            int toCenterIndex = 0;
+
+            RouteDirection xDirection = (dropletMiddleX - routeInfo.X > 0) ? RouteDirection.Right : RouteDirection.Left;
+            RouteDirection yDirection = (dropletMiddleY - routeInfo.Y > 0) ? RouteDirection.Up : RouteDirection.Down;
+
+            Point currentPos = routeInfo;
+            while (dropletMiddleX - currentPos.X != 0)
+            {
+                currentPos = currentPos.Move(xDirection);
+                toDropletCenter[toCenterIndex++] = currentPos;
             }
-            routeNodes.Add(routeInfo);
-            //routeNodes.Reverse();
-            Route route = new Route(routeNodes, routedDroplet, startTime);
+            while (dropletMiddleY - currentPos.Y != 0)
+            {
+                currentPos = currentPos.Move(yDirection);
+                toDropletCenter[toCenterIndex++] = currentPos;
+            }
+
+            List<Point> dropletToStart = new List<Point>();
+            currentPos = routeInfo;
+            do
+            {
+                dropletToStart.Add(currentPos);
+                currentPos = currentPos.Move(routeMap[currentPos.X, currentPos.Y]);
+            } while (routeMap[currentPos.X, currentPos.Y] != RouteDirection.Start);
+            dropletToStart.Add(currentPos);
+
+            Point[] wholeRoute = new Point[dropletToStart.Count + toDropletCenter.Length];
+            Array.Reverse(toDropletCenter);
+            Array.Copy(toDropletCenter, 0, wholeRoute, 0, toDropletCenter.Length);
+            dropletToStart.CopyTo(wholeRoute, toDropletCenter.Length);
+
+            Route route = new Route(wholeRoute, routedDroplet, startTime);
             return route;
         }
 

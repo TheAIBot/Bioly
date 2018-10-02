@@ -108,7 +108,7 @@ namespace BiolyTests.RoutingTests
             Route route = Router.DetermineRouteToModule(Router.haveReachedSpecifficModule(endModule), startModule, (IDropletSource)startModule, boardData.board, 10);
 
             string errorMessage = RouteOnBoard(boardData.rectangles.Select(x => x.Item1).ToList(), boardData.board.width, boardData.board.heigth, route);
-            Assert.IsTrue(route.route.Count > 0);
+            Assert.IsTrue(route.route.Length > 0);
             Assert.IsTrue(HasNoCollisions(route, boardData.board, startModule, (IDropletSource)endModule), errorMessage);
             Assert.IsTrue(HasCorrectStartAndEnding(route, boardData.board, (IDropletSource)endModule, (IDropletSource)startModule), errorMessage);
             Assert.IsTrue(IsAnActualRoute(route, boardData.board), errorMessage);
@@ -121,7 +121,7 @@ namespace BiolyTests.RoutingTests
 
             foreach (var position in route.route)
             {
-                stringMap[position.y][position.x] = " #";
+                stringMap[position.Y][position.X] = " #";
             }
 
             return Environment.NewLine + String.Join(Environment.NewLine, stringMap.Select(x => String.Join(", ", x)));
@@ -129,12 +129,12 @@ namespace BiolyTests.RoutingTests
 
         public static bool HasNoCollisions(Route route, Board board, Module sourceModule, IDropletSource targetDroplet)
         {
-            for (int i = 0; i < route.route.Count; i++)
+            for (int i = 0; i < route.route.Length; i++)
             {
-                RoutingInformation node = route.route[i];
-                if (board.grid[node.x, node.y] != null && 
-                    board.grid[node.x, node.y] != sourceModule && 
-                    board.grid[node.x, node.y] != targetDroplet)
+                Point node = route.route[i];
+                if (board.grid[node.X, node.Y] != null && 
+                    board.grid[node.X, node.Y] != sourceModule && 
+                    board.grid[node.X, node.Y] != targetDroplet)
                 {
                     return false;
                 }
@@ -144,28 +144,28 @@ namespace BiolyTests.RoutingTests
 
         public static bool HasCorrectStartAndEnding(Route route, Board board, IDropletSource source, IDropletSource inputLocation)
         {
-            RoutingInformation startOfPath = route.route[0];
+            Point startOfPath = route.route[0];
             (int sourceX, int sourceY) = source.GetMiddleOfSource();
             (int inputX , int inputY ) = inputLocation.GetMiddleOfSource();
-            return  sourceX == startOfPath.x &&
-                    sourceY == startOfPath.y &&
-                    route.route.Last().x == inputX &&
-                    route.route.Last().y == inputY;
+            return  sourceX == startOfPath.X &&
+                    sourceY == startOfPath.Y &&
+                    route.route.Last().X == inputX &&
+                    route.route.Last().Y == inputY;
         }
 
         private static bool IsAnActualRoute(Route route, Board board)
         {
-            if (!IsPlacedOnTheBoard(route.route[0].x, route.route[0].y, board)) return false;
-            for (int i = 1; i < route.route.Count; i++)
+            if (!IsPlacedOnTheBoard(route.route[0].X, route.route[0].Y, board)) return false;
+            for (int i = 1; i < route.route.Length; i++)
             {
-                RoutingInformation priorPlacement = route.route[i - 1];
-                RoutingInformation currentPlacement = route.route[i];
-                if (!IsPlacedOnTheBoard(currentPlacement.x, currentPlacement.y, board))
+                Point priorPlacement = route.route[i - 1];
+                Point currentPlacement = route.route[i];
+                if (!IsPlacedOnTheBoard(currentPlacement.X, currentPlacement.Y, board))
                 {
                     return false;
                 }
                 //The current place on the route must adjacent to the place just before it:
-                if (Math.Abs(currentPlacement.y - priorPlacement.y) + Math.Abs(currentPlacement.x - priorPlacement.x) != 1)
+                if (Math.Abs(currentPlacement.Y - priorPlacement.Y) + Math.Abs(currentPlacement.X - priorPlacement.X) != 1)
                 {
                     return false;
                 }
