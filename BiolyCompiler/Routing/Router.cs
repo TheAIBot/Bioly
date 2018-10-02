@@ -249,8 +249,6 @@ namespace BiolyCompiler.Routing
             return !(moduleAtCurrentNode == null || moduleAtCurrentNode == sourceModule);
         }
 
-        public delegate bool TargetFunction(Module moduleAtCurrentNode, RoutingInformation currentNode);
-
         public static Func<Module, bool> haveReachedSpecifficModule(Object targetModule) {
             return (moduleAtCurrentNode) => targetModule.Equals(moduleAtCurrentNode);
         }

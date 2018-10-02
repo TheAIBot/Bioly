@@ -39,12 +39,6 @@ namespace BiolyCompiler.Modules
             return 0;
         }
 
-        public bool IsInMiddleOfSource(RoutingInformation information)
-        {
-            (int xMiddle, int yMiddle) = GetMiddleOfSource();
-            return xMiddle == information.x && yMiddle == information.y;
-        }
-
         public (int, int) GetMiddleOfSource() {
             return (Shape.x + Droplet.DROPLET_WIDTH / 2, Shape.y + Droplet.DROPLET_HEIGHT / 2);
         }

@@ -69,12 +69,6 @@ namespace BiolyCompiler.Modules
             throw new InternalRuntimeException("Droplet can't be converted into commands");
         }
 
-        public bool IsInMiddleOfSource(RoutingInformation location)
-        {
-            return location.x == Shape.x + DROPLET_WIDTH / 2 &&
-                   location.y == Shape.y + DROPLET_HEIGHT / 2;
-        }
-
         public (int, int) GetMiddleOfSource() {
             return Shape.getCenterPosition();
         }
