@@ -309,12 +309,11 @@ namespace BiolyCompiler.Routing
 
             routeIndex = movementsToCenter;
             currentPos = routeInfo;
-            do
+            for (int i = 0; i < routeLength - 1; i++)
             {
                 wholeRoute[routeIndex++] = currentPos;
                 currentPos = currentPos.Move(routeMap[currentPos.X, currentPos.Y]);
-            } while (routeMap[currentPos.X, currentPos.Y] != RouteDirection.Start);
-
+            }
             //add starting point to the route
             wholeRoute[routeIndex] = currentPos;
 
