@@ -57,7 +57,7 @@ namespace BiolyViewer_Windows
             var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
             var parsedProgram = XmlParser.Parse(programData.programXml);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 20; i++)
             {
                 BenchmarkExecutor executor = new BenchmarkExecutor();
                 ProgramExecutor<string> CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
