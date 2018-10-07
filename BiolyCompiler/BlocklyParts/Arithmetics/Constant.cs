@@ -21,10 +21,10 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             this.Value = value;
         }
 
-        public static Block Parse(XmlNode node, bool canBeScheduled)
+        public static Block Parse(XmlNode node, ParserInfo parseInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            float value = node.TextToFloat(id);
+            string id = ParseTools.ParseID(node);
+            float value = ParseTools.ParseFloat(node, parseInfo, id);
             return new Constant(value, id, canBeScheduled);
         }
 

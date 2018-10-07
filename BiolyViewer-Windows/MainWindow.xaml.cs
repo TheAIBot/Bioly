@@ -70,6 +70,8 @@ namespace BiolyViewer_Windows
             //    CurrentlyExecutionProgram.Run(45, 45, parsedProgram.Item1, false);
             //}
 
+            //this.Close();
+
             //Run in another thread to not block the UI
             await Task.Run(() =>
             {
@@ -145,7 +147,7 @@ namespace BiolyViewer_Windows
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Updater.Dispose();
+            Updater?.Dispose();
         }
     }
 }

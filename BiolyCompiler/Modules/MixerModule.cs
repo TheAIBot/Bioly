@@ -28,19 +28,11 @@ namespace BiolyCompiler.Modules
             Droplet output2 = new Droplet();
             output1.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, 0, 0);
             output2.Shape = new Rectangle(Droplet.DROPLET_WIDTH, Droplet.DROPLET_HEIGHT, Droplet.DROPLET_WIDTH, 0);
+            output1.Shape.isEmpty = false;
+            output2.Shape.isEmpty = false;
             OutputLocations.Add(output1);
             OutputLocations.Add(output2);
             return new ModuleLayout(Shape, EmptyRectangles, OutputLocations);
-        }
-        
-
-        public override Module GetCopyOf()
-        {
-            MixerModule mixer  = new MixerModule(OperationTime);
-            mixer.Shape = new Rectangle(this.Shape);
-            mixer.InputLayout  = this.InputLayout? .GetCopy();
-            mixer.OutputLayout = this.OutputLayout?.GetCopy();
-            return mixer;
         }
 
         public override List<Command> GetModuleCommands(ref int time)

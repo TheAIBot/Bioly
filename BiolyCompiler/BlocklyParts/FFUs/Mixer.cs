@@ -19,6 +19,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         public const string FirstInputFieldName = "inputFluidA";
         public const string SecondInputFieldName = "inputFluidB";
         public const string XmlTypeName = "mixer";
+        public const int OPERATION_TIME = 100;
 
         public Mixer(List<FluidInput> input, string output, string id) : base(true, input, null, output, id)
         {
@@ -27,22 +28,12 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public static Block CreateMixer(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
+            string id = ParseTools.ParseID(node);
 
-            XmlNode inputFluidNode1 = node.GetInnerBlockNode(FirstInputFieldName , parserInfo, new MissingBlockException(id, "Mixer is missing input fluid block."));
-            XmlNode inputFluidNode2 = node.GetInnerBlockNode(SecondInputFieldName, parserInfo, new MissingBlockException(id, "Mixer is missing input fluid block."));
-
-            FluidInput fluidInput1 = null;
-            FluidInput fluidInput2 = null;
-
-            if (inputFluidNode1 != null)
-            {
-                fluidInput1 = XmlParser.ParseFluidInput(inputFluidNode1, dfg, parserInfo);
-            }
-            if (inputFluidNode2 != null)
-            {
-                fluidInput2 = XmlParser.ParseFluidInput(inputFluidNode2, dfg, parserInfo);
-            }
+            FluidInput fluidInput1 = ParseTools.ParseFluidInput(node, dfg, parserInfo, id, FirstInputFieldName,
+                                     new MissingBlockException(id, "Mixer is missing input fluid block."));
+            FluidInput fluidInput2 = ParseTools.ParseFluidInput(node, dfg, parserInfo, id, SecondInputFieldName,
+                                     new MissingBlockException(id, "Mixer is missing input fluid block."));
 
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput1);
@@ -74,7 +65,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override Module getAssociatedModule()
         {
-            return new MixerModule(100);
+            return new MixerModule(OPERATION_TIME);
         }
 
         public override void UpdateInternalDropletConcentrations()

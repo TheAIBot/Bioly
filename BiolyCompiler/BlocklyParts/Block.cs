@@ -47,7 +47,6 @@ namespace BiolyCompiler.BlocklyParts
             inputFluids?.Where(x => x != null).ToList().ForEach(x => inputNumbers.AddRange(x?.InputNumbers));
             this.InputNumbers = inputNumbers ?? EmptyNumberList;
             this.OutputVariable = $"N{Interlocked.Increment(ref nameID)}";
-            nameID++;
             this.BlockID = blockID;
             this.OriginalOutputVariable = output ?? DEFAULT_NAME;
         }

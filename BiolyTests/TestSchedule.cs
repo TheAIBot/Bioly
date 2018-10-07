@@ -881,14 +881,10 @@ namespace BiolyTests.ScheduleTests
 
         private static (Schedule scheduler, int time) ScheduleDFG(DFG<Block> dfg, bool enableGC)
         {
-            Assay assay = new Assay(dfg);
-            Board board = new Board(BOARD_WIDTH, BOARD_HEIGHT);
-            ModuleLibrary library = new ModuleLibrary();
-
-            Schedule schedule = new Schedule();
+            Schedule schedule = new Schedule(BOARD_WIDTH, BOARD_HEIGHT);
             schedule.SHOULD_DO_GARBAGE_COLLECTION = enableGC;
-            schedule.PlaceStaticModules(dfg.Nodes.Select(x => x.value).OfType<StaticDeclarationBlock>().ToList(), board, library);
-            int time = schedule.ListScheduling(assay, board, library);
+            schedule.PlaceStaticModules(dfg.Nodes.Select(x => x.value).OfType<StaticDeclarationBlock>().ToList());
+            int time = schedule.ListScheduling(dfg);
             return (schedule, time);
         }
 

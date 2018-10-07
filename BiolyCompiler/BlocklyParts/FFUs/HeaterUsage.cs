@@ -37,19 +37,15 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public static Block CreateHeater(string output, XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string moduleName = node.GetNodeWithAttributeValue(MODULE_NAME_FIELD_NAME).InnerText;
+            string id = ParseTools.ParseID(node);
+            string moduleName = ParseTools.ParseString(node, MODULE_NAME_FIELD_NAME);
             parserInfo.CheckVariable(id, VariableType.HEATER, moduleName);
 
-            int temperature = (int)node.GetNodeWithAttributeValue(TEMPERATURE_FIELD_NAME).TextToFloat(id);
-            int time = (int)node.GetNodeWithAttributeValue(TIME_FIELD_NAME).TextToFloat(id);
+            int temperature = (int)ParseTools.ParseFloat(node, parserInfo, id, TEMPERATURE_FIELD_NAME);
+            int time = (int)ParseTools.ParseFloat(node, parserInfo, id, TIME_FIELD_NAME);
 
-            FluidInput fluidInput = null;
-            XmlNode inputFluidNode = node.GetInnerBlockNode(INPUT_FLUID_FIELD_NAME, parserInfo, new MissingBlockException(id, "Heater is missing input fluid block."));
-            if (inputFluidNode != null)
-            {
-                fluidInput = XmlParser.ParseFluidInput(inputFluidNode, dfg, parserInfo);
-            }
+            FluidInput fluidInput = ParseTools.ParseFluidInput(node, dfg, parserInfo, id, INPUT_FLUID_FIELD_NAME,
+                                    new MissingBlockException(id, "Heater is missing input fluid block."));
 
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput);

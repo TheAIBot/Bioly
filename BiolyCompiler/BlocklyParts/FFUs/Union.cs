@@ -29,18 +29,10 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
 
-            XmlNode inputFluidNode1 = node.GetInnerBlockNode(FIRST_INPUT_FIELD_NAME , parserInfo, new MissingBlockException(id, "Union is missing input fluid block."));
-            XmlNode inputFluidNode2 = node.GetInnerBlockNode(SECOND_INPUT_FIELD_NAME, parserInfo, new MissingBlockException(id, "Union is missing input fluid block."));
-
-            FluidInput fluidInput1 = null;
-            FluidInput fluidInput2 = null;
-
-            if (inputFluidNode1 != null) {
-                fluidInput1 = XmlParser.ParseFluidInput(inputFluidNode1, dfg, parserInfo, false);
-            }
-            if (inputFluidNode2 != null) {
-                fluidInput2 = XmlParser.ParseFluidInput(inputFluidNode2, dfg, parserInfo, false);
-            }
+            FluidInput fluidInput1 = ParseTools.ParseFluidInput(node, dfg, parserInfo, id, FIRST_INPUT_FIELD_NAME,
+                                     new MissingBlockException(id, "Union is missing input fluid block."));
+            FluidInput fluidInput2 = ParseTools.ParseFluidInput(node, dfg, parserInfo, id, SECOND_INPUT_FIELD_NAME,
+                                     new MissingBlockException(id, "Union is missing input fluid block."));
 
             List<FluidInput> inputs = new List<FluidInput>();
             inputs.Add(fluidInput1);

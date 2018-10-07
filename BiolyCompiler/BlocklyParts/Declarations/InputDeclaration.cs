@@ -31,10 +31,9 @@ namespace BiolyCompiler.BlocklyParts.Declarations
 
         public static InputDeclaration Parse(XmlNode node, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            float amount = node.GetNodeWithAttributeValue(INPUT_AMOUNT_FIELD_NAME).TextToFloat(id);
-            string output = node.GetNodeWithAttributeValue(INPUT_FLUID_FIELD_NAME).InnerText;
-            Validator.CheckVariableName(id, output);
+            string id = ParseTools.ParseID(node);
+            float amount = ParseTools.ParseFloat(node, parserInfo, id, INPUT_AMOUNT_FIELD_NAME);
+            string output = ParseTools.ParseString(node, INPUT_FLUID_FIELD_NAME);
             parserInfo.AddVariable(id, VariableType.FLUID, output);
 
             return new InputDeclaration(output, amount, id);

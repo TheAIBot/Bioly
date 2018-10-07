@@ -12,11 +12,6 @@ namespace BiolyCompiler.Modules
             
         }
 
-        public override Module GetCopyOf()
-        {
-            throw new InternalRuntimeException("This method is not supported.");
-        }
-
         public override List<Command> GetModuleCommands(ref int time)
         {
             throw new InternalRuntimeException("This method is not supported.");

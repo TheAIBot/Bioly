@@ -64,21 +64,9 @@ namespace BiolyCompiler.Modules
             return 0;
         }
 
-        public override Module GetCopyOf()
-        {
-            throw new InternalRuntimeException("This method is not suported.");
-        }
-
-
         public override List<Command> GetModuleCommands(ref int time)
         {
             throw new InternalRuntimeException("Droplet can't be converted into commands");
-        }
-
-        public bool IsInMiddleOfSource(RoutingInformation location)
-        {
-            return location.x == Shape.x + DROPLET_WIDTH / 2 &&
-                   location.y == Shape.y + DROPLET_HEIGHT / 2;
         }
 
         public (int, int) GetMiddleOfSource() {

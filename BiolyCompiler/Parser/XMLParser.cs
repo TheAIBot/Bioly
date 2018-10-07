@@ -197,7 +197,7 @@ namespace BiolyCompiler.Parser
                 case ArithOP.XML_TYPE_NAME:
                     return ArithOP.Parse(node, dfg, parserInfo, canBeScheduled);
                 case Constant.XML_TYPE_NAME:
-                    return Constant.Parse(node, canBeScheduled);
+                    return Constant.Parse(node, parserInfo, canBeScheduled);
                 case FluidArray.XML_TYPE_NAME:
                     return FluidArray.Parse(node, dfg, parserInfo);
                 case SetArrayFluid.XML_TYPE_NAME:

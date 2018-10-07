@@ -25,16 +25,12 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string output = node.GetNodeWithAttributeValue(VARIABLE_FIELD_NAME).InnerText;
+            string id = ParseTools.ParseID(node);
+            string output = ParseTools.ParseString(node, VARIABLE_FIELD_NAME);
             parserInfo.AddVariable(id, VariableType.NUMBER, output);
 
-            VariableBlock operandBlock = null;
-            XmlNode operandNode = node.GetInnerBlockNode(INPUT_VARIABLE_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block to define the variables value."));
-            if (operandNode != null)
-            {
-                operandBlock = (VariableBlock)XmlParser.ParseBlock(operandNode, dfg, parserInfo, false, false);
-            }
+            VariableBlock operandBlock = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, INPUT_VARIABLE_FIELD_NAME,
+                                         new MissingBlockException(id, "Missing block to define the variables value."));
 
             dfg.AddNode(operandBlock);
 

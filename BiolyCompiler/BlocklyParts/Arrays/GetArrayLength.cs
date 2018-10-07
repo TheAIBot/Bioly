@@ -23,8 +23,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public static Block Parse(XmlNode node, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
+            string id = ParseTools.ParseID(node);
+            string arrayName = ParseTools.ParseString(node, ARRAY_NAME_FIELD_NAME);
             parserInfo.CheckVariable(id, new VariableType[] { VariableType.NUMBER_ARRAY, VariableType.FLUID_ARRAY }, arrayName);
 
             List<string> inputs = new List<string>();
