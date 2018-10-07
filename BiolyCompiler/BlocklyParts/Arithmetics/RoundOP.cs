@@ -28,16 +28,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            XmlNode roundTypeNode = node.GetNodeWithAttributeValue(OPTypeFieldName);
-            RoundOPTypes roundType = StringToRoundOPType(id, roundTypeNode.InnerText);
+            string id = ParseTools.ParseID(node);
+            RoundOPTypes roundType = StringToRoundOPType(id, ParseTools.ParseString(node, OPTypeFieldName));
 
-            VariableBlock numberBlock = null;
-            XmlNode leftNode = node.GetInnerBlockNode(NUMBER_FIELD_NAME, parserInfo, new MissingBlockException(id, "Number defining block is missing."));
-            if (leftNode != null)
-            {
-                numberBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo, false, false);
-            }
+            VariableBlock numberBlock = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, NUMBER_FIELD_NAME,
+                                        new MissingBlockException(id, "Number defining block is missing."));
 
             dfg.AddNode(numberBlock);
 

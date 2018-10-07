@@ -29,16 +29,12 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
+            string id = ParseTools.ParseID(node);
+            string arrayName = ParseTools.ParseString(node, ARRAY_NAME_FIELD_NAME);
             parserInfo.AddVariable(id, VariableType.NUMBER_ARRAY, arrayName);
 
-            VariableBlock arrayLengthBlock = null;
-            XmlNode arrayLengthNode = node.GetInnerBlockNode(ARRAY_LENGTH_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block which define the length of the array."));
-            if (arrayLengthNode != null)
-            {
-                arrayLengthBlock = (VariableBlock)XmlParser.ParseBlock(arrayLengthNode, dfg, parserInfo, false, false);
-            }
+            VariableBlock arrayLengthBlock = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, ARRAY_LENGTH_FIELD_NAME,
+                                             new MissingBlockException(id, "Missing block which define the length of the array."));
 
             dfg.AddNode(arrayLengthBlock);
 

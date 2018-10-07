@@ -13,11 +13,6 @@ namespace BiolyCompiler.Modules
         public HeaterModule() : base(Droplet.DROPLET_WIDTH*1, Droplet.DROPLET_HEIGHT, 1, true)
         {
         }        
-        
-        public override Module GetCopyOf()
-        {
-            return new HeaterModule();
-        }
 
         public void setHeatingTemperatureAndDuration(int temperature, int heatingDuration)
         {

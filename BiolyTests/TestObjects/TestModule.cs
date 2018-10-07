@@ -56,15 +56,6 @@ namespace BiolyTests.TestObjects
             this.OutputLayout = Layout;
         }
 
-        public override Module GetCopyOf()
-        {
-            TestModule module = new TestModule(Shape.width, Shape.height, OperationTime);
-            module.Shape = new Rectangle(Shape);
-            module.InputLayout = this.InputLayout.GetCopy();
-            module.OutputLayout = this.OutputLayout.GetCopy();
-            return module;
-        }
-
         public override List<Command> GetModuleCommands(ref int time)
         {
             //It is included, so that when the completion time is calculated, 

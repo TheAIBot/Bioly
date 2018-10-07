@@ -32,23 +32,13 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            BoolOPTypes opType = BoolOP.StringToBoolOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
+            string id = ParseTools.ParseID(node);
+            BoolOPTypes opType = BoolOP.StringToBoolOPType(id, ParseTools.ParseString(node, OPTypeFieldName));
 
-            VariableBlock leftBoolBlock = null;
-            VariableBlock rightBoolBlock = null;
-
-            XmlNode leftNode = node.GetInnerBlockNode(LeftBoolFieldName, parserInfo, new MissingBlockException(id, "Left side of boolean operator is missing a block."));
-            if (leftNode != null)
-            {
-                leftBoolBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo, false, false);
-            }
-
-            XmlNode rightNode = node.GetInnerBlockNode(RightBoolFieldName, parserInfo, new MissingBlockException(id, "Right side of boolean operator is missing a block."));
-            if (rightNode != null)
-            {
-                rightBoolBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo, false, false);
-            }
+            VariableBlock leftBoolBlock = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, LeftBoolFieldName,
+                                          new MissingBlockException(id, "Left side of boolean operator is missing a block."));
+            VariableBlock rightBoolBlock = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, RightBoolFieldName,
+                                           new MissingBlockException(id, "Right side of boolean operator is missing a block."));
 
             dfg.AddNode(leftBoolBlock);
             dfg.AddNode(rightBoolBlock);

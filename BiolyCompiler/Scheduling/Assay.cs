@@ -98,10 +98,9 @@ namespace BiolyCompiler.Scheduling
                             case StaticDeclarationBlock block3:
                             case Fluid block4:
                             case SetArrayFluid block5:
-                                newPriority -= 0;
                                 break;
-                            case FluidBlock block:
-                                newPriority -= block.getAssociatedModule().OperationTime;
+                            case Mixer block:
+                                newPriority -= Mixer.OPERATION_TIME;
                                 break;
                             default:
                                 throw new InternalRuntimeException($"Calculating critical path doesn't handle the block type {backNode.GetType().ToString()}.");
@@ -116,10 +115,17 @@ namespace BiolyCompiler.Scheduling
                            .ToList();
             } while (rank.Count > 0);
 
-            Dfg.Nodes.Where(x => x.value is WasteUsage)
-                     .ForEach(x => x.value.priority = int.MinValue);
-            Dfg.Nodes.Where(x => x.value is StaticDeclarationBlock)
-                     .ForEach(x => x.value.priority = int.MaxValue);
+            foreach (Node<Block> node in Dfg.Nodes)
+            {
+                if (node.value is WasteUsage)
+                {
+                    node.value.priority = int.MinValue;
+                }
+                if (node.value is StaticDeclarationBlock)
+                {
+                    node.value.priority = int.MaxValue;
+                }
+            }
         }
 
         public void UpdateReadyOperations(Block operation)

@@ -79,13 +79,15 @@ namespace BiolyCompiler
             return null;
         }
 
-        internal static float TextToFloat(this XmlNode xmlNode, string id)
+        internal static float TextToFloat(this XmlNode xmlNode, string id, ParserInfo parseInfo)
         {
             if (float.TryParse(xmlNode.InnerText, NumberStyles.Any, CultureInfo.InvariantCulture, out float value))
             {
                 return value;
             }
-            throw new NotANumberException(id, xmlNode.InnerText);
+
+            parseInfo.ParseExceptions.Add(new NotANumberException(id, xmlNode.InnerText));
+            return float.NaN;
         }
 
         internal static XmlNode GetInnerBlockNode(this XmlNode node, string nodeAttribName, ParserInfo parserInfo, ParseException exception)

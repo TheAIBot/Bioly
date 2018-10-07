@@ -96,27 +96,10 @@ namespace BiolyCompiler.Modules
             return OutputLayout != null;
         }
 
-        private bool canContainPoints(List<Point> DropletOutputLocations)
-        {
-            foreach (var point in DropletOutputLocations)
-            {
-                if (point.X < 0 ||
-                    point.Y < 0 ||
-                    Shape.width  < point.X + Droplet.DROPLET_WIDTH || 
-                    Shape.height < point.Y + Droplet.DROPLET_HEIGHT) return false;
-            }
-            return true;
-        }
-
         public override String ToString()
         {
             return this.GetType().ToString() + ", input/output = (" + getNumberOfInputs() + ", " + getNumberOfOutputs() + "), dimensions = {" + Shape.ToString() + "}, operation time = " + OperationTime;
         }
-
-        
-        //Returns a copy of the module (not taking adjacencies into account). 
-        //It is used for creating unique modules, for the binding process in the scheduling
-        public abstract Module GetCopyOf();
 
         //True iff the module is placed permenently on the board.
         public virtual bool IsStaticModule()

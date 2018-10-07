@@ -23,9 +23,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
         public static FluidInput Parse(XmlNode node, ParserInfo parserInfo, bool doVariableCheck = true)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string originalFluidName = node.GetNodeWithAttributeValue(FLUID_NAME_FIELD_NAME).InnerText;
-            Validator.CheckVariableName(id, originalFluidName);
+            string id = ParseTools.ParseID(node);
+            string originalFluidName = ParseTools.ParseString(node, FLUID_NAME_FIELD_NAME);
             if (doVariableCheck)
             {
                 parserInfo.CheckVariable(id, VariableType.FLUID, originalFluidName);
@@ -33,8 +32,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             parserInfo.MostRecentVariableRef.TryGetValue(originalFluidName, out string correctedName);
 
             string fluidName = correctedName ?? NO_FLUID_NAME;
-            float amountInML = node.GetNodeWithAttributeValue(FLUID_AMOUNT_FIELD_NAME).TextToFloat(id);
-            bool useAllFluid = FluidInput.StringToBool(node.GetNodeWithAttributeValue(USE_ALL_FLUID_FIELD_NAME).InnerText);
+            float amountInML = ParseTools.ParseFloat(node, parserInfo, id, FLUID_AMOUNT_FIELD_NAME);
+            bool useAllFluid = FluidInput.StringToBool(ParseTools.ParseString(node, USE_ALL_FLUID_FIELD_NAME));
 
             return new BasicInput(id, fluidName, originalFluidName, amountInML, useAllFluid);
         }

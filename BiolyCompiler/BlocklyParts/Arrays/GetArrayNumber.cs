@@ -30,16 +30,12 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            string arrayName = node.GetNodeWithAttributeValue(ARRAY_NAME_FIELD_NAME).InnerText;
+            string id = ParseTools.ParseID(node);
+            string arrayName = ParseTools.ParseString(node, ARRAY_NAME_FIELD_NAME);
             parserInfo.CheckVariable(id, VariableType.NUMBER_ARRAY, arrayName);
 
-            VariableBlock indexBlock = null;
-            XmlNode indexNode = node.GetInnerBlockNode(INDEX_FIELD_NAME, parserInfo, new MissingBlockException(id, "Missing block which define the index into the array."));
-            if (indexNode != null)
-            {
-                indexBlock = (VariableBlock)XmlParser.ParseBlock(indexNode, dfg, parserInfo, false, false);
-            }
+            VariableBlock indexBlock = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, INDEX_FIELD_NAME,
+                                       new MissingBlockException(id, "Missing block which define the index into the array."));
 
             dfg.AddNode(indexBlock);
 

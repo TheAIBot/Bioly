@@ -31,23 +31,13 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool canBeScheduled)
         {
-            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
-            ArithOPTypes opType = ArithOP.StringToArithOPType(id, node.GetNodeWithAttributeValue(OPTypeFieldName).InnerText);
+            string id = ParseTools.ParseID(node);
+            ArithOPTypes opType = ArithOP.StringToArithOPType(id, ParseTools.ParseString(node, OPTypeFieldName));
 
-            VariableBlock leftArithBlock = null;
-            VariableBlock rightArithBlock = null;
-
-            XmlNode leftNode = node.GetInnerBlockNode(LeftArithFieldName, parserInfo, new MissingBlockException(id, "Left side of arithmetic operator is missing a block."));
-            if (leftNode != null)
-            {
-                leftArithBlock = (VariableBlock)XmlParser.ParseBlock(leftNode, dfg, parserInfo, false, false);
-            }
-
-            XmlNode rightNode = node.GetInnerBlockNode(RightArithFieldName, parserInfo, new MissingBlockException(id, "Right side of Arithmetic operator is missing a block."));
-            if (rightNode != null)
-            {
-                rightArithBlock = (VariableBlock)XmlParser.ParseBlock(rightNode, dfg, parserInfo, false, false);
-            }
+            VariableBlock leftArithBlock  = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, LeftArithFieldName, 
+                                            new MissingBlockException(id, "Left side of arithmetic operator is missing a block."));
+            VariableBlock rightArithBlock = ParseTools.ParseBlock<VariableBlock>(node, dfg, parserInfo, id, RightArithFieldName, 
+                                            new MissingBlockException(id, "Right side of Arithmetic operator is missing a block."));
 
             dfg.AddNode(leftArithBlock);
             dfg.AddNode(rightArithBlock);

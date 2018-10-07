@@ -32,16 +32,17 @@ namespace BiolyCompiler.Scheduling
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
         public Dictionary<string, List<IDropletSource>> OutputtedDroplets = new Dictionary<string, List<IDropletSource>>();
+        private readonly Board board;
 
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
         public const int IGNORED_TIME_DIFFERENCE = 30;
         private const string RENAME_FLUIDNAME_STRING = "renaiming - fluidtype #";
         private const string WASTE_FLUIDNAME_STRING = "waste - fluidtype #";
         public const string WASTE_MODULE_NAME = "waste @ module";
-        
-        private static Board getCurrentBoard()
+
+        public Schedule(int width, int height)
         {
-            throw new InternalRuntimeException("Getting the current board hasn't been implemented yet.");
+            this.board = new Board(width, height);
         }
 
         private void UpdateSchedule(Block operation, int currentTime, int startTime)
@@ -63,18 +64,8 @@ namespace BiolyCompiler.Scheduling
                 CurrentlyRunningOpertions.Enqueue(fluidOperation, operation.EndTime);
             }
         }
-        
-        public void TransferFluidVariableLocationInformation(Dictionary<string, BoardFluid> fluidLocationInformation)
-        {
-            fluidLocationInformation.ForEach(pair => FluidVariableLocations.Add(pair.Key, pair.Value));
-        }
 
-        public void TransferStaticModulesInformation(Dictionary<string, Module> staticModulesInformation)
-        {
-            staticModulesInformation.ForEach(pair => StaticModules.Add(pair.Key, pair.Value));
-        }
-
-        public void PlaceStaticModules(List<StaticDeclarationBlock> staticDeclarations, Board board, ModuleLibrary library)
+        public void PlaceStaticModules(List<StaticDeclarationBlock> staticDeclarations)
         {
             foreach (var staticDeclaration in staticDeclarations)
             {
@@ -99,7 +90,7 @@ namespace BiolyCompiler.Scheduling
                     NameOfInputFluids.Add(fluidType.FluidName);
                 }
                 else {
-                    Module staticModule = library.getAndPlaceFirstPlaceableModule(staticDeclaration, board, AllUsedModules);
+                    Module staticModule = getAndPlaceFirstPlaceableModule(staticDeclaration, board);
                     StaticModules.Add(staticDeclaration.ModuleName, staticModule);
                 }
 
@@ -115,6 +106,21 @@ namespace BiolyCompiler.Scheduling
             }
         }
 
+        private Module getAndPlaceFirstPlaceableModule(FluidBlock operation, Board board)
+        {
+            Module optimalModuleTemplate = operation.getAssociatedModule();
+
+            if (!board.FastTemplatePlace(optimalModuleTemplate))
+            {
+                board.FastTemplatePlace(optimalModuleTemplate);
+                //Console.WriteLine(board.print(usedModules));
+                throw new RuntimeException("Module \"" + optimalModuleTemplate.ToString() + "\" can't be placed");
+            }
+            //Now that the module has been placed, the internal rectangles in the module layout can be modified, such that they are placed correctly.
+            optimalModuleTemplate.RepositionLayout();
+            return optimalModuleTemplate;
+        }
+
         private BoardFluid RecordCompletlyNewFluidType(FluidBlock operation) => RecordCompletlyNewFluidType(operation.OriginalOutputVariable);
 
         private BoardFluid RecordCompletlyNewFluidType(String fluidName)
@@ -128,7 +134,7 @@ namespace BiolyCompiler.Scheduling
             return fluidType;
         }
 
-        private (BoardFluid, int) RecordNewFluidType(string fluidName, Board board, int currentTime, FluidBlock operation)
+        private (BoardFluid, int) RecordNewFluidType(string fluidName, int currentTime, FluidBlock operation)
         {
             //If there already are droplets associated with the fluid name
             //they must be overwritten or moved to a waste module
@@ -136,7 +142,7 @@ namespace BiolyCompiler.Scheduling
             {
                 if (SHOULD_DO_GARBAGE_COLLECTION)
                 {
-                    currentTime = DoGarbageCollection(board, currentTime, operation, oldFluidType);
+                    currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
                 }
                 else
                 {
@@ -161,7 +167,7 @@ namespace BiolyCompiler.Scheduling
             }
         }
 
-        private int DoGarbageCollection(Board board, int currentTime, FluidBlock operation, BoardFluid oldFluidType)
+        private int DoGarbageCollection(int currentTime, FluidBlock operation, BoardFluid oldFluidType)
         {
             int numberOfDropletsToRoute = oldFluidType.GetNumberOfDropletsAvailable();
             WasteModule waste = (WasteModule)StaticModules[WASTE_MODULE_NAME];
@@ -189,11 +195,18 @@ namespace BiolyCompiler.Scheduling
             Implements/based on the list scheduling based algorithm found in 
             "Fault-tolerant digital microfluidic biochips - compilation and synthesis" page 72.
          */
-        public int ListScheduling(Assay assay, Board board, ModuleLibrary library)
+        public int ListScheduling(DFG<Block> dfg)
         {
+            Assay assay = new Assay(dfg);
+
+            rectanglesAtDifferentTimes.Clear();
+            AllUsedModules.Clear();
+            ScheduledOperations.Clear();
+            OutputtedDroplets.Clear();
+
             //Setup:
             int currentTime = 0;
-            board = ListSchedulingSetup(assay, board, library, currentTime);
+            ListSchedulingSetup(assay, currentTime);
 
             foreach (Block nextOperation in assay)
             {
@@ -204,22 +217,22 @@ namespace BiolyCompiler.Scheduling
                         assay.UpdateReadyOperations(varBlock);
                         break;
                     case Union unionBlock:
-                        (currentTime, board) = HandleUnionOperation(assay, board, currentTime, unionBlock);
+                        currentTime = HandleUnionOperation(currentTime, unionBlock);
                         assay.UpdateReadyOperations(unionBlock);
                         break;
                     case StaticDeclarationBlock decBlock:
                         assay.UpdateReadyOperations(decBlock);
                         break;
                     case Fluid renameBlock:
-                        (currentTime, board) = HandleFluidTransfers(assay, board, currentTime, renameBlock);
+                        currentTime = HandleFluidTransfers(currentTime, renameBlock);
                         assay.UpdateReadyOperations(renameBlock);
                         break;
                     case SetArrayFluid arrayRenameBlock:
-                        (currentTime, board) = HandleFluidTransfers(assay, board, currentTime, arrayRenameBlock);
+                        currentTime = HandleFluidTransfers(currentTime, arrayRenameBlock);
                         assay.UpdateReadyOperations(arrayRenameBlock);
                         break;
                     case FluidBlock fluidBlock:
-                        currentTime = HandleFluidOperations(board, library, currentTime, fluidBlock);
+                        currentTime = HandleFluidOperations(currentTime, fluidBlock);
                         break;
                     default:
                         throw new InternalRuntimeException("The given block/operation type is unhandeled by the scheduler. " + Environment.NewLine + "The operation is: " + nextOperation.ToString());
@@ -228,22 +241,27 @@ namespace BiolyCompiler.Scheduling
                 //When operations finishes, while the routing associated with nextOperation was performed, 
                 //this needs to be handled. Note that handleFinishingOperations will also wait for operations to finish, 
                 //in the case that there are no more operations that can be executed, before this happen:
-                (currentTime, board) = HandleFinishingOperations(nextOperation, currentTime, assay, board);
+                currentTime = HandleFinishingOperations(nextOperation, currentTime, assay);
                 DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+            }
+
+            if (CurrentlyRunningOpertions.Count > 0)
+            {
+                throw new InternalRuntimeException("ERROR!!!");
             }
             
             SortScheduledOperations();
             return GetCompletionTime();
         }
 
-        private int HandleFluidOperations(Board board, ModuleLibrary library, int currentTime, FluidBlock topPriorityOperation)
+        private int HandleFluidOperations(int currentTime, FluidBlock topPriorityOperation)
         {
             //If nextOperation is associated with a static module, 
             //this needs to be chosen as the module to execute the operation.
             //Else a module that can execute the operation needs to be found and placed on the board:
             Module operationExecutingModule = (topPriorityOperation is StaticUseageBlock staticOperation) ?
                                                StaticModules[staticOperation.ModuleName] :
-                                               library.getAndPlaceFirstPlaceableModule(topPriorityOperation, board, AllUsedModules);
+                                               getAndPlaceFirstPlaceableModule(topPriorityOperation, board);
             topPriorityOperation.Bind(operationExecutingModule, FluidVariableLocations);
 
             //For debuging:
@@ -256,7 +274,7 @@ namespace BiolyCompiler.Scheduling
             //Now all the droplet that the module should operate on, needs to be delivered to it.
             //By construction, there will be a route from the droplets to the module, 
             //and so it will always be possible for this routing to be done:
-            currentTime = RouteDropletsToModuleAndUpdateSchedule(board, currentTime, topPriorityOperation, operationExecutingModule);
+            currentTime = RouteDropletsToModuleAndUpdateSchedule(currentTime, topPriorityOperation, operationExecutingModule);
             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             return currentTime;
         }
@@ -266,12 +284,12 @@ namespace BiolyCompiler.Scheduling
             ScheduledOperations = ScheduledOperations.OrderBy(x => x.StartTime).ThenBy(x => x.EndTime).ToList();
         }
 
-        private (int, Board) ExtractAndReassignDroplets(Board board, int currentTime, FluidBlock nextOperation, int requiredDroplets, BoardFluid targetFluidType, BoardFluid inputFluid)
+        private int ExtractAndReassignDroplets(int currentTime, FluidBlock nextOperation, int requiredDroplets, BoardFluid targetFluidType, BoardFluid inputFluid)
         {
             //First it is checked if there is there even any fluid that needs to be transfered:
             if (requiredDroplets == 0)
             {
-                return (currentTime, board);
+                return currentTime;
             }
             int originalStartTime = currentTime;
 
@@ -335,10 +353,10 @@ namespace BiolyCompiler.Scheduling
             rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             currentTime += 2;
             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-            return (currentTime, board);
+            return currentTime;
         }
 
-        private (int, Board) HandleFluidTransfers(Assay assay, Board board, int currentTime, FluidBlock nextOperation)
+        private int HandleFluidTransfers(int currentTime, FluidBlock nextOperation)
         {
             FluidInput input = nextOperation.InputFluids[0];
             int requiredDroplets = input.GetAmountInDroplets(FluidVariableLocations);
@@ -347,7 +365,7 @@ namespace BiolyCompiler.Scheduling
             //If there already exists droplets with the target fluid type (what the droplets should be renamed to),
             //then they are overwritten:
             BoardFluid targetFluidType;
-            (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OriginalOutputVariable, board, currentTime, nextOperation);
+            (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OriginalOutputVariable, currentTime, nextOperation);
 
             FluidVariableLocations.TryGetValue(input.OriginalFluidName, out BoardFluid inputFluid);
             if (inputFluid == null)
@@ -355,11 +373,11 @@ namespace BiolyCompiler.Scheduling
                 throw new InternalRuntimeException($"Fluid of type \"{input.OriginalFluidName}\" was to be transfered, but fluid of this type do not exist (or have ever been created).");
             }
 
-            (currentTime, board) = ExtractAndReassignDroplets(board, currentTime, nextOperation, requiredDroplets, targetFluidType, inputFluid);
+            currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, requiredDroplets, targetFluidType, inputFluid);
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
             currentTime++;
             //DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-            return (currentTime, board);
+            return currentTime;
         }
 
         private void HandleVariableOperation(int currentTime, VariableBlock nextOperation)
@@ -372,7 +390,7 @@ namespace BiolyCompiler.Scheduling
             }
         }
 
-        private (int, Board) HandleUnionOperation(Assay assay, Board board, int currentTime, Union nextOperation){
+        private int HandleUnionOperation(int currentTime, Union nextOperation){
             FluidInput input1 = nextOperation.InputFluids[0];
             FluidInput input2 = nextOperation.InputFluids[1];
             int requiredDroplets1 = input1.GetAmountInDroplets(FluidVariableLocations);
@@ -383,32 +401,32 @@ namespace BiolyCompiler.Scheduling
             //and then to the actual target fluidtype. This is necessary for the case of an union,
             //where the target is also the input.
             BoardFluid intermediateFluidtype;
-            (intermediateFluidtype, currentTime) = RecordNewFluidType(RENAME_FLUIDNAME_STRING, board, currentTime, nextOperation);
+            (intermediateFluidtype, currentTime) = RecordNewFluidType(RENAME_FLUIDNAME_STRING, currentTime, nextOperation);
 
             FluidVariableLocations.TryGetValue(input1.OriginalFluidName, out BoardFluid inputFluid1);
             if (inputFluid1 == null)
             {
-                (inputFluid1, currentTime) = RecordNewFluidType(input1.OriginalFluidName, board, currentTime, nextOperation);
+                (inputFluid1, currentTime) = RecordNewFluidType(input1.OriginalFluidName, currentTime, nextOperation);
             }
 
             FluidVariableLocations.TryGetValue(input2.OriginalFluidName, out BoardFluid inputFluid2);
             if (inputFluid2 == null)
             {
-                (inputFluid2, currentTime) = RecordNewFluidType(input2.OriginalFluidName, board, currentTime, nextOperation);
+                (inputFluid2, currentTime) = RecordNewFluidType(input2.OriginalFluidName, currentTime, nextOperation);
             }
 
-            (currentTime, board) = ExtractAndReassignDroplets(board, currentTime, nextOperation, requiredDroplets1, intermediateFluidtype, inputFluid1);
-            (currentTime, board) = ExtractAndReassignDroplets(board, currentTime, nextOperation, requiredDroplets2, intermediateFluidtype, inputFluid2);
+            currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, requiredDroplets1, intermediateFluidtype, inputFluid1);
+            currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, requiredDroplets2, intermediateFluidtype, inputFluid2);
             BoardFluid targetFluidtype;
-            (targetFluidtype, currentTime) = RecordNewFluidType(nextOperation.OriginalOutputVariable, board, currentTime, nextOperation);
+            (targetFluidtype, currentTime) = RecordNewFluidType(nextOperation.OriginalOutputVariable, currentTime, nextOperation);
             int targetRequiredDroplets = requiredDroplets1 + requiredDroplets2;
-            (currentTime, board) = ExtractAndReassignDroplets(board, currentTime, nextOperation, targetRequiredDroplets, targetFluidtype, intermediateFluidtype);
+            currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, targetRequiredDroplets, targetFluidtype, intermediateFluidtype);
 
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
-            return (currentTime, board);
+            return currentTime;
         }
 
-        private int RouteDropletsToModuleAndUpdateSchedule(Board board, int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)
+        private int RouteDropletsToModuleAndUpdateSchedule(int startTime, FluidBlock topPriorityOperation, Module operationExecutingModule)
         {
             int finishedRoutingTime;
             if (topPriorityOperation is OutputUsage || topPriorityOperation is WasteUsage)
@@ -438,17 +456,13 @@ namespace BiolyCompiler.Scheduling
             return finishedRoutingTime;
         }
 
-        private Board ListSchedulingSetup(Assay assay, Board board, ModuleLibrary library, int startTime)
+        private void ListSchedulingSetup(Assay assay, int startTime)
         {
-            library.allocateModules(assay);
-            library.sortLibrary();
             AllUsedModules.AddRange(board.PlacedModules.Values);
             rectanglesAtDifferentTimes.Add(startTime, board.CopyAllRectangles());
-
-            return board;
         }
         
-        public (int, Board) HandleFinishingOperations(Block nextOperation, int currentTime, Assay assay, Board board)
+        public int HandleFinishingOperations(Block nextOperation, int currentTime, Assay assay)
         {
             /*(*)TODO fix edge case, where the drops are routed/operations are scheduled, 
              * so that in the mean time, some operations finishes. This might lead to routing problems.
@@ -479,7 +493,7 @@ namespace BiolyCompiler.Scheduling
                         //If a module is not static, and it is not used anymore, it is "disolved",
                         //leaving the droplets that is inside the module behind:
                         finishedOperation.UpdateInternalDropletConcentrations();
-                        (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, board, currentTime, finishedOperation);
+                        (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, currentTime, finishedOperation);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation.BoundModule, dropletOutputFluid);
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         AllUsedModules.AddRange(replacingDroplets);
@@ -495,7 +509,7 @@ namespace BiolyCompiler.Scheduling
 
                             //For the special case that the heater has size 3x3, with only one droplet inside it:
                             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                            (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, board, currentTime, finishedOperation);
+                            (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, currentTime, finishedOperation);
                             Droplet droplet = new Droplet(dropletOutputFluid);
                             droplet.SetFluidConcentrations(heaterOperation.InputRoutes.First().Value.First().routedDroplet);
                             AllUsedModules.Add(droplet);
@@ -525,7 +539,7 @@ namespace BiolyCompiler.Scheduling
                 rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             }
 
-            return (currentTime, board);
+            return currentTime;
         }
 
         private List<FluidBlock> GetNextBatchOfFinishedOperations()
@@ -541,17 +555,6 @@ namespace BiolyCompiler.Scheduling
             }
 
             return batch;
-        }
-
-        public static Block RemoveOperation(SimplePriorityQueue<Block, int> readyOperations)
-        {
-            Block topPrioriyOperation = readyOperations.Dequeue();
-            return topPrioriyOperation;
-        }
-
-        private bool CanExecuteMoreOperations(SimplePriorityQueue<Block, int> readyOperations)
-        {
-            return readyOperations.Count > 0;
         }
 
         private bool AreOperationsFinishing(int startTime, Assay assay)
