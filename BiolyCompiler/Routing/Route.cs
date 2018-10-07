@@ -47,27 +47,36 @@ namespace BiolyCompiler.Routing
             return builder.ToString();
         }
 
-        public List<Command> ToCommands(ref int time)
+        public Command[] ToCommands(ref int time)
         {
-            List<Command> commands = new List<Command>();
-            if (route.Length > 0)
+            return Route.ToCommands(route, ref time);
+        }
+
+        public static Command[] ToCommands(Point[] route, ref int time)
+        {
+            if (route.Length == 0)
             {
-                Point toTurnOff = route[0];
-                commands.Add(new Command(toTurnOff.X, toTurnOff.Y, CommandType.ELECTRODE_ON, time));
-                time++;
-
-                for (int i = 1; i < route.Length; i++)
-                {
-                    commands.Add(new Command(route[i].X, route[i].Y, CommandType.ELECTRODE_ON, time));
-                    time++;
-                    commands.Add(new Command(toTurnOff.X, toTurnOff.Y, CommandType.ELECTRODE_OFF, time));
-                    commands.Add(new Command(route[i].X, route[i].Y, CommandType.ELECTRODE_ON, time));
-                    time++;
-                    toTurnOff = route[i];
-                }
-
-                commands.Add(new Command(toTurnOff.X, toTurnOff.Y, CommandType.ELECTRODE_OFF, time));
+                return new Command[0];
             }
+
+            Command[] commands = new Command[(route.Length - 1) * 3 + 2];
+            Point toTurnOff = route[0];
+            int index = 0;
+
+            commands[index++] = new Command(toTurnOff.X, toTurnOff.Y, CommandType.ELECTRODE_ON, time);
+            time++;
+
+            for (int i = 1; i < route.Length; i++)
+            {
+                commands[index++] = new Command(route[i].X, route[i].Y, CommandType.ELECTRODE_ON, time);
+                time++;
+                commands[index++] = new Command(toTurnOff.X, toTurnOff.Y, CommandType.ELECTRODE_OFF, time);
+                commands[index++] = new Command(route[i].X, route[i].Y, CommandType.ELECTRODE_ON, time);
+                time++;
+                toTurnOff = route[i];
+            }
+
+            commands[index++] = new Command(toTurnOff.X, toTurnOff.Y, CommandType.ELECTRODE_OFF, time);
 
             return commands;
         }
