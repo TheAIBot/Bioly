@@ -47,8 +47,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             dfg.AddNode(numberInput);
 
             List<string> inputs = new List<string>();
-            inputs.Add(indexBlock?.OriginalOutputVariable);
-            inputs.Add(numberInput?.OriginalOutputVariable);
+            inputs.Add(indexBlock?.OutputVariable);
+            inputs.Add(numberInput?.OutputVariable);
 
             return new SetArrayNumber(indexBlock, numberInput, arrayName, inputs, id, canBeScheduled);
         }
@@ -75,7 +75,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
             }
 
-            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
+            OutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
         }
 
         public override string ToXml()

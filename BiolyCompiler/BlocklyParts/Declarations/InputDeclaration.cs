@@ -41,25 +41,25 @@ namespace BiolyCompiler.BlocklyParts.Declarations
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
-            if (renamer.ContainsKey(OriginalOutputVariable))
+            if (renamer.ContainsKey(OutputVariable))
             {
-                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+                renamer[OutputVariable] = OutputVariable + namePostfix;
             }
             else
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
-            return new InputDeclaration(OriginalOutputVariable + namePostfix, Amount, BlockID);
+            return new InputDeclaration(OutputVariable + namePostfix, Amount, BlockID);
         }
 
         public override Module getAssociatedModule()
         {
-            return new InputModule(new BoardFluid(OriginalOutputVariable), (int)Amount);
+            return new InputModule(new BoardFluid(OutputVariable), (int)Amount);
         }
 
         public override string ToString()
         {
-            return OriginalOutputVariable + Environment.NewLine +
+            return OutputVariable + Environment.NewLine +
                    "Amount: " + Amount.ToString("N2") + " drops";
         }
     }

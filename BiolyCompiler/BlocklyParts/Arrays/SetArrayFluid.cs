@@ -51,22 +51,22 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             List<FluidInput> inputFluids = new List<FluidInput>();
             inputFluids.Add(fluidInput);
 
-            return new SetArrayFluid(indexBlock, arrayName, inputFluids, indexBlock?.OriginalOutputVariable, id);
+            return new SetArrayFluid(indexBlock, arrayName, inputFluids, indexBlock?.OutputVariable, id);
         }
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             List<FluidInput> inputFluids = new List<FluidInput>();
             InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
-            if (renamer.ContainsKey(OriginalOutputVariable))
+            if (renamer.ContainsKey(OutputVariable))
             {
-                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+                renamer[OutputVariable] = OutputVariable + namePostfix;
             }
             else
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
-            return new Fluid(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+            return new Fluid(inputFluids, OutputVariable + namePostfix, BlockID);
         }
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -86,7 +86,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
             }
 
-            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
+            OutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
         }
 
         public override List<Command> ToCommands()

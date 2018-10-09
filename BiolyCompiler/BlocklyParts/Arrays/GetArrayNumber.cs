@@ -40,7 +40,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             dfg.AddNode(indexBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(indexBlock?.OriginalOutputVariable);
+            inputs.Add(indexBlock?.OutputVariable);
             inputs.Add(arrayName);
 
             return new GetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);

@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts
     public abstract class Block
     {
         public readonly bool CanBeOutput;
-        public string OriginalOutputVariable { get; protected set; }
+        public string OutputVariable { get; protected set; }
         public readonly string BlockID;
 
         public readonly IReadOnlyList<FluidInput> InputFluids;
@@ -45,7 +45,7 @@ namespace BiolyCompiler.BlocklyParts
             inputFluids?.Where(x => x != null).ToList().ForEach(x => inputNumbers.AddRange(x?.InputNumbers));
             this.InputNumbers = inputNumbers ?? EmptyNumberList;
             this.BlockID = blockID;
-            this.OriginalOutputVariable = output ?? DEFAULT_NAME;
+            this.OutputVariable = output ?? DEFAULT_NAME;
         }
 
         protected abstract void ResetBlock();
@@ -69,7 +69,7 @@ namespace BiolyCompiler.BlocklyParts
             if (obj is Block blockObj)
             {
                 return blockObj.GetType() == this.GetType() && 
-                       blockObj.OriginalOutputVariable == this.OriginalOutputVariable;
+                       blockObj.OutputVariable == this.OutputVariable;
             }
             return false;
         }

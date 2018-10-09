@@ -43,16 +43,16 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
-            if (!renamer.ContainsKey(OriginalOutputVariable))
+            if (!renamer.ContainsKey(OutputVariable))
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
 
             List<FluidInput> inputFluids = new List<FluidInput>();
             InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
 
-            renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
-            return new Union(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+            renamer[OutputVariable] = OutputVariable + namePostfix;
+            return new Union(inputFluids, OutputVariable + namePostfix, BlockID);
         }
 
 
@@ -95,7 +95,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override string ToString()
         {
-            return "Union: " + OriginalOutputVariable;
+            return "Union: " + OutputVariable;
         }
     }
 }

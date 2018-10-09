@@ -247,12 +247,12 @@ namespace BiolyCompiler
                 {
                     if (toCopy is FluidBlock fluidBlockToCopy)
                     {
-                        if (!variablePostfixes.ContainsKey(toCopy.OriginalOutputVariable))
+                        if (!variablePostfixes.ContainsKey(toCopy.OutputVariable))
                         {
-                            variablePostfixes.Add(toCopy.OriginalOutputVariable, $"##{nameID++}");
+                            variablePostfixes.Add(toCopy.OutputVariable, $"##{nameID++}");
                         }
 
-                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, renamer, variablePostfixes[toCopy.OriginalOutputVariable]);
+                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, renamer, variablePostfixes[toCopy.OutputVariable]);
 
                         bigDFG.AddNode(copy);
                     }
@@ -305,7 +305,7 @@ namespace BiolyCompiler
                 var staticBlocks = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock);
                 foreach (string wasteFluidName in scopedVariables.Pop())
                 {
-                    if (staticBlocks.Any(x => x.value.OriginalOutputVariable == wasteFluidName))
+                    if (staticBlocks.Any(x => x.value.OutputVariable == wasteFluidName))
                     {
                         continue;
                     }
@@ -331,7 +331,7 @@ namespace BiolyCompiler
         private void StartExecutor(DFG<Block> graph, List<Module> staticModules, bool[] usedElectrodes)
         {
             List<string> inputNames = graph.Nodes.Where(x => x.value is InputDeclaration)
-                                                 .Select(x => x.value.OriginalOutputVariable)
+                                                 .Select(x => x.value.OutputVariable)
                                                  .ToList();
             List<Module> inputs = staticModules.Where(x => x is InputModule)
                                              .ToList();

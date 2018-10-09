@@ -37,13 +37,13 @@ namespace BiolyCompiler.Graphs
                     }
                 }
 
-                if (MostRecentRef.ContainsKey(block.OriginalOutputVariable))
+                if (MostRecentRef.ContainsKey(block.OutputVariable))
                 {
-                    MostRecentRef[block.OriginalOutputVariable] = newNode;
+                    MostRecentRef[block.OutputVariable] = newNode;
                 }
                 else
                 {
-                    MostRecentRef.Add(block.OriginalOutputVariable, newNode);
+                    MostRecentRef.Add(block.OutputVariable, newNode);
                 }
             }
         }

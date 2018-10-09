@@ -47,15 +47,15 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             List<FluidInput> inputFluids = new List<FluidInput>();
             InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
 
-            if (renamer.ContainsKey(OriginalOutputVariable))
+            if (renamer.ContainsKey(OutputVariable))
             {
-                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+                renamer[OutputVariable] = OutputVariable + namePostfix;
             }
             else
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
-            return new Mixer(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+            return new Mixer(inputFluids, OutputVariable + namePostfix, BlockID);
         }
 
         public override string ToString()

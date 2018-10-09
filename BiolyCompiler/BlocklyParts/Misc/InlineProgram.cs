@@ -105,7 +105,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 if (exceptions.Count == 0)
                 {
                     var inputs = cdfg.StartDFG.Input.Where(x => x.value is InputDeclaration)
-                                                          .Select(x => x.value.OriginalOutputVariable)
+                                                          .Select(x => x.value.OutputVariable)
                                                           .ToArray();
                     var outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
                                                            .Select(x => (x.value as OutputDeclaration).ModuleName)
