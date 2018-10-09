@@ -54,7 +54,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new SetArrayFluid(indexBlock, arrayName, inputFluids, indexBlock?.OriginalOutputVariable, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             List<FluidInput> inputFluids = new List<FluidInput>();
             InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));

@@ -206,7 +206,6 @@ namespace BiolyCompiler
             scopedVariables.Push(new List<string>());
 
             DFG<Block> bigDFG = new DFG<Block>();
-            Dictionary<string, string> mostRecentRef = new Dictionary<string, string>();
             Dictionary<string, string> renamer = new Dictionary<string, string>();
             Dictionary<string, string> variablePostfixes = new Dictionary<string, string>();
 
@@ -253,7 +252,7 @@ namespace BiolyCompiler
                             variablePostfixes.Add(toCopy.OriginalOutputVariable, $"##{nameID++}");
                         }
 
-                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, mostRecentRef, renamer, variablePostfixes[toCopy.OriginalOutputVariable]);
+                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, renamer, variablePostfixes[toCopy.OriginalOutputVariable]);
 
                         bigDFG.AddNode(copy);
                     }
@@ -290,10 +289,6 @@ namespace BiolyCompiler
                     }
                 }
 
-
-
-                fluidsOutOfScope.ForEach(x => mostRecentRef.Remove(x));
-                numbersOutOfScope.ForEach(x => mostRecentRef.Remove(x));
                 fluidsOutOfScope.ForEach(x => renamer.Remove(x));
                 numbersOutOfScope.ForEach(x => renamer.Remove(x));
                 fluidsOutOfScope.ForEach(x => variablePostfixes.Remove(x));

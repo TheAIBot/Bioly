@@ -41,7 +41,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Union(inputs, output, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             if (!renamer.ContainsKey(OriginalOutputVariable))
             {

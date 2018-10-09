@@ -27,7 +27,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new WasteDeclaration(moduleName, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             return new WasteDeclaration(ModuleName, BlockID);
         }
