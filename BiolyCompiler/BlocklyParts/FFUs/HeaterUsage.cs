@@ -53,20 +53,20 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new HeaterUsage(moduleName, inputs, output, temperature, time, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             List<FluidInput> inputFluids = new List<FluidInput>();
-            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
 
-            if (renamer.ContainsKey(OriginalOutputVariable))
+            if (renamer.ContainsKey(OutputVariable))
             {
-                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+                renamer[OutputVariable] = OutputVariable + namePostfix;
             }
             else
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
-            return new HeaterUsage(ModuleName, inputFluids, OriginalOutputVariable + namePostfix, Temperature, Time, BlockID);
+            return new HeaterUsage(ModuleName, inputFluids, OutputVariable + namePostfix, Temperature, Time, BlockID);
         }
 
 

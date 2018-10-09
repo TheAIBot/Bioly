@@ -146,8 +146,8 @@ namespace BiolyTests.AssayTests
 
             DFG<Block> dfg = new DFG<Block>();
             dfg.AddNode(operation1);
-            dfg.AddNode(operation2);
             dfg.AddNode(operation3);
+            dfg.AddNode(operation2);
             dfg.AddNode(operation4);
             dfg.FinishDFG();
             

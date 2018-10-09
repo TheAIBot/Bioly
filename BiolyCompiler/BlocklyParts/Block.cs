@@ -16,10 +16,8 @@ namespace BiolyCompiler.BlocklyParts
     public abstract class Block
     {
         public readonly bool CanBeOutput;
-        public readonly string OutputVariable;
-        public string OriginalOutputVariable { get; protected set; }
+        public string OutputVariable { get; protected set; }
         public readonly string BlockID;
-        private static int nameID;
 
         public readonly IReadOnlyList<FluidInput> InputFluids;
         private static readonly List<FluidInput> EmptyFluidList = new List<FluidInput>();
@@ -46,9 +44,8 @@ namespace BiolyCompiler.BlocklyParts
             inputNumbers = inputNumbers ?? EmptyNumberList;
             inputFluids?.Where(x => x != null).ToList().ForEach(x => inputNumbers.AddRange(x?.InputNumbers));
             this.InputNumbers = inputNumbers ?? EmptyNumberList;
-            this.OutputVariable = $"N{Interlocked.Increment(ref nameID)}";
             this.BlockID = blockID;
-            this.OriginalOutputVariable = output ?? DEFAULT_NAME;
+            this.OutputVariable = output ?? DEFAULT_NAME;
         }
 
         protected abstract void ResetBlock();
@@ -65,11 +62,6 @@ namespace BiolyCompiler.BlocklyParts
         public virtual void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
 
-        }
-
-        public override int GetHashCode()
-        {
-            return OutputVariable.GetHashCode();
         }
 
         public override bool Equals(object obj)

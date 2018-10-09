@@ -18,12 +18,12 @@ namespace BiolyTests.TestObjects
             this.associatedModule = associatedModule;
         }
 
-        public TestBlock(List<FluidBlock> inputs, string output, Module associatedModule) : this(inputs.Select(input => (FluidInput)new BasicInput("", input.OutputVariable, input.OriginalOutputVariable, 1, true)).ToList(), output, associatedModule)
+        public TestBlock(List<FluidBlock> inputs, string output, Module associatedModule) : this(inputs.Select(input => (FluidInput)new BasicInput("", input.OutputVariable, 1, true)).ToList(), output, associatedModule)
         {
 
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             throw new NotImplementedException();
         }

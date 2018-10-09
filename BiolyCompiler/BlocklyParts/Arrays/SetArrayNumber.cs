@@ -75,7 +75,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
             }
 
-            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
+            OutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
         }
 
         public override string ToXml()

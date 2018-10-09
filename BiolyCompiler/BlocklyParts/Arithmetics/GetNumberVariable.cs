@@ -27,16 +27,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             string variableName = ParseTools.ParseString(node, VARIABLE_FIELD_NAME);
             parserInfo.CheckVariable(id, VariableType.NUMBER, variableName);
 
-            parserInfo.MostRecentVariableRef.TryGetValue(variableName, out string correctedName);
             List<string> inputs = new List<string>();
-            if (correctedName != null)
-            {
-                inputs.Add(correctedName);
-            }
-            else
-            {
-                inputs = null;
-            }
+            inputs.Add(variableName);
 
             return new GetNumberVariable(variableName, id, inputs, canBeScheduled);
         }

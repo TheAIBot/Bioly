@@ -47,7 +47,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override string ToXml()
         {
-            return SetNumberVariable.ToXml(BlockID, OriginalOutputVariable, OperandBlock.ToXml(), null);
+            return SetNumberVariable.ToXml(BlockID, OutputVariable, OperandBlock.ToXml(), null);
         }
 
         public static string ToXml(string id, string output, string attachedBlocks, string nextBlocks)
@@ -73,7 +73,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override string ToString()
         {
-            return "Set " + OriginalOutputVariable;
+            return "Set " + OutputVariable;
         }
     }
 }

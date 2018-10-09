@@ -206,7 +206,6 @@ namespace BiolyCompiler
             scopedVariables.Push(new List<string>());
 
             DFG<Block> bigDFG = new DFG<Block>();
-            Dictionary<string, string> mostRecentRef = new Dictionary<string, string>();
             Dictionary<string, string> renamer = new Dictionary<string, string>();
             Dictionary<string, string> variablePostfixes = new Dictionary<string, string>();
 
@@ -248,23 +247,14 @@ namespace BiolyCompiler
                 {
                     if (toCopy is FluidBlock fluidBlockToCopy)
                     {
-                        if (!variablePostfixes.ContainsKey(toCopy.OriginalOutputVariable))
+                        if (!variablePostfixes.ContainsKey(toCopy.OutputVariable))
                         {
-                            variablePostfixes.Add(toCopy.OriginalOutputVariable, $"##{nameID++}");
+                            variablePostfixes.Add(toCopy.OutputVariable, $"##{nameID++}");
                         }
 
-                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, mostRecentRef, renamer, variablePostfixes[toCopy.OriginalOutputVariable]);
+                        Block copy = fluidBlockToCopy.CopyBlock(bigDFG, renamer, variablePostfixes[toCopy.OutputVariable]);
 
                         bigDFG.AddNode(copy);
-
-                        if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
-                        {
-                            mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
-                        }
-                        else
-                        {
-                            mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
-                        }
                     }
 
                     fisk.UpdateReadyOperations(toCopy);
@@ -287,12 +277,11 @@ namespace BiolyCompiler
                     {
                         if (renamer.TryGetValue(wasteFluidName, out string correctedName))
                         {
-                            string instanceName = mostRecentRef[renamer[wasteFluidName]];
                             int dropletCount = dropPositionsCopy[wasteFluidName].GetNumberOfDropletsAvailable();
                             if (dropletCount > 0)
                             {
                                 List<FluidInput> fluidInputs = new List<FluidInput>();
-                                fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, false));
+                                fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
 
                                 bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
                             }
@@ -300,10 +289,6 @@ namespace BiolyCompiler
                     }
                 }
 
-
-
-                fluidsOutOfScope.ForEach(x => mostRecentRef.Remove(x));
-                numbersOutOfScope.ForEach(x => mostRecentRef.Remove(x));
                 fluidsOutOfScope.ForEach(x => renamer.Remove(x));
                 numbersOutOfScope.ForEach(x => renamer.Remove(x));
                 fluidsOutOfScope.ForEach(x => variablePostfixes.Remove(x));
@@ -320,19 +305,18 @@ namespace BiolyCompiler
                 var staticBlocks = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock);
                 foreach (string wasteFluidName in scopedVariables.Pop())
                 {
-                    if (staticBlocks.Any(x => x.value.OriginalOutputVariable == wasteFluidName))
+                    if (staticBlocks.Any(x => x.value.OutputVariable == wasteFluidName))
                     {
                         continue;
                     }
 
                     if (renamer.TryGetValue(wasteFluidName, out string correctedName)) 
                     {
-                        string instanceName = mostRecentRef[renamer[wasteFluidName]];
                         int dropletCount = scheduler.FluidVariableLocations[wasteFluidName].GetNumberOfDropletsAvailable();
                         if (dropletCount > 0)
                         {
                             List<FluidInput> fluidInputs = new List<FluidInput>();
-                            fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, false));
+                            fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
 
                             bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
                         }
@@ -347,7 +331,7 @@ namespace BiolyCompiler
         private void StartExecutor(DFG<Block> graph, List<Module> staticModules, bool[] usedElectrodes)
         {
             List<string> inputNames = graph.Nodes.Where(x => x.value is InputDeclaration)
-                                                 .Select(x => x.value.OriginalOutputVariable)
+                                                 .Select(x => x.value.OutputVariable)
                                                  .ToList();
             List<Module> inputs = staticModules.Where(x => x is InputModule)
                                              .ToList();

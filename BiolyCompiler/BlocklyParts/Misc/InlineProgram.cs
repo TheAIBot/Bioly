@@ -105,7 +105,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 if (exceptions.Count == 0)
                 {
                     var inputs = cdfg.StartDFG.Input.Where(x => x.value is InputDeclaration)
-                                                          .Select(x => x.value.OriginalOutputVariable)
+                                                          .Select(x => x.value.OutputVariable)
                                                           .ToArray();
                     var outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
                                                            .Select(x => (x.value as OutputDeclaration).ModuleName)
@@ -281,7 +281,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                                 var splittedXml = SplitBlockXml(blockNode, xml);
                                 DFG<Block> dfg = new DFG<Block>();
                                 OutputUsage output = OutputUsage.Parse(blockNode, dfg, dummyParserInfo);
-                                FluidInput fluidInputA = new BasicInput(String.Empty, OutputsFromTo[output.ModuleName], OutputsFromTo[output.ModuleName], 0, true);
+                                FluidInput fluidInputA = new BasicInput(String.Empty, OutputsFromTo[output.ModuleName], 0, true);
                                 string unionXml = Union.ToXml(ID, fluidInputA.ToXml(), output.InputFluids[0].ToXml());
                                 string nextXml = splittedXml.nextBlockXml;
                                 string fluidXml = Fluid.ToXml(ID, fluidInputA.OriginalFluidName, unionXml, nextXml);

@@ -109,18 +109,6 @@ namespace BiolyCompiler.Parser
             
             dfg.AddNode(block);
 
-            //update map of most recent nodes that outputs the variable
-            //so other nodes that get their value from the node that
-            //just updated the value
-            if (parserInfo.MostRecentVariableRef.ContainsKey(block.OriginalOutputVariable))
-            {
-                parserInfo.MostRecentVariableRef[block.OriginalOutputVariable] = block.OutputVariable;
-            }
-            else
-            {
-                parserInfo.MostRecentVariableRef.Add(block.OriginalOutputVariable, block.OutputVariable);
-            }
-
             return block;
         }
 

@@ -24,8 +24,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public GetArrayFluid(VariableBlock indexBlock, string arrayName, string id, string fluidName, float inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers) : 
-            base(id, fluidName, null, inputAmountInDroplets, useAllFluid, inputNumbers)
+        public GetArrayFluid(VariableBlock indexBlock, string arrayName, string id, float inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers) : 
+            base(id, arrayName, inputAmountInDroplets, useAllFluid, inputNumbers)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -39,9 +39,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             {
                 parserInfo.CheckVariable(id, VariableType.FLUID_ARRAY, arrayName);
             }
-            parserInfo.MostRecentVariableRef.TryGetValue(arrayName, out string correctedName);
 
-            string fluidName = correctedName ?? NO_FLUID_NAME;
             float amountInML = ParseTools.ParseFloat(node, parserInfo, id, FLUID_AMOUNT_FIELD_NAME);
             bool useAllFluid = FluidInput.StringToBool(ParseTools.ParseString(node, USE_ALL_FLUID_FIELD_NAME));
 
@@ -53,14 +51,13 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             List<string> inputNumbers = new List<string>();
             //inputNumbers.Add(indexBlock?.OutputVariable);
 
-            return new GetArrayFluid(indexBlock, arrayName, id, fluidName, amountInML, useAllFluid, inputNumbers);
+            return new GetArrayFluid(indexBlock, arrayName, id, amountInML, useAllFluid, inputNumbers);
         }
 
-        public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             renamer.TryGetValue(OriginalFluidName, out string correctedName);
-            mostRecentRef.TryGetValue(correctedName, out string fluidName);
-            return new BasicInput(ID, fluidName, correctedName, AmountInML, UseAllFluid);
+            return new BasicInput(ID, correctedName, AmountInML, UseAllFluid);
         }
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

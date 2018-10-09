@@ -24,7 +24,7 @@ namespace BiolyCompiler.BlocklyParts
         
         public virtual (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            return (OriginalOutputVariable, Run(variables, executor, dropPositions));
+            return (OutputVariable, Run(variables, executor, dropPositions));
         }
 
         public abstract string ToXml();
