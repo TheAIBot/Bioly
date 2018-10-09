@@ -13,37 +13,49 @@ namespace BiolyCompiler.Graphs
         public readonly List<Node<N>> Nodes = new List<Node<N>>();
         public readonly List<Node<N>> Input = new List<Node<N>>();
         public readonly List<Node<N>> Output = new List<Node<N>>();
+        private readonly Dictionary<string, Node<N>> MostRecentRef = new Dictionary<string, Node<N>>();
 
         public void AddNode(N nodeValue)
         {
-            Nodes.Add(new Node<N>(nodeValue));
+            Node<N> newNode = new Node<N>(nodeValue);
+            Nodes.Add(newNode);
+
+            if (nodeValue is Block block)
+            {
+                foreach (FluidInput fluidInput in block.InputFluids)
+                {
+                    if (MostRecentRef.ContainsKey(fluidInput.OriginalFluidName))
+                    {
+                        AddEdge(MostRecentRef[fluidInput.OriginalFluidName], newNode);
+                    }
+                }
+                foreach (string inputNumber in block.InputNumbers)
+                {
+                    if (MostRecentRef.ContainsKey(inputNumber))
+                    {
+                        AddEdge(MostRecentRef[inputNumber], newNode);
+                    }
+                }
+
+                if (MostRecentRef.ContainsKey(block.OriginalOutputVariable))
+                {
+                    MostRecentRef[block.OriginalOutputVariable] = newNode;
+                }
+                else
+                {
+                    MostRecentRef.Add(block.OriginalOutputVariable, newNode);
+                }
+            }
+        }
+
+        private void AddEdge(Node<N> source, Node<N> target)
+        {
+            source.AddOutgoingEdge(target);
+            target.AddIngoingEdge(source);
         }
 
         public void FinishDFG()
         {
-            foreach (Node<N> node in Nodes)
-            {
-                Block block = node.value as Block;
-
-                foreach (string nodeName in block.InputNumbers)
-                {
-                    Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName);
-                    if (inputNode != null)
-                    {
-                        AddEdge(inputNode, node);
-                    }
-                }
-
-                foreach (FluidInput nodeName in block.InputFluids)
-                {
-                    Node<N> inputNode = Nodes.SingleOrDefault(x => (x.value as Block).OutputVariable == nodeName.FluidName);
-                    if (inputNode != null)
-                    {
-                        AddEdge(inputNode, node);
-                    }
-                }
-            }
-
             foreach (Node<N> node in Nodes)
             {
                 Block block = node.value as Block;
@@ -64,12 +76,6 @@ namespace BiolyCompiler.Graphs
                     Input.Add(node);
                 }
             }
-        }
-
-        private void AddEdge(Node<N> source, Node<N> target)
-        {
-            source.AddOutgoingEdge(target);
-            target.AddIngoingEdge(source);
         }
     }
 }

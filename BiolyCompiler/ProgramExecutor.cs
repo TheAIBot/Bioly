@@ -256,15 +256,6 @@ namespace BiolyCompiler
                         Block copy = fluidBlockToCopy.CopyBlock(bigDFG, mostRecentRef, renamer, variablePostfixes[toCopy.OriginalOutputVariable]);
 
                         bigDFG.AddNode(copy);
-
-                        if (mostRecentRef.ContainsKey(copy.OriginalOutputVariable))
-                        {
-                            mostRecentRef[copy.OriginalOutputVariable] = copy.OutputVariable;
-                        }
-                        else
-                        {
-                            mostRecentRef.Add(copy.OriginalOutputVariable, copy.OutputVariable);
-                        }
                     }
 
                     fisk.UpdateReadyOperations(toCopy);
@@ -287,12 +278,11 @@ namespace BiolyCompiler
                     {
                         if (renamer.TryGetValue(wasteFluidName, out string correctedName))
                         {
-                            string instanceName = mostRecentRef[renamer[wasteFluidName]];
                             int dropletCount = dropPositionsCopy[wasteFluidName].GetNumberOfDropletsAvailable();
                             if (dropletCount > 0)
                             {
                                 List<FluidInput> fluidInputs = new List<FluidInput>();
-                                fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, false));
+                                fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
 
                                 bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
                             }
@@ -327,12 +317,11 @@ namespace BiolyCompiler
 
                     if (renamer.TryGetValue(wasteFluidName, out string correctedName)) 
                     {
-                        string instanceName = mostRecentRef[renamer[wasteFluidName]];
                         int dropletCount = scheduler.FluidVariableLocations[wasteFluidName].GetNumberOfDropletsAvailable();
                         if (dropletCount > 0)
                         {
                             List<FluidInput> fluidInputs = new List<FluidInput>();
-                            fluidInputs.Add(new BasicInput("none", instanceName, correctedName, dropletCount, false));
+                            fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
 
                             bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
                         }

@@ -35,7 +35,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             dfg.AddNode(operandBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(operandBlock?.OutputVariable);
+            inputs.Add(operandBlock?.OriginalOutputVariable);
 
             return new SetNumberVariable(operandBlock, inputs, output, id);
         }

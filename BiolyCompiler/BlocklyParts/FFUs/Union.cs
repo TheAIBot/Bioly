@@ -49,7 +49,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             }
 
             List<FluidInput> inputFluids = new List<FluidInput>();
-            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
 
             renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
             return new Union(inputFluids, OriginalOutputVariable + namePostfix, BlockID);

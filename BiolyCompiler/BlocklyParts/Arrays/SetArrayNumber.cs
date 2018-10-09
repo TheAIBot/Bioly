@@ -47,8 +47,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             dfg.AddNode(numberInput);
 
             List<string> inputs = new List<string>();
-            inputs.Add(indexBlock?.OutputVariable);
-            inputs.Add(numberInput?.OutputVariable);
+            inputs.Add(indexBlock?.OriginalOutputVariable);
+            inputs.Add(numberInput?.OriginalOutputVariable);
 
             return new SetArrayNumber(indexBlock, numberInput, arrayName, inputs, id, canBeScheduled);
         }

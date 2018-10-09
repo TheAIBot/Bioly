@@ -39,7 +39,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             dfg.AddNode(arrayLengthBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(arrayLengthBlock?.OutputVariable);
+            inputs.Add(arrayLengthBlock?.OriginalOutputVariable);
 
             return new FluidArray(arrayName, arrayLengthBlock, inputs, id);
         }

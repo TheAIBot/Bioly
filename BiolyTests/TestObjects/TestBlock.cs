@@ -18,7 +18,7 @@ namespace BiolyTests.TestObjects
             this.associatedModule = associatedModule;
         }
 
-        public TestBlock(List<FluidBlock> inputs, string output, Module associatedModule) : this(inputs.Select(input => (FluidInput)new BasicInput("", input.OutputVariable, input.OriginalOutputVariable, 1, true)).ToList(), output, associatedModule)
+        public TestBlock(List<FluidBlock> inputs, string output, Module associatedModule) : this(inputs.Select(input => (FluidInput)new BasicInput("", input.OriginalOutputVariable, 1, true)).ToList(), output, associatedModule)
         {
 
         }

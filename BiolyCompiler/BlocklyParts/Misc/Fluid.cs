@@ -41,7 +41,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             }
 
             List<FluidInput> inputFluids = new List<FluidInput>();
-            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
 
             renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
             return new Fluid(inputFluids, OriginalOutputVariable + namePostfix, BlockID);

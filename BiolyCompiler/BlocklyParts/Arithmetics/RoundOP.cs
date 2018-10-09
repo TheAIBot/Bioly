@@ -37,7 +37,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             dfg.AddNode(numberBlock);
 
             List<string> inputs = new List<string>();
-            inputs.Add(numberBlock?.OutputVariable);
+            inputs.Add(numberBlock?.OriginalOutputVariable);
 
             return new RoundOP(numberBlock, roundType, inputs, id, canBeScheduled);
         }
