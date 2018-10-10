@@ -142,7 +142,15 @@ namespace BiolyCompiler.Scheduling
             {
                 if (SHOULD_DO_GARBAGE_COLLECTION)
                 {
-                    currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
+                    if (oldFluidType.RefCount == 1)
+                    {
+                        currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
+                    }
+                    else
+                    {
+                        oldFluidType.RefCount--;
+                        FluidVariableLocations.Remove(fluidName);
+                    }
                 }
                 else
                 {
@@ -230,6 +238,11 @@ namespace BiolyCompiler.Scheduling
                     case SetArrayFluid arrayRenameBlock:
                         currentTime = HandleFluidTransfers(currentTime, arrayRenameBlock);
                         assay.UpdateReadyOperations(arrayRenameBlock);
+                        break;
+                    case FluidRef fluidRefBlock:
+                        FluidVariableLocations[fluidRefBlock.NewName] = FluidVariableLocations[fluidRefBlock.OldName];
+                        FluidVariableLocations[fluidRefBlock.NewName].RefCount++;
+                        assay.UpdateReadyOperations(fluidRefBlock);
                         break;
                     case FluidBlock fluidBlock:
                         currentTime = HandleFluidOperations(currentTime, fluidBlock);

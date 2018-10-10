@@ -8,6 +8,7 @@ namespace BiolyCompiler.Modules
     {
         public readonly string FluidName;
         public List<IDropletSource> dropletSources = new List<IDropletSource>();
+        public int RefCount = 1;
 
         public BoardFluid(string fluidName)
         {
