@@ -55,9 +55,8 @@ namespace BiolyViewer_Windows
         {
             //CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
             //var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
-            //var parsedProgram = XmlParser.Parse(programData.programXml);
 
-            //for (int i = 0; i < 20; i++)
+            //for (int i = 0; i < 1; i++)
             //{
             //    BenchmarkExecutor executor = new BenchmarkExecutor();
             //    ProgramExecutor<string> CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
@@ -67,7 +66,7 @@ namespace BiolyViewer_Windows
             //    CurrentlyExecutionProgram.EnableGarbageCollection = true;
             //    CurrentlyExecutionProgram.EnableSparseElectrodes = false;
 
-            //    CurrentlyExecutionProgram.Run(45, 45, parsedProgram.Item1, false);
+            //    CurrentlyExecutionProgram.Run(45, 45, programData.cdfg, false);
             //}
 
             //this.Close();
@@ -124,7 +123,7 @@ namespace BiolyViewer_Windows
                         if (exceptions.Count == 0)
                         {
                             string programName = System.IO.Path.GetFileNameWithoutExtension(file);
-                            (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml) = InlineProgram.LoadProgram(programName);
+                            (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml, _) = InlineProgram.LoadProgram(programName);
 
                             string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
                             string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
