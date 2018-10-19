@@ -1,5 +1,8 @@
-﻿using BiolyCompiler.BlocklyParts.Misc;
+﻿using BiolyCompiler.BlocklyParts;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.Exceptions.ParserExceptions;
+using BiolyCompiler.Graphs;
 using BiolyCompiler.Parser;
 using System;
 using System.Collections.Generic;
@@ -107,6 +110,28 @@ namespace BiolyCompiler
             {
                 action(item);
             }
+        }
+
+        internal static List<string> Copy(this IReadOnlyList<string> toCopy)
+        {
+            List<string> copy = new List<string>();
+            foreach (string stringCopy in toCopy)
+            {
+                copy.Add(stringCopy);
+            }
+
+            return copy;
+        }
+
+        internal static List<FluidInput> Copy(this IReadOnlyList<FluidInput> toCopy, DFG<Block> dfg)
+        {
+            List<FluidInput> copy = new List<FluidInput>();
+            foreach (FluidInput input in toCopy)
+            {
+                copy.Add(input.TrueCopy(dfg));
+            }
+
+            return copy;
         }
     }
 }

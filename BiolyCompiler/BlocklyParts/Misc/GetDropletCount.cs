@@ -30,6 +30,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new GetDropletCount(variableName, id, canBeScheduled);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new GetDropletCount(VariableName, BlockID, CanBeScheduled);
+        }
+
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             dropPositions.TryGetValue(VariableName, out BoardFluid drops);

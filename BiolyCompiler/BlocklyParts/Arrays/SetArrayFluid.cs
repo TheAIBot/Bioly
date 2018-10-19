@@ -26,7 +26,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string indexBlockName, string id) : 
+        public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string id) : 
             base(true, input, null, arrayName, id)
         {
             this.ArrayName = arrayName;
@@ -51,7 +51,16 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             List<FluidInput> inputFluids = new List<FluidInput>();
             inputFluids.Add(fluidInput);
 
-            return new SetArrayFluid(indexBlock, arrayName, inputFluids, indexBlock?.OutputVariable, id);
+            return new SetArrayFluid(indexBlock, arrayName, inputFluids, id);
+        }
+
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock indexCopy = (VariableBlock)IndexBlock.TrueCopy(dfg);
+
+            dfg.AddNode(indexCopy);
+
+            return new SetArrayFluid(indexCopy, ArrayName, InputFluids.Copy(dfg), BlockID);
         }
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)

@@ -44,6 +44,15 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new FluidArray(arrayName, arrayLengthBlock, inputs, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock arrayCopy = (VariableBlock)ArrayLengthBlock.TrueCopy(dfg);
+
+            dfg.AddNode(arrayCopy);
+
+            return new FluidArray(ArrayName, arrayCopy, InputNumbers.Copy(), BlockID);
+        }
+
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             throw new InternalRuntimeException("This method is not supported for this block.");

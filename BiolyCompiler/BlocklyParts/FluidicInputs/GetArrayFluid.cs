@@ -24,8 +24,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public GetArrayFluid(VariableBlock indexBlock, string arrayName, string id, float inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers) : 
-            base(id, arrayName, inputAmountInDroplets, useAllFluid, inputNumbers)
+        public GetArrayFluid(VariableBlock indexBlock, string arrayName, string id, float inputAmountInDroplets, bool useAllFluid) : 
+            base(id, arrayName, inputAmountInDroplets, useAllFluid)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -48,10 +48,16 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
             dfg.AddNode(indexBlock);
 
-            List<string> inputNumbers = new List<string>();
-            //inputNumbers.Add(indexBlock?.OutputVariable);
+            return new GetArrayFluid(indexBlock, arrayName, id, amountInML, useAllFluid);
+        }
 
-            return new GetArrayFluid(indexBlock, arrayName, id, amountInML, useAllFluid, inputNumbers);
+        public override FluidInput TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock indexCopy = (VariableBlock)IndexBlock.TrueCopy(dfg);
+
+            dfg.AddNode(indexCopy);
+
+            return new GetArrayFluid(indexCopy, ArrayName, ID, AmountInML, UseAllFluid);
         }
 
         public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)

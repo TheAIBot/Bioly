@@ -8,7 +8,7 @@ namespace BiolyCompiler.Graphs
     {
         private readonly List<Node<N>> OutgoingEdges = new List<Node<N>>();
         private readonly List<Node<N>> IngoingEdges = new List<Node<N>>();
-        public readonly N value;
+        public N value { get; private set; }
 
         public Node(N value)
         {
@@ -25,15 +25,28 @@ namespace BiolyCompiler.Graphs
             IngoingEdges.Add(source);
         }
 
+        public List<Node<N>> GetOutgoingEdges()
+        {
+            return OutgoingEdges;
+        }
+
         public List<Node<N>> GetIngoingEdges()
         {
             return IngoingEdges;
         }
 
-
-        public List<Node<N>> getOutgoingEdges()
+        public void ReplaceValue(N newValue)
         {
-            return OutgoingEdges;
+            value = newValue;
+        }
+
+        public void RemoveIngoingEdges()
+        {
+            foreach (Node<N> ingoingEdge in IngoingEdges)
+            {
+                ingoingEdge.OutgoingEdges.Remove(this);
+                OutgoingEdges.Remove(ingoingEdge);
+            }
         }
     }
 }

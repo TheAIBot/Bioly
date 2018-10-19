@@ -37,5 +37,10 @@ namespace BiolyTests.TestObjects
         {
             return "Test block";
         }
+
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

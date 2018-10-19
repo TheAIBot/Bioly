@@ -32,6 +32,11 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new DropletDeclaration(output, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            throw new NotImplementedException();
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             if (renamer.ContainsKey(OutputVariable))

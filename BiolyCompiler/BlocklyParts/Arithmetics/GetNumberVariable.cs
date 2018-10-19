@@ -33,6 +33,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new GetNumberVariable(variableName, id, inputs, canBeScheduled);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new GetNumberVariable(VariableName, BlockID, InputNumbers.Copy(), CanBeScheduled);
+        }
+
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             return variables[VariableName];

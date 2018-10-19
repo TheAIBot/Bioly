@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public const string XML_TYPE_NAME = "getFluid";
 
         public BasicInput(string id, string originalFluidName, float inputAmountInDroplets, bool useAllFluid) : 
-            base(id, originalFluidName, inputAmountInDroplets, useAllFluid, null)
+            base(id, originalFluidName, inputAmountInDroplets, useAllFluid)
         {
 
         }
@@ -34,6 +34,11 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             bool useAllFluid = FluidInput.StringToBool(ParseTools.ParseString(node, USE_ALL_FLUID_FIELD_NAME));
 
             return new BasicInput(id, originalFluidName, amountInML, useAllFluid);
+        }
+
+        public override FluidInput TrueCopy(DFG<Block> dfg)
+        {
+            return new BasicInput(ID, OriginalFluidName, AmountInML, UseAllFluid);
         }
 
         public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)

@@ -911,7 +911,7 @@ namespace BiolyTests.ScheduleTests
                     Assert.IsTrue(node.value.StartTime <= node.value.EndTime);
                     Assert.IsTrue(node.value.EndTime <= completionTime);
 
-                    foreach (Node<Block> dependableNode in node.getOutgoingEdges())
+                    foreach (Node<Block> dependableNode in node.GetOutgoingEdges())
                     {
                         if (!(dependableNode.value is FluidBlock))
                         {
@@ -922,7 +922,7 @@ namespace BiolyTests.ScheduleTests
                     }
                 }
 
-                List<Node<Block>> newRank = rank.SelectMany(x => x.getOutgoingEdges())
+                List<Node<Block>> newRank = rank.SelectMany(x => x.GetOutgoingEdges())
                                                 .Where(x => x.value is FluidBlock)
                                                 .ToList();
                 rank = newRank;

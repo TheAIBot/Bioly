@@ -23,6 +23,11 @@ namespace BiolyCompiler.BlocklyParts.Sensors
             throw new InternalParseException("Sensor block is not supported yet.");
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            throw new NotImplementedException();
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             throw new NotImplementedException();

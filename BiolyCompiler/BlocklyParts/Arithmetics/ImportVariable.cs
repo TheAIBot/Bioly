@@ -32,6 +32,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new ImportVariable(variableName, id, canBeScheduled);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new ImportVariable(VariableName, BlockID, CanBeScheduled);
+        }
+
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             throw new InternalRuntimeException("Not allowed to execute this block.");

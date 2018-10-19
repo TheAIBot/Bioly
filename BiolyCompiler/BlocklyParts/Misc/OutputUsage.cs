@@ -37,6 +37,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new OutputUsage(moduleName, inputs, null, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new OutputUsage(ModuleName, InputFluids.Copy(dfg), OutputVariable, BlockID);
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             List<FluidInput> inputFluids = new List<FluidInput>();

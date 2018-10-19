@@ -33,6 +33,11 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new HeaterDeclaration(moduleName, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new HeaterDeclaration(ModuleName, BlockID);
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             return new HeaterDeclaration(ModuleName, BlockID);

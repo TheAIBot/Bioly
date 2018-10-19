@@ -49,6 +49,17 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, opType, id, canBeScheduled);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock leftCopy = (VariableBlock)LeftBlock.TrueCopy(dfg);
+            VariableBlock rightCopy = (VariableBlock)RightBlock.TrueCopy(dfg);
+
+            dfg.AddNode(leftCopy);
+            dfg.AddNode(rightCopy);
+
+            return new ArithOP(leftCopy, rightCopy, InputNumbers.Copy(), OutputVariable, OPType, BlockID, CanBeScheduled);
+        }
+
         public static ArithOPTypes StringToArithOPType(string id, string arithOPTypeAsString)
         {
             switch (arithOPTypeAsString)

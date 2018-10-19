@@ -27,6 +27,11 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new OutputDeclaration(moduleName, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new OutputDeclaration(ModuleName, BlockID);
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             return new OutputDeclaration(ModuleName, BlockID);

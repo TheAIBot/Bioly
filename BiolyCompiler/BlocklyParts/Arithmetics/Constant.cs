@@ -28,6 +28,11 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new Constant(value, id, canBeScheduled);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new Constant(Value, BlockID, CanBeScheduled);
+        }
+
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             return Value;

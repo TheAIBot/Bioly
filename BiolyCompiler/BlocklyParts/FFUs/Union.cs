@@ -41,6 +41,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Union(inputs, output, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new Union(InputFluids.Copy(dfg), OutputVariable, BlockID);
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             if (!renamer.ContainsKey(OutputVariable))

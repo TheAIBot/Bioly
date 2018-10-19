@@ -40,6 +40,15 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return new SetNumberVariable(operandBlock, inputs, output, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock operandCopy = (VariableBlock)OperandBlock.TrueCopy(dfg);
+
+            dfg.AddNode(operandCopy);
+
+            return new SetNumberVariable(operandCopy, InputNumbers.Copy(), OutputVariable, BlockID);
+        }
+
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             return OperandBlock.Run(variables, executor, dropPositions);

@@ -53,6 +53,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new HeaterUsage(moduleName, inputs, output, temperature, time, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new HeaterUsage(ModuleName, InputFluids.Copy(dfg), OutputVariable, Temperature, Time, BlockID);
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             List<FluidInput> inputFluids = new List<FluidInput>();

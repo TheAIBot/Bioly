@@ -46,6 +46,15 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             return new GetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock indexCopy = (VariableBlock)IndexBlock.TrueCopy(dfg);
+
+            dfg.AddNode(indexCopy);
+
+            return new GetArrayNumber(indexCopy, ArrayName, InputNumbers.Copy(), BlockID, CanBeScheduled);
+        }
+
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];

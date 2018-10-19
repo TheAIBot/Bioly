@@ -12,23 +12,20 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 {
     public abstract class FluidInput
     {
-        public readonly string ID;
-        public string OriginalFluidName { get; internal set; }
+        public string ID;
+        public string OriginalFluidName;
         public readonly float AmountInML;
-        public  readonly bool UseAllFluid;
-        public readonly List<string> InputNumbers;
-        public static readonly List<string> EmptyNumbersList = new List<string>();
+        public readonly bool UseAllFluid;
 
         public const int ML_PER_DROPLET = 1;
         public const string NO_FLUID_NAME = "ERROR_FINDING_NODE";
 
-        public FluidInput(string id, string originalFluidName, float inputAmountInDroplets, bool useAllFluid, List<string> inputNumbers)
+        public FluidInput(string id, string originalFluidName, float inputAmountInDroplets, bool useAllFluid)
         {
             this.ID = id;
             this.OriginalFluidName = originalFluidName;
             this.AmountInML = inputAmountInDroplets;
             this.UseAllFluid = useAllFluid;
-            this.InputNumbers = inputNumbers ?? EmptyNumbersList;
 
             if (!UseAllFluid)
             {
@@ -37,6 +34,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         }
 
         public abstract FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix);
+
+        public abstract FluidInput TrueCopy(DFG<Block> dfg);
 
         public virtual void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {

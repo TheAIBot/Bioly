@@ -13,10 +13,15 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public readonly string OldName;
 
         public FluidRef(string newName, string oldName) : 
-            base(false, new List<FluidInput>() { new BasicInput(string.Empty, oldName, 0, false) }, null, newName, string.Empty)
+            base(false, new List<FluidInput>() { new BasicInput(string.Empty, oldName, 1, false) }, null, newName, string.Empty)
         {
             this.NewName = newName;
             this.OldName = oldName;
+        }
+
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new FluidRef(NewName, OldName);
         }
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
