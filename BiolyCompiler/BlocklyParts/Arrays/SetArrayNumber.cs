@@ -73,6 +73,10 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         {
             base.Update(variables, executor, dropPositions);
 
+            if (!variables.ContainsKey(FluidArray.GetArrayLengthVariable(ArrayName)))
+            {
+
+            }
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
             if (float.IsInfinity(floatIndex) || float.IsNaN(floatIndex))
@@ -92,6 +96,15 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public override string ToXml()
         {
             throw new InternalParseException(BlockID, "Can't create xml of this block.");
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            IndexBlock.GetVariableTreeList(blocks);
+            NumberBlock.GetVariableTreeList(blocks);
+
+            return blocks;
         }
 
         public override string ToString()

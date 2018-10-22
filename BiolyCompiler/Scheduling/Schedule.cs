@@ -138,6 +138,15 @@ namespace BiolyCompiler.Scheduling
         {
             //If there already are droplets associated with the fluid name
             //they must be overwritten or moved to a waste module
+            currentTime = RemoveFluidVariable(fluidName, currentTime, operation);
+
+            BoardFluid fluidType = new BoardFluid(fluidName);
+            FluidVariableLocations[fluidName] = fluidType;
+            return (fluidType, currentTime);
+        }
+
+        private int RemoveFluidVariable(string fluidName, int currentTime, FluidBlock operation)
+        {
             if (FluidVariableLocations.TryGetValue(fluidName, out BoardFluid oldFluidType))
             {
                 if (SHOULD_DO_GARBAGE_COLLECTION)
@@ -158,10 +167,9 @@ namespace BiolyCompiler.Scheduling
                 }
             }
 
-            BoardFluid fluidType = new BoardFluid(fluidName);
-            FluidVariableLocations[fluidName] = fluidType;
-            return (fluidType, currentTime);
+            return currentTime;
         }
+
 
         private static void DiscardDroplets(BoardFluid oldFluidType)
         {
@@ -240,8 +248,9 @@ namespace BiolyCompiler.Scheduling
                         assay.UpdateReadyOperations(arrayRenameBlock);
                         break;
                     case FluidRef fluidRefBlock:
-                        FluidVariableLocations[fluidRefBlock.NewName] = FluidVariableLocations[fluidRefBlock.OldName];
-                        FluidVariableLocations[fluidRefBlock.NewName].RefCount++;
+                        currentTime = RemoveFluidVariable(fluidRefBlock.OutputVariable, currentTime, fluidRefBlock);
+                        FluidVariableLocations.Add(fluidRefBlock.OutputVariable, FluidVariableLocations[fluidRefBlock.InputFluids.First().OriginalFluidName]);
+                        FluidVariableLocations[fluidRefBlock.OutputVariable].RefCount++;
                         assay.UpdateReadyOperations(fluidRefBlock);
                         break;
                     case FluidBlock fluidBlock:

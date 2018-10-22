@@ -21,7 +21,7 @@ namespace BiolyCompiler.Graphs
             cdfg.Nodes.ForEach(x => this.Nodes.Add(x));
 
             Direct connection = new Direct(new Conditional(null, null, cdfg.StartDFG));
-            Nodes.Add((connection, from));
+            //Nodes.Add((connection, from));
 
             return connection;
         }

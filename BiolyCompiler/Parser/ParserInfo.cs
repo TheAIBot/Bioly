@@ -103,5 +103,11 @@ namespace BiolyCompiler.Parser
             Unique++;
             return $"{Validator.INLINE_PROGRAM_SPECIAL_SEPARATOR}{Unique}";
         }
+
+        public string GetUniqueAnonymousName()
+        {
+            Unique++;
+            return $"{Block.DEFAULT_NAME}{Unique}";
+        }
     }
 }

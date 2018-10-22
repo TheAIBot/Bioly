@@ -49,6 +49,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
             "</block>";
         }
 
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
+
         public override string ToString()
         {
             return "Droplet count of " + VariableName;

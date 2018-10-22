@@ -9,19 +9,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
 {
     public class FluidRef : FluidBlock
     {
-        public readonly string NewName;
-        public readonly string OldName;
-
         public FluidRef(string newName, string oldName) : 
             base(false, new List<FluidInput>() { new BasicInput(string.Empty, oldName, 1, false) }, null, newName, string.Empty)
         {
-            this.NewName = newName;
-            this.OldName = oldName;
         }
 
         public override Block TrueCopy(DFG<Block> dfg)
         {
-            return new FluidRef(NewName, OldName);
+            return new FluidRef(OutputVariable, InputFluids.First().OriginalFluidName);
         }
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
@@ -40,7 +35,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public override string ToString()
         {
-            return $"{NewName} = ref {OldName}";
+            return $"{OutputVariable} = ref {InputFluids.First().OriginalFluidName}";
         }
     }
 }

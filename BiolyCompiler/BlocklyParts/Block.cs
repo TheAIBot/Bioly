@@ -63,6 +63,8 @@ namespace BiolyCompiler.BlocklyParts
 
         }
 
+        public abstract List<Block> GetBlockTreeList(List<Block> blocks);
+
         public override bool Equals(object obj)
         {
             if (obj is Block blockObj)

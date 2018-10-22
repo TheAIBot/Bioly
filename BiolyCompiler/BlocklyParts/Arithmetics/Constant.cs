@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XML_TYPE_NAME = "math_number";
         public readonly float Value;
 
-        public Constant(float value, string id, bool canBeScheduled) : base(false, null, null, null, id, canBeScheduled)
+        public Constant(float value, string output, string id, bool canBeScheduled) : base(false, null, null, output, id, canBeScheduled)
         {
             this.Value = value;
         }
@@ -25,12 +25,12 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         {
             string id = ParseTools.ParseID(node);
             float value = ParseTools.ParseFloat(node, parseInfo, id);
-            return new Constant(value, id, canBeScheduled);
+            return new Constant(value, parseInfo.GetUniqueAnonymousName(), id, canBeScheduled);
         }
 
         public override Block TrueCopy(DFG<Block> dfg)
         {
-            return new Constant(Value, BlockID, CanBeScheduled);
+            return new Constant(Value, OutputVariable, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -49,6 +49,12 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public override string ToString()
         {
             return Value.ToString("N2");
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
     }
 }

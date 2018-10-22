@@ -98,6 +98,7 @@ namespace BiolyCompiler.Scheduling
                             case StaticDeclarationBlock block3:
                             case Fluid block4:
                             case SetArrayFluid block5:
+                            case FluidRef block6:
                                 break;
                             case Mixer block:
                                 newPriority -= Mixer.OPERATION_TIME;

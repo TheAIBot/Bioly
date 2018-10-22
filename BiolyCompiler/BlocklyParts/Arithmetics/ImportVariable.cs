@@ -18,7 +18,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XML_TYPE_NAME = "importNumberVariable";
         public readonly string VariableName;
 
-        public ImportVariable(string variableName, string id, bool canBeScheduled) : base(true, null, null, null, id, canBeScheduled)
+        public ImportVariable(string variableName, string output, string id, bool canBeScheduled) : base(true, null, null, output, id, canBeScheduled)
         {
             this.VariableName = variableName;
         }
@@ -29,12 +29,12 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             string variableName = ParseTools.ParseString(node, VARIABLE_FIELD_NAME);
             parserInfo.AddVariable(id, VariableType.NUMBER, variableName);
 
-            return new ImportVariable(variableName, id, canBeScheduled);
+            return new ImportVariable(variableName, parserInfo.GetUniqueAnonymousName(), id, canBeScheduled);
         }
 
         public override Block TrueCopy(DFG<Block> dfg)
         {
-            return new ImportVariable(VariableName, BlockID, CanBeScheduled);
+            return new ImportVariable(VariableName, OutputVariable, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -45,6 +45,12 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public override string ToXml()
         {
             throw new InternalParseException(BlockID, "Can't create xml of this block.");
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()

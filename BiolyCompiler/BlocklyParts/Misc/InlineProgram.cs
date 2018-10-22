@@ -151,21 +151,26 @@ namespace BiolyCompiler.BlocklyParts.Misc
         {
             for (int i = 0; i < toTransform.Nodes.Count; i++)
             {
-                toTransform.Nodes[i] = (toTransform.Nodes[i].control, CopyDFGAsFunctionDFG(toTransform.Nodes[i].dfg));
+                TransformDFGToFunctionDFG(toTransform.Nodes[i].dfg);
             }
         }
 
-        private DFG<Block> CopyDFGAsFunctionDFG(DFG<Block> dfg)
+        private void TransformDFGToFunctionDFG(DFG<Block> dfg)
         {
-            Assay asdadsa = new Assay(dfg);
-            DFG<Block> transformedDFG = new DFG<Block>();
-            foreach (Block block in asdadsa)
+            //New blocks are crerated which requires new dependencies
+            //and dependencies are created when they are inserted into
+            //the dfg, so a new dfg is created to create the correct
+            //dependencies.
+            //The given dfg is still used as the corrected result is then
+            //copied into the given dfg.
+            DFG<Block> correctOrder = new DFG<Block>();
+            foreach (Block block in new Assay(dfg))
             {
                 if (block is InputDeclaration)
                 {
-                    string newName = InputsFromTo[block.OutputVariable].OriginalFluidName;
-                    string oldName = block.OutputVariable;
-                    transformedDFG.AddNode(new FluidRef(newName, oldName));
+                    string newName = block.OutputVariable;
+                    string oldName = InputsFromTo[block.OutputVariable].OriginalFluidName;
+                    correctOrder.AddNode(new FluidRef(newName, oldName));
                 }
                 else if (block is OutputDeclaration ||
                          //block is WasteDeclaration ||
@@ -178,29 +183,34 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 {
                     List<FluidInput> inputs = new List<FluidInput>()
                     {
-                        block.InputFluids[0].TrueCopy(transformedDFG),
-                        block.InputFluids[0].TrueCopy(transformedDFG)
+                        block.InputFluids[0].TrueCopy(correctOrder),
+                        block.InputFluids[0].TrueCopy(correctOrder)
                     };
 
                     inputs[1].OriginalFluidName = OutputsFromTo[outputUsage.ModuleName];
 
-                    transformedDFG.AddNode(new Union(inputs, OutputsFromTo[outputUsage.ModuleName], block.BlockID));
+                    correctOrder.AddNode(new Union(inputs, OutputsFromTo[outputUsage.ModuleName], block.BlockID));
                 }
                 else if (block is ImportVariable import)
                 {
-                    VariableBlock asdqwd = (VariableBlock)VariablesFromTo[import.VariableName].TrueCopy(transformedDFG);
-                    List<string> inputs = new List<string>();
-                    inputs.Add(asdqwd.OutputVariable);
+                    VariableBlock asdqwd = (VariableBlock)VariablesFromTo[import.VariableName].TrueCopy(correctOrder);
 
-                    transformedDFG.AddNode(new SetNumberVariable(asdqwd, inputs, import.VariableName, block.BlockID));
+                    correctOrder.AddNode(new SetNumberVariable(asdqwd, import.VariableName, block.BlockID));
                 }
                 else
                 {
-                    transformedDFG.AddNode(block.TrueCopy(transformedDFG));
+                    correctOrder.AddNode(block);
                 }
             }
+            correctOrder.FinishDFG();
 
-            return transformedDFG;
+            dfg.Nodes.Clear();
+            dfg.Input.Clear();
+            dfg.Output.Clear();
+
+            dfg.Nodes.AddRange(correctOrder.Nodes);
+            dfg.Input.AddRange(correctOrder.Input);
+            dfg.Output.AddRange(correctOrder.Output);
         }
 
 
@@ -213,7 +223,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             ChangeIDs(newProgram, id);
 
             //Add new variables that this program added
-            OutputsFromTo.ForEach(x => parserInfo.AddVariable(string.Empty, VariableType.OUTPUT, x.Value));
+            OutputsFromTo.ForEach(x => parserInfo.AddVariable(string.Empty, VariableType.FLUID, x.Value));
             DFG<Block> nextDFG = XmlParser.ParseNextDFG(currentProgramXml, parserInfo);
 
             //merge the programs together nd return the link between then
@@ -226,8 +236,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
             HashSet<string> readerBlacklist = new HashSet<string>();
             HashSet<string> writerBlacklist = new HashSet<string>();
 
-            InputsFromTo.ForEach(x => readerBlacklist.Add(x.Key));
-            VariablesFromTo.ForEach(x => readerBlacklist.Add(x.Key));
+            InputsFromTo.ForEach(x => readerBlacklist.Add(x.Value.OriginalFluidName));
+            VariablesFromTo.ForEach(x => GetVariableBlockDependencies(x.Value.GetVariableTreeList(new List<VariableBlock>())).ForEach(y => readerBlacklist.Add(y)));
             OutputsFromTo.ForEach(x => writerBlacklist.Add(x.Value));
 
             DFG<Block> currentDFG = cdfg.StartDFG;
@@ -274,6 +284,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     if (!stack.Peek().MoveNext())
                     {
                         stack.Pop();
+                        continue;
                     }
 
                     currentDFG = stack.Peek().Current;
@@ -282,6 +293,16 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
 
             } while (stack.Count > 0);
+        }
+
+        private List<string> GetVariableBlockDependencies(List<VariableBlock> blocks)
+        {
+            List<string> dependencies = new List<string>();
+            blocks.ForEach(x => dependencies.AddRange(x.InputNumbers));
+            blocks.ForEach(x => dependencies.AddRange(x.InputFluids.Select(y => y.OriginalFluidName)));
+
+            dependencies.RemoveAll(x => x == Block.DEFAULT_NAME);
+            return dependencies.Distinct().ToList();
         }
 
         private void ChangeIDs(CDFG cdfg, string newID)

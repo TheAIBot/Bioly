@@ -47,7 +47,7 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             inputs.Add(leftBoolBlock?.OutputVariable);
             inputs.Add(rightBoolBlock?.OutputVariable);
 
-            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, opType, id, canBeScheduled);
+            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, parserInfo.GetUniqueAnonymousName(), opType, id, canBeScheduled);
         }
 
         public override Block TrueCopy(DFG<Block> dfg)
@@ -139,6 +139,15 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                     RightBlock.ToXml() +
                 "</value>" +
             "</block>";
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            LeftBlock.GetVariableTreeList(blocks);
+            RightBlock.GetVariableTreeList(blocks);
+
+            return blocks;
         }
 
         public override string ToString()

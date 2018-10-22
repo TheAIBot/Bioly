@@ -28,5 +28,7 @@ namespace BiolyCompiler.BlocklyParts
         }
 
         public abstract string ToXml();
+
+        public abstract List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks);
     }
 }
