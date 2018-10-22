@@ -21,7 +21,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock ArrayLengthBlock;
 
-        public NumberArray(string arrayName, VariableBlock arrayLengthBlock, List<string> input, string id) : base(true, null, input, arrayName, id, true)
+        public NumberArray(string arrayName, VariableBlock arrayLengthBlock, string id) : 
+            base(true, null, new List<string>() { arrayLengthBlock?.OutputVariable }, arrayName, id, true)
         {
             this.ArrayName = arrayName;
             this.ArrayLengthBlock = arrayLengthBlock;
@@ -38,10 +39,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
             dfg.AddNode(arrayLengthBlock);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(arrayLengthBlock?.OutputVariable);
-
-            return new NumberArray(arrayName, arrayLengthBlock, inputs, id);
+            return new NumberArray(arrayName, arrayLengthBlock, id);
         }
 
         public override Block TrueCopy(DFG<Block> dfg)
@@ -50,7 +48,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
             dfg.AddNode(arrayLengthCopy);
 
-            return new NumberArray(ArrayName, arrayLengthCopy, InputNumbers.Copy(), BlockID);
+            return new NumberArray(ArrayName, arrayLengthCopy, BlockID);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -75,6 +73,14 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public override string ToXml()
         {
             throw new InternalParseException(BlockID, "Can't create xml of this block.");
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            ArrayLengthBlock.GetVariableTreeList(blocks);
+
+            return blocks;
         }
 
         public override string ToString()
