@@ -164,7 +164,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //The given dfg is still used as the corrected result is then
             //copied into the given dfg.
             DFG<Block> correctOrder = new DFG<Block>();
-            foreach (Block block in new Assay(dfg))
+            Assay fisk = new Assay(dfg);
+            foreach (Block block in fisk)
             {
                 if (block is InputDeclaration)
                 {
@@ -199,7 +200,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 }
                 else
                 {
-                    correctOrder.AddNode(block);
+                    List<Block> blocks = block.GetBlockTreeList(new List<Block>());
+                    foreach (Block blockTreeBlock in blocks)
+                    {
+                        correctOrder.AddNode(blockTreeBlock);
+                    }
                 }
             }
             correctOrder.FinishDFG();
@@ -238,6 +243,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             InputsFromTo.ForEach(x => readerBlacklist.Add(x.Value.OriginalFluidName));
             VariablesFromTo.ForEach(x => GetVariableBlockDependencies(x.Value.GetVariableTreeList(new List<VariableBlock>())).ForEach(y => readerBlacklist.Add(y)));
+            VariablesFromTo.ForEach(x => readerBlacklist.Add(x.Key));
             OutputsFromTo.ForEach(x => writerBlacklist.Add(x.Value));
 
             DFG<Block> currentDFG = cdfg.StartDFG;
@@ -247,29 +253,41 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 Assay inOrder = new Assay(currentDFG);
                 foreach (Block block in inOrder)
                 {
-                    foreach (FluidInput fluidInput in block.InputFluids)
+                    List<Block> blocks = block.GetBlockTreeList(new List<Block>());
+                    foreach (var blockInTree in blocks)
                     {
-                        if (!readerBlacklist.Contains(fluidInput.OriginalFluidName))
+                        foreach (FluidInput fluidInput in blockInTree.InputFluids)
                         {
-                            fluidInput.OriginalFluidName += postfix;
+                            if (!readerBlacklist.Contains(fluidInput.OriginalFluidName))
+                            {
+                                fluidInput.OriginalFluidName += postfix;
+                            }
                         }
-                    }
 
-                    for (int i = 0; i < block.InputNumbers.Count; i++)
-                    {
-                        if (!readerBlacklist.Contains(block.InputNumbers[i]))
+                        for (int i = 0; i < blockInTree.InputNumbers.Count; i++)
                         {
-                            block.InputNumbers[i] = block.InputNumbers[i] + postfix;
-                        }
-                    }
+                            if (!readerBlacklist.Contains(blockInTree.InputNumbers[i]))
+                            {
+                                blockInTree.InputNumbers[i] = blockInTree.InputNumbers[i] + postfix;
+                            }
+                            else if (blockInTree.InputNumbers[i] == "error")
+                            {
 
-                    if (readerBlacklist.Contains(block.OutputVariable))
-                    {
-                        readerBlacklist.Remove(block.OutputVariable);
-                    }
-                    if (!writerBlacklist.Contains(block.OutputVariable))
-                    {
-                        block.OutputVariable += postfix;
+                            }
+                        }
+
+                        if (readerBlacklist.Contains(blockInTree.OutputVariable))
+                        {
+                            if (blockInTree.OutputVariable == "error")
+                            {
+
+                            }
+                            readerBlacklist.Remove(blockInTree.OutputVariable);
+                        }
+                        if (!writerBlacklist.Contains(blockInTree.OutputVariable))
+                        {
+                            blockInTree.OutputVariable += postfix;
+                        }
                     }
                 }
 

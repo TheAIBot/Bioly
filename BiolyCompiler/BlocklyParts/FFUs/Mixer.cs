@@ -94,5 +94,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             }
 
         }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
     }
 }

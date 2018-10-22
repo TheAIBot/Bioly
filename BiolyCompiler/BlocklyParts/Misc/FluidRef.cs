@@ -33,6 +33,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new Fluid(inputFluids, OutputVariable + namePostfix, BlockID);
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
+
         public override string ToString()
         {
             return $"{OutputVariable} = ref {InputFluids.First().OriginalFluidName}";

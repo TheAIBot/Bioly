@@ -30,5 +30,12 @@ namespace BiolyCompiler.BlocklyParts
         public abstract string ToXml();
 
         public abstract List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks);
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.AddRange(GetVariableTreeList(new List<VariableBlock>()));
+
+            return blocks;
+        }
     }
 }

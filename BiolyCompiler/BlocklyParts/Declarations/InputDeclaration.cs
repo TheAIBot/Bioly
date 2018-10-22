@@ -62,6 +62,12 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new InputModule(new BoardFluid(OutputVariable), (int)Amount);
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
+
         public override string ToString()
         {
             return OutputVariable + Environment.NewLine +

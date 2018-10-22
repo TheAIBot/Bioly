@@ -74,7 +74,6 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new HeaterUsage(ModuleName, inputFluids, OutputVariable + namePostfix, Temperature, Time, BlockID);
         }
 
-
         public override List<Command> ToCommands()
         {
             //This is neccessary to ensure that the the droplets spends the required time in the module:
@@ -86,6 +85,12 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         {
 
 
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()

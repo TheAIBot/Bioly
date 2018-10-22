@@ -6,6 +6,11 @@ using BiolyCompiler.Graphs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using BiolyCompiler.BlocklyParts.Arrays;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.BlocklyParts.BoolLogic;
+using BiolyCompiler.BlocklyParts.Declarations;
+using BiolyCompiler.BlocklyParts.FFUs;
+using BiolyCompiler.BlocklyParts.Misc;
 
 namespace BiolyTests
 {
@@ -137,9 +142,9 @@ namespace BiolyTests
         [TestMethod]
         public void TestCopySetArrayFluidBlock()
         {
-            VariableBlock[] blocks = new VariableBlock[2];
+            Block[] blocks = new Block[2];
             blocks[0] = new Constant(10, "a", "", false);
-            blocks[1] = new SetArrayFluid("cake", blocks[0], "");
+            blocks[1] = new SetArrayFluid((VariableBlock)blocks[0], "cake", new List<FluidInput>() { new BasicInput("", "qq", 10, false) }, "");
 
             int[][] dependencyGraph = new int[][]
             {
@@ -150,12 +155,134 @@ namespace BiolyTests
             CheckCopyMultiBlock(blocks[1], blocks, dependencyGraph);
         }
 
+        [TestMethod]
+        public void TestCopySetArrayNumberBlock()
+        {
+            VariableBlock[] blocks = new VariableBlock[3];
+            blocks[0] = new Constant(10, "a", "", false);
+            blocks[1] = new Constant(10, "b", "", false);
+            blocks[2] = new SetArrayNumber(blocks[0], blocks[1], "cake", "", false);
+
+            int[][] dependencyGraph = new int[][]
+            {
+                new int[] { },
+                new int[] { },
+                new int[] { 0, 1 }
+            };
+
+            CheckCopyMultiBlock(blocks[2], blocks, dependencyGraph);
+        }
+
+        [TestMethod]
+        public void TestCopyBoolOPBlock()
+        {
+            VariableBlock[] blocks = new VariableBlock[3];
+            blocks[0] = new Constant(10, "a", "", false);
+            blocks[1] = new Constant(3, "b", "", false);
+            blocks[2] = new BoolOP(blocks[0], blocks[1], "cake", BoolOPTypes.EQ, "", false);
+
+            int[][] dependencyGraph = new int[][]
+            {
+                new int[] { },
+                new int[] { },
+                new int[] { 0, 1 }
+            };
+
+            CheckCopyMultiBlock(blocks[2], blocks, dependencyGraph);
+        }
+
+        [TestMethod]
+        public void TestCopyDropletDeclarationBlock()
+        {
+            CheckCopySingleBlock(new DropletDeclaration("a", ""));
+        }
+
+        [TestMethod]
+        public void TestCopyHeaterDeclarationBlock()
+        {
+            CheckCopySingleBlock(new HeaterDeclaration("a", "z", ""));
+        }
+
+        [TestMethod]
+        public void TestCopyInputDeclarationBlock()
+        {
+            CheckCopySingleBlock(new InputDeclaration("a", 3, ""));
+        }
+
+        [TestMethod]
+        public void TestCopyOutputDeclarationBlock()
+        {
+            CheckCopySingleBlock(new OutputDeclaration("x", "a", ""));
+        }
+
+        [TestMethod]
+        public void TestCopyWastetDeclarationBlock()
+        {
+            CheckCopySingleBlock(new WasteDeclaration("x", "a", ""));
+        }
+
+        [TestMethod]
+        public void TestCopyHeaterUsageBlock()
+        {
+            CheckCopySingleBlock(new HeaterUsage("a", new List<FluidInput>() { new BasicInput("", "d", 2, false) }, "q", 23, 54, ""));
+        }
+
+        [TestMethod]
+        public void TestCopyMixerBlock()
+        {
+            CheckCopySingleBlock(new Mixer(new List<FluidInput>()
+                {
+                    new BasicInput("", "d", 1, false),
+                    new BasicInput("", "q", 1, false)
+                }, "w", ""));
+        }
+
+        [TestMethod]
+        public void TestCopyUnionBlock()
+        {
+            CheckCopySingleBlock(new Union(new List<FluidInput>()
+                {
+                    new BasicInput("", "d", 1, false),
+                    new BasicInput("", "q", 1, false)
+                }, "w", ""));
+        }
+
+        [TestMethod]
+        public void TestCopyFluidBlock()
+        {
+            CheckCopySingleBlock(new Fluid(new List<FluidInput>() { new BasicInput("", "d", 2, false) }, "a", ""));
+        }
+
+        [TestMethod]
+        public void TestCopyFluidRefBlock()
+        {
+            CheckCopySingleBlock(new FluidRef("a", "b"));
+        }
+
+        [TestMethod]
+        public void TestCopyGetDropletCountBlock()
+        {
+            CheckCopySingleBlock(new GetDropletCount("w", "a", "", false));
+        }
+
+        [TestMethod]
+        public void TestCopyOutputUsageBlock()
+        {
+            CheckCopySingleBlock(new OutputUsage("a", new List<FluidInput>() { new BasicInput("", "d", 2, false) }, "z", ""));
+        }
+
+        [TestMethod]
+        public void TestCopyWasteUsageBlock()
+        {
+            CheckCopySingleBlock(new WasteUsage("a", new List<FluidInput>() { new BasicInput("", "d", 2, false) }, "z", ""));
+        }
+
         private void CheckCopyMultiBlock(Block original, Block[] blocks, int[][] dependencyGraph)
         {
             DFG<Block> dfg = new DFG<Block>();
             Block copy = original.TrueCopy(dfg);
             dfg.AddNode(copy);
-            CompareToOriginal(original, copy);
+            CompareToOriginal(original, copy, blocks.Length);
 
             Assert.AreEqual(blocks.Length, dfg.Nodes.Count, "Not all blocks were copied.");
             Assert.AreEqual(blocks.Length, dependencyGraph.Length, "Dependency graph and blocks array need to match.");
@@ -178,7 +305,7 @@ namespace BiolyTests
             DFG<Block> dfg = new DFG<Block>();
             Block copy = original.TrueCopy(dfg);
             dfg.AddNode(copy);
-            CompareToOriginal(original, copy);
+            CompareToOriginal(original, copy, 1);
 
             Node<Block> oCopy = dfg.Nodes.Single(x => x.value is T);
 
@@ -186,32 +313,21 @@ namespace BiolyTests
             Assert.AreEqual(0, oCopy.GetIngoingEdges().Count);
         }
 
-        private void CompareToOriginal(Block original, Block copy)
+        private void CompareToOriginal(Block original, Block copy, int blockCount)
         {
-            if (original is VariableBlock && copy is VariableBlock)
-            {
-                VariableBlock v1 = original as VariableBlock;
-                VariableBlock v2 = copy as VariableBlock;
+            Assert.AreEqual(original.GetType(), copy.GetType());
 
-                List<VariableBlock> v1TreeList = v1.GetVariableTreeList(new List<VariableBlock>());
-                List<VariableBlock> v2TreeList = v2.GetVariableTreeList(new List<VariableBlock>());
+            List<Block> v1TreeList = original.GetBlockTreeList(new List<Block>());
+            List<Block> v2TreeList = copy    .GetBlockTreeList(new List<Block>());
 
-                Assert.AreEqual(v1TreeList.Count, v2TreeList.Count);
-                for (int i = 0; i < v1TreeList.Count; i++)
-                {
-                    CompareBlocksBaseValues(v1TreeList[i], v2TreeList[i]);
-                    Assert.AreNotSame(v1TreeList[i], v2TreeList[i]);
-                    Assert.AreNotEqual(v1TreeList[i].OutputVariable, Block.DEFAULT_NAME);
-                    Assert.AreNotEqual(v2TreeList[i].OutputVariable, Block.DEFAULT_NAME);
-                }
-            }
-            else if (original is FluidBlock && copy is FluidBlock)
+            Assert.AreEqual(blockCount, v1TreeList.Count);
+            Assert.AreEqual(blockCount, v2TreeList.Count);
+            for (int i = 0; i < blockCount; i++)
             {
-                Assert.Fail("Not implemented way to compare fluid blocks yet.");
-            }
-            else
-            {
-                Assert.Fail($"Blocks are not the same type.{Environment.NewLine} Original is of type: {original.GetType()} and copy is of type {copy.GetType()}.");
+                CompareBlocksBaseValues(v1TreeList[i], v2TreeList[i]);
+                Assert.AreNotSame(v1TreeList[i], v2TreeList[i]);
+                Assert.AreNotEqual(v1TreeList[i].OutputVariable, Block.DEFAULT_NAME);
+                Assert.AreNotEqual(v2TreeList[i].OutputVariable, Block.DEFAULT_NAME);
             }
         }
 
@@ -221,7 +337,7 @@ namespace BiolyTests
             Assert.AreEqual(a.BlockID, b.BlockID);
             Assert.AreEqual(a.CanBeOutput, b.CanBeOutput);
             Assert.AreEqual(a.EndTime, b.EndTime);
-            CollectionAssert.AreEquivalent(a.InputFluids.ToList(), b.InputFluids.ToList());
+            CollectionAssert.AreEqual(a.InputFluids.ToList(), b.InputFluids.ToList());
             CollectionAssert.AreEquivalent(a.InputNumbers, b.InputNumbers);
             Assert.AreEqual(a.IsDone, b.IsDone);
             Assert.AreEqual(a.OutputVariable, b.OutputVariable);

@@ -60,7 +60,6 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Union(inputFluids, OutputVariable + namePostfix, BlockID);
         }
 
-
         public override List<Command> ToCommands()
         {
             int time = 0;
@@ -79,6 +78,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return routeCommands;
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
 
         public string ToXml()
         {

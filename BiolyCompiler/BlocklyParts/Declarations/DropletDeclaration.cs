@@ -34,7 +34,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
 
         public override Block TrueCopy(DFG<Block> dfg)
         {
-            throw new NotImplementedException();
+            return new DropletDeclaration(OutputVariable, BlockID);
         }
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
@@ -53,6 +53,12 @@ namespace BiolyCompiler.BlocklyParts.Declarations
         public override Module getAssociatedModule()
         {
             return new Droplet(new BoardFluid(OutputVariable));
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()

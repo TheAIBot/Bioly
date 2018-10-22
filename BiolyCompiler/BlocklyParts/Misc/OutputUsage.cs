@@ -50,6 +50,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new OutputUsage(ModuleName, inputFluids, null, BlockID);
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
+
         public override void Bind(Module module, Dictionary<string, BoardFluid> FluidVariableLocations)
         {
             //The amount of droplets that the output module will take,

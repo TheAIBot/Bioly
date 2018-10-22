@@ -33,6 +33,11 @@ namespace BiolyCompiler.BlocklyParts.Sensors
             throw new NotImplementedException();
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            return blocks;
+        }
+
         public override Module getAssociatedModule()
         {
             return new SensorModule();

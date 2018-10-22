@@ -81,6 +81,19 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
 
         public abstract string ToXml();
 
+        public override bool Equals(object obj)
+        {
+            if (obj is FluidInput input)
+            {
+                return this.ID == input.ID &&
+                       this.OriginalFluidName == input.OriginalFluidName &&
+                       this.AmountInML == input.AmountInML &&
+                       this.UseAllFluid == input.UseAllFluid;
+            }
+
+            return false;
+        }
+
         public override string ToString()
         {
             if (UseAllFluid)

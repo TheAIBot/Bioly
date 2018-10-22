@@ -95,6 +95,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return routeCommands;
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
+
         public static string ToXml(string id, string outputFluidName, string attachedBlock, string nextBlocks)
         {
             string xml =

@@ -27,7 +27,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly VariableBlock IndexBlock;
 
         public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string id) : 
-            base(true, input, null, arrayName, id)
+            base(true, input, new List<string>() { indexBlock?.OutputVariable }, arrayName, id)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -107,6 +107,13 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
             }
             return routeCommands;
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            blocks.AddRange(IndexBlock.GetVariableTreeList(new List<VariableBlock>()));
+            return blocks;
         }
 
         public override string ToString()

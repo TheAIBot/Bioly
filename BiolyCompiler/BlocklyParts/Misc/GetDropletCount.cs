@@ -16,7 +16,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public const string XML_TYPE_NAME = "getDropletCount";
         public readonly string VariableName;
 
-        public GetDropletCount(string variableName, string id, bool canBeScheduled) : base(false, null, null, null, id, canBeScheduled)
+        public GetDropletCount(string variableName, string output, string id, bool canBeScheduled) : base(false, null, null, output, id, canBeScheduled)
         {
             this.VariableName = variableName;
         }
@@ -27,12 +27,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
             string variableName = ParseTools.ParseString(node, VARIABLE_FIELD_NAME);
             parserInfo.CheckVariable(id, VariableType.FLUID, variableName);
 
-            return new GetDropletCount(variableName, id, canBeScheduled);
+            return new GetDropletCount(variableName, parserInfo.GetUniqueAnonymousName(), id, canBeScheduled);
         }
 
         public override Block TrueCopy(DFG<Block> dfg)
         {
-            return new GetDropletCount(VariableName, BlockID, CanBeScheduled);
+            return new GetDropletCount(VariableName, OutputVariable, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)

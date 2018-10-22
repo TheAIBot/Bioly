@@ -23,8 +23,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly VariableBlock IndexBlock;
         public readonly VariableBlock NumberBlock;
 
-        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : 
-            base(true, null, input, arrayName, id, canBeScheduled)
+        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, string id, bool canBeScheduled) : 
+            base(true, null, new List<string>() { indexBlock?.OutputVariable, numberBlock?.OutputVariable }, arrayName, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -46,11 +46,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             dfg.AddNode(indexBlock);
             dfg.AddNode(numberInput);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(indexBlock?.OutputVariable);
-            inputs.Add(numberInput?.OutputVariable);
-
-            return new SetArrayNumber(indexBlock, numberInput, arrayName, inputs, id, canBeScheduled);
+            return new SetArrayNumber(indexBlock, numberInput, arrayName, id, canBeScheduled);
         }
 
         public override Block TrueCopy(DFG<Block> dfg)
@@ -61,7 +57,7 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             dfg.AddNode(indexCopy);
             dfg.AddNode(numberCopy);
 
-            return new SetArrayNumber(indexCopy, numberCopy, ArrayName, InputNumbers.Copy(), BlockID, CanBeScheduled);
+            return new SetArrayNumber(indexCopy, numberCopy, ArrayName, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
