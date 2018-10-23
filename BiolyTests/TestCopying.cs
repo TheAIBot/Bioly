@@ -318,13 +318,35 @@ namespace BiolyTests
 
                 IControlBlock oControl = original.Nodes[i].control;
                 IControlBlock cControl = copy.Nodes[i].control;
-                CheckCopyControl(oControl, cControl);
+                if (oControl != null)
+                {
+                    Assert.IsNotNull(cControl);
+                    CheckCopyControl(oControl, cControl);
+                }
+                else
+                {
+                    Assert.IsNull(cControl);
+                }
             }
         }
 
         private void CheckCopyControl(IControlBlock original, IControlBlock copy)
         {
+            IEnumerator<DFG<Block>> oEnumerator = original.GetEnumerator();
+            IEnumerator<DFG<Block>> cEnumerator = copy.GetEnumerator();
 
+            while (true)
+            {
+                bool oHasNext = oEnumerator.MoveNext();
+                bool cHasNext = cEnumerator.MoveNext();
+                Assert.AreEqual(oHasNext, cHasNext);
+                if (!oHasNext)
+                {
+                    break;
+                }
+
+                CheckCopyDFG(oEnumerator.Current, cEnumerator.Current);
+            }
         }
 
         private void CheckCopyDFG(DFG<Block> original, DFG<Block> copy)
