@@ -256,6 +256,10 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     List<Block> blocks = block.GetBlockTreeList(new List<Block>());
                     foreach (var blockInTree in blocks)
                     {
+                        if (blockInTree is GetNumberVariable asd && blockInTree.InputNumbers.First() == "error")
+                        {
+
+                        }
                         foreach (FluidInput fluidInput in blockInTree.InputFluids)
                         {
                             if (!readerBlacklist.Contains(fluidInput.OriginalFluidName))

@@ -11,6 +11,7 @@ using BiolyCompiler.BlocklyParts.BoolLogic;
 using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.FFUs;
 using BiolyCompiler.BlocklyParts.Misc;
+using BiolyCompiler.BlocklyParts.ControlFlow;
 
 namespace BiolyTests
 {
@@ -44,7 +45,7 @@ namespace BiolyTests
         [TestMethod]
         public void TestCopyGetNumberVariableBlock()
         {
-            CheckCopySingleBlock(new GetNumberVariable("x", "a", "", new List<string>() { "x" }, false));
+            CheckCopySingleBlock(new GetNumberVariable("x", "a", "", false));
         }
 
         [TestMethod]
@@ -277,6 +278,113 @@ namespace BiolyTests
             CheckCopySingleBlock(new WasteUsage("a", new List<FluidInput>() { new BasicInput("", "d", 2, false) }, "z", ""));
         }
 
+        [TestMethod]
+        public void TestCopyCDFG()
+        {
+            DFG<Block> dfg1 = new DFG<Block>();
+            dfg1.AddNode(new Constant(3, "a", "", false));
+            dfg1.AddNode(new SetNumberVariable((VariableBlock)dfg1.Nodes[0].value, "b", ""));
+            dfg1.AddNode(new Constant(6, "g", "", false));
+            dfg1.AddNode(new Constant(6, "h", "", false));
+            dfg1.AddNode(new BoolOP((VariableBlock)dfg1.Nodes[2].value, (VariableBlock)dfg1.Nodes[3].value, "i", BoolOPTypes.EQ, "", true));
+            dfg1.FinishDFG();
+
+            DFG<Block> dfg2 = new DFG<Block>();
+            dfg2.AddNode(new Constant(6, "c", "", false));
+            dfg2.AddNode(new GetNumberVariable("b", "d", "", false));
+            dfg2.AddNode(new ArithOP((VariableBlock)dfg2.Nodes[0].value, (VariableBlock)dfg2.Nodes[1].value, "e", ArithOPTypes.ADD, "", false));
+            dfg2.AddNode(new SetNumberVariable((VariableBlock)dfg2.Nodes[2].value, "f", ""));
+            dfg2.FinishDFG();
+
+            CDFG original = new CDFG();
+            original.AddNode(new While(new Conditional((VariableBlock)dfg1.Nodes[4].value, dfg2, null)), dfg1);
+            original.AddNode(null, dfg2);
+            original.StartDFG = dfg1;
+
+            CDFG copy = original.Copy();
+            CheckCopyCDFG(original, copy);
+        }
+
+        private void CheckCopyCDFG(CDFG original, CDFG copy)
+        {
+            CheckCopyDFG(original.StartDFG, copy.StartDFG);
+
+            Assert.AreEqual(original.Nodes.Count, copy.Nodes.Count);
+            for (int i = 0; i < original.Nodes.Count; i++)
+            {
+                DFG<Block> oDFG = original.Nodes[i].dfg;
+                DFG<Block> cDFG = copy.Nodes[i].dfg;
+                CheckCopyDFG(oDFG, cDFG);
+
+                IControlBlock oControl = original.Nodes[i].control;
+                IControlBlock cControl = copy.Nodes[i].control;
+                CheckCopyControl(oControl, cControl);
+            }
+        }
+
+        private void CheckCopyControl(IControlBlock original, IControlBlock copy)
+        {
+
+        }
+
+        private void CheckCopyDFG(DFG<Block> original, DFG<Block> copy)
+        {
+            Assert.AreEqual(original.Nodes.Count, copy.Nodes.Count);
+            Assert.AreEqual(original.Input.Count, copy.Input.Count);
+            Assert.AreEqual(original.Output.Count, copy.Output.Count);
+
+            for (int i = 0; i < original.Nodes.Count; i++)
+            {
+                Node<Block> oNode = original.Nodes[i];
+                Node<Block> cNode = copy.Nodes.SingleOrDefault(x => x.value.OutputVariable == oNode.value.OutputVariable);
+
+                Assert.IsNotNull(cNode);
+                CheckCopyNode(oNode, cNode);
+            }
+
+            for (int i = 0; i < original.Input.Count; i++)
+            {
+                Node<Block> oNode = original.Input[i];
+                Node<Block> cNode = copy.Input.SingleOrDefault(x => x.value.OutputVariable == oNode.value.OutputVariable);
+
+                Assert.IsNotNull(cNode);
+                CheckCopyNode(oNode, cNode);
+            }
+
+            for (int i = 0; i < original.Output.Count; i++)
+            {
+                Node<Block> oNode = original.Output[i];
+                Node<Block> cNode = copy.Output.SingleOrDefault(x => x.value.OutputVariable == oNode.value.OutputVariable);
+
+                Assert.IsNotNull(cNode);
+                CheckCopyNode(oNode, cNode);
+            }
+        }
+
+        private void CheckCopyNode(Node<Block> original, Node<Block> copy)
+        {
+            Assert.AreEqual(original.GetIngoingEdges().Count, copy.GetIngoingEdges().Count);
+            Assert.AreEqual(original.GetOutgoingEdges().Count, copy.GetOutgoingEdges().Count);
+
+            List<Node<Block>> oIngoing = original.GetIngoingEdges();
+            List<Node<Block>> cIngoing = copy.GetIngoingEdges();
+            for (int i = 0; i < oIngoing.Count; i++)
+            {
+                Block oBlock = oIngoing[i].value;
+                Block cBlock = cIngoing[i].value;
+                CompareToOriginal(oBlock, cBlock);
+            }
+
+            List<Node<Block>> oOutgoing = original.GetOutgoingEdges();
+            List<Node<Block>> cOutgoing = copy.GetOutgoingEdges();
+            for (int i = 0; i < oOutgoing.Count; i++)
+            {
+                Block oBlock = oOutgoing[i].value;
+                Block cBlock = cOutgoing[i].value;
+                CompareToOriginal(oBlock, cBlock);
+            }
+        }
+
         private void CheckCopyMultiBlock(Block original, Block[] blocks, int[][] dependencyGraph)
         {
             DFG<Block> dfg = new DFG<Block>();
@@ -311,6 +419,11 @@ namespace BiolyTests
 
             Assert.AreEqual(1, dfg.Nodes.Count);
             Assert.AreEqual(0, oCopy.GetIngoingEdges().Count);
+        }
+
+        private void CompareToOriginal(Block original, Block copy)
+        {
+            CompareToOriginal(original, copy, original.GetBlockTreeList(new List<Block>()).Count);
         }
 
         private void CompareToOriginal(Block original, Block copy, int blockCount)

@@ -2,6 +2,7 @@
 using BiolyCompiler.Graphs;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Xml;
 
@@ -23,7 +24,11 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
 
         public Conditional Copy(DFG<Block> dfg, Dictionary<DFG<Block>, DFG<Block>> knownDFGCopys)
         {
-            VariableBlock copyDeciding = DecidingBlock?.TrueCopy(dfg) as VariableBlock;
+            VariableBlock copyDeciding = null;
+            if (DecidingBlock != null)
+            {
+                copyDeciding = (VariableBlock)dfg.Nodes.Single(x => DecidingBlock.OutputVariable == x.value.OutputVariable).value;
+            }
 
             DFG<Block> copyGuarded = null;
             if (GuardedDFG != null && knownDFGCopys.ContainsKey(GuardedDFG))

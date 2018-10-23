@@ -16,8 +16,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string VARIABLE_FIELD_NAME = "variableName";
         public const string XML_TYPE_NAME = "getNumberVariable";
 
-        public GetNumberVariable(string variableName, string output, string id, List<string> input, bool canBeScheduled) : 
-            base(false, null, input, output, id, canBeScheduled)
+        public GetNumberVariable(string variableName, string output, string id, bool canBeScheduled) : 
+            base(false, null, new List<string>() { variableName }, output, id, canBeScheduled)
         {
         }
 
@@ -27,15 +27,12 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             string variableName = ParseTools.ParseString(node, VARIABLE_FIELD_NAME);
             parserInfo.CheckVariable(id, VariableType.NUMBER, variableName);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(variableName);
-
-            return new GetNumberVariable(variableName, parserInfo.GetUniqueAnonymousName(), id, inputs, canBeScheduled);
+            return new GetNumberVariable(variableName, parserInfo.GetUniqueAnonymousName(), id, canBeScheduled);
         }
 
         public override Block TrueCopy(DFG<Block> dfg)
         {
-            return new GetNumberVariable(InputNumbers.First(), OutputVariable, BlockID, InputNumbers.Copy(), CanBeScheduled);
+            return new GetNumberVariable(InputNumbers.First(), OutputVariable, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
