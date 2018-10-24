@@ -13,5 +13,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         DFG<Block> NextDFG<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions);
         DFG<Block> TryLoop<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions);
         IControlBlock Copy(DFG<Block> dfg, Dictionary<DFG<Block>, DFG<Block>> knownDFGCopys);
+        IControlBlock GetNewControlWithNewEnd(DFG<Block> dfg);
+        DFG<Block> GetEndDFG();
     }
 }

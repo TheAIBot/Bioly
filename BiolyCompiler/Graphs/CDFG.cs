@@ -16,14 +16,15 @@ namespace BiolyCompiler.Graphs
             Nodes.Add((control, dfg));
         }
 
-        public Direct AddCDFG(CDFG cdfg, DFG<Block> from)
+        public void AddCDFG(CDFG cdfg)
         {
-            cdfg.Nodes.ForEach(x => this.Nodes.Add(x));
-
-            Direct connection = new Direct(new Conditional(null, null, cdfg.StartDFG));
-            //Nodes.Add((connection, from));
-
-            return connection;
+            foreach (var item in cdfg.Nodes)
+            {
+                if (item.dfg != cdfg.StartDFG)
+                {
+                    Nodes.Add(item);
+                }
+            }
         }
 
         public CDFG Copy()

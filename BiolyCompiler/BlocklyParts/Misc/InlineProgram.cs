@@ -220,7 +220,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         }
 
 
-        public Direct GetProgram(ref XmlNode currentProgramXml, DFG<Block> dfg, ParserInfo parserInfo)
+        public Direct GetProgram(ref XmlNode currentProgramXml, ParserInfo parserInfo)
         {
             string id = ParseTools.ParseID(currentProgramXml);
             CDFG newProgram = ProgramCDFG.Copy();
@@ -233,7 +233,26 @@ namespace BiolyCompiler.BlocklyParts.Misc
             DFG<Block> nextDFG = XmlParser.ParseNextDFG(currentProgramXml, parserInfo);
 
             //merge the programs together nd return the link between then
-            return parserInfo.cdfg.AddCDFG(newProgram, dfg);
+            parserInfo.cdfg.AddCDFG(newProgram);
+
+            DFG<Block> endDFG = newProgram.StartDFG;
+            while (endDFG != null)
+            {
+                IControlBlock control = newProgram.Nodes.Single(x => x.dfg == endDFG).control;
+                if (control != null && control.GetEndDFG() != null)
+                {
+                    endDFG = control.GetEndDFG();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            //parserInfo.cdfg.Nodes.Remove((null, nextDFG));
+            parserInfo.cdfg.AddNode(new Direct(nextDFG), endDFG);
+
+            return new Direct(newProgram.StartDFG);
         }
 
         private void TransformVariableNames(CDFG cdfg, string postfix)

@@ -94,5 +94,15 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         {
             return GetEnumerator();
         }
+
+        public IControlBlock GetNewControlWithNewEnd(DFG<Block> dfg)
+        {
+            return new Repeat(new Conditional(Cond.DecidingBlock, Cond.GuardedDFG, dfg));
+        }
+
+        public DFG<Block> GetEndDFG()
+        {
+            return Cond.NextDFG;
+        }
     }
 }

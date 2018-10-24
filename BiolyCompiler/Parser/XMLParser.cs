@@ -152,7 +152,7 @@ namespace BiolyCompiler.Parser
                     {
                         throw new ParseException(id, "There is program errors in the program: " + program.ProgramName);
                     }
-                    return program.GetProgram(ref node, dfg, parserInfo);
+                    return program.GetProgram(ref node, parserInfo);
                 default:
                     throw new UnknownBlockException(id);
             }
