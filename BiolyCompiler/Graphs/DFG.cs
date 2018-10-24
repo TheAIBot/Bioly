@@ -90,10 +90,19 @@ namespace BiolyCompiler.Graphs
             if (this is DFG<Block> asda)
             {
                 DFG<Block> copy = new DFG<Block>();
-                Assay inCorrectOrder = new Assay(asda);
-                foreach (Block toCopy in inCorrectOrder)
+                foreach (Node<Block> node in asda.Nodes)
                 {
-                    copy.AddNode(toCopy.TrueCopy(copy));
+                    if (node.value is VariableBlock varBlock)
+                    {
+                        if (varBlock.CanBeScheduled)
+                        {
+                            copy.AddNode(node.value.TrueCopy(copy));
+                        }
+                    }
+                    else
+                    {
+                        copy.AddNode(node.value.TrueCopy(copy));
+                    }
                 }
 
                 copy.FinishDFG();

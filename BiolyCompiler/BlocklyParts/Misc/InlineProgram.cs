@@ -178,7 +178,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                          block is HeaterDeclaration /*||
                          block is SensorDeclaration*/)
                 {
-                    continue;
+                    //remove these blocks which is the same as not adding them
                 }
                 else if (block is OutputUsage outputUsage)
                 {
@@ -206,6 +206,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                         correctOrder.AddNode(blockTreeBlock);
                     }
                 }
+                fisk.UpdateReadyOperations(block);
             }
             correctOrder.FinishDFG();
 
@@ -250,19 +251,16 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             do
             {
-                Assay inOrder = new Assay(currentDFG);
-                foreach (Block block in inOrder)
+                foreach (Node<Block> node in currentDFG.Nodes)
                 {
+                    Block block = node.value;
                     List<Block> blocks = block.GetBlockTreeList(new List<Block>());
                     foreach (var blockInTree in blocks)
                     {
-                        if (blockInTree is GetNumberVariable asd && blockInTree.InputNumbers.First() == "error")
-                        {
-
-                        }
                         foreach (FluidInput fluidInput in blockInTree.InputFluids)
                         {
-                            if (!readerBlacklist.Contains(fluidInput.OriginalFluidName))
+                            if (!readerBlacklist.Contains(fluidInput.OriginalFluidName) &&
+                                !writerBlacklist.Contains(fluidInput.OriginalFluidName))
                             {
                                 fluidInput.OriginalFluidName += postfix;
                             }
@@ -274,18 +272,10 @@ namespace BiolyCompiler.BlocklyParts.Misc
                             {
                                 blockInTree.InputNumbers[i] = blockInTree.InputNumbers[i] + postfix;
                             }
-                            else if (blockInTree.InputNumbers[i] == "error")
-                            {
-
-                            }
                         }
 
                         if (readerBlacklist.Contains(blockInTree.OutputVariable))
                         {
-                            if (blockInTree.OutputVariable == "error")
-                            {
-
-                            }
                             readerBlacklist.Remove(blockInTree.OutputVariable);
                         }
                         if (!writerBlacklist.Contains(blockInTree.OutputVariable))

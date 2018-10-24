@@ -55,8 +55,8 @@ namespace BiolyViewer_Windows
         {
             CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
             //var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
-            //var programData = InlineProgram.LoadProgram("showcasing using inline program block");
-            var programData = InlineProgram.LoadProgram("UsingDiluter3");
+            var programData = InlineProgram.LoadProgram("showcasing using inline program block");
+            //var programData = InlineProgram.LoadProgram("UsingDiluter3");
 
             for (int i = 0; i < 1; i++)
             {
