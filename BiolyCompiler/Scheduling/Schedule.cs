@@ -158,6 +158,7 @@ namespace BiolyCompiler.Scheduling
                     else
                     {
                         oldFluidType.RefCount--;
+                        oldFluidType.additionalNames.Remove(fluidName);
                         FluidVariableLocations.Remove(fluidName);
                     }
                 }
@@ -251,6 +252,7 @@ namespace BiolyCompiler.Scheduling
                         currentTime = RemoveFluidVariable(fluidRefBlock.OutputVariable, currentTime, fluidRefBlock);
                         FluidVariableLocations.Add(fluidRefBlock.OutputVariable, FluidVariableLocations[fluidRefBlock.InputFluids.First().OriginalFluidName]);
                         FluidVariableLocations[fluidRefBlock.OutputVariable].RefCount++;
+                        FluidVariableLocations[fluidRefBlock.OutputVariable].additionalNames.Add(fluidRefBlock.OutputVariable);
                         assay.UpdateReadyOperations(fluidRefBlock);
                         break;
                     case FluidBlock fluidBlock:

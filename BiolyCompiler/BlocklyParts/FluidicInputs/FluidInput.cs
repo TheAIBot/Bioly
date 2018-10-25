@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public string ID;
         public string OriginalFluidName;
         public readonly float AmountInML;
-        public readonly bool UseAllFluid;
+        public bool UseAllFluid;
 
         public const int ML_PER_DROPLET = 1;
         public const string NO_FLUID_NAME = "ERROR_FINDING_NODE";

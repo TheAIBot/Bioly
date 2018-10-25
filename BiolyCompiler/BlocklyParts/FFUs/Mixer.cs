@@ -65,7 +65,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override string ToString()
         {
-            return "Mixer";
+            return $"Mixer: {OutputVariable}";
         }
 
         public override Module getAssociatedModule()

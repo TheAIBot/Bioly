@@ -81,7 +81,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     XmlNode variableNode = node.GetInnerBlockNode(GetVariableFieldName(i), parserInfo, new MissingBlockException(id, ""));
                     if (variableNode != null)
                     {
-                        VariableBlock varBlock = (VariableBlock)XmlParser.ParseBlock(variableNode, dfg, parserInfo);
+                        VariableBlock varBlock = (VariableBlock)XmlParser.ParseBlock(variableNode, dfg, parserInfo, false, false);
                         VariablesFromTo.Add(VariableImports[i], varBlock);
                     }
                 }
@@ -173,8 +173,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     string oldName = InputsFromTo[block.OutputVariable].OriginalFluidName;
                     correctOrder.AddNode(new FluidRef(newName, oldName));
                 }
-                else if (block is OutputDeclaration ||
-                         //block is WasteDeclaration ||
+                else if (block is OutputDeclaration output)
+                {
+                    string name = OutputsFromTo[output.ModuleName];
+                    correctOrder.AddNode(new Fluid(new List<FluidInput>() { new BasicInput("", name, 0, true) }, name, ""));
+                }
+                else if (//block is WasteDeclaration ||
                          block is HeaterDeclaration /*||
                          block is SensorDeclaration*/)
                 {
@@ -189,6 +193,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     };
 
                     inputs[1].OriginalFluidName = OutputsFromTo[outputUsage.ModuleName];
+                    inputs[1].UseAllFluid = true;
 
                     correctOrder.AddNode(new Union(inputs, OutputsFromTo[outputUsage.ModuleName], block.BlockID));
                 }
@@ -217,6 +222,8 @@ namespace BiolyCompiler.BlocklyParts.Misc
             dfg.Nodes.AddRange(correctOrder.Nodes);
             dfg.Input.AddRange(correctOrder.Input);
             dfg.Output.AddRange(correctOrder.Output);
+
+            dfg.Nodes.ForEach(x => x.value.IsDone = false);
         }
 
 
@@ -232,9 +239,6 @@ namespace BiolyCompiler.BlocklyParts.Misc
             OutputsFromTo.ForEach(x => parserInfo.AddVariable(string.Empty, VariableType.FLUID, x.Value));
             DFG<Block> nextDFG = XmlParser.ParseNextDFG(currentProgramXml, parserInfo);
 
-            //merge the programs together nd return the link between then
-            parserInfo.cdfg.AddCDFG(newProgram);
-
             DFG<Block> endDFG = newProgram.StartDFG;
             while (endDFG != null)
             {
@@ -249,8 +253,18 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 }
             }
 
-            //parserInfo.cdfg.Nodes.Remove((null, nextDFG));
-            parserInfo.cdfg.AddNode(new Direct(nextDFG), endDFG);
+            int i = newProgram.Nodes.FindIndex(x => x.dfg == endDFG);
+            if (newProgram.Nodes[i].control == null)
+            {
+                newProgram.Nodes[i] = (new Direct(nextDFG), endDFG);
+            }
+            else
+            {
+                newProgram.Nodes[i] = (newProgram.Nodes[i].control.GetNewControlWithNewEnd(nextDFG), endDFG);
+            }
+
+            //merge the programs together nd return the link between then
+            parserInfo.cdfg.AddCDFG(newProgram);
 
             return new Direct(newProgram.StartDFG);
         }
@@ -268,14 +282,22 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             DFG<Block> currentDFG = cdfg.StartDFG;
 
+            HashSet<Block> goneThrough = new HashSet<Block>();
+
             do
             {
+
                 foreach (Node<Block> node in currentDFG.Nodes)
                 {
                     Block block = node.value;
                     List<Block> blocks = block.GetBlockTreeList(new List<Block>());
                     foreach (var blockInTree in blocks)
                     {
+                        if (goneThrough.Contains(blockInTree))
+                        {
+                            continue;
+                        }
+                        goneThrough.Add(blockInTree);
                         foreach (FluidInput fluidInput in blockInTree.InputFluids)
                         {
                             if (!readerBlacklist.Contains(fluidInput.OriginalFluidName) &&

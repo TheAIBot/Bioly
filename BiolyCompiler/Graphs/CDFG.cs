@@ -20,10 +20,7 @@ namespace BiolyCompiler.Graphs
         {
             foreach (var item in cdfg.Nodes)
             {
-                if (item.dfg != cdfg.StartDFG)
-                {
-                    Nodes.Add(item);
-                }
+                Nodes.Add(item);
             }
         }
 
