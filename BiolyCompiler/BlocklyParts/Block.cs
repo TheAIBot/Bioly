@@ -16,12 +16,12 @@ namespace BiolyCompiler.BlocklyParts
     public abstract class Block
     {
         public readonly bool CanBeOutput;
-        public string OutputVariable { get; protected set; }
-        public readonly string BlockID;
+        public string OutputVariable;
+        public string BlockID;
 
         public readonly IReadOnlyList<FluidInput> InputFluids;
         private static readonly List<FluidInput> EmptyFluidList = new List<FluidInput>();
-        public readonly IReadOnlyList<string> InputNumbers;
+        public readonly List<string> InputNumbers;
         private static readonly List<string> EmptyNumberList = new List<string>();
 
         //first symbol is important because it makes it an invalid name to parse
@@ -40,9 +40,6 @@ namespace BiolyCompiler.BlocklyParts
         {
             this.CanBeOutput = canBeOutput;
             this.InputFluids = inputFluids ?? EmptyFluidList;
-
-            inputNumbers = inputNumbers ?? EmptyNumberList;
-            inputFluids?.Where(x => x != null).ToList().ForEach(x => inputNumbers.AddRange(x?.InputNumbers));
             this.InputNumbers = inputNumbers ?? EmptyNumberList;
             this.BlockID = blockID;
             this.OutputVariable = output ?? DEFAULT_NAME;
@@ -57,12 +54,16 @@ namespace BiolyCompiler.BlocklyParts
             this.StartTime = -1;
             this.EndTime = -1;
             this.priority = Int32.MaxValue;
-    }
+        }
+
+        public abstract Block TrueCopy(DFG<Block> dfg);
 
         public virtual void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
 
         }
+
+        public abstract List<Block> GetBlockTreeList(List<Block> blocks);
 
         public override bool Equals(object obj)
         {

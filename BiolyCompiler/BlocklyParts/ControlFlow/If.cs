@@ -4,6 +4,7 @@ using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
@@ -14,6 +15,11 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
     {
         public const string XML_TYPE_NAME = "controls_if";
         public readonly IReadOnlyList<Conditional> IfStatements;
+
+        public If(List<Conditional> ifStatements)
+        {
+            this.IfStatements = ifStatements;
+        }
 
         public If(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
@@ -109,6 +115,52 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         public DFG<Block> TryLoop<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
             return null;
+        }
+
+        public IControlBlock Copy(DFG<Block> dfg, Dictionary<DFG<Block>, DFG<Block>> knownDFGCopys)
+        {
+            List<Conditional> statementsCopys = new List<Conditional>();
+            foreach (Conditional conditional in IfStatements)
+            {
+                statementsCopys.Add(conditional.Copy(dfg, knownDFGCopys));
+            }
+
+            return new If(statementsCopys);
+        }
+
+        public IEnumerator<DFG<Block>> GetEnumerator()
+        {
+            foreach (Conditional conditional in IfStatements)
+            {
+                yield return conditional.GuardedDFG;
+            }
+
+            DFG<Block> lastDFG = IfStatements[IfStatements.Count - 1].NextDFG;
+            if (lastDFG != null)
+            {
+                yield return lastDFG;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public IControlBlock GetNewControlWithNewEnd(DFG<Block> dfg)
+        {
+            List<Conditional> withNewEnd = new List<Conditional>();
+            foreach (Conditional ifs in IfStatements)
+            {
+                withNewEnd.Add(new Conditional(ifs.DecidingBlock, ifs.GuardedDFG, dfg));
+            }
+
+            return new If(withNewEnd);
+        }
+
+        public DFG<Block> GetEndDFG()
+        {
+            return IfStatements[0].NextDFG;
         }
     }
 }

@@ -53,6 +53,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new HeaterUsage(moduleName, inputs, output, temperature, time, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new HeaterUsage(ModuleName, InputFluids.Copy(dfg), OutputVariable, Temperature, Time, BlockID);
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             List<FluidInput> inputFluids = new List<FluidInput>();
@@ -69,7 +74,6 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new HeaterUsage(ModuleName, inputFluids, OutputVariable + namePostfix, Temperature, Time, BlockID);
         }
 
-
         public override List<Command> ToCommands()
         {
             //This is neccessary to ensure that the the droplets spends the required time in the module:
@@ -81,6 +85,12 @@ namespace BiolyCompiler.BlocklyParts.FFUs
         {
 
 
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()

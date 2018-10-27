@@ -138,11 +138,29 @@ namespace BiolyCompiler.Scheduling
         {
             //If there already are droplets associated with the fluid name
             //they must be overwritten or moved to a waste module
+            currentTime = RemoveFluidVariable(fluidName, currentTime, operation);
+
+            BoardFluid fluidType = new BoardFluid(fluidName);
+            FluidVariableLocations[fluidName] = fluidType;
+            return (fluidType, currentTime);
+        }
+
+        private int RemoveFluidVariable(string fluidName, int currentTime, FluidBlock operation)
+        {
             if (FluidVariableLocations.TryGetValue(fluidName, out BoardFluid oldFluidType))
             {
                 if (SHOULD_DO_GARBAGE_COLLECTION)
                 {
-                    currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
+                    if (oldFluidType.RefCount == 1)
+                    {
+                        currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
+                    }
+                    else
+                    {
+                        oldFluidType.RefCount--;
+                        oldFluidType.additionalNames.Remove(fluidName);
+                        FluidVariableLocations.Remove(fluidName);
+                    }
                 }
                 else
                 {
@@ -150,10 +168,9 @@ namespace BiolyCompiler.Scheduling
                 }
             }
 
-            BoardFluid fluidType = new BoardFluid(fluidName);
-            FluidVariableLocations[fluidName] = fluidType;
-            return (fluidType, currentTime);
+            return currentTime;
         }
+
 
         private static void DiscardDroplets(BoardFluid oldFluidType)
         {
@@ -230,6 +247,13 @@ namespace BiolyCompiler.Scheduling
                     case SetArrayFluid arrayRenameBlock:
                         currentTime = HandleFluidTransfers(currentTime, arrayRenameBlock);
                         assay.UpdateReadyOperations(arrayRenameBlock);
+                        break;
+                    case FluidRef fluidRefBlock:
+                        currentTime = RemoveFluidVariable(fluidRefBlock.OutputVariable, currentTime, fluidRefBlock);
+                        FluidVariableLocations.Add(fluidRefBlock.OutputVariable, FluidVariableLocations[fluidRefBlock.InputFluids.First().OriginalFluidName]);
+                        FluidVariableLocations[fluidRefBlock.OutputVariable].RefCount++;
+                        FluidVariableLocations[fluidRefBlock.OutputVariable].additionalNames.Add(fluidRefBlock.OutputVariable);
+                        assay.UpdateReadyOperations(fluidRefBlock);
                         break;
                     case FluidBlock fluidBlock:
                         currentTime = HandleFluidOperations(currentTime, fluidBlock);
@@ -359,13 +383,32 @@ namespace BiolyCompiler.Scheduling
         private int HandleFluidTransfers(int currentTime, FluidBlock nextOperation)
         {
             FluidInput input = nextOperation.InputFluids[0];
+            //setting a fluid variable to itself is usually used to initilize
+            //a variable with 0 fluid in it. So don't do anything if it already
+            //exists and wants to transfer all liquid.
+            if (nextOperation.OutputVariable == input.OriginalFluidName && 
+                input.UseAllFluid &&
+                FluidVariableLocations.ContainsKey(nextOperation.OutputVariable))
+            {
+                return currentTime;
+            }
+
             int requiredDroplets = input.GetAmountInDroplets(FluidVariableLocations);
             int originalStartTime = currentTime;
 
             //If there already exists droplets with the target fluid type (what the droplets should be renamed to),
-            //then they are overwritten:
+            //then they are overwritten. But if the overwritten droplets are the required droplets themselves
+            //then do nothing as they would otherwise be removed and then they can't be used.
             BoardFluid targetFluidType;
-            (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OutputVariable, currentTime, nextOperation);
+            if (nextOperation.OutputVariable == input.OriginalFluidName &&
+                FluidVariableLocations.ContainsKey(nextOperation.OutputVariable))
+            {
+                targetFluidType = FluidVariableLocations[nextOperation.OutputVariable];
+            }
+            else
+            {
+                (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OutputVariable, currentTime, nextOperation);
+            }
 
             FluidVariableLocations.TryGetValue(input.OriginalFluidName, out BoardFluid inputFluid);
             if (inputFluid == null)

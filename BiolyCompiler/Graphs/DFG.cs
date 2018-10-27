@@ -5,6 +5,8 @@ using System.Text;
 using System.Linq;
 using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
+using BiolyCompiler.Scheduling;
+using BiolyCompiler.Exceptions.ParserExceptions;
 
 namespace BiolyCompiler.Graphs
 {
@@ -60,7 +62,7 @@ namespace BiolyCompiler.Graphs
             {
                 Block block = node.value as Block;
 
-                if (node.getOutgoingEdges().Count == 0 && block.CanBeOutput)
+                if (node.GetOutgoingEdges().Count == 0 && block.CanBeOutput)
                 {
                     Output.Add(node);
                 }
@@ -76,6 +78,38 @@ namespace BiolyCompiler.Graphs
                     Input.Add(node);
                 }
             }
+        }
+
+        public void ReplaceNode(Node<Block> toReplace, Node<Block> replaceWith)
+        {
+
+        }
+
+        public DFG<Block> Copy()
+        {
+            if (this is DFG<Block> asda)
+            {
+                DFG<Block> copy = new DFG<Block>();
+                foreach (Node<Block> node in asda.Nodes)
+                {
+                    if (node.value is VariableBlock varBlock)
+                    {
+                        if (varBlock.CanBeScheduled)
+                        {
+                            copy.AddNode(node.value.TrueCopy(copy));
+                        }
+                    }
+                    else
+                    {
+                        copy.AddNode(node.value.TrueCopy(copy));
+                    }
+                }
+
+                copy.FinishDFG();
+                return copy;
+            }
+
+            throw new ParseException("", "Can't copy a dfg which is not of type DFG<Block>");
         }
     }
 }

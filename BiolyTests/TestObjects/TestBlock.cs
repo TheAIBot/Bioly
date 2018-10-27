@@ -33,9 +33,19 @@ namespace BiolyTests.TestObjects
             return associatedModule;
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            return blocks;
+        }
+
         public override string ToString()
         {
             return "Test block";
+        }
+
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace BiolyCompiler.BlocklyParts.Declarations
     {
         public const string XML_TYPE_NAME = "heaterDeclaration";
 
-        public HeaterDeclaration(string moduleName, string id) : base(moduleName, true, null, id)
+        public HeaterDeclaration(string moduleName, string output, string id) : base(moduleName, true, output, id)
         {
         }
 
@@ -30,12 +30,23 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             string moduleName = ParseTools.ParseString(node, MODULE_NAME_FIELD_NAME);
             parserInfo.AddVariable(id, VariableType.HEATER, moduleName);
 
-            return new HeaterDeclaration(moduleName, id);
+            return new HeaterDeclaration(moduleName, parserInfo.GetUniqueAnonymousName(), id);
+        }
+
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new HeaterDeclaration(ModuleName, OutputVariable, BlockID);
         }
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
-            return new HeaterDeclaration(ModuleName, BlockID);
+            return new HeaterDeclaration(ModuleName, OutputVariable, BlockID);
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()

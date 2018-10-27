@@ -4,6 +4,7 @@ using BiolyCompiler.Graphs;
 using BiolyCompiler.Modules;
 using BiolyCompiler.Parser;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
@@ -17,6 +18,11 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
         public const string DoBlockFieldName = "DO";
         public readonly Conditional Cond;
         private int LoopCounter = 0;
+
+        public Repeat(Conditional cond)
+        {
+            this.Cond = cond;
+        }
 
         public Repeat(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
@@ -68,6 +74,35 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             {
                 return null;
             }
+        }
+
+        public IControlBlock Copy(DFG<Block> dfg, Dictionary<DFG<Block>, DFG<Block>> knownDFGCopys)
+        {
+            return new Repeat(Cond.Copy(dfg, knownDFGCopys));
+        }
+
+        public IEnumerator<DFG<Block>> GetEnumerator()
+        {
+            yield return Cond.GuardedDFG;
+            if (Cond.NextDFG != null)
+            {
+                yield return Cond.NextDFG;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public IControlBlock GetNewControlWithNewEnd(DFG<Block> dfg)
+        {
+            return new Repeat(new Conditional(Cond.DecidingBlock, Cond.GuardedDFG, dfg));
+        }
+
+        public DFG<Block> GetEndDFG()
+        {
+            return Cond.NextDFG;
         }
     }
 }

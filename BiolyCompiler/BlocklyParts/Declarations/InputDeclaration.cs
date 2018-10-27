@@ -39,6 +39,11 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new InputDeclaration(output, amount, id);
         }
 
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new InputDeclaration(OutputVariable, Amount, BlockID);
+        }
+
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             if (renamer.ContainsKey(OutputVariable))
@@ -55,6 +60,12 @@ namespace BiolyCompiler.BlocklyParts.Declarations
         public override Module getAssociatedModule()
         {
             return new InputModule(new BoardFluid(OutputVariable), (int)Amount);
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()

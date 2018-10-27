@@ -60,7 +60,7 @@ namespace BiolyViewer_Windows
             {
                 nodes += CreateNode(nodeNamer[node], node.value.ToString(), dfgName);
 
-                foreach (Node<Block> edgeNode in node.getOutgoingEdges())
+                foreach (Node<Block> edgeNode in node.GetOutgoingEdges())
                 {
                     edges += CreateEdge(nodeNamer[node], nodeNamer[edgeNode]);
                 }
@@ -72,7 +72,7 @@ namespace BiolyViewer_Windows
             {
                 edges += CreateEdge(dfgName + "-input", nodeNamer[node], "haystack");
             }
-            foreach (var node in dfg.Nodes.Where(x => x.getOutgoingEdges().Count == 0))
+            foreach (var node in dfg.Nodes.Where(x => x.GetOutgoingEdges().Count == 0))
             {
                 edges += CreateEdge(nodeNamer[node], dfgName + "-output", "haystack");
             }

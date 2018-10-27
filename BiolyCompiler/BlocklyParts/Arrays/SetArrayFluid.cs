@@ -26,8 +26,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string indexBlockName, string id) : 
-            base(true, input, null, arrayName, id)
+        public SetArrayFluid(VariableBlock indexBlock, string arrayName, List<FluidInput> input, string id) : 
+            base(true, input, new List<string>() { indexBlock?.OutputVariable }, arrayName, id)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -51,7 +51,16 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             List<FluidInput> inputFluids = new List<FluidInput>();
             inputFluids.Add(fluidInput);
 
-            return new SetArrayFluid(indexBlock, arrayName, inputFluids, indexBlock?.OutputVariable, id);
+            return new SetArrayFluid(indexBlock, arrayName, inputFluids, id);
+        }
+
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock indexCopy = (VariableBlock)IndexBlock.TrueCopy(dfg);
+
+            dfg.AddNode(indexCopy);
+
+            return new SetArrayFluid(indexCopy, ArrayName, InputFluids.Copy(dfg), BlockID);
         }
 
         public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
@@ -98,6 +107,13 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 routes.ForEach(route => routeCommands.AddRange(route.ToCommands(ref time)));
             }
             return routeCommands;
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            blocks.AddRange(IndexBlock.GetVariableTreeList(new List<VariableBlock>()));
+            return blocks;
         }
 
         public override string ToString()

@@ -145,15 +145,17 @@ namespace BiolyCompiler.Parser
                 case While.XML_TYPE_NAME:
                     return new While(node, dfg, parserInfo);
                 case SetArrayFluid.XML_TYPE_NAME:
-                    return new Direct(node, dfg, parserInfo);
+                    return new Direct(node, parserInfo);
                 case InlineProgram.XML_TYPE_NAME:
-                    InlineProgram program = new InlineProgram(node, dfg, parserInfo);
+                    InlineProgram program = ProgramCache.GetProgram(node, id, parserInfo);
+                    //new InlineProgram(node, parserInfo);
+                    //InlineProgram program = new InlineProgram(node, parserInfo);
                     if (!program.IsValidProgram)
                     {
-                        throw new ParseException(program.ID, "There is program errors in the program: " + program.ProgramName);
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "There is program errors in the program: " + program.ProgramName));
+                        return null;
                     }
-                    program.AppendProgramXml(ref node, parserInfo);
-                    return new Direct(node, dfg, parserInfo);
+                    return program.GetProgram(ref node, parserInfo);
                 default:
                     throw new UnknownBlockException(id);
             }

@@ -19,8 +19,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public readonly VariableBlock NumberBlock;
         public readonly RoundOPTypes RoundType;
 
-        public RoundOP(VariableBlock numberBlock, RoundOPTypes roundType, List<string> input, string id, bool canBeScheduled) : 
-            base(false, null, input, null, id, canBeScheduled)
+        public RoundOP(VariableBlock numberBlock, string output, RoundOPTypes roundType, string id, bool canBeScheduled) : 
+            base(false, null, new List<string>() { numberBlock?.OutputVariable }, output, id, canBeScheduled)
         {
             this.NumberBlock = numberBlock;
             this.RoundType = roundType;
@@ -36,10 +36,16 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
             dfg.AddNode(numberBlock);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(numberBlock?.OutputVariable);
+            return new RoundOP(numberBlock, parserInfo.GetUniqueAnonymousName(), roundType, id, canBeScheduled);
+        }
 
-            return new RoundOP(numberBlock, roundType, inputs, id, canBeScheduled);
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock numberCopy = (VariableBlock)NumberBlock.TrueCopy(dfg);
+
+            dfg.AddNode(numberCopy);
+
+            return new RoundOP(numberCopy, OutputVariable, RoundType, BlockID, CanBeScheduled);
         }
 
         public static RoundOPTypes StringToRoundOPType(string id, string roundOPTypeAsString)
@@ -96,6 +102,14 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 $"<value name=\"NUM\">" +
                 "</value>" +
             "</block>";
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            NumberBlock.GetVariableTreeList(blocks);
+
+            return blocks;
         }
 
         public override string ToString()
