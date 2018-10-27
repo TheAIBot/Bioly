@@ -21,72 +21,34 @@ namespace BiolyCompiler.BlocklyParts.Misc
 {
     public class InlineProgram
     {
-        public const string PROGRAM_NAME_ATTRIBUTE_NAME = "program_name";
-        public const string INPUT_COUNT_ATTRIBUTE_NAME = "input_count";
-        public const string OUTPUT_COUNT_ATTRIBUTE_NAME = "output_count";
-        public const string VARIABLE_COUNT_ATTRIBUTE_NAME = "variable_count";
+        private const string PROGRAM_NAME_ATTRIBUTE_NAME = "program_name";
+        private const string INPUT_COUNT_ATTRIBUTE_NAME = "input_count";
+        private const string OUTPUT_COUNT_ATTRIBUTE_NAME = "output_count";
+        private const string VARIABLE_COUNT_ATTRIBUTE_NAME = "variable_count";
         public const string XML_TYPE_NAME = "inlineProgram";
-        public const string UNIQUE_ATTRIBUTE_IDENTIFIER = "asjdasljckkrw3209fj48dhsaljdhasdlja";
-        private static int  AttributeIdentifierCounter = 0;
         public readonly string ProgramName;
-        public readonly string[] Inputs;
-        public readonly string[] Outputs;
-        public readonly string[] VariableImports;
-        public readonly CDFG ProgramCDFG;
-        public readonly Dictionary<string, FluidInput> InputsFromTo = new Dictionary<string, FluidInput>();
-        public readonly Dictionary<string, string> OutputsFromTo = new Dictionary<string, string>();
-        public readonly Dictionary<string, VariableBlock> VariablesFromTo = new Dictionary<string, VariableBlock>();
+        private readonly CDFG ProgramCDFG;
+        private readonly string[] Inputs;
+        private readonly string[] Outputs;
+        private readonly string[] VariableImports;
         public readonly bool IsValidProgram;
 
-        public InlineProgram(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        private class InlineProgramInfo
+        {
+            public readonly Dictionary<string, FluidInput> InputsFromTo = new Dictionary<string, FluidInput>();
+            public readonly Dictionary<string, string> OutputsFromTo = new Dictionary<string, string>();
+            public readonly Dictionary<string, VariableBlock> VariablesFromTo = new Dictionary<string, VariableBlock>();
+        }
+
+        public InlineProgram(XmlNode node, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
+            this.ProgramName = GetProgramName(node, id);
 
-            XmlNode mutatorNode = node.TryGetNodeWithName("mutation");
-            if (mutatorNode == null)
-            {
-                throw new InternalParseException(id, "No mutator was found in the inline program.");
-            }
-
-            this.ProgramName = mutatorNode.TryGetAttributeValue(PROGRAM_NAME_ATTRIBUTE_NAME);
-
-            string inputCountString    = mutatorNode.TryGetAttributeValue(INPUT_COUNT_ATTRIBUTE_NAME);
-            string outputCountString   = mutatorNode.TryGetAttributeValue(OUTPUT_COUNT_ATTRIBUTE_NAME);
-            string variableCountString = mutatorNode.TryGetAttributeValue(VARIABLE_COUNT_ATTRIBUTE_NAME);
-
-            int inputCount    = int.Parse(inputCountString    ?? "0");
-            int outputCunt    = int.Parse(outputCountString   ?? "0");
-            int variableCount = int.Parse(variableCountString ?? "0");
 
             try
             {
                 (this.Inputs, this.Outputs, this.VariableImports, _, this.ProgramCDFG) = LoadProgram(ProgramName);
-
-                for (int i = 0; i < inputCount; i++)
-                {
-                    XmlNode inputNode = node.GetInnerBlockNode(GetInputFieldName(i), parserInfo, new MissingBlockException(id, $"Input {Inputs[i]} is missing a fluid block."));
-                    if (inputNode != null)
-                    {
-                        FluidInput input = XmlParser.ParseFluidInput(inputNode, dfg, parserInfo);
-                        InputsFromTo.Add(Inputs[i], input);
-                    }
-                }
-                for (int i = 0; i < outputCunt; i++)
-                {
-                    string toName = node.GetNodeWithAttributeValue(GetOutputFieldName(i)).InnerText;
-                    OutputsFromTo.Add(Outputs[i], toName);
-                }
-                for (int i = 0; i < variableCount; i++)
-                {
-                    XmlNode variableNode = node.GetInnerBlockNode(GetVariableFieldName(i), parserInfo, new MissingBlockException(id, ""));
-                    if (variableNode != null)
-                    {
-                        VariableBlock varBlock = (VariableBlock)XmlParser.ParseBlock(variableNode, dfg, parserInfo, false, false);
-                        VariablesFromTo.Add(VariableImports[i], varBlock);
-                    }
-                }
-
-                TransformCDFGToFunctionCDFG(ProgramCDFG);
                 this.IsValidProgram = true;
             }
             catch (Exception e)
@@ -94,6 +56,66 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 this.IsValidProgram = false;
                 Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
             }
+        }
+
+        private InlineProgramInfo GetInlineProgramInfo(XmlNode node, ParserInfo parserInfo)
+        {
+            string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
+            XmlNode mutatorNode = node.TryGetNodeWithName("mutation");
+
+            string inputCountString = mutatorNode.TryGetAttributeValue(INPUT_COUNT_ATTRIBUTE_NAME);
+            string outputCountString = mutatorNode.TryGetAttributeValue(OUTPUT_COUNT_ATTRIBUTE_NAME);
+            string variableCountString = mutatorNode.TryGetAttributeValue(VARIABLE_COUNT_ATTRIBUTE_NAME);
+
+            int inputCount = int.Parse(inputCountString ?? "0");
+            int outputCunt = int.Parse(outputCountString ?? "0");
+            int variableCount = int.Parse(variableCountString ?? "0");
+
+            if (inputCount != Inputs.Length ||
+                outputCunt != Outputs.Length ||
+                variableCount != VariableImports.Length)
+            {
+                throw new InternalParseException($"Actual argument count doesn't match expected argument count when loading the program: {ProgramName}");
+            }
+
+            DFG<Block> dfg = new DFG<Block>();
+            InlineProgramInfo info = new InlineProgramInfo();
+            for (int i = 0; i < Inputs.Length; i++)
+            {
+                XmlNode inputNode = node.GetInnerBlockNode(GetInputFieldName(i), parserInfo, new MissingBlockException(id, $"Input {Inputs[i]} is missing a fluid block."));
+                if (inputNode != null)
+                {
+                    FluidInput input = XmlParser.ParseFluidInput(inputNode, dfg, parserInfo);
+                    info.InputsFromTo.Add(Inputs[i], input);
+                }
+            }
+            for (int i = 0; i < Outputs.Length; i++)
+            {
+                string toName = node.GetNodeWithAttributeValue(GetOutputFieldName(i)).InnerText;
+                info.OutputsFromTo.Add(Outputs[i], toName);
+            }
+            for (int i = 0; i < VariableImports.Length; i++)
+            {
+                XmlNode variableNode = node.GetInnerBlockNode(GetVariableFieldName(i), parserInfo, new MissingBlockException(id, ""));
+                if (variableNode != null)
+                {
+                    VariableBlock varBlock = (VariableBlock)XmlParser.ParseBlock(variableNode, dfg, parserInfo, false, false);
+                    info.VariablesFromTo.Add(VariableImports[i], varBlock);
+                }
+            }
+
+            return info;
+        }
+
+        public static string GetProgramName(XmlNode node, string id)
+        {
+            XmlNode mutatorNode = node.TryGetNodeWithName("mutation");
+            if (mutatorNode == null)
+            {
+                throw new InternalParseException(id, "No mutator was found in the inline program.");
+            }
+
+            return mutatorNode.TryGetAttributeValue(PROGRAM_NAME_ATTRIBUTE_NAME);
         }
 
         private static string GetInputFieldName(int index)
@@ -147,15 +169,15 @@ namespace BiolyCompiler.BlocklyParts.Misc
             }
         }
 
-        public void TransformCDFGToFunctionCDFG(CDFG toTransform)
+        private void TransformCDFGToFunctionCDFG(CDFG toTransform, InlineProgramInfo programInfo)
         {
             for (int i = 0; i < toTransform.Nodes.Count; i++)
             {
-                TransformDFGToFunctionDFG(toTransform.Nodes[i].dfg);
+                TransformDFGToFunctionDFG(toTransform.Nodes[i].dfg, programInfo);
             }
         }
 
-        private void TransformDFGToFunctionDFG(DFG<Block> dfg)
+        private void TransformDFGToFunctionDFG(DFG<Block> dfg, InlineProgramInfo programInfo)
         {
             //New blocks are crerated which requires new dependencies
             //and dependencies are created when they are inserted into
@@ -165,7 +187,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //copied into the given dfg.
             DFG<Block> correctOrder = new DFG<Block>();
             Dictionary<string, string> namesToReplace = new Dictionary<string, string>();
-            InputsFromTo.ForEach(x => namesToReplace.Add(x.Key, x.Value.OriginalFluidName));
+            programInfo.InputsFromTo.ForEach(x => namesToReplace.Add(x.Key, x.Value.OriginalFluidName));
 
             foreach (Node<Block> node in dfg.Nodes)
             {
@@ -200,7 +222,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 }
                 else if (block is OutputDeclaration output)
                 {
-                    string name = OutputsFromTo[output.ModuleName];
+                    string name = programInfo.OutputsFromTo[output.ModuleName];
                     correctOrder.AddNode(new Fluid(new List<FluidInput>() { new BasicInput("", name, 0, true) }, name, ""));
                 }
                 else if (//block is WasteDeclaration ||
@@ -217,14 +239,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
                         block.InputFluids[0].TrueCopy(correctOrder)
                     };
 
-                    inputs[1].OriginalFluidName = OutputsFromTo[outputUsage.ModuleName];
+                    inputs[1].OriginalFluidName = programInfo.OutputsFromTo[outputUsage.ModuleName];
                     inputs[1].UseAllFluid = true;
 
-                    correctOrder.AddNode(new Union(inputs, OutputsFromTo[outputUsage.ModuleName], block.BlockID));
+                    correctOrder.AddNode(new Union(inputs, programInfo.OutputsFromTo[outputUsage.ModuleName], block.BlockID));
                 }
                 else if (block is ImportVariable import)
                 {
-                    VariableBlock asdqwd = (VariableBlock)VariablesFromTo[import.VariableName].TrueCopy(correctOrder);
+                    VariableBlock asdqwd = (VariableBlock)programInfo.VariablesFromTo[import.VariableName].TrueCopy(correctOrder);
 
                     correctOrder.AddNode(new SetNumberVariable(asdqwd, import.VariableName, block.BlockID));
                 }
@@ -246,21 +268,21 @@ namespace BiolyCompiler.BlocklyParts.Misc
             dfg.Nodes.AddRange(correctOrder.Nodes);
             dfg.Input.AddRange(correctOrder.Input);
             dfg.Output.AddRange(correctOrder.Output);
-
-            dfg.Nodes.ForEach(x => x.value.IsDone = false);
         }
 
 
         public Direct GetProgram(ref XmlNode currentProgramXml, ParserInfo parserInfo)
         {
             string id = ParseTools.ParseID(currentProgramXml);
+            InlineProgramInfo programInfo = GetInlineProgramInfo(currentProgramXml, parserInfo);
             CDFG newProgram = ProgramCDFG.Copy();
 
-            TransformVariableNames(newProgram, parserInfo.GetUniquePostFix());
+            TransformCDFGToFunctionCDFG(newProgram, programInfo);
+            TransformVariableNames(newProgram, programInfo, parserInfo.GetUniquePostFix());
             ChangeIDs(newProgram, id);
 
             //Add new variables that this program added
-            OutputsFromTo.ForEach(x => parserInfo.AddVariable(string.Empty, VariableType.FLUID, x.Value));
+            programInfo.OutputsFromTo.ForEach(x => parserInfo.AddVariable(string.Empty, VariableType.FLUID, x.Value));
             DFG<Block> nextDFG = XmlParser.ParseNextDFG(currentProgramXml, parserInfo);
 
             DFG<Block> endDFG = newProgram.StartDFG;
@@ -293,24 +315,21 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new Direct(newProgram.StartDFG);
         }
 
-        private void TransformVariableNames(CDFG cdfg, string postfix)
+        private void TransformVariableNames(CDFG cdfg, InlineProgramInfo programInfo, string postfix)
         {
             Stack<IEnumerator<DFG<Block>>> stack = new Stack<IEnumerator<DFG<Block>>>();
             HashSet<string> readerBlacklist = new HashSet<string>();
             HashSet<string> writerBlacklist = new HashSet<string>();
 
-            InputsFromTo.ForEach(x => readerBlacklist.Add(x.Value.OriginalFluidName));
-            VariablesFromTo.ForEach(x => GetVariableBlockDependencies(x.Value.GetVariableTreeList(new List<VariableBlock>())).ForEach(y => readerBlacklist.Add(y)));
-            VariablesFromTo.ForEach(x => readerBlacklist.Add(x.Key));
-            OutputsFromTo.ForEach(x => writerBlacklist.Add(x.Value));
+            programInfo.InputsFromTo.ForEach(x => readerBlacklist.Add(x.Value.OriginalFluidName));
+            programInfo.VariablesFromTo.ForEach(x => GetVariableBlockDependencies(x.Value.GetVariableTreeList(new List<VariableBlock>())).ForEach(y => readerBlacklist.Add(y)));
+            programInfo.VariablesFromTo.ForEach(x => readerBlacklist.Add(x.Key));
+            programInfo.OutputsFromTo.ForEach(x => writerBlacklist.Add(x.Value));
 
             DFG<Block> currentDFG = cdfg.StartDFG;
-
-            HashSet<Block> goneThrough = new HashSet<Block>();
-
             do
             {
-
+                HashSet<Block> goneThrough = new HashSet<Block>();
                 foreach (Node<Block> node in currentDFG.Nodes)
                 {
                     Block block = node.value;
@@ -322,6 +341,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                             continue;
                         }
                         goneThrough.Add(blockInTree);
+
                         foreach (FluidInput fluidInput in blockInTree.InputFluids)
                         {
                             if (!readerBlacklist.Contains(fluidInput.OriginalFluidName) &&

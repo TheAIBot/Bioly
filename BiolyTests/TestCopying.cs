@@ -301,8 +301,11 @@ namespace BiolyTests
             original.AddNode(null, dfg2);
             original.StartDFG = dfg1;
 
-            CDFG copy = original.Copy();
-            CheckCopyCDFG(original, copy);
+            CDFG copy1 = original.Copy();
+            CheckCopyCDFG(original, copy1);
+
+            CDFG copy2 = original.Copy();
+            CheckCopyCDFG(original, copy2);
         }
 
         private void CheckCopyCDFG(CDFG original, CDFG copy)

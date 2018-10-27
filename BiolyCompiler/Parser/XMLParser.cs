@@ -147,10 +147,13 @@ namespace BiolyCompiler.Parser
                 case SetArrayFluid.XML_TYPE_NAME:
                     return new Direct(node, parserInfo);
                 case InlineProgram.XML_TYPE_NAME:
-                    InlineProgram program = new InlineProgram(node, dfg, parserInfo);
+                    InlineProgram program = ProgramCache.GetProgram(node, id, parserInfo);
+                    //new InlineProgram(node, parserInfo);
+                    //InlineProgram program = new InlineProgram(node, parserInfo);
                     if (!program.IsValidProgram)
                     {
-                        throw new ParseException(id, "There is program errors in the program: " + program.ProgramName);
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "There is program errors in the program: " + program.ProgramName));
+                        return null;
                     }
                     return program.GetProgram(ref node, parserInfo);
                 default:

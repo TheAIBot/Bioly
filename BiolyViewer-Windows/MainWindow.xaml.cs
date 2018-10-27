@@ -53,25 +53,25 @@ namespace BiolyViewer_Windows
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
-            ////var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
-            ////var programData = InlineProgram.LoadProgram("showcasing using inline program block");
-            //var programData = InlineProgram.LoadProgram("UsingDiluter3");
+            CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
+            //var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
+            //var programData = InlineProgram.LoadProgram("showcasing using inline program block");
+            var programData = InlineProgram.LoadProgram("UsingDiluter3");
 
-            //for (int i = 0; i < 1; i++)
-            //{
-            //    BenchmarkExecutor executor = new BenchmarkExecutor();
-            //    ProgramExecutor<string> CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
-            //    CurrentlyExecutionProgram.TimeBetweenCommands = 0;
-            //    CurrentlyExecutionProgram.ShowEmptyRectangles = false;
-            //    CurrentlyExecutionProgram.EnableOptimizations = false;
-            //    CurrentlyExecutionProgram.EnableGarbageCollection = false;
-            //    CurrentlyExecutionProgram.EnableSparseElectrodes = false;
+            for (int i = 0; i < 1; i++)
+            {
+                BenchmarkExecutor executor = new BenchmarkExecutor();
+                ProgramExecutor<string> CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
+                CurrentlyExecutionProgram.TimeBetweenCommands = 0;
+                CurrentlyExecutionProgram.ShowEmptyRectangles = false;
+                CurrentlyExecutionProgram.EnableOptimizations = true;
+                CurrentlyExecutionProgram.EnableGarbageCollection = true;
+                CurrentlyExecutionProgram.EnableSparseElectrodes = false;
 
-            //    CurrentlyExecutionProgram.Run(45, 45, programData.cdfg, false);
-            //}
+                CurrentlyExecutionProgram.Run(45, 45, programData.cdfg, false);
+            }
 
-            //this.Close();
+            this.Close();
 
             //Run in another thread to not block the UI
             await Task.Run(() =>
