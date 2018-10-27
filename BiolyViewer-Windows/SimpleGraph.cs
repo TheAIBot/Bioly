@@ -29,10 +29,16 @@ namespace BiolyViewer_Windows
         {
             var dfgNames = new Dictionary<DFG<Block>, string>();
             int dfgNameNumber = 0;
+            int nodeNameID = 0;
             foreach (var node in cdfg.Nodes)
             {
+                Dictionary<Node<Block>, string> nodeNamer = new Dictionary<Node<Block>, string>();
+                foreach (Node<Block> nodeBlock in node.dfg.Nodes)
+                {
+                    nodeNamer.Add(nodeBlock, nodeNameID++.ToString());
+                }
                 string dfgName = $"G{dfgNameNumber}";
-                var simpleGraph = DFGToSimpleGraph(node.dfg, dfgName);
+                var simpleGraph = DFGToSimpleGraph(node.dfg, dfgName, nodeNamer);
                 nodes += simpleGraph.nodes;
                 edges += simpleGraph.edges;
 
@@ -43,7 +49,7 @@ namespace BiolyViewer_Windows
             return dfgNames;
         }
 
-        private static (string nodes, string edges) DFGToSimpleGraph(DFG<Block> dfg, string dfgName)
+        private static (string nodes, string edges) DFGToSimpleGraph(DFG<Block> dfg, string dfgName, Dictionary<Node<Block>, string> nodeNamer)
         {
             string nodes = "";
             string edges = "";
@@ -52,11 +58,11 @@ namespace BiolyViewer_Windows
 
             foreach (Node<Block> node in dfg.Nodes)
             {
-                nodes += CreateNode(node.value.OutputVariable, node.value.ToString(), dfgName);
+                nodes += CreateNode(nodeNamer[node], node.value.ToString(), dfgName);
 
-                foreach (Node<Block> edgeNode in node.getOutgoingEdges())
+                foreach (Node<Block> edgeNode in node.GetOutgoingEdges())
                 {
-                    edges += CreateEdge(node.value.OutputVariable, edgeNode.value.OutputVariable);
+                    edges += CreateEdge(nodeNamer[node], nodeNamer[edgeNode]);
                 }
             }
 
@@ -64,11 +70,11 @@ namespace BiolyViewer_Windows
             nodes += CreateNode(dfgName + "-output", String.Empty, dfgName, "hidden");
             foreach (var node in dfg.Nodes.Where(x => x.GetIngoingEdges().Count == 0))
             {
-                edges += CreateEdge(dfgName + "-input", node.value.OutputVariable, "haystack");
+                edges += CreateEdge(dfgName + "-input", nodeNamer[node], "haystack");
             }
-            foreach (var node in dfg.Nodes.Where(x => x.getOutgoingEdges().Count == 0))
+            foreach (var node in dfg.Nodes.Where(x => x.GetOutgoingEdges().Count == 0))
             {
-                edges += CreateEdge(node.value.OutputVariable, dfgName + "-output", "haystack");
+                edges += CreateEdge(nodeNamer[node], dfgName + "-output", "haystack");
             }
 
             return (nodes, edges);

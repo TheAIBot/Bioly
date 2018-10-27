@@ -14,7 +14,6 @@ namespace BiolyCompiler.Parser
         public readonly CDFG cdfg = new CDFG();
         public readonly List<ParseException> ParseExceptions = new List<ParseException>();
         public readonly Dictionary<VariableType, (HashSet<string> validVariables, Stack<List<string>> scopes)> Scopes = new Dictionary<VariableType, (HashSet<string>, Stack<List<string>>)>();
-        public Dictionary<string, string> MostRecentVariableRef;
         public bool DoTypeChecks = true;
         private int Unique = 0;
 
@@ -32,8 +31,6 @@ namespace BiolyCompiler.Parser
             {
                 scope.Value.scopes.Push(new List<string>());
             }
-
-            MostRecentVariableRef = new Dictionary<string, string>();
         }
 
         public void LeftDFG()
@@ -42,8 +39,6 @@ namespace BiolyCompiler.Parser
             {
                 scope.Value.scopes.Pop().ForEach(x => scope.Value.validVariables.Remove(x));
             }
-
-            MostRecentVariableRef = null;
         }
 
         public void CheckVariable(string id, VariableType[] types, string variableName)
@@ -107,6 +102,12 @@ namespace BiolyCompiler.Parser
         {
             Unique++;
             return $"{Validator.INLINE_PROGRAM_SPECIAL_SEPARATOR}{Unique}";
+        }
+
+        public string GetUniqueAnonymousName()
+        {
+            Unique++;
+            return $"{Block.DEFAULT_NAME}{Unique}";
         }
     }
 }

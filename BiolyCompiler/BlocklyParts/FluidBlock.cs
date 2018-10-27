@@ -29,7 +29,7 @@ namespace BiolyCompiler.BlocklyParts
         {
         }
 
-        public abstract Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix);
+        public abstract Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix);
 
         public override void Update<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
@@ -60,7 +60,7 @@ namespace BiolyCompiler.BlocklyParts
                     currentDroplet++;
                 }
             }
-            BoardFluid outputFluidType = new BoardFluid(OriginalOutputVariable);
+            BoardFluid outputFluidType = new BoardFluid(OutputVariable);
             foreach (var droplet in module.GetOutputLayout().Droplets)
             {
                 droplet.SetFluidType(outputFluidType);

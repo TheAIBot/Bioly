@@ -121,7 +121,7 @@ namespace BiolyCompiler.Scheduling
             return optimalModuleTemplate;
         }
 
-        private BoardFluid RecordCompletlyNewFluidType(FluidBlock operation) => RecordCompletlyNewFluidType(operation.OriginalOutputVariable);
+        private BoardFluid RecordCompletlyNewFluidType(FluidBlock operation) => RecordCompletlyNewFluidType(operation.OutputVariable);
 
         private BoardFluid RecordCompletlyNewFluidType(String fluidName)
         {
@@ -138,11 +138,29 @@ namespace BiolyCompiler.Scheduling
         {
             //If there already are droplets associated with the fluid name
             //they must be overwritten or moved to a waste module
+            currentTime = RemoveFluidVariable(fluidName, currentTime, operation);
+
+            BoardFluid fluidType = new BoardFluid(fluidName);
+            FluidVariableLocations[fluidName] = fluidType;
+            return (fluidType, currentTime);
+        }
+
+        private int RemoveFluidVariable(string fluidName, int currentTime, FluidBlock operation)
+        {
             if (FluidVariableLocations.TryGetValue(fluidName, out BoardFluid oldFluidType))
             {
                 if (SHOULD_DO_GARBAGE_COLLECTION)
                 {
-                    currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
+                    if (oldFluidType.RefCount == 1)
+                    {
+                        currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
+                    }
+                    else
+                    {
+                        oldFluidType.RefCount--;
+                        oldFluidType.additionalNames.Remove(fluidName);
+                        FluidVariableLocations.Remove(fluidName);
+                    }
                 }
                 else
                 {
@@ -150,10 +168,9 @@ namespace BiolyCompiler.Scheduling
                 }
             }
 
-            BoardFluid fluidType = new BoardFluid(fluidName);
-            FluidVariableLocations[fluidName] = fluidType;
-            return (fluidType, currentTime);
+            return currentTime;
         }
+
 
         private static void DiscardDroplets(BoardFluid oldFluidType)
         {
@@ -230,6 +247,13 @@ namespace BiolyCompiler.Scheduling
                     case SetArrayFluid arrayRenameBlock:
                         currentTime = HandleFluidTransfers(currentTime, arrayRenameBlock);
                         assay.UpdateReadyOperations(arrayRenameBlock);
+                        break;
+                    case FluidRef fluidRefBlock:
+                        currentTime = RemoveFluidVariable(fluidRefBlock.OutputVariable, currentTime, fluidRefBlock);
+                        FluidVariableLocations.Add(fluidRefBlock.OutputVariable, FluidVariableLocations[fluidRefBlock.InputFluids.First().OriginalFluidName]);
+                        FluidVariableLocations[fluidRefBlock.OutputVariable].RefCount++;
+                        FluidVariableLocations[fluidRefBlock.OutputVariable].additionalNames.Add(fluidRefBlock.OutputVariable);
+                        assay.UpdateReadyOperations(fluidRefBlock);
                         break;
                     case FluidBlock fluidBlock:
                         currentTime = HandleFluidOperations(currentTime, fluidBlock);
@@ -359,13 +383,32 @@ namespace BiolyCompiler.Scheduling
         private int HandleFluidTransfers(int currentTime, FluidBlock nextOperation)
         {
             FluidInput input = nextOperation.InputFluids[0];
+            //setting a fluid variable to itself is usually used to initilize
+            //a variable with 0 fluid in it. So don't do anything if it already
+            //exists and wants to transfer all liquid.
+            if (nextOperation.OutputVariable == input.OriginalFluidName && 
+                input.UseAllFluid &&
+                FluidVariableLocations.ContainsKey(nextOperation.OutputVariable))
+            {
+                return currentTime;
+            }
+
             int requiredDroplets = input.GetAmountInDroplets(FluidVariableLocations);
             int originalStartTime = currentTime;
 
             //If there already exists droplets with the target fluid type (what the droplets should be renamed to),
-            //then they are overwritten:
+            //then they are overwritten. But if the overwritten droplets are the required droplets themselves
+            //then do nothing as they would otherwise be removed and then they can't be used.
             BoardFluid targetFluidType;
-            (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OriginalOutputVariable, currentTime, nextOperation);
+            if (nextOperation.OutputVariable == input.OriginalFluidName &&
+                FluidVariableLocations.ContainsKey(nextOperation.OutputVariable))
+            {
+                targetFluidType = FluidVariableLocations[nextOperation.OutputVariable];
+            }
+            else
+            {
+                (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OutputVariable, currentTime, nextOperation);
+            }
 
             FluidVariableLocations.TryGetValue(input.OriginalFluidName, out BoardFluid inputFluid);
             if (inputFluid == null)
@@ -418,7 +461,7 @@ namespace BiolyCompiler.Scheduling
             currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, requiredDroplets1, intermediateFluidtype, inputFluid1);
             currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, requiredDroplets2, intermediateFluidtype, inputFluid2);
             BoardFluid targetFluidtype;
-            (targetFluidtype, currentTime) = RecordNewFluidType(nextOperation.OriginalOutputVariable, currentTime, nextOperation);
+            (targetFluidtype, currentTime) = RecordNewFluidType(nextOperation.OutputVariable, currentTime, nextOperation);
             int targetRequiredDroplets = requiredDroplets1 + requiredDroplets2;
             currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, targetRequiredDroplets, targetFluidtype, intermediateFluidtype);
 
@@ -493,7 +536,7 @@ namespace BiolyCompiler.Scheduling
                         //If a module is not static, and it is not used anymore, it is "disolved",
                         //leaving the droplets that is inside the module behind:
                         finishedOperation.UpdateInternalDropletConcentrations();
-                        (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, currentTime, finishedOperation);
+                        (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OutputVariable, currentTime, finishedOperation);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation.BoundModule, dropletOutputFluid);
                         DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         AllUsedModules.AddRange(replacingDroplets);
@@ -509,7 +552,7 @@ namespace BiolyCompiler.Scheduling
 
                             //For the special case that the heater has size 3x3, with only one droplet inside it:
                             DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
-                            (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OriginalOutputVariable, currentTime, finishedOperation);
+                            (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OutputVariable, currentTime, finishedOperation);
                             Droplet droplet = new Droplet(dropletOutputFluid);
                             droplet.SetFluidConcentrations(heaterOperation.InputRoutes.First().Value.First().routedDroplet);
                             AllUsedModules.Add(droplet);
@@ -523,7 +566,7 @@ namespace BiolyCompiler.Scheduling
                             if (!couldBePlaced) throw new RuntimeException("Not enough space available to place a Droplet.");
                             Route dropletRoute = Router.RouteDropletToNewPosition(routingDroplet, droplet, board, currentTime);
                             currentTime = dropletRoute.getEndTime() + 1;
-                            heaterOperation.OutputRoutes.Add(heaterOperation.OriginalOutputVariable, new List<Route>() { dropletRoute});
+                            heaterOperation.OutputRoutes.Add(heaterOperation.OutputVariable, new List<Route>() { dropletRoute});
                             heaterOperation.EndTime = currentTime;
                             currentTime++;
                             

@@ -22,8 +22,8 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, BoolOPTypes opType, string id, bool canBeScheduled) : 
-            base(false, null, input, output, id, canBeScheduled)
+        public BoolOP(VariableBlock leftBlock, VariableBlock rightBlock, string output, BoolOPTypes opType, string id, bool canBeScheduled) : 
+            base(false, null, new List<string>() { leftBlock?.OutputVariable, rightBlock?.OutputVariable }, output, id, canBeScheduled)
         {
             this.OPType = opType;
             this.LeftBlock = leftBlock;
@@ -43,11 +43,18 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
             dfg.AddNode(leftBoolBlock);
             dfg.AddNode(rightBoolBlock);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(leftBoolBlock?.OutputVariable);
-            inputs.Add(rightBoolBlock?.OutputVariable);
+            return new BoolOP(leftBoolBlock, rightBoolBlock, parserInfo.GetUniqueAnonymousName(), opType, id, canBeScheduled);
+        }
 
-            return new BoolOP(leftBoolBlock, rightBoolBlock, inputs, null, opType, id, canBeScheduled);
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock leftCopy = (VariableBlock)LeftBlock.TrueCopy(dfg);
+            VariableBlock rightCopy = (VariableBlock)RightBlock.TrueCopy(dfg);
+
+            dfg.AddNode(leftCopy);
+            dfg.AddNode(rightCopy);
+
+            return new BoolOP(leftCopy, rightCopy, OutputVariable, OPType, BlockID, CanBeScheduled);
         }
 
         public static BoolOPTypes StringToBoolOPType(string id, string boolOPAsString)
@@ -128,6 +135,15 @@ namespace BiolyCompiler.BlocklyParts.BoolLogic
                     RightBlock.ToXml() +
                 "</value>" +
             "</block>";
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            LeftBlock.GetVariableTreeList(blocks);
+            RightBlock.GetVariableTreeList(blocks);
+
+            return blocks;
         }
 
         public override string ToString()

@@ -32,27 +32,38 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new DropletDeclaration(output, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block TrueCopy(DFG<Block> dfg)
         {
-            if (renamer.ContainsKey(OriginalOutputVariable))
+            return new DropletDeclaration(OutputVariable, BlockID);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
+        {
+            if (renamer.ContainsKey(OutputVariable))
             {
-                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+                renamer[OutputVariable] = OutputVariable + namePostfix;
             }
             else
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
-            return new DropletDeclaration(OriginalOutputVariable + namePostfix, BlockID);
+            return new DropletDeclaration(OutputVariable + namePostfix, BlockID);
         }
 
         public override Module getAssociatedModule()
         {
-            return new Droplet(new BoardFluid(OriginalOutputVariable));
+            return new Droplet(new BoardFluid(OutputVariable));
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()
         {
-            return "Droplet of type:" + OriginalOutputVariable + Environment.NewLine;
+            return "Droplet of type:" + OutputVariable + Environment.NewLine;
         }
     }
 }

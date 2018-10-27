@@ -98,6 +98,7 @@ namespace BiolyCompiler.Scheduling
                             case StaticDeclarationBlock block3:
                             case Fluid block4:
                             case SetArrayFluid block5:
+                            case FluidRef block6:
                                 break;
                             case Mixer block:
                                 newPriority -= Mixer.OPERATION_TIME;
@@ -140,7 +141,7 @@ namespace BiolyCompiler.Scheduling
             if (operationNode != null)
             {
                 HashSet<string> usedHeaterModules = new HashSet<string>();
-                foreach (var successorOperationNode in operationNode.getOutgoingEdges())
+                foreach (var successorOperationNode in operationNode.GetOutgoingEdges())
                 {
                     if (successorOperationNode.GetIngoingEdges().All(node => node.value.IsDone || (node.value is VariableBlock && !((VariableBlock)node.value).CanBeScheduled)))
                     {
