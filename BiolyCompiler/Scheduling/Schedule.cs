@@ -383,13 +383,32 @@ namespace BiolyCompiler.Scheduling
         private int HandleFluidTransfers(int currentTime, FluidBlock nextOperation)
         {
             FluidInput input = nextOperation.InputFluids[0];
+            //setting a fluid variable to itself is usually used to initilize
+            //a variable with 0 fluid in it. So don't do anything if it already
+            //exists and wants to transfer all liquid.
+            if (nextOperation.OutputVariable == input.OriginalFluidName && 
+                input.UseAllFluid &&
+                FluidVariableLocations.ContainsKey(nextOperation.OutputVariable))
+            {
+                return currentTime;
+            }
+
             int requiredDroplets = input.GetAmountInDroplets(FluidVariableLocations);
             int originalStartTime = currentTime;
 
             //If there already exists droplets with the target fluid type (what the droplets should be renamed to),
-            //then they are overwritten:
+            //then they are overwritten. But if the overwritten droplets are the required droplets themselves
+            //then do nothing as they would otherwise be removed and then they can't be used.
             BoardFluid targetFluidType;
-            (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OutputVariable, currentTime, nextOperation);
+            if (nextOperation.OutputVariable == input.OriginalFluidName &&
+                FluidVariableLocations.ContainsKey(nextOperation.OutputVariable))
+            {
+                targetFluidType = FluidVariableLocations[nextOperation.OutputVariable];
+            }
+            else
+            {
+                (targetFluidType, currentTime) = RecordNewFluidType(nextOperation.OutputVariable, currentTime, nextOperation);
+            }
 
             FluidVariableLocations.TryGetValue(input.OriginalFluidName, out BoardFluid inputFluid);
             if (inputFluid == null)

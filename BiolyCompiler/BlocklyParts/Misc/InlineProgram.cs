@@ -165,13 +165,30 @@ namespace BiolyCompiler.BlocklyParts.Misc
             //copied into the given dfg.
             DFG<Block> correctOrder = new DFG<Block>();
             Assay fisk = new Assay(dfg);
+
+            Dictionary<string, string> namesToReplace = new Dictionary<string, string>();
+            InputsFromTo.ForEach(x => namesToReplace.Add(x.Key, x.Value.OriginalFluidName));
+
             foreach (Block block in fisk)
             {
+                foreach (FluidInput input in block.InputFluids)
+                {
+                    if (namesToReplace.ContainsKey(input.OriginalFluidName))
+                    {
+                        input.OriginalFluidName = namesToReplace[input.OriginalFluidName];
+                    }
+                }
+
+                if (namesToReplace.ContainsKey(block.OutputVariable))
+                {
+                    namesToReplace.Remove(block.OutputVariable);
+                }
+
                 if (block is InputDeclaration)
                 {
-                    string newName = block.OutputVariable;
-                    string oldName = InputsFromTo[block.OutputVariable].OriginalFluidName;
-                    correctOrder.AddNode(new FluidRef(newName, oldName));
+                    //string newName = block.OutputVariable;
+                    //string oldName = InputsFromTo[block.OutputVariable].OriginalFluidName;
+                    //correctOrder.AddNode(new FluidRef(newName, oldName));
                 }
                 else if (block is OutputDeclaration output)
                 {
@@ -211,6 +228,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                         correctOrder.AddNode(blockTreeBlock);
                     }
                 }
+
                 fisk.UpdateReadyOperations(block);
             }
             correctOrder.FinishDFG();
