@@ -21,8 +21,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         private readonly VariableBlock LeftBlock;
         private readonly VariableBlock RightBlock;
 
-        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, List<string> input, string output, ArithOPTypes opType, string id, bool canBeScheduled) : 
-            base(false, null, input, output, id, canBeScheduled)
+        public ArithOP(VariableBlock leftBlock, VariableBlock rightBlock, string output, ArithOPTypes opType, string id, bool canBeScheduled) : 
+            base(false, null, new List<string>() { leftBlock?.OutputVariable, rightBlock?.OutputVariable }, output, id, canBeScheduled)
         {
             this.OPType = opType;
             this.LeftBlock = leftBlock;
@@ -42,11 +42,18 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             dfg.AddNode(leftArithBlock);
             dfg.AddNode(rightArithBlock);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(leftArithBlock?.OutputVariable);
-            inputs.Add(rightArithBlock?.OutputVariable);
+            return new ArithOP(leftArithBlock, rightArithBlock, parserInfo.GetUniqueAnonymousName(), opType, id, canBeScheduled);
+        }
 
-            return new ArithOP(leftArithBlock, rightArithBlock, inputs, null, opType, id, canBeScheduled);
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock leftCopy = (VariableBlock)LeftBlock.TrueCopy(dfg);
+            VariableBlock rightCopy = (VariableBlock)RightBlock.TrueCopy(dfg);
+
+            dfg.AddNode(leftCopy);
+            dfg.AddNode(rightCopy);
+
+            return new ArithOP(leftCopy, rightCopy, OutputVariable, OPType, BlockID, CanBeScheduled);
         }
 
         public static ArithOPTypes StringToArithOPType(string id, string arithOPTypeAsString)
@@ -138,6 +145,15 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
                 default:
                     throw new InternalParseException("Failed to parse the operator type.");
             }
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            LeftBlock.GetVariableTreeList(blocks);
+            RightBlock.GetVariableTreeList(blocks);
+
+            return blocks;
         }
     }
 }

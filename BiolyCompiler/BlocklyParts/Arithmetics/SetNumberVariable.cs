@@ -18,7 +18,8 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
         public const string XML_TYPE_NAME = "setNumberVariable";
         private readonly VariableBlock OperandBlock;
 
-        public SetNumberVariable(VariableBlock operandBlock, List<string> input, string output, string id) : base(true, null, input, output, id, true)
+        public SetNumberVariable(VariableBlock operandBlock, string output, string id) : 
+            base(true, null, new List<string>() { operandBlock?.OutputVariable }, output, id, true)
         {
             this.OperandBlock = operandBlock;
         }
@@ -34,10 +35,16 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
             dfg.AddNode(operandBlock);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(operandBlock?.OutputVariable);
+            return new SetNumberVariable(operandBlock, output, id);
+        }
 
-            return new SetNumberVariable(operandBlock, inputs, output, id);
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock operandCopy = (VariableBlock)OperandBlock.TrueCopy(dfg);
+
+            dfg.AddNode(operandCopy);
+
+            return new SetNumberVariable(operandCopy, OutputVariable, BlockID);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -47,7 +54,7 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
 
         public override string ToXml()
         {
-            return SetNumberVariable.ToXml(BlockID, OriginalOutputVariable, OperandBlock.ToXml(), null);
+            return SetNumberVariable.ToXml(BlockID, OutputVariable, OperandBlock.ToXml(), null);
         }
 
         public static string ToXml(string id, string output, string attachedBlocks, string nextBlocks)
@@ -71,9 +78,16 @@ namespace BiolyCompiler.BlocklyParts.Arithmetics
             return xml;
         }
 
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            OperandBlock.GetVariableTreeList(blocks);
+            return blocks;
+        }
+
         public override string ToString()
         {
-            return "Set " + OriginalOutputVariable;
+            return "Set " + OutputVariable;
         }
     }
 }

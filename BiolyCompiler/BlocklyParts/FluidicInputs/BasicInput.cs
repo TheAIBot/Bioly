@@ -15,8 +15,8 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
         public const string USE_ALL_FLUID_FIELD_NAME = "useAllFluid";
         public const string XML_TYPE_NAME = "getFluid";
 
-        public BasicInput(string id, string fluidName, string originalFluidName, float inputAmountInDroplets, bool useAllFluid) : 
-            base(id, fluidName, originalFluidName, inputAmountInDroplets, useAllFluid, null)
+        public BasicInput(string id, string originalFluidName, float inputAmountInDroplets, bool useAllFluid) : 
+            base(id, originalFluidName, inputAmountInDroplets, useAllFluid)
         {
 
         }
@@ -29,20 +29,22 @@ namespace BiolyCompiler.BlocklyParts.FluidicInputs
             {
                 parserInfo.CheckVariable(id, VariableType.FLUID, originalFluidName);
             }
-            parserInfo.MostRecentVariableRef.TryGetValue(originalFluidName, out string correctedName);
 
-            string fluidName = correctedName ?? NO_FLUID_NAME;
             float amountInML = ParseTools.ParseFloat(node, parserInfo, id, FLUID_AMOUNT_FIELD_NAME);
             bool useAllFluid = FluidInput.StringToBool(ParseTools.ParseString(node, USE_ALL_FLUID_FIELD_NAME));
 
-            return new BasicInput(id, fluidName, originalFluidName, amountInML, useAllFluid);
+            return new BasicInput(id, originalFluidName, amountInML, useAllFluid);
         }
 
-        public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override FluidInput TrueCopy(DFG<Block> dfg)
+        {
+            return new BasicInput(ID, OriginalFluidName, AmountInML, UseAllFluid);
+        }
+
+        public override FluidInput CopyInput(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             renamer.TryGetValue(OriginalFluidName, out string correctedName);
-            mostRecentRef.TryGetValue(correctedName, out string fluidName);
-            return new BasicInput(ID, fluidName, correctedName, AmountInML, UseAllFluid);
+            return new BasicInput(ID, correctedName, AmountInML, UseAllFluid);
         }
 
         public override string ToXml()

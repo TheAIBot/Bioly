@@ -15,5 +15,37 @@ namespace BiolyCompiler.Graphs
         {
             Nodes.Add((control, dfg));
         }
+
+        public void AddCDFG(CDFG cdfg)
+        {
+            foreach (var item in cdfg.Nodes)
+            {
+                Nodes.Add(item);
+            }
+        }
+
+        public CDFG Copy()
+        {
+            CDFG copy = new CDFG();
+            Dictionary<DFG<Block>, DFG<Block>> knownDFGCopys = new Dictionary<DFG<Block>, DFG<Block>>();
+            foreach ((IControlBlock control, DFG<Block> dfg) in Nodes)
+            {
+                DFG<Block> copyDFG = null;
+                if (knownDFGCopys.ContainsKey(dfg))
+                {
+                    copyDFG = knownDFGCopys[dfg];
+                }
+                else
+                {
+                    copyDFG = dfg.Copy();
+                    knownDFGCopys.Add(dfg, copyDFG);
+                }
+
+                copy.AddNode(control?.Copy(copyDFG, knownDFGCopys), copyDFG);
+            }
+
+            copy.StartDFG = knownDFGCopys[StartDFG];
+            return copy;
+        }
     }
 }

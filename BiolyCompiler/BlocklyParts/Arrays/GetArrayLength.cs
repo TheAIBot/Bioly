@@ -16,7 +16,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public const string XML_TYPE_NAME = "getArrayLength";
         public readonly string ArrayName;
 
-        public GetArrayLength(string arrayName, List<string> input, string id, bool canBeScheduled) : base(false, null, input, null, id, canBeScheduled)
+        public GetArrayLength(string arrayName, string output, string id, bool canBeScheduled) : 
+            base(false, null, new List<string>() { arrayName }, output, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
         }
@@ -27,10 +28,12 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             string arrayName = ParseTools.ParseString(node, ARRAY_NAME_FIELD_NAME);
             parserInfo.CheckVariable(id, new VariableType[] { VariableType.NUMBER_ARRAY, VariableType.FLUID_ARRAY }, arrayName);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(arrayName);
+            return new GetArrayLength(arrayName, parserInfo.GetUniqueAnonymousName(), id, canBeScheduled);
+        }
 
-            return new GetArrayLength(arrayName, inputs, id, canBeScheduled);
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new GetArrayLength(ArrayName, OutputVariable, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -44,6 +47,12 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             $"<block type=\"{XML_TYPE_NAME}\" id=\"{BlockID}\">" +
                 $"<field name=\"{ARRAY_NAME_FIELD_NAME}\">{ArrayName}</field>" +
             "</block>";
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()

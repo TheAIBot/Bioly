@@ -42,7 +42,7 @@ namespace BiolyTests.ParseBlockTests
             InputDeclaration input = (InputDeclaration)XmlParser.ParseBlock(node, null, parserInfo, true);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
-            Assert.AreEqual("a", input.OriginalOutputVariable);
+            Assert.AreEqual("a", input.OutputVariable);
             Assert.AreEqual(20, input.Amount);
         }
 
@@ -107,7 +107,7 @@ namespace BiolyTests.ParseBlockTests
             Mixer mixer = (Mixer)XmlParser.ParseBlock(node, null, parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
-            Assert.AreEqual("a", mixer.OriginalOutputVariable);
+            Assert.AreEqual("a", mixer.OutputVariable);
         }
 
         [TestMethod]
@@ -226,7 +226,7 @@ namespace BiolyTests.ParseBlockTests
             HeaterUsage heater = (HeaterUsage)XmlParser.ParseBlock(node, null, parserInfo);
 
             Assert.AreEqual(0, parserInfo.ParseExceptions.Count, parserInfo.ParseExceptions.FirstOrDefault()?.Message);
-            Assert.AreEqual("a", heater.OriginalOutputVariable);
+            Assert.AreEqual("a", heater.OutputVariable);
             Assert.AreEqual(173, heater.Temperature);
             Assert.AreEqual(39, heater.Time);
         }

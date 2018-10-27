@@ -21,8 +21,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly string ArrayName;
         public readonly VariableBlock IndexBlock;
 
-        public GetArrayNumber(VariableBlock indexBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : 
-            base(false, null, input, null, id, canBeScheduled)
+        public GetArrayNumber(VariableBlock indexBlock, string arrayName, string output, string id, bool canBeScheduled) : 
+            base(false, null, new List<string>() { indexBlock?.OutputVariable, arrayName }, output, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -39,13 +39,16 @@ namespace BiolyCompiler.BlocklyParts.Arrays
 
             dfg.AddNode(indexBlock);
 
-            parserInfo.MostRecentVariableRef.TryGetValue(arrayName, out string correctedArrayName);
+            return new GetArrayNumber(indexBlock, arrayName, parserInfo.GetUniqueAnonymousName(), id, canBeScheduled);
+        }
 
-            List<string> inputs = new List<string>();
-            inputs.Add(indexBlock?.OutputVariable);
-            inputs.Add(correctedArrayName);
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock indexCopy = (VariableBlock)IndexBlock.TrueCopy(dfg);
 
-            return new GetArrayNumber(indexBlock, arrayName, inputs, id, canBeScheduled);
+            dfg.AddNode(indexCopy);
+
+            return new GetArrayNumber(indexCopy, ArrayName, OutputVariable, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -75,6 +78,14 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                     IndexBlock.ToXml() + 
                 "</value>" +
             "</block>";
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            IndexBlock.GetVariableTreeList(blocks);
+
+            return blocks;
         }
 
         public override string ToString()

@@ -109,18 +109,6 @@ namespace BiolyCompiler.Parser
             
             dfg.AddNode(block);
 
-            //update map of most recent nodes that outputs the variable
-            //so other nodes that get their value from the node that
-            //just updated the value
-            if (parserInfo.MostRecentVariableRef.ContainsKey(block.OriginalOutputVariable))
-            {
-                parserInfo.MostRecentVariableRef[block.OriginalOutputVariable] = block.OutputVariable;
-            }
-            else
-            {
-                parserInfo.MostRecentVariableRef.Add(block.OriginalOutputVariable, block.OutputVariable);
-            }
-
             return block;
         }
 
@@ -157,15 +145,17 @@ namespace BiolyCompiler.Parser
                 case While.XML_TYPE_NAME:
                     return new While(node, dfg, parserInfo);
                 case SetArrayFluid.XML_TYPE_NAME:
-                    return new Direct(node, dfg, parserInfo);
+                    return new Direct(node, parserInfo);
                 case InlineProgram.XML_TYPE_NAME:
-                    InlineProgram program = new InlineProgram(node, dfg, parserInfo);
+                    InlineProgram program = ProgramCache.GetProgram(node, id, parserInfo);
+                    //new InlineProgram(node, parserInfo);
+                    //InlineProgram program = new InlineProgram(node, parserInfo);
                     if (!program.IsValidProgram)
                     {
-                        throw new ParseException(program.ID, "There is program errors in the program: " + program.ProgramName);
+                        parserInfo.ParseExceptions.Add(new ParseException(id, "There is program errors in the program: " + program.ProgramName));
+                        return null;
                     }
-                    program.AppendProgramXml(ref node, parserInfo);
-                    return new Direct(node, dfg, parserInfo);
+                    return program.GetProgram(ref node, parserInfo);
                 default:
                     throw new UnknownBlockException(id);
             }

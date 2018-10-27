@@ -23,8 +23,8 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         public readonly VariableBlock IndexBlock;
         public readonly VariableBlock NumberBlock;
 
-        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, List<string> input, string id, bool canBeScheduled) : 
-            base(true, null, input, arrayName, id, canBeScheduled)
+        public SetArrayNumber(VariableBlock indexBlock, VariableBlock numberBlock, string arrayName, string id, bool canBeScheduled) : 
+            base(true, null, new List<string>() { indexBlock?.OutputVariable, numberBlock?.OutputVariable }, arrayName, id, canBeScheduled)
         {
             this.ArrayName = arrayName;
             this.IndexBlock = indexBlock;
@@ -46,11 +46,18 @@ namespace BiolyCompiler.BlocklyParts.Arrays
             dfg.AddNode(indexBlock);
             dfg.AddNode(numberInput);
 
-            List<string> inputs = new List<string>();
-            inputs.Add(indexBlock?.OutputVariable);
-            inputs.Add(numberInput?.OutputVariable);
+            return new SetArrayNumber(indexBlock, numberInput, arrayName, id, canBeScheduled);
+        }
 
-            return new SetArrayNumber(indexBlock, numberInput, arrayName, inputs, id, canBeScheduled);
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            VariableBlock indexCopy = (VariableBlock)IndexBlock.TrueCopy(dfg);
+            VariableBlock numberCopy = (VariableBlock)NumberBlock.TrueCopy(dfg);
+
+            dfg.AddNode(indexCopy);
+            dfg.AddNode(numberCopy);
+
+            return new SetArrayNumber(indexCopy, numberCopy, ArrayName, BlockID, CanBeScheduled);
         }
 
         public override float Run<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
@@ -62,6 +69,10 @@ namespace BiolyCompiler.BlocklyParts.Arrays
         {
             base.Update(variables, executor, dropPositions);
 
+            if (!variables.ContainsKey(FluidArray.GetArrayLengthVariable(ArrayName)))
+            {
+
+            }
             int arrayLength = (int)variables[FluidArray.GetArrayLengthVariable(ArrayName)];
             float floatIndex = IndexBlock.Run(variables, executor, dropPositions);
             if (float.IsInfinity(floatIndex) || float.IsNaN(floatIndex))
@@ -75,12 +86,21 @@ namespace BiolyCompiler.BlocklyParts.Arrays
                 throw new ArrayIndexOutOfRange(BlockID, ArrayName, arrayLength, index);
             }
 
-            OriginalOutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
+            OutputVariable = FluidArray.GetArrayIndexName(ArrayName, index);
         }
 
         public override string ToXml()
         {
             throw new InternalParseException(BlockID, "Can't create xml of this block.");
+        }
+
+        public override List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks)
+        {
+            blocks.Add(this);
+            IndexBlock.GetVariableTreeList(blocks);
+            NumberBlock.GetVariableTreeList(blocks);
+
+            return blocks;
         }
 
         public override string ToString()

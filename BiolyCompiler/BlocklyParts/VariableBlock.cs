@@ -24,9 +24,18 @@ namespace BiolyCompiler.BlocklyParts
         
         public virtual (string variableName, float value) ExecuteBlock<T>(Dictionary<string, float> variables, CommandExecutor<T> executor, Dictionary<string, BoardFluid> dropPositions)
         {
-            return (OriginalOutputVariable, Run(variables, executor, dropPositions));
+            return (OutputVariable, Run(variables, executor, dropPositions));
         }
 
         public abstract string ToXml();
+
+        public abstract List<VariableBlock> GetVariableTreeList(List<VariableBlock> blocks);
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.AddRange(GetVariableTreeList(new List<VariableBlock>()));
+
+            return blocks;
+        }
     }
 }

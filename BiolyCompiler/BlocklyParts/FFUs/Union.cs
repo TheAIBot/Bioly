@@ -41,20 +41,24 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Union(inputs, output, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block TrueCopy(DFG<Block> dfg)
         {
-            if (!renamer.ContainsKey(OriginalOutputVariable))
+            return new Union(InputFluids.Copy(dfg), OutputVariable, BlockID);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
+        {
+            if (!renamer.ContainsKey(OutputVariable))
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
 
             List<FluidInput> inputFluids = new List<FluidInput>();
-            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
 
-            renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
-            return new Union(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+            renamer[OutputVariable] = OutputVariable + namePostfix;
+            return new Union(inputFluids, OutputVariable + namePostfix, BlockID);
         }
-
 
         public override List<Command> ToCommands()
         {
@@ -74,6 +78,11 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return routeCommands;
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
 
         public string ToXml()
         {
@@ -95,7 +104,7 @@ namespace BiolyCompiler.BlocklyParts.FFUs
 
         public override string ToString()
         {
-            return "Union: " + OriginalOutputVariable;
+            return "Union: " + OutputVariable;
         }
     }
 }

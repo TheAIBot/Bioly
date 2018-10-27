@@ -39,27 +39,38 @@ namespace BiolyCompiler.BlocklyParts.Declarations
             return new InputDeclaration(output, amount, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block TrueCopy(DFG<Block> dfg)
         {
-            if (renamer.ContainsKey(OriginalOutputVariable))
+            return new InputDeclaration(OutputVariable, Amount, BlockID);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
+        {
+            if (renamer.ContainsKey(OutputVariable))
             {
-                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+                renamer[OutputVariable] = OutputVariable + namePostfix;
             }
             else
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
-            return new InputDeclaration(OriginalOutputVariable + namePostfix, Amount, BlockID);
+            return new InputDeclaration(OutputVariable + namePostfix, Amount, BlockID);
         }
 
         public override Module getAssociatedModule()
         {
-            return new InputModule(new BoardFluid(OriginalOutputVariable), (int)Amount);
+            return new InputModule(new BoardFluid(OutputVariable), (int)Amount);
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
 
         public override string ToString()
         {
-            return OriginalOutputVariable + Environment.NewLine +
+            return OutputVariable + Environment.NewLine +
                    "Amount: " + Amount.ToString("N2") + " drops";
         }
     }

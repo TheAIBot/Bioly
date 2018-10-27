@@ -33,18 +33,23 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return new Fluid(inputs, output, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block TrueCopy(DFG<Block> dfg)
         {
-            if (!renamer.ContainsKey(OriginalOutputVariable))
+            return new Fluid(InputFluids.Copy(dfg), OutputVariable, BlockID);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
+        {
+            if (!renamer.ContainsKey(OutputVariable))
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
 
             List<FluidInput> inputFluids = new List<FluidInput>();
-            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
 
-            renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
-            return new Fluid(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+            renamer[OutputVariable] = OutputVariable + namePostfix;
+            return new Fluid(inputFluids, OutputVariable + namePostfix, BlockID);
         }
 
         public static Block Parse(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
@@ -90,6 +95,12 @@ namespace BiolyCompiler.BlocklyParts.Misc
             return routeCommands;
         }
 
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
+        }
+
         public static string ToXml(string id, string outputFluidName, string attachedBlock, string nextBlocks)
         {
             string xml =
@@ -113,7 +124,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
         public override string ToString()
         {
-            return $"{InputFluids[0].OriginalFluidName} -> {OriginalOutputVariable}";
+            return $"{InputFluids[0].OriginalFluidName} -> {OutputVariable}";
         }
     }
 }

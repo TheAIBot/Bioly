@@ -42,25 +42,30 @@ namespace BiolyCompiler.BlocklyParts.FFUs
             return new Mixer(inputs, output, id);
         }
 
-        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> mostRecentRef, Dictionary<string, string> renamer, string namePostfix)
+        public override Block TrueCopy(DFG<Block> dfg)
+        {
+            return new Mixer(InputFluids.Copy(dfg), OutputVariable, BlockID);
+        }
+
+        public override Block CopyBlock(DFG<Block> dfg, Dictionary<string, string> renamer, string namePostfix)
         {
             List<FluidInput> inputFluids = new List<FluidInput>();
-            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, mostRecentRef, renamer, namePostfix)));
+            InputFluids.ToList().ForEach(x => inputFluids.Add(x.CopyInput(dfg, renamer, namePostfix)));
 
-            if (renamer.ContainsKey(OriginalOutputVariable))
+            if (renamer.ContainsKey(OutputVariable))
             {
-                renamer[OriginalOutputVariable] = OriginalOutputVariable + namePostfix;
+                renamer[OutputVariable] = OutputVariable + namePostfix;
             }
             else
             {
-                renamer.Add(OriginalOutputVariable, OriginalOutputVariable + namePostfix);
+                renamer.Add(OutputVariable, OutputVariable + namePostfix);
             }
-            return new Mixer(inputFluids, OriginalOutputVariable + namePostfix, BlockID);
+            return new Mixer(inputFluids, OutputVariable + namePostfix, BlockID);
         }
 
         public override string ToString()
         {
-            return "Mixer";
+            return $"Mixer: {OutputVariable}";
         }
 
         public override Module getAssociatedModule()
@@ -88,6 +93,12 @@ namespace BiolyCompiler.BlocklyParts.FFUs
                 BoundModule.GetOutputLayout().Droplets[1].FluidConcentrations[fluidName] = sumOfConcetrations / 2;
             }
 
+        }
+
+        public override List<Block> GetBlockTreeList(List<Block> blocks)
+        {
+            blocks.Add(this);
+            return blocks;
         }
     }
 }
