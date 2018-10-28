@@ -61,7 +61,7 @@ namespace BiolyCompiler
                 }
                 else
                 {
-                    OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
+                    OptimizedDFG = OptimizeCDFG<T>(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
                 }
 
                 if (KeepRunning.IsCancellationRequested)
@@ -79,7 +79,7 @@ namespace BiolyCompiler
                     scheduler.PlaceStaticModules(staticModuleDeclarations);
                 }
 
-                int time = scheduler.ListScheduling(OptimizedDFG);
+                int time = scheduler.ListScheduling(OptimizedDFG, Executor);
                 List<Block> scheduledOperations = scheduler.ScheduledOperations;
 
                 List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
@@ -109,7 +109,8 @@ namespace BiolyCompiler
                     runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, scheduler.FluidVariableLocations));
 
                     HashSet<string> fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                    int time = scheduler.ListScheduling(runningGraph);
+                    HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
+                    int time = scheduler.ListScheduling(runningGraph, Executor);
                     List<Block> scheduledOperations = scheduler.ScheduledOperations;
                     foreach (var item in scheduler.OutputtedDroplets)
                     {
@@ -123,7 +124,9 @@ namespace BiolyCompiler
                         }
                     }
                     HashSet<string> fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
+                    HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
                     scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
+                    scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
                     if (firstRun)
                     {
@@ -131,11 +134,6 @@ namespace BiolyCompiler
                         StartExecutor(graph.StartDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
                         firstRun = false;
                     }
-
-                    HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
-                    UpdateVariables(variables, Executor, scheduledOperations, scheduler.FluidVariableLocations);
-                    HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
-                    scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
                     List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
                     SendCommands(commandTimeline, ref oldRectangles, scheduler.rectanglesAtDifferentTimes);
@@ -195,10 +193,9 @@ namespace BiolyCompiler
             return cdfg.Nodes.All(x => x.dfg.Nodes.All(y => !(y is INonDeterministic)));
         }
 
-        public static DFG<Block> OptimizeCDFG(int width, int height, CDFG graph, CancellationToken keepRunning, bool useGC)
+        public static DFG<Block> OptimizeCDFG<T>(int width, int height, CDFG graph, CancellationToken keepRunning, bool useGC)
         {
             DFG<Block> runningGraph = graph.StartDFG;
-            Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Stack<List<string>> scopedVariables = new Stack<List<string>>();
 
@@ -223,22 +220,16 @@ namespace BiolyCompiler
 
             while (runningGraph != null)
             {
-                //some blocks are able to  change their originaloutputvariable.
-                //Those blocks will always appear at the top of a dfg  so the first
-                //thing that should be done is to update these blocks originaloutputvariable.
-                runningGraph.Nodes.ForEach(node => node.value.Update<T>(variables, null, scheduler.FluidVariableLocations));
-
                 HashSet<string> fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                int time = scheduler.ListScheduling(runningGraph);
+                HashSet<string> numberVariablesBefore = scheduler.Variables.Keys.ToHashSet();
+                int time = scheduler.ListScheduling<T>(runningGraph, null);
                 List<Block> scheduledOperations = scheduler.ScheduledOperations;
                 HashSet<string> fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
+                HashSet<string> numberVariablesAfter = scheduler.Variables.Keys.ToHashSet();
                 scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
-
-
-                HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
-                UpdateVariables(variables, null, scheduledOperations, scheduler.FluidVariableLocations);
-                HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
                 scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
+                
+
 
                 runningGraph.Nodes.ForEach(x => x.value.IsDone = false);
 
@@ -264,10 +255,10 @@ namespace BiolyCompiler
 
                 var dropPositionsCopy = scheduler.FluidVariableLocations.ToDictionary();
                 fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                numberVariablesBefore = variables.Keys.ToHashSet();
-                runningGraph = GetNextGraph(graph, runningGraph, null, variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
+                numberVariablesBefore = scheduler.Variables.Keys.ToHashSet();
+                runningGraph = GetNextGraph(graph, runningGraph, null, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
                 fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                numberVariablesAfter = variables.Keys.ToHashSet();
+                numberVariablesAfter = scheduler.Variables.Keys.ToHashSet();
                 List<string> fluidsOutOfScope = fluidVariablesBefore.Except(fluidVariablesAfter).ToList();
                 List<string> numbersOutOfScope = numberVariablesBefore.Except(numberVariablesAfter).ToList();
 
@@ -356,29 +347,6 @@ namespace BiolyCompiler
             }
 
             return commandTimeline;
-        }
-
-        private static void UpdateVariables(Dictionary<string, float> variables, CommandExecutor<T> executor, List<Block> scheduledOperations, Dictionary<string, BoardFluid> dropPositions)
-        {
-            foreach (Block operation in scheduledOperations)
-            {
-                if (operation is VariableBlock varBlock)
-                {
-                    (string variableName, float value) = varBlock.ExecuteBlock(variables, executor, dropPositions);
-                    if (float.IsInfinity(value) || float.IsNaN(value))
-                    {
-                        throw new InvalidNumberException(varBlock.BlockID, value);
-                    }
-                    if (!variables.ContainsKey(variableName))
-                    {
-                        variables.Add(variableName, value);
-                    }
-                    else
-                    {
-                        variables[variableName] = value;
-                    }
-                }
-            }
         }
 
         private void SendCommands(List<Command>[] commandTimeline, ref Rectangle[] oldRectangles, Dictionary<int, Rectangle[]> boardLayouts)

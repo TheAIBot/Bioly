@@ -15,6 +15,7 @@ using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.Arrays;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Exceptions;
+using BiolyCompiler.Commands;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -26,6 +27,7 @@ namespace BiolyCompiler.Scheduling
         // For debuging. Used when printing the board to the console, for visulization purposes.
         public List<Module> AllUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
+        public Dictionary<string, float> Variables = new Dictionary<string, float>();
         public Dictionary<string, Module> StaticModules = new Dictionary<string, Module>();
         public SimplePriorityQueue<FluidBlock> CurrentlyRunningOpertions = new SimplePriorityQueue<FluidBlock>();
         public List<Block> ScheduledOperations = new List<Block>();
@@ -203,7 +205,7 @@ namespace BiolyCompiler.Scheduling
             Implements/based on the list scheduling based algorithm found in 
             "Fault-tolerant digital microfluidic biochips - compilation and synthesis" page 72.
          */
-        public int ListScheduling(DFG<Block> dfg)
+        public int ListScheduling<T>(DFG<Block> dfg, CommandExecutor<T> executor)
         {
             Assay assay = new Assay(dfg);
 
@@ -218,10 +220,11 @@ namespace BiolyCompiler.Scheduling
 
             foreach (Block nextOperation in assay)
             {
+                nextOperation.Update<T>(Variables, executor, FluidVariableLocations);
                 switch (nextOperation)
                 {
                     case VariableBlock varBlock:
-                        HandleVariableOperation(currentTime, varBlock);
+                        HandleVariableOperation<T>(currentTime, varBlock, executor);
                         assay.UpdateReadyOperations(varBlock);
                         break;
                     case Union unionBlock:
@@ -407,13 +410,31 @@ namespace BiolyCompiler.Scheduling
             return currentTime;
         }
 
-        private void HandleVariableOperation(int currentTime, VariableBlock nextOperation)
+        private void HandleVariableOperation<T>(int currentTime, VariableBlock nextOperation, CommandExecutor<T> executor)
         {
             //This is a mathematical operation, and it should be scheduled to run as soon as possible
             if (nextOperation.CanBeScheduled)
             {
+                UpdateVariables<T>(nextOperation, executor);
+
                 //This is a mathematical operation, and it should be scheduled to run as soon as possible
                 UpdateSchedule(nextOperation, currentTime, currentTime);
+            }
+        }
+        private void UpdateVariables<T>(VariableBlock varBlock, CommandExecutor<T> executor)
+        {
+            (string variableName, float value) = varBlock.ExecuteBlock(Variables, executor, FluidVariableLocations);
+            if (float.IsInfinity(value) || float.IsNaN(value))
+            {
+                throw new InvalidNumberException(varBlock.BlockID, value);
+            }
+            if (!Variables.ContainsKey(variableName))
+            {
+                Variables.Add(variableName, value);
+            }
+            else
+            {
+                Variables[variableName] = value;
             }
         }
 

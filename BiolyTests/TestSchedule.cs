@@ -61,7 +61,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -114,7 +114,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -169,7 +169,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -223,7 +223,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -277,7 +277,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -329,7 +329,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -383,7 +383,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -436,7 +436,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -488,7 +488,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -538,7 +538,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -589,7 +589,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -642,7 +642,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -695,7 +695,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -748,7 +748,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -803,7 +803,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -857,7 +857,7 @@ namespace BiolyTests.ScheduleTests
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -884,7 +884,7 @@ namespace BiolyTests.ScheduleTests
             Schedule schedule = new Schedule(BOARD_WIDTH, BOARD_HEIGHT);
             schedule.SHOULD_DO_GARBAGE_COLLECTION = enableGC;
             schedule.PlaceStaticModules(dfg.Nodes.Select(x => x.value).OfType<StaticDeclarationBlock>().ToList());
-            int time = schedule.ListScheduling(dfg);
+            int time = schedule.ListScheduling<string>(dfg, null);
             return (schedule, time);
         }
 
