@@ -273,20 +273,7 @@ namespace BiolyCompiler
 
                 if (useGC)
                 {
-                    foreach (string wasteFluidName in fluidsOutOfScope)
-                    {
-                        if (renamer.TryGetValue(wasteFluidName, out string correctedName))
-                        {
-                            int dropletCount = dropPositionsCopy[wasteFluidName].GetNumberOfDropletsAvailable();
-                            if (dropletCount > 0)
-                            {
-                                List<FluidInput> fluidInputs = new List<FluidInput>();
-                                fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
-
-                                bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
-                            }
-                        }
-                    }
+                    AddWasteBlocks(fluidsOutOfScope, bigDFG, renamer, dropPositionsCopy, staticModuleDeclarations);
                 }
 
                 fluidsOutOfScope.ForEach(x => renamer.Remove(x));
@@ -302,30 +289,34 @@ namespace BiolyCompiler
 
             if (useGC)
             {
-                var staticBlocks = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock);
-                foreach (string wasteFluidName in scopedVariables.Pop())
-                {
-                    if (staticBlocks.Any(x => x.value.OutputVariable == wasteFluidName))
-                    {
-                        continue;
-                    }
-
-                    if (renamer.TryGetValue(wasteFluidName, out string correctedName)) 
-                    {
-                        int dropletCount = scheduler.FluidVariableLocations[wasteFluidName].GetNumberOfDropletsAvailable();
-                        if (dropletCount > 0)
-                        {
-                            List<FluidInput> fluidInputs = new List<FluidInput>();
-                            fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
-
-                            bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
-                        }
-                    }
-                }
+                AddWasteBlocks(scopedVariables.Pop(), bigDFG, renamer, scheduler.FluidVariableLocations, staticModuleDeclarations);
             }
 
             bigDFG.FinishDFG();
             return bigDFG;
+        }
+
+        private static void AddWasteBlocks(List<string> fluidsOutOfScope, DFG<Block> bigDFG, Dictionary<string, string> renamer, Dictionary<string, BoardFluid> fluidLocations, List<StaticDeclarationBlock> staticModuleDeclarations)
+        {
+            foreach (string wasteFluidName in fluidsOutOfScope)
+            {
+                if (staticModuleDeclarations.Any(x => x.OutputVariable == wasteFluidName))
+                {
+                    continue;
+                }
+
+                if (renamer.TryGetValue(wasteFluidName, out string correctedName))
+                {
+                    int dropletCount = fluidLocations[wasteFluidName].GetNumberOfDropletsAvailable();
+                    if (dropletCount > 0)
+                    {
+                        List<FluidInput> fluidInputs = new List<FluidInput>();
+                        fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
+
+                        bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
+                    }
+                }
+            }
         }
 
         private void StartExecutor(DFG<Block> graph, List<Module> staticModules, bool[] usedElectrodes)
