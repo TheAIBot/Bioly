@@ -57,28 +57,19 @@ namespace BiolyTests.ScheduleTests
             program.AddMixerSegment("c", "a", 1, false, "b", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 9),
+                ("b", 9),
+                ("c", 2),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Mixer),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(1, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Mixer);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 9);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -110,30 +101,21 @@ namespace BiolyTests.ScheduleTests
             program.AddMixerSegment("d", "c", 1, false, "b", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 9),
+                ("b", 8),
+                ("c", 1),
+                ("d", 2),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Mixer),
+                typeof(Mixer),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Mixer);
-            Assert.IsTrue(scheduledBlocks[1] is Mixer);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 2);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -165,29 +147,20 @@ namespace BiolyTests.ScheduleTests
             program.AddMixerSegment("c", "c", 1, false, "b", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 9),
+                ("b", 8),
+                ("c", 2),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Mixer),
+                typeof(Mixer),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Mixer);
-            Assert.IsTrue(scheduledBlocks[1] is Mixer);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -219,30 +192,21 @@ namespace BiolyTests.ScheduleTests
             program.AddMixerSegment("d", "a", 1, false, "b", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 8),
+                ("b", 8),
+                ("c", 2),
+                ("d", 2),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Mixer),
+                typeof(Mixer),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Mixer);
-            Assert.IsTrue(scheduledBlocks[1] is Mixer);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 8);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 2);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -273,27 +237,18 @@ namespace BiolyTests.ScheduleTests
             program.AddHeaterSegment("c", "b", 10, 27, "a", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 9),
+                ("c", 1),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(HeaterUsage),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(1, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is HeaterUsage);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -325,29 +280,20 @@ namespace BiolyTests.ScheduleTests
             program.AddHeaterSegment("d", "b", 10, 27, "c", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 9),
+                ("c", 0),
+                ("d", 1),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(HeaterUsage),
+                typeof(HeaterUsage),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is HeaterUsage);
-            Assert.IsTrue(scheduledBlocks[1] is HeaterUsage);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 0);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 1);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -379,28 +325,19 @@ namespace BiolyTests.ScheduleTests
             program.AddHeaterSegment("c", "b", 10, 27, "c", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 9),
+                ("c", 1),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(HeaterUsage),
+                typeof(HeaterUsage),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is HeaterUsage);
-            Assert.IsTrue(scheduledBlocks[1] is HeaterUsage);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -432,29 +369,20 @@ namespace BiolyTests.ScheduleTests
             program.AddHeaterSegment("d", "b", 10, 27, "a", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 8),
+                ("c", 1),
+                ("d", 1),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(HeaterUsage),
+                typeof(HeaterUsage),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is HeaterUsage);
-            Assert.IsTrue(scheduledBlocks[1] is HeaterUsage);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 1);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -484,27 +412,18 @@ namespace BiolyTests.ScheduleTests
             program.AddFluidSegment("b", "a", 4, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 6),
+                ("b", 4),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Fluid),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(1, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Fluid);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 6);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 4);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -534,27 +453,18 @@ namespace BiolyTests.ScheduleTests
             program.AddFluidSegment("b", "b", 1, true);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 10),
+                ("b", 0),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Fluid),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(1, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Fluid);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 10);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 0);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -585,29 +495,20 @@ namespace BiolyTests.ScheduleTests
             program.AddFluidSegment("c", "b", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 6),
+                ("b", 3),
+                ("c", 1),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Fluid),
+                typeof(Fluid),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Fluid);
-            Assert.IsTrue(scheduledBlocks[1] is Fluid);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 6);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 3);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -638,29 +539,20 @@ namespace BiolyTests.ScheduleTests
             program.AddFluidSegment("c", "a", 1, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 5),
+                ("b", 4),
+                ("c", 1),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Fluid),
+                typeof(Fluid),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Fluid);
-            Assert.IsTrue(scheduledBlocks[1] is Fluid);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 5);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 4);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 1);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -691,28 +583,19 @@ namespace BiolyTests.ScheduleTests
             program.AddUnionSegment("c", "a", 1, false, "b", 3, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 9),
+                ("b", 7),
+                ("c", 4),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Union),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(1, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Union);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 9);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 4);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -744,30 +627,21 @@ namespace BiolyTests.ScheduleTests
             program.AddUnionSegment("d", "a", 1, false, "c", 2, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 8),
+                ("b", 7),
+                ("c", 2),
+                ("d", 3),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Union),
+                typeof(Union),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Union);
-            Assert.IsTrue(scheduledBlocks[1] is Union);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 2);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 3);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -799,29 +673,20 @@ namespace BiolyTests.ScheduleTests
             program.AddUnionSegment("c", "a", 1, false, "c", 2, false);
             program.Finish();
 
-            (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
-            if (enableOptimizations)
+            (string, int)[] leftoverFluids = new (string, int)[]
             {
-                CDFG newCDFG = new CDFG();
-                newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
-            }
-            Assert.AreEqual(0, exceptions.Count);
+                ("a", 8),
+                ("b", 7),
+                ("c", 3),
+            };
 
-            var data = ScheduleDFG(cdfg.StartDFG, enableGC);
-            Schedule scheduler = data.scheduler;
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Union),
+                typeof(Union),
+            };
 
-            List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Union);
-            Assert.IsTrue(scheduledBlocks[1] is Union);
-
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 7);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 3);
-
-            VerifyDFGTimings(cdfg.StartDFG, data.time);
-
-            RectangleTestTools.VerifyBoards(scheduler.rectanglesAtDifferentTimes.Select(x => x.Value).ToList(), BOARD_WIDTH, BOARD_HEIGHT);
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
         }
 
         [TestMethod]
@@ -853,11 +718,32 @@ namespace BiolyTests.ScheduleTests
             program.AddUnionSegment("d", "a", 1, false, "b", 2, false);
             program.Finish();
 
+            (string, int)[] leftoverFluids = new (string, int)[]
+            {
+                ("a", 8),
+                ("b", 5),
+                ("c", 4),
+                ("d", 3),
+            };
+
+            Type[] blockTypes = new Type[]
+            {
+                typeof(Union),
+                typeof(Union),
+            };
+
+            CheckScheduler(program, leftoverFluids, blockTypes, enableGC, enableOptimizations);
+        }
+
+        private static void CheckScheduler(JSProgram program, (string, int)[] leftoverFluid, Type[] blockTypes, bool enableGC, bool enableOptimizations)
+        {
             (CDFG cdfg, var exceptions) = TestTools.ParseProgram(program);
             if (enableOptimizations)
             {
                 CDFG newCDFG = new CDFG();
                 newCDFG.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(100, 100, cdfg, new System.Threading.CancellationToken(), enableGC);
+                newCDFG.AddNode(null, newCDFG.StartDFG);
+                cdfg = newCDFG;
             }
             Assert.AreEqual(0, exceptions.Count);
 
@@ -865,14 +751,25 @@ namespace BiolyTests.ScheduleTests
             Schedule scheduler = data.scheduler;
 
             List<Block> scheduledBlocks = scheduler.ScheduledOperations;
-            Assert.AreEqual(2, scheduledBlocks.Count);
-            Assert.IsTrue(scheduledBlocks[0] is Union);
-            Assert.IsTrue(scheduledBlocks[1] is Union);
+            if (enableGC)
+            {
+                scheduledBlocks.RemoveAll(x => x is WasteUsage);
+            }
 
-            CheckFluidInfo(scheduler.FluidVariableLocations, "a", 8);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "b", 5);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "c", 4);
-            CheckFluidInfo(scheduler.FluidVariableLocations, "d", 3);
+            Assert.AreEqual(blockTypes.Length, scheduledBlocks.Count);
+            for (int i = 0; i < blockTypes.Length; i++)
+            {
+                Assert.AreEqual(scheduledBlocks[i].GetType(), blockTypes[i]);
+            }
+
+            Assert.AreEqual(leftoverFluid.Length, scheduler.FluidVariableLocations.Count);
+            if (!enableGC && !enableOptimizations)
+            {
+                for (int i = 0; i < leftoverFluid.Length; i++)
+                {
+                    CheckFluidInfo(scheduler.FluidVariableLocations, leftoverFluid[i].Item1, leftoverFluid[i].Item2);
+                }
+            }
 
             VerifyDFGTimings(cdfg.StartDFG, data.time);
 
@@ -891,7 +788,7 @@ namespace BiolyTests.ScheduleTests
         private static void CheckFluidInfo(Dictionary<string, BoardFluid> fluids, string fluidName, int expectedDroplets)
         {
             Assert.IsTrue(fluids.ContainsKey(fluidName));
-            Assert.AreEqual(fluids[fluidName].GetNumberOfDropletsAvailable(), expectedDroplets);
+            Assert.AreEqual(expectedDroplets, fluids[fluidName].GetNumberOfDropletsAvailable());
         }
 
         private static void VerifyDFGTimings(DFG<Block> dfg, int completionTime)

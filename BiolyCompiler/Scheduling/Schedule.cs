@@ -469,6 +469,7 @@ namespace BiolyCompiler.Scheduling
             (targetFluidtype, currentTime) = RecordNewFluidType(nextOperation.OutputVariable, currentTime, nextOperation);
             int targetRequiredDroplets = requiredDroplets1 + requiredDroplets2;
             currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, targetRequiredDroplets, targetFluidtype, intermediateFluidtype);
+            FluidVariableLocations.Remove(RENAME_FLUIDNAME_STRING);
 
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
             return currentTime;
