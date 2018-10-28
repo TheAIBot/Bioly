@@ -285,20 +285,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
             programInfo.OutputsFromTo.ForEach(x => parserInfo.AddVariable(string.Empty, VariableType.FLUID, x.Value));
             DFG<Block> nextDFG = XmlParser.ParseNextDFG(currentProgramXml, parserInfo);
 
-            DFG<Block> endDFG = newProgram.StartDFG;
-            while (endDFG != null)
-            {
-                IControlBlock control = newProgram.Nodes.Single(x => x.dfg == endDFG).control;
-                if (control != null && control.GetEndDFG() != null)
-                {
-                    endDFG = control.GetEndDFG();
-                }
-                else
-                {
-                    break;
-                }
-            }
 
+
+            DFG<Block> endDFG = newProgram.GetEndDFGInFirstScope();
             int i = newProgram.Nodes.FindIndex(x => x.dfg == endDFG);
             if (newProgram.Nodes[i].control == null)
             {
