@@ -61,7 +61,7 @@ namespace BiolyCompiler.Parser
                 {
                     if (IsDFGBreaker(node, dfg) && canFirstBlockBeControlFlow)
                     {
-                        controlBlock = ParseDFGBreaker(ref node, dfg, parserInfo);
+                        controlBlock = ParseDFGBreaker(node, dfg, parserInfo);
                         break;
                     }
                     canFirstBlockBeControlFlow = true;
@@ -69,7 +69,7 @@ namespace BiolyCompiler.Parser
                     Block block = null;
                     try
                     {
-                        block = ParseAndAddNodeToDFG(ref node, dfg, parserInfo, allowDeclarationBlocks);
+                        block = ParseAndAddNodeToDFG(node, dfg, parserInfo, allowDeclarationBlocks);
                     }
                     catch (ParseException e)
                     {
@@ -103,9 +103,9 @@ namespace BiolyCompiler.Parser
             }
         }
 
-        internal static Block ParseAndAddNodeToDFG(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false)
+        internal static Block ParseAndAddNodeToDFG(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false)
         {
-            Block block = ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks);
+            Block block = ParseBlock(node, dfg, parserInfo, allowDeclarationBlocks);
             
             dfg.AddNode(block);
 
@@ -132,7 +132,7 @@ namespace BiolyCompiler.Parser
             }
         }
 
-        private static IControlBlock ParseDFGBreaker(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
+        private static IControlBlock ParseDFGBreaker(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string blockType = node.Attributes[Block.TYPE_FIELD_NAME].Value;
@@ -155,7 +155,7 @@ namespace BiolyCompiler.Parser
                         parserInfo.ParseExceptions.Add(new ParseException(id, "There is program errors in the program: " + program.ProgramName));
                         return null;
                     }
-                    return program.GetProgram(ref node, parserInfo);
+                    return program.GetProgram(node, parserInfo);
                 default:
                     throw new UnknownBlockException(id);
             }
@@ -174,11 +174,6 @@ namespace BiolyCompiler.Parser
         }
 
         public static Block ParseBlock(XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false, bool canBeScheduled = true)
-        {
-            return ParseBlock(ref node, dfg, parserInfo, allowDeclarationBlocks, canBeScheduled);
-        }
-
-        public static Block ParseBlock(ref XmlNode node, DFG<Block> dfg, ParserInfo parserInfo, bool allowDeclarationBlocks = false, bool canBeScheduled = true)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             string blockType = node.GetAttributeValue(Block.TYPE_FIELD_NAME);

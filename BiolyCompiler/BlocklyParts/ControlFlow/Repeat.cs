@@ -31,7 +31,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             VariableBlock decidingBlock = null;
             if (conditionalNode != null)
             {
-                decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ref conditionalNode, dfg, parserInfo);
+                decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(conditionalNode, dfg, parserInfo);
             }
 
             XmlNode guardedNode = node.GetInnerBlockNode(DoBlockFieldName, parserInfo, new MissingBlockException(id, "Repeat block is missing blocks to execute."));

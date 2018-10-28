@@ -271,7 +271,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         }
 
 
-        public Direct GetProgram(ref XmlNode currentProgramXml, ParserInfo parserInfo)
+        public Direct GetProgram(XmlNode currentProgramXml, ParserInfo parserInfo)
         {
             string id = ParseTools.ParseID(currentProgramXml);
             InlineProgramInfo programInfo = GetInlineProgramInfo(currentProgramXml, parserInfo);
