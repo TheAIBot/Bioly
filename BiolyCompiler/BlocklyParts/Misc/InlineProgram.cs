@@ -255,6 +255,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 else
                 {
                     List<Block> blocks = block.GetBlockTreeList(new List<Block>());
+                    blocks.Reverse();
                     foreach (Block blockTreeBlock in blocks)
                     {
                         correctOrder.AddNode(blockTreeBlock);
