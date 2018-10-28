@@ -277,11 +277,6 @@ namespace BiolyCompiler
                     {
                         if (renamer.TryGetValue(wasteFluidName, out string correctedName))
                         {
-                            if (dropPositionsCopy[wasteFluidName].RefCount > 1)
-                            {
-                                dropPositionsCopy[wasteFluidName].RefCount--;
-                                continue;
-                            }
                             int dropletCount = dropPositionsCopy[wasteFluidName].GetNumberOfDropletsAvailable();
                             if (dropletCount > 0)
                             {
@@ -317,11 +312,6 @@ namespace BiolyCompiler
 
                     if (renamer.TryGetValue(wasteFluidName, out string correctedName)) 
                     {
-                        if (scheduler.FluidVariableLocations[wasteFluidName].RefCount > 1)
-                        {
-                            scheduler.FluidVariableLocations[wasteFluidName].RefCount--;
-                            continue;
-                        }
                         int dropletCount = scheduler.FluidVariableLocations[wasteFluidName].GetNumberOfDropletsAvailable();
                         if (dropletCount > 0)
                         {

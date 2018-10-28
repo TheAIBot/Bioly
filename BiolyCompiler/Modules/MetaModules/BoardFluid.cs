@@ -7,14 +7,11 @@ namespace BiolyCompiler.Modules
     public class BoardFluid
     {
         public readonly string FluidName;
-        public readonly List<string> additionalNames = new List<string>();
         public List<IDropletSource> dropletSources = new List<IDropletSource>();
-        public int RefCount = 1;
 
         public BoardFluid(string fluidName)
         {
             this.FluidName = fluidName;
-            additionalNames.Add(fluidName);
         }
 
         public override int GetHashCode()
@@ -26,7 +23,7 @@ namespace BiolyCompiler.Modules
         {
             if (obj is BoardFluid fluidObj)
             {
-                return additionalNames.Any(x => fluidObj.additionalNames.Contains(x));
+                return FluidName == fluidObj.FluidName;
             }
             else
             {
