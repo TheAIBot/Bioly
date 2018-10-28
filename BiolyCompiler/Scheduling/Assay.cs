@@ -149,7 +149,14 @@ namespace BiolyCompiler.Scheduling
                             usedHeaterModules.Add(heaterOperation.ModuleName);
                             StaticModuleOperations[heaterOperation.ModuleName].Item2.Enqueue(heaterOperation, heaterOperation.priority);
                         }
-                        else ReadyOperations.Enqueue(successorOperationNode.value, successorOperationNode.value.priority);
+                        else
+                        {
+                            if (successorOperationNode.value is VariableBlock varBlock && !varBlock.CanBeScheduled)
+                            {
+                                continue;
+                            }
+                            ReadyOperations.Enqueue(successorOperationNode.value, successorOperationNode.value.priority);
+                        }
                         //This will not happen multiple times, as once an operation list has been added to the readyOperaition list,
                         //all operations it depends on has already been scheduled, and as such they have been removed from readyOperaition.
                     }
