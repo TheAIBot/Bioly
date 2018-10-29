@@ -359,40 +359,13 @@ namespace BiolyCompiler
 
                 if (ShowEmptyRectangles)
                 {
-                    Rectangle[] closestBoardLayout = boardLayouts.Where(x => x.Key <= time).Select(x => x.Value).LastOrDefault();
-                    closestBoardLayout = closestBoardLayout.Where(x => x.isEmpty).ToArray();
-
-                    if (closestBoardLayout != oldRectangles && closestBoardLayout != null)
-                    {
-                        var rectanglesToRemove = oldRectangles?.Except(closestBoardLayout);
-                        if (rectanglesToRemove != null)
-                        {
-                            foreach (var x in rectanglesToRemove)
-                            {
-                                removeAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.REMOVE_AREA, 0));
-                            }
-                        }
-
-                        var rectanglesToShow = closestBoardLayout.Except(oldRectangles ?? new Rectangle[0]);
-                        foreach (var x in rectanglesToShow)
-                        {
-                            showAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.SHOW_AREA, 0));
-                        }
-                    }
-                    oldRectangles = closestBoardLayout ?? oldRectangles;
+                    oldRectangles = AddRectangleShowCommands(oldRectangles, boardLayouts, time, showAreaCommands, removeAreaCommands);
                 }
 
-                if (removeAreaCommands.Count > 0)
-                {
-                    removeAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
-                }
-                if (showAreaCommands.Count > 0)
-                {
-                    showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
-                }
+                removeAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
+                showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
 
                 Executor.SendCommands();
-
 
                 if (KeepRunning.IsCancellationRequested)
                 {
@@ -405,6 +378,31 @@ namespace BiolyCompiler
                 }
                 time++;
             }
+        }
+
+        private static Rectangle[] AddRectangleShowCommands(Rectangle[] oldRectangles, Dictionary<int, Rectangle[]> boardLayouts, int time, List<Command> showAreaCommands, List<Command> removeAreaCommands)
+        {
+            Rectangle[] closestBoardLayout = boardLayouts.Where(x => x.Key <= time).Select(x => x.Value).LastOrDefault();
+            closestBoardLayout = closestBoardLayout.Where(x => x.isEmpty).ToArray();
+
+            if (closestBoardLayout != oldRectangles && closestBoardLayout != null)
+            {
+                var rectanglesToRemove = oldRectangles?.Except(closestBoardLayout);
+                if (rectanglesToRemove != null)
+                {
+                    foreach (var x in rectanglesToRemove)
+                    {
+                        removeAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.REMOVE_AREA, 0));
+                    }
+                }
+
+                var rectanglesToShow = closestBoardLayout.Except(oldRectangles ?? new Rectangle[0]);
+                foreach (var x in rectanglesToShow)
+                {
+                    showAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.SHOW_AREA, 0));
+                }
+            }
+            return closestBoardLayout ?? oldRectangles;
         }
 
         private static (DFG<Block>, List<string>) GetNextGraph(CDFG graph, DFG<Block> currentDFG, CommandExecutor<T> executor, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Stack<List<string>> scopeStack, Dictionary<string, BoardFluid> dropPositions)
