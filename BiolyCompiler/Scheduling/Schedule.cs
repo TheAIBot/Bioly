@@ -34,6 +34,7 @@ namespace BiolyCompiler.Scheduling
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
         public Dictionary<string, List<IDropletSource>> OutputtedDroplets = new Dictionary<string, List<IDropletSource>>();
+        public List<string> NewVariablesCreatedInThisScope = new List<string>();
         private readonly Board board;
 
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
@@ -132,6 +133,10 @@ namespace BiolyCompiler.Scheduling
                 throw new InternalRuntimeException("Logic error: RecordCompletlyNewFluidType is only for fluid names that have never been used before.");
             }
             BoardFluid fluidType = new BoardFluid(fluidName);
+            if (!FluidVariableLocations.ContainsKey(fluidName))
+            {
+                NewVariablesCreatedInThisScope.Add(fluidName);
+            }
             FluidVariableLocations[fluidName] = fluidType;
             return fluidType;
         }
@@ -143,6 +148,10 @@ namespace BiolyCompiler.Scheduling
             currentTime = RemoveFluidVariable(fluidName, currentTime, operation);
 
             BoardFluid fluidType = new BoardFluid(fluidName);
+            if (!FluidVariableLocations.ContainsKey(fluidName))
+            {
+                NewVariablesCreatedInThisScope.Add(fluidName);
+            }
             FluidVariableLocations[fluidName] = fluidType;
             return (fluidType, currentTime);
         }
@@ -213,6 +222,7 @@ namespace BiolyCompiler.Scheduling
             AllUsedModules.Clear();
             ScheduledOperations.Clear();
             OutputtedDroplets.Clear();
+            NewVariablesCreatedInThisScope.Clear();
 
             //Setup:
             int currentTime = 0;
@@ -431,6 +441,7 @@ namespace BiolyCompiler.Scheduling
             if (!Variables.ContainsKey(variableName))
             {
                 Variables.Add(variableName, value);
+                NewVariablesCreatedInThisScope.Add(variableName);
             }
             else
             {
@@ -470,6 +481,7 @@ namespace BiolyCompiler.Scheduling
             int targetRequiredDroplets = requiredDroplets1 + requiredDroplets2;
             currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, targetRequiredDroplets, targetFluidtype, intermediateFluidtype);
             FluidVariableLocations.Remove(RENAME_FLUIDNAME_STRING);
+            NewVariablesCreatedInThisScope.Remove(RENAME_FLUIDNAME_STRING);
 
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
             return currentTime;

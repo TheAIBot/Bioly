@@ -98,14 +98,21 @@ namespace BiolyCompiler
                 if (staticModuleDeclarations.Count > 0)
                 {
                     scheduler.PlaceStaticModules(staticModuleDeclarations);
+                    scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct());
                 }
 
                 while (runningGraph != null)
                 {
-                    HashSet<string> fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                    HashSet<string> numberVariablesBefore = scheduler.Variables.Keys.ToHashSet();
                     int time = scheduler.ListScheduling(runningGraph, Executor);
-                    List<Block> scheduledOperations = scheduler.ScheduledOperations;
+                    scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct().Where(x => !x.Contains("#@#Index")));
+
+                    if (firstRun)
+                    {
+                        bool[] usedElectrodes = new bool[width * height].Select(x => true).ToArray();
+                        StartExecutor(graph.StartDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
+                        firstRun = false;
+                    }
+
                     foreach (var item in scheduler.OutputtedDroplets)
                     {
                         if (sumOutputtedDropelts.ContainsKey(item.Key))
@@ -117,19 +124,8 @@ namespace BiolyCompiler
                             sumOutputtedDropelts.Add(item.Key, item.Value);
                         }
                     }
-                    HashSet<string> fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                    HashSet<string> numberVariablesAfter = scheduler.Variables.Keys.ToHashSet();
-                    scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
-                    scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
 
-                    if (firstRun)
-                    {
-                        bool[] usedElectrodes = new bool[width * height].Select(x => true).ToArray();
-                        StartExecutor(graph.StartDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
-                        firstRun = false;
-                    }
-
-                    List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
+                    List<Command>[] commandTimeline = CreateCommandTimeline(scheduler.ScheduledOperations, time);
                     SendCommands(commandTimeline, ref oldRectangles, scheduler.rectanglesAtDifferentTimes);
 
                     if (KeepRunning.IsCancellationRequested)
@@ -138,7 +134,7 @@ namespace BiolyCompiler
                     }
 
                     runningGraph.Nodes.ForEach(x => x.value.Reset());
-                    runningGraph = GetNextGraph(graph, runningGraph, Executor, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
+                    (runningGraph, _) = GetNextGraph(graph, runningGraph, Executor, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
                 }
 
                 Executor.UpdateDropletData(sumOutputtedDropelts.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
@@ -208,23 +204,15 @@ namespace BiolyCompiler
             if (staticModuleDeclarations.Count > 0)
             {
                 scheduler.PlaceStaticModules(staticModuleDeclarations);
+                scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct());
             }
 
             int nameID = 0;
 
             while (runningGraph != null)
             {
-                HashSet<string> fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                HashSet<string> numberVariablesBefore = scheduler.Variables.Keys.ToHashSet();
                 int time = scheduler.ListScheduling<T>(runningGraph, null);
-                List<Block> scheduledOperations = scheduler.ScheduledOperations;
-                HashSet<string> fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                HashSet<string> numberVariablesAfter = scheduler.Variables.Keys.ToHashSet();
-                scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
-                scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
-                
-
-
+                scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct().Where(x => !x.Contains("#@#Index")));
                 runningGraph.Nodes.ForEach(x => x.value.IsDone = false);
 
                 Assay fisk = new Assay(runningGraph);
@@ -248,23 +236,19 @@ namespace BiolyCompiler
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
                 var dropPositionsCopy = scheduler.FluidVariableLocations.ToDictionary();
-                fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                numberVariablesBefore = scheduler.Variables.Keys.ToHashSet();
-                runningGraph = GetNextGraph(graph, runningGraph, null, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
-                fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                numberVariablesAfter = scheduler.Variables.Keys.ToHashSet();
-                List<string> fluidsOutOfScope = fluidVariablesBefore.Except(fluidVariablesAfter).ToList();
-                List<string> numbersOutOfScope = numberVariablesBefore.Except(numberVariablesAfter).ToList();
+                List<string> variablesOutOfScope;
+                (runningGraph, variablesOutOfScope) = GetNextGraph(graph, runningGraph, null, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
 
                 if (useGC)
                 {
-                    AddWasteBlocks(fluidsOutOfScope, bigDFG, renamer, dropPositionsCopy, staticModuleDeclarations);
+                    AddWasteBlocks(variablesOutOfScope, bigDFG, renamer, dropPositionsCopy, staticModuleDeclarations);
                 }
 
-                fluidsOutOfScope.ForEach(x => renamer.Remove(x));
-                numbersOutOfScope.ForEach(x => renamer.Remove(x));
-                fluidsOutOfScope.ForEach(x => variablePostfixes.Remove(x));
-                numbersOutOfScope.ForEach(x => variablePostfixes.Remove(x));
+                foreach (var item in variablesOutOfScope)
+                {
+                    renamer.Remove(item);
+                    variablePostfixes.Remove(item);
+                }
 
                 if (keepRunning.IsCancellationRequested)
                 {
@@ -285,6 +269,11 @@ namespace BiolyCompiler
         {
             foreach (string wasteFluidName in fluidsOutOfScope)
             {
+                if (!fluidLocations.ContainsKey(wasteFluidName))
+                {
+                    continue;
+                }
+
                 if (staticModuleDeclarations.Any(x => x.OutputVariable == wasteFluidName))
                 {
                     continue;
@@ -418,8 +407,9 @@ namespace BiolyCompiler
             }
         }
 
-        private static DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, CommandExecutor<T> executor, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Stack<List<string>> scopeStack, Dictionary<string, BoardFluid> dropPositions)
+        private static (DFG<Block>, List<string>) GetNextGraph(CDFG graph, DFG<Block> currentDFG, CommandExecutor<T> executor, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Stack<List<string>> scopeStack, Dictionary<string, BoardFluid> dropPositions)
         {
+            List<string> variablesOutOfScope = new List<string>();
             {
                 IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
                 if (control != null)
@@ -429,13 +419,13 @@ namespace BiolyCompiler
                     {
                         controlStack.Push(control);
                         scopeStack.Push(new List<string>());
-                        return guardedDFG;
+                        return (guardedDFG, variablesOutOfScope);
                     }
 
                     DFG<Block> nextDFG = control.NextDFG(variables, executor, dropPositions);
                     if (nextDFG != null)
                     {
-                        return nextDFG;
+                        return (nextDFG, variablesOutOfScope);
                     }
                 }
             }
@@ -444,7 +434,9 @@ namespace BiolyCompiler
             while (controlStack.Count > 1)
             {
                 IControlBlock control = controlStack.Pop();
-                foreach (string variable in scopeStack.Pop())
+                List<string> newVariablesOutOfScope = scopeStack.Pop();
+                variablesOutOfScope.AddRange(newVariablesOutOfScope);
+                foreach (string variable in newVariablesOutOfScope)
                 {
                     if (variables.ContainsKey(variable))
                     {
@@ -461,17 +453,17 @@ namespace BiolyCompiler
                 {
                     controlStack.Push(control);
                     scopeStack.Push(new List<string>());
-                    return loopDFG;
+                    return (loopDFG, variablesOutOfScope);
                 }
 
                 DFG<Block> nextDFG = control.NextDFG(variables, executor, dropPositions);
                 if (nextDFG != null)
                 {
-                    return nextDFG;
+                    return (nextDFG, variablesOutOfScope);
                 }
             }
 
-            return null;
+            return (null, variablesOutOfScope);
         }
     }
 }
