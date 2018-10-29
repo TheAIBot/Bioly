@@ -41,6 +41,15 @@ namespace BiolyCompiler
 
         public void Run(int width, int height, CDFG graph, bool alreadyOptimized)
         {
+            if (CanOptimizeCDFG(graph) && EnableOptimizations && !alreadyOptimized)
+            {
+                CDFG optimizedCDFG = new CDFG();
+                optimizedCDFG.StartDFG = OptimizeCDFG<T>(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
+                optimizedCDFG.AddNode(null, optimizedCDFG.StartDFG);
+
+                graph = optimizedCDFG;
+            }
+
             DFG<Block> runningGraph = graph.StartDFG;
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Stack<List<string>> scopedVariables = new Stack<List<string>>();
@@ -52,93 +61,53 @@ namespace BiolyCompiler
             controlStack.Push(null);
             scopedVariables.Push(new List<string>());
 
-            if (CanOptimizeCDFG(graph) && EnableOptimizations)
+            Schedule scheduler = new Schedule(width, height);
+            scheduler.SHOULD_DO_GARBAGE_COLLECTION = EnableGarbageCollection;
+            List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
+                                                              .Select(node => node.value as StaticDeclarationBlock)
+                                                              .ToList();
+            if (staticModuleDeclarations.Count > 0)
             {
-                if (alreadyOptimized)
+                scheduler.PlaceStaticModules(staticModuleDeclarations);
+                scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct());
+            }
+
+            while (runningGraph != null)
+            {
+                int time = scheduler.ListScheduling(runningGraph, Executor);
+                scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct().Where(x => !x.Contains("#@#Index")));
+
+                foreach (var item in scheduler.OutputtedDroplets)
                 {
-                    OptimizedDFG = runningGraph;
+                    if (sumOutputtedDropelts.ContainsKey(item.Key))
+                    {
+                        sumOutputtedDropelts[item.Key].AddRange(item.Value);
+                    }
+                    else
+                    {
+                        sumOutputtedDropelts.Add(item.Key, item.Value);
+                    }
                 }
-                else
+
+                List<Command>[] commandTimeline = CreateCommandTimeline(scheduler.ScheduledOperations, time);
+                if (firstRun)
                 {
-                    OptimizedDFG = OptimizeCDFG<T>(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
+                    bool[] usedElectrodes = GetusedElectrodes(width, height, commandTimeline, EnableSparseElectrodes);
+                    StartExecutor(graph.StartDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
+                    firstRun = false;
                 }
+                SendCommands(commandTimeline, ref oldRectangles, scheduler.rectanglesAtDifferentTimes);
 
                 if (KeepRunning.IsCancellationRequested)
                 {
                     return;
                 }
 
-                Schedule scheduler = new Schedule(width, height);
-                scheduler.SHOULD_DO_GARBAGE_COLLECTION = EnableGarbageCollection;
-                List<StaticDeclarationBlock> staticModuleDeclarations = OptimizedDFG.Nodes.Where(node => node.value is StaticDeclarationBlock)
-                                                                  .Select(node => node.value as StaticDeclarationBlock)
-                                                                  .ToList();
-                if (staticModuleDeclarations.Count > 0)
-                {
-                    scheduler.PlaceStaticModules(staticModuleDeclarations);
-                }
-
-                int time = scheduler.ListScheduling(OptimizedDFG, Executor);
-                List<Block> scheduledOperations = scheduler.ScheduledOperations;
-
-                List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
-                bool[] usedElectrodes = GetusedElectrodes(width, height, commandTimeline, EnableSparseElectrodes);
-
-                StartExecutor(OptimizedDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
-                Executor.UpdateDropletData(scheduler.OutputtedDroplets.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
-                SendCommands(commandTimeline, ref oldRectangles, scheduler.rectanglesAtDifferentTimes);
+                runningGraph.Nodes.ForEach(x => x.value.Reset());
+                (runningGraph, _) = GetNextGraph(graph, runningGraph, Executor, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
             }
-            else
-            {
-                Schedule scheduler = new Schedule(width, height);
-                scheduler.SHOULD_DO_GARBAGE_COLLECTION = EnableGarbageCollection;
-                List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
-                                                                  .Select(node => node.value as StaticDeclarationBlock)
-                                                                  .ToList();
-                if (staticModuleDeclarations.Count > 0)
-                {
-                    scheduler.PlaceStaticModules(staticModuleDeclarations);
-                    scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct());
-                }
 
-                while (runningGraph != null)
-                {
-                    int time = scheduler.ListScheduling(runningGraph, Executor);
-                    scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct().Where(x => !x.Contains("#@#Index")));
-
-                    if (firstRun)
-                    {
-                        bool[] usedElectrodes = new bool[width * height].Select(x => true).ToArray();
-                        StartExecutor(graph.StartDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
-                        firstRun = false;
-                    }
-
-                    foreach (var item in scheduler.OutputtedDroplets)
-                    {
-                        if (sumOutputtedDropelts.ContainsKey(item.Key))
-                        {
-                            sumOutputtedDropelts[item.Key].AddRange(item.Value);
-                        }
-                        else
-                        {
-                            sumOutputtedDropelts.Add(item.Key, item.Value);
-                        }
-                    }
-
-                    List<Command>[] commandTimeline = CreateCommandTimeline(scheduler.ScheduledOperations, time);
-                    SendCommands(commandTimeline, ref oldRectangles, scheduler.rectanglesAtDifferentTimes);
-
-                    if (KeepRunning.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    runningGraph.Nodes.ForEach(x => x.value.Reset());
-                    (runningGraph, _) = GetNextGraph(graph, runningGraph, Executor, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
-                }
-
-                Executor.UpdateDropletData(sumOutputtedDropelts.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
-            }
+            Executor.UpdateDropletData(sumOutputtedDropelts.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
         }
 
         private static bool[] GetusedElectrodes(int width, int height, List<Command>[] commandTimeline, bool enableSparseElectrodes)
