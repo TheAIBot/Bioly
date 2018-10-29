@@ -122,11 +122,6 @@ namespace BiolyCompiler.Parser
                 case While.XML_TYPE_NAME:
                 case InlineProgram.XML_TYPE_NAME:
                     return true;
-                case SetArrayFluid.XML_TYPE_NAME:
-                    //case SensorUsage.XML_TYPE_NAME:
-                    //these blocks needs to be at the start of a dfg
-                    //so only break if this isn't an empty dfg
-                    return dfg.Nodes.Count > 0;
                 default:
                     return false;
             }
@@ -144,8 +139,6 @@ namespace BiolyCompiler.Parser
                     return new Repeat(node, dfg, parserInfo);
                 case While.XML_TYPE_NAME:
                     return new While(node, dfg, parserInfo);
-                case SetArrayFluid.XML_TYPE_NAME:
-                    return new Direct(node, parserInfo);
                 case InlineProgram.XML_TYPE_NAME:
                     InlineProgram program = ProgramCache.GetProgram(node, id, parserInfo);
                     //new InlineProgram(node, parserInfo);

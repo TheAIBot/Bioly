@@ -248,11 +248,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 {
                     VariableBlock asdqwd = (VariableBlock)programInfo.VariablesFromTo[import.VariableName].TrueCopy(correctOrder);
 
+                    correctOrder.AddNode(asdqwd);
+
                     correctOrder.AddNode(new SetNumberVariable(asdqwd, import.VariableName, block.BlockID));
                 }
                 else
                 {
                     List<Block> blocks = block.GetBlockTreeList(new List<Block>());
+                    blocks.Reverse();
                     foreach (Block blockTreeBlock in blocks)
                     {
                         correctOrder.AddNode(blockTreeBlock);
