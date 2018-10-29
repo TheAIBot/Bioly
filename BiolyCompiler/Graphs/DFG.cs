@@ -80,11 +80,6 @@ namespace BiolyCompiler.Graphs
             }
         }
 
-        public void ReplaceNode(Node<Block> toReplace, Node<Block> replaceWith)
-        {
-
-        }
-
         public DFG<Block> Copy()
         {
             if (this is DFG<Block> asda)

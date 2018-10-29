@@ -34,19 +34,5 @@ namespace BiolyCompiler.Graphs
         {
             return IngoingEdges;
         }
-
-        public void ReplaceValue(N newValue)
-        {
-            value = newValue;
-        }
-
-        public void RemoveIngoingEdges()
-        {
-            foreach (Node<N> ingoingEdge in IngoingEdges)
-            {
-                ingoingEdge.OutgoingEdges.Remove(this);
-                OutgoingEdges.Remove(ingoingEdge);
-            }
-        }
     }
 }

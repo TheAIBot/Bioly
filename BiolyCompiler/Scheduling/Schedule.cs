@@ -96,8 +96,7 @@ namespace BiolyCompiler.Scheduling
                     Module staticModule = getAndPlaceFirstPlaceableModule(staticDeclaration, board);
                     StaticModules.Add(staticDeclaration.ModuleName, staticModule);
                 }
-
-                DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
+                
             }
             if (SHOULD_DO_GARBAGE_COLLECTION)
             {
@@ -206,7 +205,6 @@ namespace BiolyCompiler.Scheduling
             {
                 operation.WasteRoutes.Add(oldFluidType.FluidName, wasteRoutes);
             }
-            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             return currentTime;
         }
 
@@ -263,7 +261,6 @@ namespace BiolyCompiler.Scheduling
                 //this needs to be handled. Note that handleFinishingOperations will also wait for operations to finish, 
                 //in the case that there are no more operations that can be executed, before this happen:
                 currentTime = HandleFinishingOperations(nextOperation, currentTime, assay);
-                DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             }
 
             if (CurrentlyRunningOpertions.Count > 0)
@@ -287,7 +284,6 @@ namespace BiolyCompiler.Scheduling
 
             //For debuging:
             if (!(topPriorityOperation is StaticUseageBlock)) AllUsedModules.Add(operationExecutingModule);
-            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
 
             //If the module can't be placed, one must wait until there is enough space for it:
             if (operationExecutingModule == null) throw new RuntimeException("Not enough space for a module: this is not handeled yet");
@@ -296,7 +292,6 @@ namespace BiolyCompiler.Scheduling
             //By construction, there will be a route from the droplets to the module, 
             //and so it will always be possible for this routing to be done:
             currentTime = RouteDropletsToModuleAndUpdateSchedule(currentTime, topPriorityOperation, operationExecutingModule);
-            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             return currentTime;
         }
 
@@ -354,7 +349,6 @@ namespace BiolyCompiler.Scheduling
                         {
                             throw new RuntimeException("Not enough space for the fluid transfer.");
                         }
-                        DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         Route route = Router.RouteDropletToNewPosition(inputModule, droplet, board, currentTime);
                         currentTime = route.getEndTime() + 1;
                         dropletRoutes.Add(route);
@@ -373,7 +367,6 @@ namespace BiolyCompiler.Scheduling
 
             rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
             currentTime += 2;
-            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
             return currentTime;
         }
 
@@ -556,7 +549,6 @@ namespace BiolyCompiler.Scheduling
                         finishedOperation.UpdateInternalDropletConcentrations();
                         (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OutputVariable, currentTime, finishedOperation);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation.BoundModule, dropletOutputFluid);
-                        DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                         AllUsedModules.AddRange(replacingDroplets);
                     }
                     else {
@@ -569,7 +561,6 @@ namespace BiolyCompiler.Scheduling
                             //ExtractInternalDropletsAndPlaceThemOnTheBoard(board, finishedOperation);
 
                             //For the special case that the heater has size 3x3, with only one droplet inside it:
-                            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
                             (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OutputVariable, currentTime, finishedOperation);
                             Droplet droplet = new Droplet(dropletOutputFluid);
                             droplet.SetFluidConcentrations(heaterOperation.InputRoutes.First().Value.First().routedDroplet);
@@ -589,7 +580,6 @@ namespace BiolyCompiler.Scheduling
                             currentTime++;
                             
                             board.UpdateGridAtGivenLocation(heaterOperation.BoundModule, heaterOperation.BoundModule.Shape);
-                            DebugTools.makeDebugCorrectnessChecks(board, CurrentlyRunningOpertions, AllUsedModules);
 
                             //Now the heater is not occupied anymore: a new heater operation can be executed:
                             ((HeaterModule)heaterOperation.BoundModule).IsInUse = false;
