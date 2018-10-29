@@ -248,11 +248,14 @@ namespace BiolyCompiler.BlocklyParts.Misc
                 {
                     VariableBlock asdqwd = (VariableBlock)programInfo.VariablesFromTo[import.VariableName].TrueCopy(correctOrder);
 
+                    correctOrder.AddNode(asdqwd);
+
                     correctOrder.AddNode(new SetNumberVariable(asdqwd, import.VariableName, block.BlockID));
                 }
                 else
                 {
                     List<Block> blocks = block.GetBlockTreeList(new List<Block>());
+                    blocks.Reverse();
                     foreach (Block blockTreeBlock in blocks)
                     {
                         correctOrder.AddNode(blockTreeBlock);
@@ -271,7 +274,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
         }
 
 
-        public Direct GetProgram(ref XmlNode currentProgramXml, ParserInfo parserInfo)
+        public Direct GetProgram(XmlNode currentProgramXml, ParserInfo parserInfo)
         {
             string id = ParseTools.ParseID(currentProgramXml);
             InlineProgramInfo programInfo = GetInlineProgramInfo(currentProgramXml, parserInfo);
@@ -285,20 +288,9 @@ namespace BiolyCompiler.BlocklyParts.Misc
             programInfo.OutputsFromTo.ForEach(x => parserInfo.AddVariable(string.Empty, VariableType.FLUID, x.Value));
             DFG<Block> nextDFG = XmlParser.ParseNextDFG(currentProgramXml, parserInfo);
 
-            DFG<Block> endDFG = newProgram.StartDFG;
-            while (endDFG != null)
-            {
-                IControlBlock control = newProgram.Nodes.Single(x => x.dfg == endDFG).control;
-                if (control != null && control.GetEndDFG() != null)
-                {
-                    endDFG = control.GetEndDFG();
-                }
-                else
-                {
-                    break;
-                }
-            }
 
+
+            DFG<Block> endDFG = newProgram.GetEndDFGInFirstScope();
             int i = newProgram.Nodes.FindIndex(x => x.dfg == endDFG);
             if (newProgram.Nodes[i].control == null)
             {
@@ -329,44 +321,33 @@ namespace BiolyCompiler.BlocklyParts.Misc
             DFG<Block> currentDFG = cdfg.StartDFG;
             do
             {
-                HashSet<Block> goneThrough = new HashSet<Block>();
                 foreach (Node<Block> node in currentDFG.Nodes)
                 {
                     Block block = node.value;
-                    List<Block> blocks = block.GetBlockTreeList(new List<Block>());
-                    foreach (var blockInTree in blocks)
+                    foreach (FluidInput fluidInput in block.InputFluids)
                     {
-                        if (goneThrough.Contains(blockInTree))
+                        if (!readerBlacklist.Contains(fluidInput.OriginalFluidName) &&
+                            !writerBlacklist.Contains(fluidInput.OriginalFluidName))
                         {
-                            continue;
+                            fluidInput.OriginalFluidName += postfix;
                         }
-                        goneThrough.Add(blockInTree);
+                    }
 
-                        foreach (FluidInput fluidInput in blockInTree.InputFluids)
+                    for (int i = 0; i < block.InputNumbers.Count; i++)
+                    {
+                        if (!readerBlacklist.Contains(block.InputNumbers[i]))
                         {
-                            if (!readerBlacklist.Contains(fluidInput.OriginalFluidName) &&
-                                !writerBlacklist.Contains(fluidInput.OriginalFluidName))
-                            {
-                                fluidInput.OriginalFluidName += postfix;
-                            }
+                            block.InputNumbers[i] = block.InputNumbers[i] + postfix;
                         }
+                    }
 
-                        for (int i = 0; i < blockInTree.InputNumbers.Count; i++)
-                        {
-                            if (!readerBlacklist.Contains(blockInTree.InputNumbers[i]))
-                            {
-                                blockInTree.InputNumbers[i] = blockInTree.InputNumbers[i] + postfix;
-                            }
-                        }
-
-                        if (readerBlacklist.Contains(blockInTree.OutputVariable))
-                        {
-                            readerBlacklist.Remove(blockInTree.OutputVariable);
-                        }
-                        if (!writerBlacklist.Contains(blockInTree.OutputVariable))
-                        {
-                            blockInTree.OutputVariable += postfix;
-                        }
+                    if (readerBlacklist.Contains(block.OutputVariable))
+                    {
+                        readerBlacklist.Remove(block.OutputVariable);
+                    }
+                    if (!writerBlacklist.Contains(block.OutputVariable))
+                    {
+                        block.OutputVariable += postfix;
                     }
                 }
 

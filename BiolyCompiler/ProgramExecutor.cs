@@ -41,8 +41,16 @@ namespace BiolyCompiler
 
         public void Run(int width, int height, CDFG graph, bool alreadyOptimized)
         {
+            if (CanOptimizeCDFG(graph) && EnableOptimizations && !alreadyOptimized)
+            {
+                CDFG optimizedCDFG = new CDFG();
+                optimizedCDFG.StartDFG = OptimizeCDFG<T>(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
+                optimizedCDFG.AddNode(null, optimizedCDFG.StartDFG);
+
+                graph = optimizedCDFG;
+            }
+
             DFG<Block> runningGraph = graph.StartDFG;
-            Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Stack<List<string>> scopedVariables = new Stack<List<string>>();
             Rectangle[] oldRectangles = null;
@@ -53,104 +61,53 @@ namespace BiolyCompiler
             controlStack.Push(null);
             scopedVariables.Push(new List<string>());
 
-            if (CanOptimizeCDFG(graph) && EnableOptimizations)
+            Schedule scheduler = new Schedule(width, height);
+            scheduler.SHOULD_DO_GARBAGE_COLLECTION = EnableGarbageCollection;
+            List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
+                                                              .Select(node => node.value as StaticDeclarationBlock)
+                                                              .ToList();
+            if (staticModuleDeclarations.Count > 0)
             {
-                if (alreadyOptimized)
+                scheduler.PlaceStaticModules(staticModuleDeclarations);
+                scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct());
+            }
+
+            while (runningGraph != null)
+            {
+                int time = scheduler.ListScheduling(runningGraph, Executor);
+                scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct().Where(x => !x.Contains("#@#Index")));
+
+                foreach (var item in scheduler.OutputtedDroplets)
                 {
-                    OptimizedDFG = runningGraph;
+                    if (sumOutputtedDropelts.ContainsKey(item.Key))
+                    {
+                        sumOutputtedDropelts[item.Key].AddRange(item.Value);
+                    }
+                    else
+                    {
+                        sumOutputtedDropelts.Add(item.Key, item.Value);
+                    }
                 }
-                else
+
+                List<Command>[] commandTimeline = CreateCommandTimeline(scheduler.ScheduledOperations, time);
+                if (firstRun)
                 {
-                    OptimizedDFG = OptimizeCDFG(width, height, graph, KeepRunning.Token, EnableGarbageCollection);
+                    bool[] usedElectrodes = GetusedElectrodes(width, height, commandTimeline, EnableSparseElectrodes);
+                    StartExecutor(graph.StartDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
+                    firstRun = false;
                 }
+                SendCommands(commandTimeline, ref oldRectangles, scheduler.rectanglesAtDifferentTimes);
 
                 if (KeepRunning.IsCancellationRequested)
                 {
                     return;
                 }
 
-                Schedule scheduler = new Schedule(width, height);
-                scheduler.SHOULD_DO_GARBAGE_COLLECTION = EnableGarbageCollection;
-                List<StaticDeclarationBlock> staticModuleDeclarations = OptimizedDFG.Nodes.Where(node => node.value is StaticDeclarationBlock)
-                                                                  .Select(node => node.value as StaticDeclarationBlock)
-                                                                  .ToList();
-                if (staticModuleDeclarations.Count > 0)
-                {
-                    scheduler.PlaceStaticModules(staticModuleDeclarations);
-                }
-
-                int time = scheduler.ListScheduling(OptimizedDFG);
-                List<Block> scheduledOperations = scheduler.ScheduledOperations;
-
-                List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
-                bool[] usedElectrodes = GetusedElectrodes(width, height, commandTimeline, EnableSparseElectrodes);
-
-                StartExecutor(OptimizedDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
-                Executor.UpdateDropletData(scheduler.OutputtedDroplets.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
-                SendCommands(commandTimeline, ref oldRectangles, scheduler.rectanglesAtDifferentTimes);
+                runningGraph.Nodes.ForEach(x => x.value.Reset());
+                (runningGraph, _) = GetNextGraph(graph, runningGraph, Executor, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
             }
-            else
-            {
-                Schedule scheduler = new Schedule(width, height);
-                scheduler.SHOULD_DO_GARBAGE_COLLECTION = EnableGarbageCollection;
-                List<StaticDeclarationBlock> staticModuleDeclarations = runningGraph.Nodes.Where(node => node.value is StaticDeclarationBlock)
-                                                                  .Select(node => node.value as StaticDeclarationBlock)
-                                                                  .ToList();
-                if (staticModuleDeclarations.Count > 0)
-                {
-                    scheduler.PlaceStaticModules(staticModuleDeclarations);
-                }
 
-                while (runningGraph != null)
-                {
-                    //some blocks are able to  change their originaloutputvariable.
-                    //Those blocks will always appear at the top of a dfg  so the first
-                    //thing that should be done is to update these blocks originaloutputvariable.
-                    runningGraph.Nodes.ForEach(node => node.value.Update(variables, Executor, scheduler.FluidVariableLocations));
-
-                    HashSet<string> fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                    int time = scheduler.ListScheduling(runningGraph);
-                    List<Block> scheduledOperations = scheduler.ScheduledOperations;
-                    foreach (var item in scheduler.OutputtedDroplets)
-                    {
-                        if (sumOutputtedDropelts.ContainsKey(item.Key))
-                        {
-                            sumOutputtedDropelts[item.Key].AddRange(item.Value);
-                        }
-                        else
-                        {
-                            sumOutputtedDropelts.Add(item.Key, item.Value);
-                        }
-                    }
-                    HashSet<string> fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                    scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
-
-                    if (firstRun)
-                    {
-                        bool[] usedElectrodes = new bool[width * height].Select(x => true).ToArray();
-                        StartExecutor(graph.StartDFG, scheduler.StaticModules.Select(pair => pair.Value).ToList(), usedElectrodes);
-                        firstRun = false;
-                    }
-
-                    HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
-                    UpdateVariables(variables, Executor, scheduledOperations, scheduler.FluidVariableLocations);
-                    HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
-                    scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
-
-                    List<Command>[] commandTimeline = CreateCommandTimeline(scheduledOperations, time);
-                    SendCommands(commandTimeline, ref oldRectangles, scheduler.rectanglesAtDifferentTimes);
-
-                    if (KeepRunning.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    runningGraph.Nodes.ForEach(x => x.value.Reset());
-                    runningGraph = GetNextGraph(graph, runningGraph, Executor, variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
-                }
-
-                Executor.UpdateDropletData(sumOutputtedDropelts.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
-            }
+            Executor.UpdateDropletData(sumOutputtedDropelts.Values.SelectMany(x => x.Select(y => y.GetFluidConcentrations())).ToList());
         }
 
         private static bool[] GetusedElectrodes(int width, int height, List<Command>[] commandTimeline, bool enableSparseElectrodes)
@@ -195,10 +152,9 @@ namespace BiolyCompiler
             return cdfg.Nodes.All(x => x.dfg.Nodes.All(y => !(y is INonDeterministic)));
         }
 
-        public static DFG<Block> OptimizeCDFG(int width, int height, CDFG graph, CancellationToken keepRunning, bool useGC)
+        public static DFG<Block> OptimizeCDFG<T>(int width, int height, CDFG graph, CancellationToken keepRunning, bool useGC)
         {
             DFG<Block> runningGraph = graph.StartDFG;
-            Dictionary<string, float> variables = new Dictionary<string, float>();
             Stack<IControlBlock> controlStack = new Stack<IControlBlock>();
             Stack<List<string>> scopedVariables = new Stack<List<string>>();
 
@@ -217,29 +173,15 @@ namespace BiolyCompiler
             if (staticModuleDeclarations.Count > 0)
             {
                 scheduler.PlaceStaticModules(staticModuleDeclarations);
+                scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct());
             }
 
             int nameID = 0;
 
             while (runningGraph != null)
             {
-                //some blocks are able to  change their originaloutputvariable.
-                //Those blocks will always appear at the top of a dfg  so the first
-                //thing that should be done is to update these blocks originaloutputvariable.
-                runningGraph.Nodes.ForEach(node => node.value.Update<T>(variables, null, scheduler.FluidVariableLocations));
-
-                HashSet<string> fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                int time = scheduler.ListScheduling(runningGraph);
-                List<Block> scheduledOperations = scheduler.ScheduledOperations;
-                HashSet<string> fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                scopedVariables.Peek().AddRange(fluidVariablesAfter.Except(fluidVariablesBefore).Where(x => !x.Contains("#@#Index")));
-
-
-                HashSet<string> numberVariablesBefore = variables.Keys.ToHashSet();
-                UpdateVariables(variables, null, scheduledOperations, scheduler.FluidVariableLocations);
-                HashSet<string> numberVariablesAfter = variables.Keys.ToHashSet();
-                scopedVariables.Peek().AddRange(numberVariablesAfter.Except(numberVariablesBefore).Where(x => !x.Contains("#@#Index")));
-
+                int time = scheduler.ListScheduling<T>(runningGraph, null);
+                scopedVariables.Peek().AddRange(scheduler.NewVariablesCreatedInThisScope.Distinct().Where(x => !x.Contains("#@#Index")));
                 runningGraph.Nodes.ForEach(x => x.value.IsDone = false);
 
                 Assay fisk = new Assay(runningGraph);
@@ -263,41 +205,19 @@ namespace BiolyCompiler
                 runningGraph.Nodes.ForEach(x => x.value.Reset());
 
                 var dropPositionsCopy = scheduler.FluidVariableLocations.ToDictionary();
-                fluidVariablesBefore = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                numberVariablesBefore = variables.Keys.ToHashSet();
-                runningGraph = GetNextGraph(graph, runningGraph, null, variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
-                fluidVariablesAfter = scheduler.FluidVariableLocations.Keys.ToHashSet();
-                numberVariablesAfter = variables.Keys.ToHashSet();
-                List<string> fluidsOutOfScope = fluidVariablesBefore.Except(fluidVariablesAfter).ToList();
-                List<string> numbersOutOfScope = numberVariablesBefore.Except(numberVariablesAfter).ToList();
+                List<string> variablesOutOfScope;
+                (runningGraph, variablesOutOfScope) = GetNextGraph(graph, runningGraph, null, scheduler.Variables, controlStack, scopedVariables, scheduler.FluidVariableLocations);
 
                 if (useGC)
                 {
-                    foreach (string wasteFluidName in fluidsOutOfScope)
-                    {
-                        if (renamer.TryGetValue(wasteFluidName, out string correctedName))
-                        {
-                            if (dropPositionsCopy[wasteFluidName].RefCount > 1)
-                            {
-                                dropPositionsCopy[wasteFluidName].RefCount--;
-                                continue;
-                            }
-                            int dropletCount = dropPositionsCopy[wasteFluidName].GetNumberOfDropletsAvailable();
-                            if (dropletCount > 0)
-                            {
-                                List<FluidInput> fluidInputs = new List<FluidInput>();
-                                fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
-
-                                bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
-                            }
-                        }
-                    }
+                    AddWasteBlocks(variablesOutOfScope, bigDFG, renamer, dropPositionsCopy, staticModuleDeclarations);
                 }
 
-                fluidsOutOfScope.ForEach(x => renamer.Remove(x));
-                numbersOutOfScope.ForEach(x => renamer.Remove(x));
-                fluidsOutOfScope.ForEach(x => variablePostfixes.Remove(x));
-                numbersOutOfScope.ForEach(x => variablePostfixes.Remove(x));
+                foreach (var item in variablesOutOfScope)
+                {
+                    renamer.Remove(item);
+                    variablePostfixes.Remove(item);
+                }
 
                 if (keepRunning.IsCancellationRequested)
                 {
@@ -307,35 +227,39 @@ namespace BiolyCompiler
 
             if (useGC)
             {
-                var staticBlocks = graph.StartDFG.Nodes.Where(x => x.value is StaticDeclarationBlock);
-                foreach (string wasteFluidName in scopedVariables.Pop())
-                {
-                    if (staticBlocks.Any(x => x.value.OutputVariable == wasteFluidName))
-                    {
-                        continue;
-                    }
-
-                    if (renamer.TryGetValue(wasteFluidName, out string correctedName)) 
-                    {
-                        if (scheduler.FluidVariableLocations[wasteFluidName].RefCount > 1)
-                        {
-                            scheduler.FluidVariableLocations[wasteFluidName].RefCount--;
-                            continue;
-                        }
-                        int dropletCount = scheduler.FluidVariableLocations[wasteFluidName].GetNumberOfDropletsAvailable();
-                        if (dropletCount > 0)
-                        {
-                            List<FluidInput> fluidInputs = new List<FluidInput>();
-                            fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
-
-                            bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
-                        }
-                    }
-                }
+                AddWasteBlocks(scopedVariables.Pop(), bigDFG, renamer, scheduler.FluidVariableLocations, staticModuleDeclarations);
             }
 
             bigDFG.FinishDFG();
             return bigDFG;
+        }
+
+        private static void AddWasteBlocks(List<string> fluidsOutOfScope, DFG<Block> bigDFG, Dictionary<string, string> renamer, Dictionary<string, BoardFluid> fluidLocations, List<StaticDeclarationBlock> staticModuleDeclarations)
+        {
+            foreach (string wasteFluidName in fluidsOutOfScope)
+            {
+                if (!fluidLocations.ContainsKey(wasteFluidName))
+                {
+                    continue;
+                }
+
+                if (staticModuleDeclarations.Any(x => x.OutputVariable == wasteFluidName))
+                {
+                    continue;
+                }
+
+                if (renamer.TryGetValue(wasteFluidName, out string correctedName))
+                {
+                    int dropletCount = fluidLocations[wasteFluidName].GetNumberOfDropletsAvailable();
+                    if (dropletCount > 0)
+                    {
+                        List<FluidInput> fluidInputs = new List<FluidInput>();
+                        fluidInputs.Add(new BasicInput("none", correctedName, dropletCount, false));
+
+                        bigDFG.AddNode(new WasteUsage(Schedule.WASTE_MODULE_NAME, fluidInputs, null, ""));
+                    }
+                }
+            }
         }
 
         private void StartExecutor(DFG<Block> graph, List<Module> staticModules, bool[] usedElectrodes)
@@ -377,29 +301,6 @@ namespace BiolyCompiler
             return commandTimeline;
         }
 
-        private static void UpdateVariables(Dictionary<string, float> variables, CommandExecutor<T> executor, List<Block> scheduledOperations, Dictionary<string, BoardFluid> dropPositions)
-        {
-            foreach (Block operation in scheduledOperations)
-            {
-                if (operation is VariableBlock varBlock)
-                {
-                    (string variableName, float value) = varBlock.ExecuteBlock(variables, executor, dropPositions);
-                    if (float.IsInfinity(value) || float.IsNaN(value))
-                    {
-                        throw new InvalidNumberException(varBlock.BlockID, value);
-                    }
-                    if (!variables.ContainsKey(variableName))
-                    {
-                        variables.Add(variableName, value);
-                    }
-                    else
-                    {
-                        variables[variableName] = value;
-                    }
-                }
-            }
-        }
-
         private void SendCommands(List<Command>[] commandTimeline, ref Rectangle[] oldRectangles, Dictionary<int, Rectangle[]> boardLayouts)
         {
             int time = 0;
@@ -427,40 +328,13 @@ namespace BiolyCompiler
 
                 if (ShowEmptyRectangles)
                 {
-                    Rectangle[] closestBoardLayout = boardLayouts.Where(x => x.Key <= time).Select(x => x.Value).LastOrDefault();
-                    closestBoardLayout = closestBoardLayout.Where(x => x.isEmpty).ToArray();
-
-                    if (closestBoardLayout != oldRectangles && closestBoardLayout != null)
-                    {
-                        var rectanglesToRemove = oldRectangles?.Except(closestBoardLayout);
-                        if (rectanglesToRemove != null)
-                        {
-                            foreach (var x in rectanglesToRemove)
-                            {
-                                removeAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.REMOVE_AREA, 0));
-                            }
-                        }
-
-                        var rectanglesToShow = closestBoardLayout.Except(oldRectangles ?? new Rectangle[0]);
-                        foreach (var x in rectanglesToShow)
-                        {
-                            showAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.SHOW_AREA, 0));
-                        }
-                    }
-                    oldRectangles = closestBoardLayout ?? oldRectangles;
+                    oldRectangles = AddRectangleShowCommands(oldRectangles, boardLayouts, time, showAreaCommands, removeAreaCommands);
                 }
 
-                if (removeAreaCommands.Count > 0)
-                {
-                    removeAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
-                }
-                if (showAreaCommands.Count > 0)
-                {
-                    showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
-                }
+                removeAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
+                showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
 
                 Executor.SendCommands();
-
 
                 if (KeepRunning.IsCancellationRequested)
                 {
@@ -475,8 +349,34 @@ namespace BiolyCompiler
             }
         }
 
-        private static DFG<Block> GetNextGraph(CDFG graph, DFG<Block> currentDFG, CommandExecutor<T> executor, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Stack<List<string>> scopeStack, Dictionary<string, BoardFluid> dropPositions)
+        private static Rectangle[] AddRectangleShowCommands(Rectangle[] oldRectangles, Dictionary<int, Rectangle[]> boardLayouts, int time, List<Command> showAreaCommands, List<Command> removeAreaCommands)
         {
+            Rectangle[] closestBoardLayout = boardLayouts.Where(x => x.Key <= time).Select(x => x.Value).LastOrDefault();
+            closestBoardLayout = closestBoardLayout.Where(x => x.isEmpty).ToArray();
+
+            if (closestBoardLayout != oldRectangles && closestBoardLayout != null)
+            {
+                var rectanglesToRemove = oldRectangles?.Except(closestBoardLayout);
+                if (rectanglesToRemove != null)
+                {
+                    foreach (var x in rectanglesToRemove)
+                    {
+                        removeAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.REMOVE_AREA, 0));
+                    }
+                }
+
+                var rectanglesToShow = closestBoardLayout.Except(oldRectangles ?? new Rectangle[0]);
+                foreach (var x in rectanglesToShow)
+                {
+                    showAreaCommands.Add(new AreaCommand(x.x, x.y, x.width, x.height, CommandType.SHOW_AREA, 0));
+                }
+            }
+            return closestBoardLayout ?? oldRectangles;
+        }
+
+        private static (DFG<Block>, List<string>) GetNextGraph(CDFG graph, DFG<Block> currentDFG, CommandExecutor<T> executor, Dictionary<string, float> variables, Stack<IControlBlock> controlStack, Stack<List<string>> scopeStack, Dictionary<string, BoardFluid> dropPositions)
+        {
+            List<string> variablesOutOfScope = new List<string>();
             {
                 IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
                 if (control != null)
@@ -486,13 +386,13 @@ namespace BiolyCompiler
                     {
                         controlStack.Push(control);
                         scopeStack.Push(new List<string>());
-                        return guardedDFG;
+                        return (guardedDFG, variablesOutOfScope);
                     }
 
                     DFG<Block> nextDFG = control.NextDFG(variables, executor, dropPositions);
                     if (nextDFG != null)
                     {
-                        return nextDFG;
+                        return (nextDFG, variablesOutOfScope);
                     }
                 }
             }
@@ -501,7 +401,9 @@ namespace BiolyCompiler
             while (controlStack.Count > 1)
             {
                 IControlBlock control = controlStack.Pop();
-                foreach (string variable in scopeStack.Pop())
+                List<string> newVariablesOutOfScope = scopeStack.Pop();
+                variablesOutOfScope.AddRange(newVariablesOutOfScope);
+                foreach (string variable in newVariablesOutOfScope)
                 {
                     if (variables.ContainsKey(variable))
                     {
@@ -518,17 +420,17 @@ namespace BiolyCompiler
                 {
                     controlStack.Push(control);
                     scopeStack.Push(new List<string>());
-                    return loopDFG;
+                    return (loopDFG, variablesOutOfScope);
                 }
 
                 DFG<Block> nextDFG = control.NextDFG(variables, executor, dropPositions);
                 if (nextDFG != null)
                 {
-                    return nextDFG;
+                    return (nextDFG, variablesOutOfScope);
                 }
             }
 
-            return null;
+            return (null, variablesOutOfScope);
         }
     }
 }

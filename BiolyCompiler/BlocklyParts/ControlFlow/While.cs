@@ -31,7 +31,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             string mode = node.GetNodeWithAttributeValue(WHILE_MODE_FIELD_NAME).InnerText;
             if (mode != SUPPORTED_MODE)
             {
-                parserInfo.ParseExceptions.Add(new ParseException(id, "While block only support while mode."));
+                parserInfo.ParseExceptions.Add(new ParseException(id, "While block only supports while mode."));
             }
 
 
@@ -39,7 +39,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
             VariableBlock decidingBlock = null;
             if (conditionalNode != null)
             {
-                decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ref conditionalNode, dfg, parserInfo);
+                decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(conditionalNode, dfg, parserInfo);
             }
 
             XmlNode guardedNode = node.GetInnerBlockNode(DO_BLOCK_FIELD_NAME, parserInfo, new MissingBlockException(id, "While block is missing blocks to execute."));
