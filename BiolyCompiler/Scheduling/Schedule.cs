@@ -15,6 +15,7 @@ using BiolyCompiler.BlocklyParts.Declarations;
 using BiolyCompiler.BlocklyParts.Arrays;
 using BiolyCompiler.BlocklyParts.FluidicInputs;
 using BiolyCompiler.Exceptions;
+using BiolyCompiler.Commands;
 
 namespace BiolyCompiler.Scheduling
 {
@@ -26,12 +27,14 @@ namespace BiolyCompiler.Scheduling
         // For debuging. Used when printing the board to the console, for visulization purposes.
         public List<Module> AllUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
+        public Dictionary<string, float> Variables = new Dictionary<string, float>();
         public Dictionary<string, Module> StaticModules = new Dictionary<string, Module>();
         public SimplePriorityQueue<FluidBlock> CurrentlyRunningOpertions = new SimplePriorityQueue<FluidBlock>();
         public List<Block> ScheduledOperations = new List<Block>();
         public bool SHOULD_DO_GARBAGE_COLLECTION = true;
         public HashSet<String> NameOfInputFluids = new HashSet<string>();
         public Dictionary<string, List<IDropletSource>> OutputtedDroplets = new Dictionary<string, List<IDropletSource>>();
+        public List<string> NewVariablesCreatedInThisScope = new List<string>();
         private readonly Board board;
 
         public const int DROP_MOVEMENT_TIME = 1; //How many time units it takes for a droplet to move from one electrode to the next.
@@ -130,6 +133,10 @@ namespace BiolyCompiler.Scheduling
                 throw new InternalRuntimeException("Logic error: RecordCompletlyNewFluidType is only for fluid names that have never been used before.");
             }
             BoardFluid fluidType = new BoardFluid(fluidName);
+            if (!FluidVariableLocations.ContainsKey(fluidName))
+            {
+                NewVariablesCreatedInThisScope.Add(fluidName);
+            }
             FluidVariableLocations[fluidName] = fluidType;
             return fluidType;
         }
@@ -141,6 +148,10 @@ namespace BiolyCompiler.Scheduling
             currentTime = RemoveFluidVariable(fluidName, currentTime, operation);
 
             BoardFluid fluidType = new BoardFluid(fluidName);
+            if (!FluidVariableLocations.ContainsKey(fluidName))
+            {
+                NewVariablesCreatedInThisScope.Add(fluidName);
+            }
             FluidVariableLocations[fluidName] = fluidType;
             return (fluidType, currentTime);
         }
@@ -151,16 +162,7 @@ namespace BiolyCompiler.Scheduling
             {
                 if (SHOULD_DO_GARBAGE_COLLECTION)
                 {
-                    if (oldFluidType.RefCount == 1)
-                    {
-                        currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
-                    }
-                    else
-                    {
-                        oldFluidType.RefCount--;
-                        oldFluidType.additionalNames.Remove(fluidName);
-                        FluidVariableLocations.Remove(fluidName);
-                    }
+                    currentTime = DoGarbageCollection(currentTime, operation, oldFluidType);
                 }
                 else
                 {
@@ -212,7 +214,7 @@ namespace BiolyCompiler.Scheduling
             Implements/based on the list scheduling based algorithm found in 
             "Fault-tolerant digital microfluidic biochips - compilation and synthesis" page 72.
          */
-        public int ListScheduling(DFG<Block> dfg)
+        public int ListScheduling<T>(DFG<Block> dfg, CommandExecutor<T> executor)
         {
             Assay assay = new Assay(dfg);
 
@@ -220,6 +222,7 @@ namespace BiolyCompiler.Scheduling
             AllUsedModules.Clear();
             ScheduledOperations.Clear();
             OutputtedDroplets.Clear();
+            NewVariablesCreatedInThisScope.Clear();
 
             //Setup:
             int currentTime = 0;
@@ -227,10 +230,11 @@ namespace BiolyCompiler.Scheduling
 
             foreach (Block nextOperation in assay)
             {
+                nextOperation.Update<T>(Variables, executor, FluidVariableLocations);
                 switch (nextOperation)
                 {
                     case VariableBlock varBlock:
-                        HandleVariableOperation(currentTime, varBlock);
+                        HandleVariableOperation<T>(currentTime, varBlock, executor);
                         assay.UpdateReadyOperations(varBlock);
                         break;
                     case Union unionBlock:
@@ -247,13 +251,6 @@ namespace BiolyCompiler.Scheduling
                     case SetArrayFluid arrayRenameBlock:
                         currentTime = HandleFluidTransfers(currentTime, arrayRenameBlock);
                         assay.UpdateReadyOperations(arrayRenameBlock);
-                        break;
-                    case FluidRef fluidRefBlock:
-                        currentTime = RemoveFluidVariable(fluidRefBlock.OutputVariable, currentTime, fluidRefBlock);
-                        FluidVariableLocations.Add(fluidRefBlock.OutputVariable, FluidVariableLocations[fluidRefBlock.InputFluids.First().OriginalFluidName]);
-                        FluidVariableLocations[fluidRefBlock.OutputVariable].RefCount++;
-                        FluidVariableLocations[fluidRefBlock.OutputVariable].additionalNames.Add(fluidRefBlock.OutputVariable);
-                        assay.UpdateReadyOperations(fluidRefBlock);
                         break;
                     case FluidBlock fluidBlock:
                         currentTime = HandleFluidOperations(currentTime, fluidBlock);
@@ -423,13 +420,32 @@ namespace BiolyCompiler.Scheduling
             return currentTime;
         }
 
-        private void HandleVariableOperation(int currentTime, VariableBlock nextOperation)
+        private void HandleVariableOperation<T>(int currentTime, VariableBlock nextOperation, CommandExecutor<T> executor)
         {
             //This is a mathematical operation, and it should be scheduled to run as soon as possible
             if (nextOperation.CanBeScheduled)
             {
+                UpdateVariables<T>(nextOperation, executor);
+
                 //This is a mathematical operation, and it should be scheduled to run as soon as possible
                 UpdateSchedule(nextOperation, currentTime, currentTime);
+            }
+        }
+        private void UpdateVariables<T>(VariableBlock varBlock, CommandExecutor<T> executor)
+        {
+            (string variableName, float value) = varBlock.ExecuteBlock(Variables, executor, FluidVariableLocations);
+            if (float.IsInfinity(value) || float.IsNaN(value))
+            {
+                throw new InvalidNumberException(varBlock.BlockID, value);
+            }
+            if (!Variables.ContainsKey(variableName))
+            {
+                Variables.Add(variableName, value);
+                NewVariablesCreatedInThisScope.Add(variableName);
+            }
+            else
+            {
+                Variables[variableName] = value;
             }
         }
 
@@ -464,6 +480,8 @@ namespace BiolyCompiler.Scheduling
             (targetFluidtype, currentTime) = RecordNewFluidType(nextOperation.OutputVariable, currentTime, nextOperation);
             int targetRequiredDroplets = requiredDroplets1 + requiredDroplets2;
             currentTime = ExtractAndReassignDroplets(currentTime, nextOperation, targetRequiredDroplets, targetFluidtype, intermediateFluidtype);
+            FluidVariableLocations.Remove(RENAME_FLUIDNAME_STRING);
+            NewVariablesCreatedInThisScope.Remove(RENAME_FLUIDNAME_STRING);
 
             UpdateSchedule(nextOperation, currentTime, originalStartTime);
             return currentTime;

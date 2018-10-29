@@ -2,6 +2,7 @@
 using BiolyCompiler.BlocklyParts.ControlFlow;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BiolyCompiler.Graphs
@@ -46,6 +47,25 @@ namespace BiolyCompiler.Graphs
 
             copy.StartDFG = knownDFGCopys[StartDFG];
             return copy;
+        }
+
+        public DFG<Block> GetEndDFGInFirstScope()
+        {
+            DFG<Block> endDFG = StartDFG;
+            while (endDFG != null)
+            {
+                IControlBlock control = Nodes.Single(x => x.dfg == endDFG).control;
+                if (control != null && control.GetEndDFG() != null)
+                {
+                    endDFG = control.GetEndDFG();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return endDFG;
         }
     }
 }

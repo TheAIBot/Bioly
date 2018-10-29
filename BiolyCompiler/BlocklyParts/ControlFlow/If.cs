@@ -50,7 +50,7 @@ namespace BiolyCompiler.BlocklyParts.ControlFlow
                 XmlNode ifNode = node.GetInnerBlockNode(GetIfFieldName(ifCounter), parserInfo, new MissingBlockException(id, $"{exceptionStart} is missing its conditional block."));
                 if (ifNode != null)
                 {
-                    decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ref ifNode, dfg, parserInfo);
+                    decidingBlock = (VariableBlock)XmlParser.ParseAndAddNodeToDFG(ifNode, dfg, parserInfo);
                 }
 
                 XmlNode guardedDFGNode = node.GetInnerBlockNode(GetDoFieldName(ifCounter), parserInfo, new MissingBlockException(id, $"{exceptionStart} is missing blocks to execute."));

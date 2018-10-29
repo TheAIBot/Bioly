@@ -255,12 +255,6 @@ namespace BiolyTests
         }
 
         [TestMethod]
-        public void TestCopyFluidRefBlock()
-        {
-            CheckCopySingleBlock(new FluidRef("a", "b"));
-        }
-
-        [TestMethod]
         public void TestCopyGetDropletCountBlock()
         {
             CheckCopySingleBlock(new GetDropletCount("w", "a", "", false));
