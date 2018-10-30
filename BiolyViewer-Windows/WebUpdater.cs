@@ -47,11 +47,13 @@ namespace BiolyViewer_Windows
                             int boardWidth = Settings.BoardWidth;
                             int boardHeight = Settings.BoardHeight;
 
-                            CDFG newCdfg = new CDFG();
+                            
                             cancelSource?.Cancel();
 
                             cancelSource = new CancellationTokenSource();
-                            newCdfg.AddNode(null, ProgramExecutor<string>.OptimizeCDFG<string>(boardWidth, boardHeight, cdfg, cancelSource.Token, Settings.EnableGC));
+                            CDFG newCdfg = new CDFG();
+                            newCdfg.StartDFG = ProgramExecutor<string>.OptimizeCDFG<string>(boardWidth, boardHeight, cdfg, cancelSource.Token, Settings.EnableGC);
+                            newCdfg.AddNode(null, newCdfg.StartDFG);
 
                             if (cancelSource.IsCancellationRequested)
                             {
@@ -59,7 +61,6 @@ namespace BiolyViewer_Windows
                             }
 
                             cdfg = newCdfg;
-                            cdfg.StartDFG = cdfg.Nodes.First().dfg;
                             optimizedCDFG = true;
                         }
                         (string nodes, string edges) = SimpleGraph.CDFGToSimpleGraph(cdfg);
