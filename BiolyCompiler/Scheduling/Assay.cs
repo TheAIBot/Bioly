@@ -140,7 +140,7 @@ namespace BiolyCompiler.Scheduling
             if (operationNode != null)
             {
                 HashSet<string> usedHeaterModules = new HashSet<string>();
-                foreach (var successorOperationNode in operationNode.GetOutgoingEdges())
+                foreach (var successorOperationNode in operationNode.GetOutgoingEdges().Distinct())
                 {
                     if (successorOperationNode.GetIngoingEdges().All(node => node.value.IsDone || (node.value is VariableBlock && !((VariableBlock)node.value).CanBeScheduled)))
                     {
