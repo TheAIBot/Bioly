@@ -473,5 +473,55 @@ namespace BiolyTests
 
             RectangleTestTools.CompareBoards(beforeBoardData.board, afterBoardData.board);
         }
+
+        [TestMethod]
+        public void TestPlaceLddotsOfMixerModules()
+        {
+            int[] before = new int[]
+            {
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+                 1,  1,  1,  1,  1,  1,  1,
+            };
+
+            int[] after = new int[]
+            {
+                -1, -1, -1,  1,  1,  1,  2,
+                -1, -1, -1,  1,  1,  1,  2,
+                -1, -1, -1,  1,  1,  1,  2,
+                -2, -2, -2, -2, -2, -2,  2,
+                -2, -2, -2, -2, -2, -2,  2,
+                -2, -2, -2, -2, -2, -2,  2,
+                 4,  4,  4,  4,  4,  4,  2,
+                -3, -3, -3, -3, -3, -3,  2,
+                -3, -3, -3, -3, -3, -3,  2,
+                -3, -3, -3, -3, -3, -3,  2,
+                 3,  3,  3,  3,  3,  3,  2,
+                -4, -4, -4, -4, -4, -4,  2,
+                -4, -4, -4, -4, -4, -4,  2,
+                -4, -4, -4, -4, -4, -4,  2,
+            };
+
+            var beforeBoardData = RectangleTestTools.ArrayToRectangles(before, 7);
+            var afterBoardData = RectangleTestTools.ArrayToRectangles(after, 7);
+
+            beforeBoardData.board.FastTemplatePlace(new TestModule(3, 3, 0));
+            beforeBoardData.board.FastTemplatePlace(new TestModule(6, 3, 0));
+            beforeBoardData.board.FastTemplatePlace(new TestModule(6, 3, 0));
+            beforeBoardData.board.FastTemplatePlace(new TestModule(6, 3, 0));
+
+            RectangleTestTools.CompareBoards(beforeBoardData.board, afterBoardData.board);
+        }
     }
 }
