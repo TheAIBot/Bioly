@@ -49,27 +49,12 @@ namespace BiolyCompiler.Architechtures
         /// <returns>true if the module could be placed on the board, else false.</returns>
         public bool FastTemplatePlace(Module module)
         {
-            var bufferConfigurations = new (bool left, bool right, bool top, bool bottom)[]
+            var bufferConfigurations = new (bool left, bool bottom)[]
 {
-                (false, false, false, false),
-                (false, false, false, true ),
-                //(false, false, true , false),
-                //(false, true , false, false),
-                (true , false, false, false),
-
-                //(false, false, true , true ),
-                //(false, true , true , false),
-                //(true , true , false, false),
-                (true , false, false, true ),
-                //(false, true , false, true ),
-                //(true , false, true , false),
-
-                //(false, true , true , true ),
-                //(true , true , true , false),
-                //(true , true , false, true ),
-                //(true , false, true , true ),
-
-                //(true , true , true , true ),
+                (false, false),
+                (false, true ),
+                (true , false),
+                (true , true ),
             };
 
             List<Rectangle> sortedRectangles = new List<Rectangle>();
@@ -87,15 +72,15 @@ namespace BiolyCompiler.Architechtures
             {
                 foreach (var useBuffer in bufferConfigurations)
                 {
-                    int bufferWidth = module.Shape.width + (useBuffer.left ? 1 : 0) + (useBuffer.right ? 1 : 0);
-                    int bufferHeight = module.Shape.height + (useBuffer.top ? 1 : 0) + (useBuffer.bottom ? 1 : 0);
+                    int bufferWidth  = module.Shape.width  + (useBuffer.left   ? 1 : 0);
+                    int bufferHeight = module.Shape.height + (useBuffer.bottom ? 1 : 0);
 
                     if (!rectangle.DoesRectangleFitInside(bufferWidth, bufferHeight))
                     {
                         continue;
                     }
 
-                    var bufferRectangles = CreateBufferedModuleRectangles(module, rectangle, useBuffer.left, useBuffer.right, useBuffer.top, useBuffer.bottom);
+                    var bufferRectangles = CreateBufferedModuleRectangles(module, rectangle, useBuffer.left, useBuffer.bottom);
                     if (IsBlockingRouteToModuleOrEmptyRectangle(rectangle, bufferRectangles.all, bufferRectangles.center))
                     {
                         continue;
@@ -135,10 +120,10 @@ namespace BiolyCompiler.Architechtures
             return false;
         }
 
-        private static (Rectangle[] all, Rectangle center) CreateBufferedModuleRectangles(Module module, Rectangle bigRectangle, bool leftBuffer, bool rightBuffer, bool topBuffer, bool bottomBuffer)
+        private static (Rectangle[] all, Rectangle center) CreateBufferedModuleRectangles(Module module, Rectangle bigRectangle, bool leftBuffer, bool bottomBuffer)
         {
-            int bufferWidth = module.Shape.width + (leftBuffer ? 1 : 0) + (rightBuffer ? 1 : 0);
-            int bufferHeight = module.Shape.height + (topBuffer ? 1 : 0) + (bottomBuffer ? 1 : 0);
+            int bufferWidth  = module.Shape.width  + (leftBuffer   ? 1 : 0);
+            int bufferHeight = module.Shape.height + (bottomBuffer ? 1 : 0);
 
             List<Rectangle> rectangles = new List<Rectangle>();
 
@@ -155,15 +140,7 @@ namespace BiolyCompiler.Architechtures
 
             if (leftBuffer)
             {
-                rectangles.Add(new Rectangle(1, bufferHeight - (topBuffer ? 1 : 0) - (bottomBuffer ? 1 : 0), splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0)));
-            }
-            if (rightBuffer)
-            {
-                rectangles.Add(new Rectangle(1, bufferHeight - (topBuffer ? 1 : 0) - (bottomBuffer ? 1 : 0), splittedRectangle.newSmaller.getRightmostXPosition() - 1 + (leftBuffer ? 1 : 0), splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0)));
-            }
-            if (topBuffer)
-            {
-                rectangles.Add(new Rectangle(bufferWidth, 1, splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.getTopmostYPosition() - 1 + (bottomBuffer ? 1 : 0)));
+                rectangles.Add(new Rectangle(1, bufferHeight - (bottomBuffer ? 1 : 0), splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0)));
             }
             if (bottomBuffer)
             {
