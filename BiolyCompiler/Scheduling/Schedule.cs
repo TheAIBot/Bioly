@@ -232,7 +232,8 @@ namespace BiolyCompiler.Scheduling
                 switch (nextOperation)
                 {
                     case VariableBlock varBlock:
-                        HandleVariableOperation<T>(currentTime, varBlock, executor);
+                        UpdateVariables<T>(varBlock, executor);
+                        UpdateSchedule(varBlock, currentTime, currentTime);
                         assay.UpdateReadyOperations(varBlock);
                         break;
                     case Union unionBlock:
@@ -413,17 +414,6 @@ namespace BiolyCompiler.Scheduling
             return currentTime;
         }
 
-        private void HandleVariableOperation<T>(int currentTime, VariableBlock nextOperation, CommandExecutor<T> executor)
-        {
-            //This is a mathematical operation, and it should be scheduled to run as soon as possible
-            if (nextOperation.CanBeScheduled)
-            {
-                UpdateVariables<T>(nextOperation, executor);
-
-                //This is a mathematical operation, and it should be scheduled to run as soon as possible
-                UpdateSchedule(nextOperation, currentTime, currentTime);
-            }
-        }
         private void UpdateVariables<T>(VariableBlock varBlock, CommandExecutor<T> executor)
         {
             (string variableName, float value) = varBlock.ExecuteBlock(Variables, executor, FluidVariableLocations);
