@@ -25,7 +25,6 @@ namespace BiolyCompiler.Scheduling
         //This is primarily for testing and visulization purposes.
         public Dictionary<int, Rectangle[]> rectanglesAtDifferentTimes = new Dictionary<int, Rectangle[]>();
         // For debuging. Used when printing the board to the console, for visulization purposes.
-        public List<Module> AllUsedModules = new List<Module>(); 
         public Dictionary<string, BoardFluid> FluidVariableLocations = new Dictionary<string, BoardFluid>();
         public Dictionary<string, float> Variables = new Dictionary<string, float>();
         public Dictionary<string, Module> StaticModules = new Dictionary<string, Module>();
@@ -217,7 +216,6 @@ namespace BiolyCompiler.Scheduling
             Assay assay = new Assay(dfg);
 
             rectanglesAtDifferentTimes.Clear();
-            AllUsedModules.Clear();
             ScheduledOperations.Clear();
             OutputtedDroplets.Clear();
             NewVariablesCreatedInThisScope.Clear();
@@ -283,9 +281,6 @@ namespace BiolyCompiler.Scheduling
                                                getAndPlaceFirstPlaceableModule(topPriorityOperation, board);
             topPriorityOperation.Bind(operationExecutingModule, FluidVariableLocations);
 
-            //For debuging:
-            if (!(topPriorityOperation is StaticUseageBlock)) AllUsedModules.Add(operationExecutingModule);
-
             //If the module can't be placed, one must wait until there is enough space for it:
             if (operationExecutingModule == null) throw new RuntimeException("Not enough space for a module: this is not handeled yet");
 
@@ -344,7 +339,6 @@ namespace BiolyCompiler.Scheduling
                         inputModule.DecrementDropletCount();
                         Droplet droplet = new Droplet(targetFluidType, NameOfInputFluids);
                         droplet.SetFluidConcentrations(inputModule);
-                        AllUsedModules.Add(droplet);
                         bool couldPlace = board.FastTemplatePlace(droplet);
                         if (!couldPlace)
                         {
@@ -502,7 +496,6 @@ namespace BiolyCompiler.Scheduling
 
         private void ListSchedulingSetup(Assay assay, int startTime)
         {
-            AllUsedModules.AddRange(board.PlacedModules.Values);
             rectanglesAtDifferentTimes.Add(startTime, board.CopyAllRectangles());
         }
         
@@ -539,7 +532,6 @@ namespace BiolyCompiler.Scheduling
                         finishedOperation.UpdateInternalDropletConcentrations();
                         (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OutputVariable, currentTime, finishedOperation);
                         List<Droplet> replacingDroplets = board.replaceWithDroplets(finishedOperation.BoundModule, dropletOutputFluid);
-                        AllUsedModules.AddRange(replacingDroplets);
                     }
                     else {
                         if (finishedOperation is HeaterUsage heaterOperation)
@@ -554,7 +546,6 @@ namespace BiolyCompiler.Scheduling
                             (dropletOutputFluid, currentTime) = RecordNewFluidType(finishedOperation.OutputVariable, currentTime, finishedOperation);
                             Droplet droplet = new Droplet(dropletOutputFluid);
                             droplet.SetFluidConcentrations(heaterOperation.InputRoutes.First().Value.First().routedDroplet);
-                            AllUsedModules.Add(droplet);
                             bool couldBePlaced = board.FastTemplatePlace(droplet);
 
                             //Temporarily placing a droplet on the initial position of the heater, for routing purposes:
