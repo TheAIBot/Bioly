@@ -213,8 +213,6 @@ namespace BiolyCompiler.Scheduling
          */
         public int ListScheduling<T>(DFG<Block> dfg, CommandExecutor<T> executor)
         {
-            Assay assay = new Assay(dfg);
-
             rectanglesAtDifferentTimes.Clear();
             ScheduledOperations.Clear();
             OutputtedDroplets.Clear();
@@ -222,8 +220,9 @@ namespace BiolyCompiler.Scheduling
 
             //Setup:
             int currentTime = 0;
-            ListSchedulingSetup(assay, currentTime);
+            rectanglesAtDifferentTimes.Add(currentTime, board.CopyAllRectangles());
 
+            Assay assay = new Assay(dfg);
             foreach (Block nextOperation in assay)
             {
                 nextOperation.Update<T>(Variables, executor, FluidVariableLocations);
@@ -231,7 +230,7 @@ namespace BiolyCompiler.Scheduling
                 {
                     case VariableBlock varBlock:
                         UpdateVariables<T>(varBlock, executor);
-                        UpdateSchedule(varBlock, currentTime, currentTime);
+                        UpdateSchedule(nextOperation, currentTime, currentTime);
                         assay.UpdateReadyOperations(varBlock);
                         break;
                     case Union unionBlock:
@@ -250,7 +249,9 @@ namespace BiolyCompiler.Scheduling
                         assay.UpdateReadyOperations(arrayRenameBlock);
                         break;
                     case FluidBlock fluidBlock:
+                        int oldTime = currentTime;
                         currentTime = HandleFluidOperations(currentTime, fluidBlock);
+                        UpdateSchedule(nextOperation, currentTime, oldTime);
                         break;
                     default:
                         throw new InternalRuntimeException("The given block/operation type is unhandeled by the scheduler. " + Environment.NewLine + "The operation is: " + nextOperation.ToString());
@@ -490,13 +491,7 @@ namespace BiolyCompiler.Scheduling
             {
                 finishedRoutingTime = Router.RouteDropletsToModule(board, startTime, topPriorityOperation);
             }
-            UpdateSchedule(topPriorityOperation, finishedRoutingTime, startTime);
             return finishedRoutingTime;
-        }
-
-        private void ListSchedulingSetup(Assay assay, int startTime)
-        {
-            rectanglesAtDifferentTimes.Add(startTime, board.CopyAllRectangles());
         }
         
         public int HandleFinishingOperations(Block nextOperation, int currentTime, Assay assay)
