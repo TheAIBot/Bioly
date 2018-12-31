@@ -351,7 +351,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     }
                 }
 
-                IControlBlock control = cdfg.Nodes.Single(x => x.dfg == currentDFG).control;
+                IControlBlock control = cdfg.DfgToControl[currentDFG];
                 if (control != null)
                 {
                     stack.Push(control.GetEnumerator());

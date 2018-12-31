@@ -378,7 +378,7 @@ namespace BiolyCompiler
         {
             List<string> variablesOutOfScope = new List<string>();
             {
-                IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
+                IControlBlock control = graph.DfgToControl[currentDFG];
                 if (control != null)
                 {
                     DFG<Block> guardedDFG = control.GuardedDFG(variables, executor, dropPositions);

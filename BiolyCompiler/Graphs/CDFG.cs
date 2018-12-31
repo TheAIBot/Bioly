@@ -10,18 +10,20 @@ namespace BiolyCompiler.Graphs
     public class CDFG
     {
         public readonly List<(IControlBlock control, DFG<Block> dfg)> Nodes = new List<(IControlBlock control, DFG<Block> dfg)>();
+        public readonly Dictionary<DFG<Block>, IControlBlock> DfgToControl = new Dictionary<DFG<Block>, IControlBlock>();
         public DFG<Block> StartDFG;
 
         public void AddNode(IControlBlock control, DFG<Block> dfg)
         {
             Nodes.Add((control, dfg));
+            DfgToControl.Add(dfg, control);
         }
 
         public void AddCDFG(CDFG cdfg)
         {
             foreach (var item in cdfg.Nodes)
             {
-                Nodes.Add(item);
+                AddNode(item.control, item.dfg);
             }
         }
 
@@ -54,7 +56,7 @@ namespace BiolyCompiler.Graphs
             DFG<Block> endDFG = StartDFG;
             while (endDFG != null)
             {
-                IControlBlock control = Nodes.Single(x => x.dfg == endDFG).control;
+                IControlBlock control = DfgToControl[endDFG];
                 if (control != null && control.GetEndDFG() != null)
                 {
                     endDFG = control.GetEndDFG();
