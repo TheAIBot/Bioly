@@ -473,41 +473,5 @@ namespace BiolyTests
 
             RectangleTestTools.CompareBoards(beforeBoardData.board, afterBoardData.board);
         }
-
-        [TestMethod]
-        public void TestPlaceFailFlatHorizontal()
-        {
-            int[] before = new int[]
-            {
-                 1,  1,  1,  1,  1,  1,  1,
-                 1,  1,  1,  1,  1,  1,  1,
-                 1,  1,  1,  1,  1,  1,  1,
-            };
-
-            var beforeBoardData = RectangleTestTools.ArrayToRectangles(before, 7);
-
-            Assert.IsTrue(beforeBoardData.board.FastTemplatePlace(new TestModule(3, 3, 0)));
-            Assert.IsFalse(beforeBoardData.board.FastTemplatePlace(new TestModule(3, 3, 0)));
-        }
-
-        [TestMethod]
-        public void TestPlaceFailFlatVertical()
-        {
-            int[] before = new int[]
-            {
-                 1,  1,  1,
-                 1,  1,  1,
-                 1,  1,  1,
-                 1,  1,  1,
-                 1,  1,  1,
-                 1,  1,  1,
-                 1,  1,  1,
-            };
-
-            var beforeBoardData = RectangleTestTools.ArrayToRectangles(before, 3);
-
-            Assert.IsTrue(beforeBoardData.board.FastTemplatePlace(new TestModule(3, 3, 0)));
-            Assert.IsFalse(beforeBoardData.board.FastTemplatePlace(new TestModule(3, 3, 0)));
-        }
     }
 }
