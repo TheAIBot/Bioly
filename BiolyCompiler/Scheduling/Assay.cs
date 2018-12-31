@@ -79,51 +79,51 @@ namespace BiolyCompiler.Scheduling
 
         private void CalculateCriticalPath()
         {
-            List<Node<Block>> rank = Dfg.Output;
-
-            do
+            //The nodes list inside a dfg is already topologically sorted
+            for (int i = Dfg.Nodes.Count - 1; i >= 0; i--)
             {
-                foreach (Node<Block> node in rank)
-                {
-                    foreach (Node<Block> backNode in node.GetIngoingEdges())
-                    {
-                        int newPriority = node.value.priority;
-                        switch (backNode.value)
-                        {
-                            case HeaterUsage block:
-                                newPriority -= block.Time;
-                                break;
-                            case VariableBlock block1:
-                            case Union block2:
-                            case StaticDeclarationBlock block3:
-                            case Fluid block4:
-                            case SetArrayFluid block5:
-                                break;
-                            case Mixer block:
-                                newPriority -= Mixer.OPERATION_TIME;
-                                break;
-                            default:
-                                throw new InternalRuntimeException($"Calculating critical path doesn't handle the block type {backNode.GetType().ToString()}.");
-                        }
+                Node<Block> node = Dfg.Nodes[i];
 
-                        backNode.value.priority = Math.Min(backNode.value.priority, newPriority);
-                    }
-                }
+                //Always move droplets to waste asap.
+                //Always delay taking droplets out of
+                //DeclarationBlock blocks for as long
+                //as possible.
+                //These two demands makes sure that the
+                //space on the board isn't wasted.
 
-                rank = rank.SelectMany(x => x.GetIngoingEdges())
-                           .Distinct()
-                           .ToList();
-            } while (rank.Count > 0);
-
-            foreach (Node<Block> node in Dfg.Nodes)
-            {
                 if (node.value is WasteUsage)
                 {
                     node.value.priority = int.MinValue;
+                    continue;
                 }
-                if (node.value is StaticDeclarationBlock)
+                else if (node.value is StaticDeclarationBlock)
                 {
                     node.value.priority = int.MaxValue;
+                    continue;
+                }
+
+                foreach (Node<Block> backNode in node.GetIngoingEdges())
+                {
+                    int newPriority = node.value.priority;
+                    switch (backNode.value)
+                    {
+                        case HeaterUsage block:
+                            newPriority -= block.Time;
+                            break;
+                        case VariableBlock block1:
+                        case Union block2:
+                        case StaticDeclarationBlock block3:
+                        case Fluid block4:
+                        case SetArrayFluid block5:
+                            break;
+                        case Mixer block:
+                            newPriority -= Mixer.OPERATION_TIME;
+                            break;
+                        default:
+                            throw new InternalRuntimeException($"Calculating critical path doesn't handle the block type {backNode.GetType().ToString()}.");
+                    }
+
+                    backNode.value.priority = Math.Min(backNode.value.priority, newPriority);
                 }
             }
         }
