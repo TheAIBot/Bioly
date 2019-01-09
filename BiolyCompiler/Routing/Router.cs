@@ -182,7 +182,7 @@ namespace BiolyCompiler.Routing
         {
             //Finds the route from the module to route to (source module), to the closest droplet of type targetFluidType,
             (int startingXPos, int startingYPos) = targetInput.GetMiddleOfSource();
-            RouteDirection[,] routeMap = new RouteDirection[board.width, board.heigth];
+            RouteDirection[,] routeMap = new RouteDirection[board.Width, board.Heigth];
             routeMap[startingXPos, startingYPos] = RouteDirection.Start;
 
             Queue<Point> queue = new Queue<Point>();
@@ -202,7 +202,7 @@ namespace BiolyCompiler.Routing
             while (queue.Count > 0)
             {
                 Point currentNode = queue.Dequeue();
-                Module moduleAtCurrentNode = board.grid[currentNode.X, currentNode.Y];
+                Module moduleAtCurrentNode = board.ModuleGrid[currentNode.X, currentNode.Y];
 
                 if (currentRangeCount == 0)
                 {
@@ -240,11 +240,11 @@ namespace BiolyCompiler.Routing
             {
                 UpdateNeighborPriority(queue, routeMap, currentPos.X, currentPos.Y - 1, RouteDirection.Up, ref nextRangeCount);
             }
-            if (currentPos.X < board.width - 1)
+            if (currentPos.X < board.Width - 1)
             {
                 UpdateNeighborPriority(queue, routeMap, currentPos.X + 1, currentPos.Y, RouteDirection.Left, ref nextRangeCount);
             }
-            if (currentPos.Y < board.heigth - 1)
+            if (currentPos.Y < board.Heigth - 1)
             {
                 UpdateNeighborPriority(queue, routeMap, currentPos.X, currentPos.Y + 1, RouteDirection.Down, ref nextRangeCount);
             }

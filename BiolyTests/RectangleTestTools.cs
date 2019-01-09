@@ -155,10 +155,10 @@ namespace BiolyTests
             actualBoard.EmptyRectangles.ForEach(x => actualRectangles.Add(x.Key));
             actualBoard.PlacedModules.ForEach(x => actualRectangles.Add(x.Key.Shape));
 
-            errorMessage = Environment.NewLine + errorMessage + Environment.NewLine + RectanglesToString(actualRectangles, expectedBoard.width, expectedBoard.heigth);
+            errorMessage = Environment.NewLine + errorMessage + Environment.NewLine + RectanglesToString(actualRectangles, expectedBoard.Width, expectedBoard.Heigth);
 
-            Assert.AreEqual(expectedBoard.width, actualBoard.width);
-            Assert.AreEqual(expectedBoard.heigth, actualBoard.heigth);
+            Assert.AreEqual(expectedBoard.Width, actualBoard.Width);
+            Assert.AreEqual(expectedBoard.Heigth, actualBoard.Heigth);
             CollectionAssert.AreEquivalent(expectedBoard.EmptyRectangles.ToList(), actualBoard.EmptyRectangles.ToList(), errorMessage);
             CollectionAssert.AreEquivalent(expectedBoard.PlacedModules.Select(x => x.Key.Shape).ToList(), actualBoard.PlacedModules.Select(x => x.Key.Shape).ToList(), errorMessage);
 
@@ -173,9 +173,9 @@ namespace BiolyTests
         private static bool DoesRectanglesOverlap(Board board)
         {
             int[,] overlapMap = MakeOverlapMap(board);
-            for (int x = 0; x < board.width; x++)
+            for (int x = 0; x < board.Width; x++)
             {
-                for (int y = 0; y < board.heigth; y++)
+                for (int y = 0; y < board.Heigth; y++)
                 {
                     if (overlapMap[x,y] > 1)
                     {
@@ -189,7 +189,7 @@ namespace BiolyTests
 
         private static int[,] MakeOverlapMap(Board board)
         {
-            return MakeOverlapMap(board.CopyAllRectangles(), board.width, board.heigth);
+            return MakeOverlapMap(board.CopyAllRectangles(), board.Width, board.Heigth);
         }
 
         private static int[,] MakeOverlapMap(Rectangle[] boardLayout, int width, int height)
@@ -278,9 +278,9 @@ namespace BiolyTests
         {
             int[,] actualOverlapMap = MakeOverlapMap(actual);
             int[,] expectedOverlapMap = MakeOverlapMap(expected);
-            for (int x = 0; x < actual.width; x++)
+            for (int x = 0; x < actual.Width; x++)
             {
-                for (int y = 0; y < actual.heigth; y++)
+                for (int y = 0; y < actual.Heigth; y++)
                 {
                     if (actualOverlapMap[x, y] != expectedOverlapMap[x, y])
                     {

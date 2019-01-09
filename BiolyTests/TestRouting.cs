@@ -107,7 +107,7 @@ namespace BiolyTests.RoutingTests
 
             Route route = Router.DetermineRouteToModule(Router.haveReachedSpecifficModule(endModule), startModule, (IDropletSource)startModule, boardData.board, 10);
 
-            string errorMessage = RouteOnBoard(boardData.rectangles.Select(x => x.Item1).ToList(), boardData.board.width, boardData.board.heigth, route);
+            string errorMessage = RouteOnBoard(boardData.rectangles.Select(x => x.Item1).ToList(), boardData.board.Width, boardData.board.Heigth, route);
             Assert.IsTrue(route.route.Length > 0);
             Assert.IsTrue(HasNoCollisions(route, boardData.board, startModule, (IDropletSource)endModule), errorMessage);
             Assert.IsTrue(HasCorrectStartAndEnding(route, boardData.board, (IDropletSource)endModule, (IDropletSource)startModule), errorMessage);
@@ -132,9 +132,9 @@ namespace BiolyTests.RoutingTests
             for (int i = 0; i < route.route.Length; i++)
             {
                 Point node = route.route[i];
-                if (board.grid[node.X, node.Y] != null && 
-                    board.grid[node.X, node.Y] != sourceModule && 
-                    board.grid[node.X, node.Y] != targetDroplet)
+                if (board.ModuleGrid[node.X, node.Y] != null && 
+                    board.ModuleGrid[node.X, node.Y] != sourceModule && 
+                    board.ModuleGrid[node.X, node.Y] != targetDroplet)
                 {
                     return false;
                 }
@@ -175,8 +175,8 @@ namespace BiolyTests.RoutingTests
 
         private static bool IsPlacedOnTheBoard(int x, int y, Board board)
         {
-            return (0 <= x && x < board.width &&
-                    0 <= y && y < board.heigth);
+            return (0 <= x && x < board.Width &&
+                    0 <= y && y < board.Heigth);
         }
 
 
