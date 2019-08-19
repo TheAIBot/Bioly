@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29209.152
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiolyTests", "BiolyTests\BiolyTests.csproj", "{09681629-8452-43B4-AADC-C4A435FF451A}"
 EndProject
@@ -14,10 +14,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BiolyCompiler", "BiolyCompi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EvaluationProjectFramework", "EvaluationProjectFramework\EvaluationProjectFramework.csproj", "{63899F54-CC0F-46E6-B640-E0F156D7FFD5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiolyOnTheWeb", "BiolyOnTheWeb\BiolyOnTheWeb.csproj", "{7C939109-E781-408A-BD7B-B2C0FE574C13}"
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -57,12 +56,23 @@ Global
 		{63899F54-CC0F-46E6-B640-E0F156D7FFD5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{63899F54-CC0F-46E6-B640-E0F156D7FFD5}.Release|x64.ActiveCfg = Release|Any CPU
 		{63899F54-CC0F-46E6-B640-E0F156D7FFD5}.Release|x64.Build.0 = Release|Any CPU
+		{7C939109-E781-408A-BD7B-B2C0FE574C13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C939109-E781-408A-BD7B-B2C0FE574C13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C939109-E781-408A-BD7B-B2C0FE574C13}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7C939109-E781-408A-BD7B-B2C0FE574C13}.Debug|x64.Build.0 = Debug|Any CPU
+		{7C939109-E781-408A-BD7B-B2C0FE574C13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C939109-E781-408A-BD7B-B2C0FE574C13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C939109-E781-408A-BD7B-B2C0FE574C13}.Release|x64.ActiveCfg = Release|Any CPU
+		{7C939109-E781-408A-BD7B-B2C0FE574C13}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9EE33E0B-4198-43C0-AD75-4769EBD77CDC}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

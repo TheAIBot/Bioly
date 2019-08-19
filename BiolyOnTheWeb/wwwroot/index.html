@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, height=device-height" />
+    <title>BiolyOnTheWeb</title>
+    <!--<base href="/" />-->
+    <!--<link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />-->
+    <!--<link href="css/site.css" rel="stylesheet" />-->
+    <link href="style.css" rel="stylesheet" />
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec2 vShape;
+        attribute vec2 vPosition;
+        attribute vec2 size;
+        attribute vec4 vColor;
+        uniform float zoom;
+        uniform vec2 viewOffset;
+        varying vec4 fColor;
+
+        void main()
+        {
+        fColor = vColor;
+        gl_Position.xy = ((vShape.xy * size) + vPosition.xy) * zoom + viewOffset.xy;
+        gl_Position.w = 1.0;
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 fColor;
+
+        void main()
+        {
+        gl_FragColor = fColor;
+        }
+    </script>
+</head>
+<body>
+    <app>Loaaaading...</app>
+
+    <script src="settings.js"></script>
+    <script src="WebGL/angelCommon/initShaders.js"></script>
+    <script src="WebGL/angelCommon/webgl-utils.js"></script>
+    <script src="WebGL/angelCommon/MV.js"></script>
+    <script src="simulator_renderer.js"></script>
+    <script src="simulator.js"></script>
+
+    <script src="helperFunctions.js"></script>
+    <script></script>
+    <script src="simulator_events.js"></script>
+
+    <script src="blockly_compressed.js"></script>
+    <script src="blocks_compressed.js"></script>
+    <script src="en.js"></script>
+    <script src="costum_blocks.js"></script>
+    <script src="blockly_events.js"></script>
+    <script src="cytoscape.min.js"></script>
+    <script src="dagre.min.js"></script>
+    <script src="cytoscape-dagre.js"></script>
+    <script src="save_functions.js"></script>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

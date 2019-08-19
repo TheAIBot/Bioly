@@ -1,0 +1,61 @@
+﻿using Microsoft.JSInterop;
+using System;
+using System.Collections.Generic;
+
+namespace BiolyOnTheWeb
+{
+    public class Saver
+    {
+        public const string DEFAULT_FILE_EXTENSION = ".bc";
+        private const string TEMP_FILE_NAME = "temp" + DEFAULT_FILE_EXTENSION;
+        private readonly IJSRuntime JSExecutor;
+
+        public Saver(IJSRuntime jsExe)
+        {
+            this.JSExecutor = jsExe;
+        }
+
+
+        public void QuickSave(string xml)
+        {
+            //if (xml != "<xml xmlns=\"http://www.w3.org/1999/xhtml\"><variables></variables></xml>")
+            //{
+            //    File.WriteAllText(TEMP_FILE_NAME, xml);
+            //}
+        }
+
+        public void SaveAs(string xml)
+        {
+            //SaveFileDialog dialog = new SaveFileDialog();
+            //dialog.DefaultExt = DEFAULT_FILE_EXTENSION;
+            //if (dialog.ShowDialog() == true)
+            //{
+            //    File.WriteAllText(dialog.FileName, xml);
+            //}
+        }
+
+        public void QuickLoad()
+        {
+            //if (File.Exists(TEMP_FILE_NAME))
+            //{
+            //    LoadFileToBrowser(File.ReadAllText(TEMP_FILE_NAME));
+            //}
+        }
+
+        public void LoadFile()
+        {
+            //OpenFileDialog dialog = new OpenFileDialog();
+            //dialog.DefaultExt = DEFAULT_FILE_EXTENSION;
+            //if (dialog.ShowDialog() == true)
+            //{
+            //    LoadFileToBrowser(File.ReadAllText(dialog.FileName));
+            //}
+        }
+
+        private void LoadFileToBrowser(string xml)
+        {
+            //string js = $"Blockly.mainWorkspace.clear();loadWorkspace('{xml}');";
+            //Browser.ExecuteScriptAsync(js);
+        }
+    }
+}

@@ -72,6 +72,9 @@ namespace BiolyCompiler
 
         internal static string TryGetAttributeValue(this XmlNode xmlNode, string attributeName)
         {
+            return xmlNode.Attributes["type"].Value;
+
+            //throw new Exception("asdas" + xmlNode.Attributes["type"].Value);
             foreach (XmlNode attribute in xmlNode.Attributes)
             {
                 if (attribute.Name == attributeName)

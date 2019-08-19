@@ -36,7 +36,7 @@ namespace BiolyCompiler.Parser
             }
             try
             {
-                node = node.FirstChild.FirstChild;
+                node = node.GetNodeWithName("statement").GetNodeWithName("block");
             }
             catch (Exception)
             {
