@@ -92,23 +92,23 @@ namespace BiolyOnTheWeb
         object simulatorLocker = new object();
         ProgramExecutor<string> CurrentlyExecutionProgram = null;
 
-        private void RunSimulator(CDFG cdfg, bool alreadyOptimized)
+        private async void RunSimulator(CDFG cdfg, bool alreadyOptimized)
         {
-            lock (simulatorLocker)
-            {
+            //lock (simulatorLocker)
+            //{
                 if (CurrentlyExecutionProgram != null)
                 {
                     CurrentlyExecutionProgram.KeepRunning.Cancel();
                 }
-                simulatorThread?.Join();
-                simulatorThread = new Thread(async () =>
-                {
+                //simulatorThread?.Join();
+                //simulatorThread = new Thread(async () =>
+                //{
                     try
                     {
                         int boardWidth = Settings.BoardWidth;
                         int boardHeight = Settings.BoardHeight;
                         int timeBetweenCommands = (int)((1f / Settings.CommandFrequency) * 1000);
-                        using (SimulatorConnector executor = new SimulatorConnector(boardWidth, boardHeight))
+                        using (SimulatorConnector executor = new SimulatorConnector(JSExecutor, boardWidth, boardHeight))
                         {
                             CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
                             CurrentlyExecutionProgram.TimeBetweenCommands = timeBetweenCommands;
@@ -136,9 +136,9 @@ namespace BiolyOnTheWeb
                     {
                         Debug.WriteLine(e.Message + Environment.NewLine + e.StackTrace);
                     }
-                });
-                simulatorThread.Start();
-            }
+                //});
+                //simulatorThread.Start();
+            //}
         }
 
         public async void SettingsChanged()

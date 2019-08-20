@@ -38,6 +38,10 @@ var UPDATES_PER_SECOND = 60;
 
 function startSimulator(width, height, inputs, outputs, enabledElectrodes)
 {
+    inputs = eval(inputs);
+    outputs = eval(outputs);
+
+
 	ELECTRODE_SIZE_IN_CM        = getElectrodeSizeSetting();
 	DROP_DISTANCE_PER_SEC_IN_CM = getDropletSpeedSetting();
 	DEFAULT_DROP_SIZE_IN_CM     = getDropletSizeSetting();

@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using BiolyCompiler.Exceptions;
+using Microsoft.JSInterop;
 
 namespace BiolyOnTheWeb
 {
@@ -19,10 +20,13 @@ namespace BiolyOnTheWeb
         private bool REALLY_SLOW_COMPUTER = false;
         private BlockingCollection<string> PortStrings = new BlockingCollection<string>(new ConcurrentQueue<string>());
         private List<string> InputNames;
+        private readonly IJSRuntime JSExecutor;
 
 
-        public SimulatorConnector(int width, int height)
+        public SimulatorConnector(IJSRuntime jsExe, int width, int height)
         {
+            this.JSExecutor = jsExe;
+
             //need these commands to start the high voltage things
             PortStrings.Add("shv 1 290\r");
             PortStrings.Add("hvpoe 1 1\r");
@@ -32,7 +36,7 @@ namespace BiolyOnTheWeb
             Height = height;
         }
 
-        public override void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules, bool[] usedElectrodes)
+        public override async void StartExecutor(List<string> inputNames, List<Module> inputs, List<Module> outputs, List<Module> otherStaticModules, bool[] usedElectrodes)
         {
             this.InputNames = inputNames;
 
@@ -61,8 +65,8 @@ namespace BiolyOnTheWeb
                 Debug.WriteLine("(async function() {");
             }
 
-            string usedElectrodesString = $"[{ String.Join(", ", usedElectrodes).ToLower()}]";
-            ExecuteJs($"startSimulator({Width}, {Height}, [{inputString}], [{outputString}], {usedElectrodesString});");
+            await JSExecutor.InvokeAsync<object>("startSimulator", Width, Height, $"[{inputString}]", $"[{outputString}]", usedElectrodes);
+            //ExecuteJs($"startSimulator({Width}, {Height}, [{inputString}], [{outputString}], {usedElectrodesString});");
 
             for (int i = 0; i < inputs.Count; i++)
             {
@@ -93,13 +97,18 @@ namespace BiolyOnTheWeb
             QueuedCommands.Add(ConvertCommand(commands));
         }
 
-        public override void SendCommands()
+        public override async void SendCommands()
         {
-            if (QueuedCommands.Count > 0)
+            for (int i = 0; i < QueuedCommands.Count; i++)
             {
-                ExecuteJs(String.Join(String.Empty, QueuedCommands));
-                QueuedCommands.Clear();
+                await JSExecutor.InvokeAsync<object>("addCommand", QueuedCommands[i]);
             }
+            //foreach (var cmd in QueuedCommands)
+            //{
+                //await JSExecutor.InvokeAsync<object>("addCommand", cmd);
+            //}
+
+            QueuedCommands.Clear();
         }
 
         private void ExecuteJs(string js)
