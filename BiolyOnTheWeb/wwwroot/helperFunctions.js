@@ -1,7 +1,5 @@
 function setGraph(nodes, edges)
 {
-    console.log(nodes);
-    console.log(edges);
     nodes = eval(nodes);
     edges = eval(edges);
 
