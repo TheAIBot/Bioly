@@ -99,14 +99,9 @@ namespace BiolyOnTheWeb
 
         public override async void SendCommands()
         {
-            for (int i = 0; i < QueuedCommands.Count; i++)
-            {
-                await JSExecutor.InvokeAsync<object>("addCommand", QueuedCommands[i]);
-            }
-            //foreach (var cmd in QueuedCommands)
-            //{
-                //await JSExecutor.InvokeAsync<object>("addCommand", cmd);
-            //}
+            //compiler currently doesn't convert string[] correctly to a js string[] so make a string
+            //instead and then eval it on the js side to get the string[]
+            await JSExecutor.InvokeAsync<object>("addCommands", $"[{string.Join(",", QueuedCommands.Select(x => $"\"{x}\""))}]");
 
             QueuedCommands.Clear();
         }

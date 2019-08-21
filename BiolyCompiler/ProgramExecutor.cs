@@ -334,19 +334,19 @@ namespace BiolyCompiler
                 removeAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
                 showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
 
-                Executor.SendCommands();
-
                 if (KeepRunning.IsCancellationRequested)
                 {
                     return;
                 }
 
-                if (TimeBetweenCommands > 0)
-                {
-                    Thread.Sleep(TimeBetweenCommands);
-                }
+                //if (TimeBetweenCommands > 0)
+                //{
+                //    Thread.Sleep(TimeBetweenCommands);
+                //}
                 time++;
             }
+
+            Executor.SendCommands();
         }
 
         private static Rectangle[] AddRectangleShowCommands(Rectangle[] oldRectangles, Dictionary<int, Rectangle[]> boardLayouts, int time, List<Command> showAreaCommands, List<Command> removeAreaCommands)

@@ -151,6 +151,14 @@ function prepareInputs()
 	}
 }
 
+function addCommands(commands)
+{
+    commands = eval(commands);
+    for (var i = 0; i < commands.length; i++) {
+        addCommand(commands[i]);
+    }
+}
+
 function addCommand(command)
 {
 	newCommands.push(command);
