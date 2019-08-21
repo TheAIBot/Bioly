@@ -27,7 +27,7 @@ function startBlockly(programs)
 }
 
 var alreadyWaitingForUpdate = false
-function onWorkspaceChanged(event)
+async function onWorkspaceChanged(event)
 {
 	if (alreadyWaitingForUpdate)
 	{
@@ -35,11 +35,10 @@ function onWorkspaceChanged(event)
 	}
 	
     alreadyWaitingForUpdate = true;
-    DotNet.invokeMethodAsync("BiolyOnTheWeb", "BlocklyUpdated")
-        .then(data =>
-        {
-            setTimeout(function () {
-                alreadyWaitingForUpdate = false;
-            }, 100);
-        });
+    await DotNet.invokeMethodAsync("BiolyOnTheWeb", "BlocklyUpdated")
+
+    //crude way to prevent duplicate requests
+    setTimeout(function () {
+        alreadyWaitingForUpdate = false;
+    }, 200);
 }
