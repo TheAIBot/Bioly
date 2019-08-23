@@ -3,9 +3,9 @@
 @using BiolyOnTheWeb;
 
 <div class="side" id="leftSide">
-    <button class="tab" id="quickSaveButton" @onclick="QuickSave">Quick Save</button>
+    <button class="tab" id="quickSaveButton" onclick="quickSave();">Quick Save</button>
     <button class="tab" id="saveAsButton" @onclick="SaveAs">Save as...</button>
-    <button class="tab" id="quickLoadButton" @onclick="QuickLoad">Quick Load</button>
+    <button class="tab" id="quickLoadButton" onclick="quickLoad();">Quick Load</button>
     <button class="tab" id="loadButton" @onclick="LoadFile">Load File</button>
     <div class="tabContent">
         <div id="blocklyDiv"></div>
