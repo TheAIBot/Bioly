@@ -25,9 +25,12 @@ var DROP_DISTANCE_PER_SEC_IN_CM = 600;
 var DEFAULT_DROP_SIZE_IN_CM = 1;
 var STRICT_MODE_ENABLED = true;
 var didGraphicsChange = false;
-var updatesPerUdate = 1;
 var runningSimulatorIntervalID = null;
 var UPDATES_PER_SECOND = 60;
+const ticksPerSecond = 60;//60 fps
+const timeBetweenUpdates = 1000.0 / ticksPerSecond; 
+var updatesPerTick = 0;
+var accumulatedUpdates = 0;
 
 //setel 1 2 3 4 5 6 7  8 9 10
 //clrel 1 2 3 4 5  6 7 8 9 10
@@ -35,6 +38,10 @@ var UPDATES_PER_SECOND = 60;
 //--[[unique simulator commands]]--
 //show_area (string)id (int)x (int)y (int)width (int)height (float)r (float)g (float)b
 //remove_area (string)id
+
+function initSimulator() {
+    runningSimulatorIntervalID = setInterval(updateLoop, timeBetweenUpdates);
+}
 
 function startSimulator(width, height, inputs, outputs, enabledElectrodes)
 {
@@ -63,26 +70,16 @@ function startSimulator(width, height, inputs, outputs, enabledElectrodes)
 	prepareInputs();
 	
 	drops = [];
-	areas = [];
+    areas = [];
+
+    updatesPerTick = UPDATES_PER_SECOND / ticksPerSecond;
+    accumulatedUpdates = 0;
 	
-	if (runningSimulatorIntervalID != null)
+	if (runningSimulatorIntervalID == null)
 	{
-		clearInterval(runningSimulatorIntervalID);
-	}
+        initSimulator();
+    }
 	
-	let timeBetweenUpdates = 1000 / UPDATES_PER_SECOND;
-	
-	if (timeBetweenUpdates < 10)
-	{
-		updatesPerUdate = Math.ceil(10 / timeBetweenUpdates);
-		timeBetweenUpdates = 10;
-	}
-	else
-	{
-		updatesPerUdate = 1;
-	}
-	
-	runningSimulatorIntervalID = setInterval(updateLoop, timeBetweenUpdates);
 	didGraphicsChange = true;
 }
 
@@ -165,29 +162,46 @@ function addCommand(command)
 }
 
 function updateLoop()
-{	
-	for(let i = 0; i < updatesPerUdate; i++)
-	{
-		if(newCommands.length > 0)
-		{
-			executeCommand(newCommands[0]);
-			newCommands.splice(0, 1);
-		}
-		try
-		{
-			spawnInputDrops();
-			splitDrops();
-			removeDrops();
-			updateDropPositions();
-			mergeDrops();
-		}
-		catch(error)
-		{
-			console.log(error);
-			clearInterval(runningSimulatorIntervalID);
-			return;
-		}
-	}
+{
+    accumulatedUpdates += updatesPerTick;
+    if (accumulatedUpdates >= 1) {
+        while (accumulatedUpdates >= 1) {
+            if (newCommands.length > 0) {
+                executeCommand(newCommands[0]);
+                newCommands.splice(0, 1);
+            }
+            try {
+                spawnInputDrops();
+                splitDrops();
+                removeDrops();
+                updateDropPositions();
+                mergeDrops();
+            }
+            catch (error) {
+                console.log(error);
+                clearInterval(runningSimulatorIntervalID);
+                runningSimulatorIntervalID = null;
+                return;
+            }
+
+            accumulatedUpdates -= 1;
+        }
+    }
+    else {
+        try {
+            spawnInputDrops();
+            splitDrops();
+            removeDrops();
+            updateDropPositions();
+            mergeDrops();
+        }
+        catch (error) {
+            console.log(error);
+            clearInterval(runningSimulatorIntervalID);
+            runningSimulatorIntervalID = null;
+            return;
+        }
+    }
 }
 
 function updateGraphics()
@@ -505,7 +519,7 @@ function distanceAB(a, b)
 
 function updateDropPositions()
 {
-	const distancePerUpdate = (DROP_DISTANCE_PER_SEC_IN_CM / UPDATES_PER_SECOND) * ELECTRODE_SIZE_IN_CM * electrodeSize;
+    const distancePerUpdate = (DROP_DISTANCE_PER_SEC_IN_CM / ticksPerSecond) * ELECTRODE_SIZE_IN_CM * electrodeSize;
 	
 	for(var i = 0; i < drops.length; i++)
 	{

@@ -21,7 +21,7 @@ var currentZoom = 1;
 var currentViewOffsetX = 0;
 var currentViewOffsetY = 0;
 
-function initRender()
+function initSimulatorRender()
 {
     const canvas = document.getElementById("simulatorCanvas");
 	const parentWidth = canvas.parentNode.clientWidth;
@@ -48,7 +48,8 @@ function initRender()
 	gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
 	
 	startSimulator(5, 5, "[{index: 6, color: vec4(1, 0, 0, 0.5)}]", "[]", [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, ]);
-	addCommand("show_area 'asd' 0 0 3 3 0 1 0.1");
+    addCommand("show_area 'asd' 0 0 3 3 0 1 0.1");
+    window.requestAnimFrame(updateGraphics);
 }
 
 function setupBuffers(width, height, enabledElectrodes)
