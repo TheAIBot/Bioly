@@ -164,44 +164,36 @@ function addCommand(command)
 function updateLoop()
 {
     accumulatedUpdates += updatesPerTick;
-    if (accumulatedUpdates >= 1) {
-        while (accumulatedUpdates >= 1) {
-            if (newCommands.length > 0) {
-                executeCommand(newCommands[0]);
-                newCommands.splice(0, 1);
-            }
-            try {
+    try {
+        if (accumulatedUpdates >= 1) {
+            while (accumulatedUpdates >= 1) {
+                if (newCommands.length > 0) {
+                    executeCommand(newCommands[0]);
+                    newCommands.splice(0, 1);
+                }
+                accumulatedUpdates -= 1;
+
                 spawnInputDrops();
                 splitDrops();
                 removeDrops();
                 updateDropPositions();
                 mergeDrops();
             }
-            catch (error) {
-                console.log(error);
-                clearInterval(runningSimulatorIntervalID);
-                runningSimulatorIntervalID = null;
-                return;
-            }
-
-            accumulatedUpdates -= 1;
         }
-    }
-    else {
-        try {
+        else {
             spawnInputDrops();
             splitDrops();
             removeDrops();
             updateDropPositions();
             mergeDrops();
         }
-        catch (error) {
-            console.log(error);
-            clearInterval(runningSimulatorIntervalID);
-            runningSimulatorIntervalID = null;
-            return;
-        }
+    } catch (error) {
+        console.error(error);
+        clearInterval(runningSimulatorIntervalID);
+        runningSimulatorIntervalID = null;
+        return;
     }
+
 }
 
 function updateGraphics()
