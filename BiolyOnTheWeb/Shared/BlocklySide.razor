@@ -1,0 +1,85 @@
+﻿@inject IJSRuntime JsRuntimeaaa;
+@inject WebUpdater Updateraaa;
+
+<div class="side" id="leftSide">
+    <SaveBar/>
+    <div class="tabContent">
+        <div id="blocklyDiv"></div>
+    </div>
+    <div id="showErrors">
+        <div id="errorTextDiv"></div>
+    </div>
+    <xml id="toolbox" style="display: none">
+        <category name="Control">
+            <block type="controls_if"></block>
+            <block type="controls_repeat_ext"></block>
+            <block type="controls_whileUntil"></block>
+        </category>
+        <category name="Arithmetic">
+            <block type="math_number"></block>
+            <block type="math_arithmetic"></block>
+            <block type="math_round"></block>
+            <block type="getNumberVariable"></block>
+            <block type="setNumberVariable"></block>
+            <block type="importNumberVariable"></block>
+            <block type="sensorUsage"></block>
+            <block type="getDropletCount"></block>
+            <block type="getArrayLength"></block>
+        </category>
+        <category name="Logic">
+            <block type="logic_compare"></block>
+        </category>
+        <category name="Static modules">
+            <block type="dropletDeclaration"></block>
+            <block type="inputDeclaration"></block>
+            <block type="outputDeclaration"></block>
+            <block type="wasteDeclaration"></block>
+            <block type="sensorDeclaration"></block>
+            <block type="heaterDeclaration"></block>
+        </category>
+        <category name="Fluids">
+            <block type="fluid"></block>
+            <block type="getFluid"></block>
+            <block type="mixer"></block>
+            <block type="union"></block>
+            <block type="heaterUsage"></block>
+            <block type="outputUsage"></block>
+            <block type="wasteUsage"></block>
+        </category>
+        <category name="Misc">
+            <block type="start"></block>
+            <block type="inlineProgram"></block>
+        </category>
+        <category name="Fluid Arrays">
+            <block type="fluidArray"></block>
+            <block type="setFluidArrayIndex"></block>
+            <block type="getFluidArrayIndex"></block>
+        </category>
+        <category name="Number Arrays">
+            <block type="numberArray"></block>
+            <block type="setNumberArrayIndex"></block>
+            <block type="getNumberArrayIndex"></block>
+        </category>
+    </xml>
+</div>
+
+@code {
+    static IJSRuntime JsRuntime = null;
+    static WebUpdater Updater = null;
+
+    protected override void OnAfterRender()
+    {
+        if (JsRuntime == null)
+        {
+            JsRuntime = JsRuntimeaaa;
+            Updater = Updateraaa;
+        }
+    }
+
+    [JSInvokable]
+    public static async void BlocklyUpdated()
+    {
+        string workspaceXml = await JsRuntime.InvokeAsync<string>("getWorkspaceAsXml");
+        Updater.Update(workspaceXml);
+    }
+}

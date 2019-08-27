@@ -14,7 +14,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BiolyCompiler", "BiolyCompi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EvaluationProjectFramework", "EvaluationProjectFramework\EvaluationProjectFramework.csproj", "{63899F54-CC0F-46E6-B640-E0F156D7FFD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiolyOnTheWeb", "BiolyOnTheWeb\BiolyOnTheWeb.csproj", "{7C939109-E781-408A-BD7B-B2C0FE574C13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BiolyOnTheWeb", "BiolyOnTheWeb\BiolyOnTheWeb.csproj", "{7C939109-E781-408A-BD7B-B2C0FE574C13}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,146 +1,8 @@
 ﻿@page "/"
-@inject IJSRuntime JsRuntimeInjectaaa;
-@using BiolyOnTheWeb;
+@inject IJSRuntime JsRuntime;
 
-<div class="side" id="leftSide">
-    <button class="tab" id="quickSaveButton" onclick="quickSave();">Quick Save</button>
-    <button class="tab" id="saveAsButton" @onclick="SaveAs">Save as...</button>
-    <button class="tab" id="quickLoadButton" onclick="quickLoad();">Quick Load</button>
-    <button class="tab" id="loadButton" @onclick="LoadFile">Load File</button>
-    <div class="tabContent">
-        <div id="blocklyDiv"></div>
-    </div>
-    <div id="showErrors">
-        <div id="errorTextDiv"></div>
-    </div>
-    <xml id="toolbox" style="display: none">
-        <category name="Control">
-            <block type="controls_if"></block>
-            <block type="controls_repeat_ext"></block>
-            <block type="controls_whileUntil"></block>
-        </category>
-        <category name="Arithmetic">
-            <block type="math_number"></block>
-            <block type="math_arithmetic"></block>
-            <block type="math_round"></block>
-            <block type="getNumberVariable"></block>
-            <block type="setNumberVariable"></block>
-            <block type="importNumberVariable"></block>
-            <block type="sensorUsage"></block>
-            <block type="getDropletCount"></block>
-            <block type="getArrayLength"></block>
-        </category>
-        <category name="Logic">
-            <block type="logic_compare"></block>
-        </category>
-        <category name="Static modules">
-            <block type="dropletDeclaration"></block>
-            <block type="inputDeclaration"></block>
-            <block type="outputDeclaration"></block>
-            <block type="wasteDeclaration"></block>
-            <block type="sensorDeclaration"></block>
-            <block type="heaterDeclaration"></block>
-        </category>
-        <category name="Fluids">
-            <block type="fluid"></block>
-            <block type="getFluid"></block>
-            <block type="mixer"></block>
-            <block type="union"></block>
-            <block type="heaterUsage"></block>
-            <block type="outputUsage"></block>
-            <block type="wasteUsage"></block>
-        </category>
-        <category name="Misc">
-            <block type="start"></block>
-            <block type="inlineProgram"></block>
-        </category>
-        <category name="Fluid Arrays">
-            <block type="fluidArray"></block>
-            <block type="setFluidArrayIndex"></block>
-            <block type="getFluidArrayIndex"></block>
-        </category>
-        <category name="Number Arrays">
-            <block type="numberArray"></block>
-            <block type="setNumberArrayIndex"></block>
-            <block type="getNumberArrayIndex"></block>
-        </category>
-    </xml>
-</div>
-<div class="side" id="rightSide">
-    <button class="tab tabLink" id="graphTab" onclick="openTab(event, 'graphDiv');        return false;">Graph</button>
-    <button class="tab tabLink" id="infoTab" onclick="openTab(event, 'InfoDiv');        return false;">Info</button>
-    <button class="tab tabLink" id="simulatorTab" onclick="openTab(event, 'simulatorCanvas'); return false;">Simulator</button>
-    <button class="tab tabLink" id="settingsTab" onclick="openTab(event, 'settingsDiv');     return false;">Settings</button>
-    <div class="tabContent">
-        <div class="tabItemContent" id="graphDiv"></div>
-        <div class="tabItemContent" id="InfoDiv">
-            <table id="dropsTable" style="width:100%">
-            </table>
-        </div>
-        <canvas class="tabItemContent" id="simulatorCanvas"></canvas>
-        <div class="tabItemContent" id="settingsDiv">
-            <div>
-                <div class="settingsPlacement">
-                    <span>Board width</span>
-                    <input class="settingInput" id="boardWidthSetting" type="number" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Board height</span>
-                    <input class="settingInput" id="boardHeightSetting" type="number" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Command frequency</span>
-                    <input class="settingInput" id="commandFrequencySetting" type="number" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Droplet speed(cm/s)</span>
-                    <input class="settingInput" id="dropletSpeedSetting" type="number" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Droplet size(cm)</span>
-                    <input class="settingInput" id="dropletSizeSetting" type="number" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Electrode size(cm)</span>
-                    <input class="settingInput" id="electrodeSizeSetting" type="number" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Show empty rectangles</span>
-                    <input class="settingInput" id="emptyRectanglesSetting" type="checkbox" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Simulator strict mode</span>
-                    <input class="settingInput" id="useSimulatorStrictModeSetting" type="checkbox" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Board USB</span>
-                    <select class="settingInput" id="comPortSetting">
-                    </select>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Simulator UPS</span>
-                    <input class="settingInput" id="simulatorUPSSetting" type="number" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Create graph</span>
-                    <input class="settingInput" id="createGraphSettingSetting" type="checkbox" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Enable optimizations</span>
-                    <input class="settingInput" id="enableOptimizationsSetting" type="checkbox" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Enable GC</span>
-                    <input class="settingInput" id="enableGCSetting" type="checkbox" @oninput="SettingsChanged"/>
-                </div>
-                <div class="settingsPlacement">
-                    <span>Enable sparse board</span>
-                    <input class="settingInput" id="enableSparseBoardSetting" type="checkbox" @oninput="SettingsChanged"/>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<BlocklySide/>
+<TabsSide/>
 <svg>
     <defs>
         <linearGradient id="sensorGradient">
@@ -151,55 +13,15 @@
 </svg>
 
 @code {
-    static WebUpdater Updater;
-    Saver Save;
-    static IJSRuntime JsRuntime = null;
+    bool AlreadyRan = false;
 
     protected override async Task OnAfterRenderAsync()
     {
-        if (JsRuntime == null)
+        if (!AlreadyRan)
         {
-            JsRuntime = JsRuntimeInjectaaa;
-            Updater = new WebUpdater(JsRuntime);
-            Save = new Saver(JsRuntime);
-
-            Updater.GiveSettingsToJS();
+            AlreadyRan = true;
 
             await JsRuntime.InvokeAsync<object>("afterLoading");
         }
-    }
-
-    public void SettingsChanged()
-    {
-        Updater.SettingsChanged();
-    }
-
-    public async void QuickSave()
-    {
-        string workspaceXml = await JsRuntime.InvokeAsync<string>("getWorkspaceAsXml");
-        Save.QuickSave(workspaceXml);
-    }
-
-    public async void SaveAs()
-    {
-        string workspaceXml = await JsRuntime.InvokeAsync<string>("getWorkspaceAsXml");
-        Save.SaveAs(workspaceXml);
-    }
-
-    public void QuickLoad()
-    {
-        Save.QuickLoad();
-    }
-
-    public void LoadFile()
-    {
-        Save.LoadFile();
-    }
-
-    [JSInvokable]
-    public static async void BlocklyUpdated()
-    {
-        string workspaceXml = await JsRuntime.InvokeAsync<string>("getWorkspaceAsXml");
-        Updater.Update(workspaceXml);
     }
 }
