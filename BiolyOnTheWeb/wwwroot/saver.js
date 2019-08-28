@@ -17,7 +17,7 @@ function getAllLocalBlocklyFileNames() {
         window.localStorage[filesStorageFileName] = JSON.stringify({});
     }
 
-    return Object.keys(JSON.parse(window.localStorage[filesStorageFileName])).join("@");
+    return JSON.stringify(Object.keys(JSON.parse(window.localStorage[filesStorageFileName])));
 }
 
 function getLocalBlocklyFileContent(filename) {

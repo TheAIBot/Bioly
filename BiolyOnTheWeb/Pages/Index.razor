@@ -6,7 +6,9 @@
 @using BiolyCompiler.Graphs;
 @using BiolyCompiler.Parser;
 @using BiolyCompiler.BlocklyParts.Misc;
+@using System.Text.Json;
 @inject IJSRuntime JsRuntime;
+@inject HttpClient Http
 
 <BlocklySide />
 <TabsSide />
@@ -30,18 +32,18 @@
 
             string[] files = new string[]
             {
-                "programs/Basic protocol for E.coli Quick.txt",
-                "programs/Basic protocol for E.coli Quick10.txt",
-                "programs/Basic protocol for E.coli Step 1.txt",
-                "programs/Basic protocol for E.coli Step 2.txt",
-                "programs/Basic protocol for E.coli Step 3.txt",
-                "programs/Basic protocol for E.coli Step 3_5.txt",
-                "programs/Basic protocol for E.coli.txt",
+                "programs/Basic protocol for E. coli Quick.txt",
+                "programs/Basic protocol for E. coli Quick10.txt",
+                "programs/Basic protocol for E. coli Step 1.txt",
+                "programs/Basic protocol for E. coli Step 2.txt",
+                "programs/Basic protocol for E. coli Step 3.txt",
+                "programs/Basic protocol for E. coli Step 3_5.txt",
+                "programs/Basic protocol for E. coli.txt",
                 "programs/diluter.txt",
                 "programs/UsingDiluter.txt",
-                "programs/UsingDiluter1.txt",
                 "programs/UsingDiluter2.txt",
-                                };
+                "programs/UsingDiluter3.txt",
+            };
 
             var filesContent = new List<(string filename, string fileContent)>();
 
@@ -49,20 +51,21 @@
             for (int i = 0; i < files.Length; i++)
             {
                 string filename = Path.GetFileNameWithoutExtension(files[i]);
-                string fileContent = await JsRuntime.InvokeAsync<string>("getFileContent", files[i]);
+                string fileContent = await Http.GetStringAsync(files[i].Replace(' ', '-'));
 
                 filesContent.Add((filename, fileContent));
             }
 
             //Then get users files
-            string[] localFilenames = (await JsRuntime.InvokeAsync<string>("getAllLocalBlocklyFileNames")).Split('@');
-            await JsRuntime.InvokeAsync<object>("console.log", (await JsRuntime.InvokeAsync<string>("getAllLocalBlocklyFileNames")));
+            string[] localFilenames = JsonSerializer.Deserialize<string[]>(await JsRuntime.InvokeAsync<string>("getAllLocalBlocklyFileNames"));
             foreach (var filename in localFilenames)
             {
                 string fileContent = await JsRuntime.InvokeAsync<string>("getLocalBlocklyFileContent", filename);
 
                 filesContent.Add((filename, fileContent));
             }
+
+            
 
             ProgramCache.AddPrograms(filesContent);
 
@@ -71,8 +74,6 @@
             {
                 try
                 {
-                    await JsRuntime.InvokeAsync<object>("console.log", file.filename);
-                    await JsRuntime.InvokeAsync<object>("console.log", file.fileContent);
                     (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(file.fileContent);
                     if (exceptions.Count == 0)
                     {
