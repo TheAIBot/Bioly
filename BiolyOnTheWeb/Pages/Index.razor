@@ -30,6 +30,8 @@
         {
             AlreadyRan = true;
 
+            await JsRuntime.InvokeAsync<object>("loadSimulator");
+
             string[] files = new string[]
             {
                 "programs/Basic protocol for E. coli Quick.txt",
@@ -94,8 +96,6 @@
 
             string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
             await JsRuntime.InvokeAsync<object>("startBlockly", allPrograms);
-
-            await JsRuntime.InvokeAsync<object>("afterLoading");
         }
     }
 }

@@ -1,4 +1,4 @@
-function afterLoading() {
+function loadSimulator() {
     document.getElementById("simulatorCanvas").addEventListener('mousemove', function (e) {
         if (e.buttons == 1) {
             const canvas = document.getElementById("simulatorCanvas");
