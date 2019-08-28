@@ -2,6 +2,8 @@ var workspace;
 
 function startBlockly(programs)
 {
+    programs = eval(programs);
+
 	for(var i = 0; i < programs.length; i++)
 	{
 		inlineProgramPrograms.push(programs[i]);

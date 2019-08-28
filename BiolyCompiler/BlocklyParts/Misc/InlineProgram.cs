@@ -40,7 +40,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             public readonly Dictionary<string, VariableBlock> VariablesFromTo = new Dictionary<string, VariableBlock>();
         }
 
-        public InlineProgram(XmlNode node, ParserInfo parserInfo)
+        public InlineProgram(XmlNode node, ParserInfo parserInfo) : this(node, parserInfo, GetProgramXml(GetProgramName(node, node.GetAttributeValue(Block.ID_FIELD_NAME))))
+        {
+        }
+
+        public InlineProgram(XmlNode node, ParserInfo parserInfo, string fileContent)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             this.ProgramName = GetProgramName(node, id);
@@ -48,7 +52,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             try
             {
-                (this.Inputs, this.Outputs, this.VariableImports, _, this.ProgramCDFG) = LoadProgram(ProgramName);
+                (this.Inputs, this.Outputs, this.VariableImports, _, this.ProgramCDFG) = LoadProgram(ProgramName, fileContent);
                 this.IsValidProgram = true;
             }
             catch (Exception e)
@@ -134,6 +138,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public static (string[] inputs, string[] outputs, string[] variableImports, string programXml, CDFG cdfg) LoadProgram(string programName)
         {
             string programXml = GetProgramXml(programName);
+            return LoadProgram(programName, programXml);
+        }
+
+        public static (string[] inputs, string[] outputs, string[] variableImports, string programXml, CDFG cdfg) LoadProgram(string programName, string programXml)
+        {
             (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(programXml);
             if (exceptions.Count == 0)
             {

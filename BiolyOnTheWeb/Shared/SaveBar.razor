@@ -8,26 +8,11 @@
 @code {
     Saver Save;
 
-    protected override void OnAfterRender()
+    protected override async Task OnAfterRenderAsync()
     {
         if (Save == null)
         {
             Save = new Saver(JsRuntime);
-
-            string[] files = new string[]
-            {
-                "programs/Basic protocol for E.coli Quick.txt",
-                "programs/Basic protocol for E.coli Quick10.txt",
-                "programs/Basic protocol for E.coli Step 1.txt",
-                "programs/Basic protocol for E.coli Step 2.txt",
-                "programs/Basic protocol for E.coli Step 3.txt",
-                "programs/Basic protocol for E.coli Step 3_5.txt",
-                "programs/Basic protocol for E.coli.txt",
-                "programs/diluter.txt",
-                "programs/UsingDiluter.txt",
-                "programs/UsingDiluter1.txt",
-                "programs/UsingDiluter2.txt",
-            };
         }
     }
 
