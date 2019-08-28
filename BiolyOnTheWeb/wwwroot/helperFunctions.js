@@ -92,8 +92,7 @@ function loadWorkspace(xmlText)
 function getWorkspaceAsXml()
 {
     const xml = Blockly.Xml.workspaceToDom(workspace);
-    //console.log(Blockly.Xml.domToPrettyText(xml));
-    return Blockly.Xml.domToPrettyText(xml);
+    return Blockly.Xml.domToText(xml);
 }
 
 function openTab(e, tabName) 
@@ -112,7 +111,7 @@ function openTab(e, tabName)
 
     // Show the current tab, and add an "active" class to the button that opened the tab
     document.getElementById(tabName).style.display = "block";
-    e.currentTarget.className += " active";
+    e.className += " active";
 }
 
 function ShowBlocklyErrors(errorInfo)

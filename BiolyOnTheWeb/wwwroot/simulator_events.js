@@ -16,22 +16,5 @@ function afterLoading() {
     initSimulator();
     initSimulatorRender();
 
-    openTab(event, 'simulatorCanvas');
-}
-
-function sleep(time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-}
-
-async function getFileContent(filePath) {
-    let fileContent = null;
-    await fetch("programs/diluter.txt").then(x => {
-        if (x.status == 200) {
-            fileContent = x.text();
-        } else {
-            fileContent = null;
-        }
-    });
-
-    return fileContent;
+    openTab(document.getElementById("simulatorTab"), 'simulatorCanvas');
 }
