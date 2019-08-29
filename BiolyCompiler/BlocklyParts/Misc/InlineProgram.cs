@@ -146,22 +146,27 @@ namespace BiolyCompiler.BlocklyParts.Misc
             (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(programXml);
             if (exceptions.Count == 0)
             {
-                var inputs = cdfg.StartDFG.Input.Where(x => x.value is InputDeclaration)
-                                                      .Select(x => x.value.OutputVariable)
-                                                      .ToArray();
-                var outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
-                                                       .Select(x => (x.value as OutputDeclaration).ModuleName)
-                                                       .ToArray();
-                var variableImports = cdfg.StartDFG.Input.Where(x => x.value is ImportVariable)
-                                                         .Select(x => (x.value as ImportVariable).VariableName)
-                                                         .ToArray();
-
-                return (inputs, outputs, variableImports, programXml, cdfg);
+                return LoadProgram(programXml, cdfg);
             }
             else
             {
                 throw new InternalParseException("The loaded program contains parse exceptions");
             }
+        }
+
+        public static (string[] inputs, string[] outputs, string[] variableImports, string programXml, CDFG cdfg) LoadProgram(string programXml, CDFG cdfg)
+        {
+            var inputs = cdfg.StartDFG.Input.Where(x => x.value is InputDeclaration)
+                                                  .Select(x => x.value.OutputVariable)
+                                                  .ToArray();
+            var outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
+                                                   .Select(x => (x.value as OutputDeclaration).ModuleName)
+                                                   .ToArray();
+            var variableImports = cdfg.StartDFG.Input.Where(x => x.value is ImportVariable)
+                                                     .Select(x => (x.value as ImportVariable).VariableName)
+                                                     .ToArray();
+
+            return (inputs, outputs, variableImports, programXml, cdfg);
         }
 
         private static string GetProgramXml(string programName)

@@ -79,7 +79,7 @@
                     (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(file.fileContent);
                     if (exceptions.Count == 0)
                     {
-                        (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml, _) = InlineProgram.LoadProgram(file.filename, file.fileContent);
+                        (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml, _) = InlineProgram.LoadProgram(file.fileContent, cdfg);
 
                         string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
                         string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
