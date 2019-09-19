@@ -40,7 +40,11 @@ namespace BiolyCompiler.BlocklyParts.Misc
             public readonly Dictionary<string, VariableBlock> VariablesFromTo = new Dictionary<string, VariableBlock>();
         }
 
-        public InlineProgram(XmlNode node, ParserInfo parserInfo)
+        public InlineProgram(XmlNode node, ParserInfo parserInfo) : this(node, parserInfo, GetProgramXml(GetProgramName(node, node.GetAttributeValue(Block.ID_FIELD_NAME))))
+        {
+        }
+
+        public InlineProgram(XmlNode node, ParserInfo parserInfo, string fileContent)
         {
             string id = node.GetAttributeValue(Block.ID_FIELD_NAME);
             this.ProgramName = GetProgramName(node, id);
@@ -48,7 +52,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
 
             try
             {
-                (this.Inputs, this.Outputs, this.VariableImports, _, this.ProgramCDFG) = LoadProgram(ProgramName);
+                (this.Inputs, this.Outputs, this.VariableImports, _, this.ProgramCDFG) = LoadProgram(ProgramName, fileContent);
                 this.IsValidProgram = true;
             }
             catch (Exception e)
@@ -134,25 +138,35 @@ namespace BiolyCompiler.BlocklyParts.Misc
         public static (string[] inputs, string[] outputs, string[] variableImports, string programXml, CDFG cdfg) LoadProgram(string programName)
         {
             string programXml = GetProgramXml(programName);
+            return LoadProgram(programName, programXml);
+        }
+
+        public static (string[] inputs, string[] outputs, string[] variableImports, string programXml, CDFG cdfg) LoadProgram(string programName, string programXml)
+        {
             (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(programXml);
             if (exceptions.Count == 0)
             {
-                var inputs = cdfg.StartDFG.Input.Where(x => x.value is InputDeclaration)
-                                                      .Select(x => x.value.OutputVariable)
-                                                      .ToArray();
-                var outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
-                                                       .Select(x => (x.value as OutputDeclaration).ModuleName)
-                                                       .ToArray();
-                var variableImports = cdfg.StartDFG.Input.Where(x => x.value is ImportVariable)
-                                                         .Select(x => (x.value as ImportVariable).VariableName)
-                                                         .ToArray();
-
-                return (inputs, outputs, variableImports, programXml, cdfg);
+                return LoadProgram(programXml, cdfg);
             }
             else
             {
                 throw new InternalParseException("The loaded program contains parse exceptions");
             }
+        }
+
+        public static (string[] inputs, string[] outputs, string[] variableImports, string programXml, CDFG cdfg) LoadProgram(string programXml, CDFG cdfg)
+        {
+            var inputs = cdfg.StartDFG.Input.Where(x => x.value is InputDeclaration)
+                                                  .Select(x => x.value.OutputVariable)
+                                                  .ToArray();
+            var outputs = cdfg.StartDFG.Input.Where(x => x.value is OutputDeclaration)
+                                                   .Select(x => (x.value as OutputDeclaration).ModuleName)
+                                                   .ToArray();
+            var variableImports = cdfg.StartDFG.Input.Where(x => x.value is ImportVariable)
+                                                     .Select(x => (x.value as ImportVariable).VariableName)
+                                                     .ToArray();
+
+            return (inputs, outputs, variableImports, programXml, cdfg);
         }
 
         private static string GetProgramXml(string programName)
@@ -351,7 +365,7 @@ namespace BiolyCompiler.BlocklyParts.Misc
                     }
                 }
 
-                IControlBlock control = cdfg.Nodes.Single(x => x.dfg == currentDFG).control;
+                IControlBlock control = cdfg.DfgToControl[currentDFG];
                 if (control != null)
                 {
                     stack.Push(control.GetEnumerator());

@@ -36,7 +36,7 @@ namespace BiolyCompiler.Parser
             }
             try
             {
-                node = node.FirstChild.FirstChild;
+                node = node.GetNodeWithName("statement").GetNodeWithName("block");
             }
             catch (Exception)
             {
@@ -141,8 +141,6 @@ namespace BiolyCompiler.Parser
                     return new While(node, dfg, parserInfo);
                 case InlineProgram.XML_TYPE_NAME:
                     InlineProgram program = ProgramCache.GetProgram(node, id, parserInfo);
-                    //new InlineProgram(node, parserInfo);
-                    //InlineProgram program = new InlineProgram(node, parserInfo);
                     if (!program.IsValidProgram)
                     {
                         parserInfo.ParseExceptions.Add(new ParseException(id, "There is program errors in the program: " + program.ProgramName));

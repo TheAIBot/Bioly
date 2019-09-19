@@ -53,25 +53,26 @@ namespace BiolyViewer_Windows
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
-            ////var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
-            ////var programData = InlineProgram.LoadProgram("showcasing using inline program block");
+            CompilerOptions.PROGRAM_FOLDER_PATH = PROGRAMS_FOLDER_PATH;
+            var programData = InlineProgram.LoadProgram("Basic protocol for E. coli Quick");
+            //var programData = InlineProgram.LoadProgram("showcasing using inline program block");
             //var programData = InlineProgram.LoadProgram("UsingDiluter3");
 
-            //for (int i = 0; i < 1; i++)
-            //{
-            //    BenchmarkExecutor executor = new BenchmarkExecutor();
-            //    ProgramExecutor<string> CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
-            //    CurrentlyExecutionProgram.TimeBetweenCommands = 0;
-            //    CurrentlyExecutionProgram.ShowEmptyRectangles = false;
-            //    CurrentlyExecutionProgram.EnableOptimizations = true;
-            //    CurrentlyExecutionProgram.EnableGarbageCollection = true;
-            //    CurrentlyExecutionProgram.EnableSparseElectrodes = false;
+            var sassdad = XmlParser.Parse("<xml xmlns='http://www.w3.org/1999/xhtml'><variables><variable type='' id='gZ,c_HQgu:,yfA:J+Lxt'>input_fluid_name</variable></variables><block type='start' id='7skRs`d%@XtBz=rV_7{/' x='528' y='219'><statement name='program'><block type='inputDeclaration' id='2lbQ[al;v|T3G{$fy9Tn'><field name='inputName' id='gZ,c_HQgu:,yfA:J+Lxt' variabletype=''>asd</field><field name='inputAmount'>1</field></block></statement></block></xml>");
+            for (int i = 0; i < 1; i++)
+            {
+                BenchmarkExecutor executor = new BenchmarkExecutor();
+                ProgramExecutor<string> CurrentlyExecutionProgram = new ProgramExecutor<string>(executor);
+                CurrentlyExecutionProgram.TimeBetweenCommands = 0;
+                CurrentlyExecutionProgram.ShowEmptyRectangles = false;
+                CurrentlyExecutionProgram.EnableOptimizations = true;
+                CurrentlyExecutionProgram.EnableGarbageCollection = true;
+                CurrentlyExecutionProgram.EnableSparseElectrodes = false;
 
-            //    CurrentlyExecutionProgram.Run(45, 45, programData.cdfg, false);
-            //}
+                CurrentlyExecutionProgram.Run(45, 45, programData.cdfg, false);
+            }
 
-            //this.Close();
+            this.Close();
 
             //Run in another thread to not block the UI
             await Task.Run(() =>

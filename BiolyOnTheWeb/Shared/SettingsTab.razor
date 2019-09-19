@@ -1,0 +1,82 @@
+﻿@inject WebUpdater Updater;
+
+<div class="tabItemContent" id="settingsDiv">
+    <div>
+        <div class="settingsPlacement">
+            <span>Board width</span>
+            <input class="settingInput" id="boardWidthSetting" type="number" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Board height</span>
+            <input class="settingInput" id="boardHeightSetting" type="number" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Command frequency</span>
+            <input class="settingInput" id="commandFrequencySetting" type="number" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Droplet speed(cm/s)</span>
+            <input class="settingInput" id="dropletSpeedSetting" type="number" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Droplet size(cm)</span>
+            <input class="settingInput" id="dropletSizeSetting" type="number" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Electrode size(cm)</span>
+            <input class="settingInput" id="electrodeSizeSetting" type="number" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Show empty rectangles</span>
+            <input class="settingInput" id="emptyRectanglesSetting" type="checkbox" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Simulator strict mode</span>
+            <input class="settingInput" id="useSimulatorStrictModeSetting" type="checkbox" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Board USB</span>
+            <select class="settingInput" id="comPortSetting">
+            </select>
+        </div>
+        <div class="settingsPlacement">
+            <span>Simulator UPS</span>
+            <input class="settingInput" id="simulatorUPSSetting" type="number" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Create graph</span>
+            <input class="settingInput" id="createGraphSettingSetting" type="checkbox" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Enable optimizations</span>
+            <input class="settingInput" id="enableOptimizationsSetting" type="checkbox" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Enable GC</span>
+            <input class="settingInput" id="enableGCSetting" type="checkbox" @oninput="SettingsChanged" />
+        </div>
+        <div class="settingsPlacement">
+            <span>Enable sparse board</span>
+            <input class="settingInput" id="enableSparseBoardSetting" type="checkbox" @oninput="SettingsChanged" />
+        </div>
+    </div>
+</div>
+
+@code {
+    bool AlreadyRan = false;
+
+    protected override void OnAfterRender()
+    {
+        if (!AlreadyRan)
+        {
+            AlreadyRan = true;
+
+            Updater.GiveSettingsToJS();
+        }
+    }
+
+    public void SettingsChanged()
+    {
+        Updater.SettingsChanged();
+    }
+}

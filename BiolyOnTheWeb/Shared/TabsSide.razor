@@ -1,0 +1,19 @@
+﻿<div class="side" id="rightSide">
+    <button class="tab tabLink" id="graphTab" onclick="openTab(this, 'graphDiv')">Graph</button>
+    <button class="tab tabLink" id="infoTab" onclick="openTab(this, 'InfoDiv')">Info</button>
+    <button class="tab tabLink" id="simulatorTab" onclick="openTab(this, 'simulatorCanvas')">Simulator</button>
+    <button class="tab tabLink" id="settingsTab" onclick="openTab(this, 'settingsDiv')">Settings</button>
+    <div class="tabContent">
+        <div class="tabItemContent" id="graphDiv"></div>
+        <div class="tabItemContent" id="InfoDiv">
+            <table id="dropsTable" style="width:100%">
+            </table>
+        </div>
+        <canvas class="tabItemContent" id="simulatorCanvas"></canvas>
+        <SettingsTab/>
+    </div>
+</div>
+
+@code {
+
+}

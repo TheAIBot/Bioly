@@ -334,19 +334,19 @@ namespace BiolyCompiler
                 removeAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
                 showAreaCommands.ForEach(x => Executor.QueueCommands(new List<Command>() { x }));
 
-                Executor.SendCommands();
-
                 if (KeepRunning.IsCancellationRequested)
                 {
                     return;
                 }
 
-                if (TimeBetweenCommands > 0)
-                {
-                    Thread.Sleep(TimeBetweenCommands);
-                }
+                //if (TimeBetweenCommands > 0)
+                //{
+                //    Thread.Sleep(TimeBetweenCommands);
+                //}
                 time++;
             }
+
+            Executor.SendCommands();
         }
 
         private static Rectangle[] AddRectangleShowCommands(Rectangle[] oldRectangles, Dictionary<int, Rectangle[]> boardLayouts, int time, List<Command> showAreaCommands, List<Command> removeAreaCommands)
@@ -378,7 +378,7 @@ namespace BiolyCompiler
         {
             List<string> variablesOutOfScope = new List<string>();
             {
-                IControlBlock control = graph.Nodes.Single(x => x.dfg == currentDFG).control;
+                IControlBlock control = graph.DfgToControl[currentDFG];
                 if (control != null)
                 {
                     DFG<Block> guardedDFG = control.GuardedDFG(variables, executor, dropPositions);

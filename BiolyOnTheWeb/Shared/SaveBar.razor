@@ -1,0 +1,40 @@
+﻿@inject IJSRuntime JsRuntime;
+
+<button class="tab" id="quickSaveButton" onclick="quickSave();">Quick Save</button>
+<button class="tab" id="saveAsButton" @onclick="SaveAs">Save as...</button>
+<button class="tab" id="quickLoadButton" onclick="quickLoad();">Quick Load</button>
+<button class="tab" id="loadButton" @onclick="LoadFile">Load File</button>
+
+@code {
+    Saver Save;
+
+    protected override async Task OnAfterRenderAsync()
+    {
+        if (Save == null)
+        {
+            Save = new Saver(JsRuntime);
+        }
+    }
+
+    public async void QuickSave()
+    {
+        string workspaceXml = await JsRuntime.InvokeAsync<string>("getWorkspaceAsXml");
+        Save.QuickSave(workspaceXml);
+    }
+
+    public async void SaveAs()
+    {
+        string workspaceXml = await JsRuntime.InvokeAsync<string>("getWorkspaceAsXml");
+        Save.SaveAs(workspaceXml);
+    }
+
+    public void QuickLoad()
+    {
+        Save.QuickLoad();
+    }
+
+    public void LoadFile()
+    {
+        Save.LoadFile();
+    }
+}

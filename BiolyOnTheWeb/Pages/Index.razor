@@ -1,0 +1,99 @@
+﻿@page "/"
+@using System.IO;
+@using BiolyCompiler
+@using BiolyCompiler.BlocklyParts;
+@using BiolyCompiler.Exceptions.ParserExceptions;
+@using BiolyCompiler.Graphs;
+@using BiolyCompiler.Parser;
+@using BiolyCompiler.BlocklyParts.Misc;
+@using System.Text.Json;
+@inject IJSRuntime JsRuntime;
+@inject HttpClient Http
+
+<BlocklySide />
+<TabsSide />
+<svg>
+    <defs>
+        <linearGradient id="sensorGradient">
+            <stop offset="30%" stop-color="#5B5EA5" />
+            <stop offset="70%" stop-color="#5BA57D" />
+        </linearGradient>
+    </defs>
+</svg>
+
+@code {
+    bool AlreadyRan = false;
+
+    protected override async Task OnAfterRenderAsync()
+    {
+        if (!AlreadyRan)
+        {
+            AlreadyRan = true;
+
+            await JsRuntime.InvokeAsync<object>("loadSimulator");
+
+            string[] files = new string[]
+            {
+                "programs/Basic protocol for E. coli Quick.txt",
+                "programs/Basic protocol for E. coli Quick10.txt",
+                "programs/Basic protocol for E. coli Step 1.txt",
+                "programs/Basic protocol for E. coli Step 2.txt",
+                "programs/Basic protocol for E. coli Step 3.txt",
+                "programs/Basic protocol for E. coli Step 3_5.txt",
+                "programs/Basic protocol for E. coli.txt",
+                "programs/diluter.txt",
+                "programs/UsingDiluter3.txt",
+            };
+
+            var filesContent = new List<(string filename, string fileContent)>();
+
+            //First get static files
+            for (int i = 0; i < files.Length; i++)
+            {
+                string filename = Path.GetFileNameWithoutExtension(files[i]);
+                string fileContent = await Http.GetStringAsync(files[i].Replace(' ', '-'));
+
+                filesContent.Add((filename, fileContent));
+            }
+
+            //Then get users files
+            string[] localFilenames = JsonSerializer.Deserialize<string[]>(await JsRuntime.InvokeAsync<string>("getAllLocalBlocklyFileNames"));
+            foreach (var filename in localFilenames)
+            {
+                string fileContent = await JsRuntime.InvokeAsync<string>("getLocalBlocklyFileContent", filename);
+
+                filesContent.Add((filename, fileContent));
+            }
+
+            
+
+            ProgramCache.AddPrograms(filesContent);
+
+            List<string> loadedPrograms = new List<string>();
+            foreach (var file in filesContent)
+            {
+                try
+                {
+                    (CDFG cdfg, List<ParseException> exceptions) = XmlParser.Parse(file.fileContent);
+                    if (exceptions.Count == 0)
+                    {
+                        (string[] inputStrings, string[] outputStrings, string[] variableStrings, string programXml, _) = InlineProgram.LoadProgram(file.fileContent, cdfg);
+
+                        string inputs = String.Join(",", inputStrings.Select(x => "\"" + x + "\""));
+                        string outputs = String.Join(",", outputStrings.Select(x => "\"" + x + "\""));
+                        string variables = String.Join(", ", variableStrings.Select(x => "\"" + x + "\""));
+                        programXml = programXml.Replace("\"", "'");
+                        loadedPrograms.Add($"{{name: \"{file.filename}\", inputs: [{inputs}], outputs: [{outputs}], variables: [{variables}], programXml: \"{programXml}\"}}");
+                    }
+                }
+                catch (Exception ee)
+                {
+                    await JsRuntime.InvokeAsync<object>("alert", ee.Message + Environment.NewLine + ee.StackTrace);
+                }
+            }
+
+            string allPrograms = $"[{String.Join(",", loadedPrograms)}]";
+            await JsRuntime.InvokeAsync<object>("startBlockly", allPrograms);
+        }
+    }
+}

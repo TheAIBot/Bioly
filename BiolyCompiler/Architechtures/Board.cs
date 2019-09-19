@@ -14,62 +14,45 @@ using System.Diagnostics;
 
 namespace BiolyCompiler.Architechtures
 {
+    /// <summary>
+    /// The algorithm is based on the fast template placement algorithm from "Fast template placement for reconfigurable computing systems".
+    /// In essence, it divides the board into rectangles, finds the smallest empty rectangle the module can fit in,
+    /// and places it there: it then updates the rectangles on the board.
+    /// 
+    /// It is not a complete implementation, and it has some modifications compared to the algorithm described in the article.
+    /// If neccessary, optimizations described in the article, can be implemented for better performance.
+    /// 
+    /// Note that a module will not be placed, so that all routes to any module on the board, gets blocked.
+    /// </summary>
     public class Board
     {
-        //Dummy class for now.
-        public int heigth;
-        public int width;
-        public Dictionary<Module, Module> PlacedModules = new Dictionary<Module, Module>();
-        public Dictionary<Rectangle, Rectangle> EmptyRectangles = new Dictionary<Rectangle, Rectangle>();
-        public Dictionary<string, BoardFluid> fluids = new Dictionary<string, BoardFluid>();
-        public Module[,] grid;
+        public readonly int Width;
+        public readonly int Heigth;
+        public readonly Module[,] ModuleGrid;
+        public readonly Dictionary<Module, Module> PlacedModules = new Dictionary<Module, Module>();
+        public readonly Dictionary<Rectangle, Rectangle> EmptyRectangles = new Dictionary<Rectangle, Rectangle>();
 
 
         public Board(int width, int heigth)
         {
-            this.width = width;
-            this.heigth = heigth;
-            this.grid = new Module[width, heigth];
+            this.Width = width;
+            this.Heigth = heigth;
+            this.ModuleGrid = new Module[width, heigth];
+
+            //To start out with, the board is completely empty.
+            //So to start out with the board is a single big empty rectangle.
             Rectangle emptyRectangle = new Rectangle(width, heigth);
             EmptyRectangles.Add(emptyRectangle, emptyRectangle);
         }
 
-        /// <summary>
-        /// Places a given module on the board, if it is deemed possible. 
-        /// The algorithm is based on the fast template placement algorithm from "Fast template placement for reconfigurable computing systems".
-        /// In essence, it divides the board into rectangles, finds the smallest empty rectangle the module can fit in,
-        /// and places it there: it then updates the rectangles on the board.
-        /// 
-        /// It is not a complete implementation, and it has some modifications compared to the algorithm described in the article.
-        /// If neccessary, optimizations described in the article, can be implemented for better performance.
-        /// 
-        /// Note that a module will not be placed, so that all routes to any module on the board, gets blocked.
-        /// </summary>
-        /// <param name="module">The module that should be placed on the board</param>
-        /// <returns>true if the module could be placed on the board, else false.</returns>
         public bool FastTemplatePlace(Module module)
         {
-            var bufferConfigurations = new (bool left, bool right, bool top, bool bottom)[]
+            var bufferConfigurations = new (bool left, bool bottom)[]
 {
-                (false, false, false, false),
-                (false, false, false, true ),
-                //(false, false, true , false),
-                //(false, true , false, false),
-                (true , false, false, false),
-
-                //(false, false, true , true ),
-                //(false, true , true , false),
-                //(true , true , false, false),
-                (true , false, false, true ),
-                //(false, true , false, true ),
-                //(true , false, true , false),
-
-                //(false, true , true , true ),
-                //(true , true , true , false),
-                //(true , true , false, true ),
-                //(true , false, true , true ),
-
-                //(true , true , true , true ),
+                (false, false),
+                (false, true ),
+                (true , false),
+                (true , true ),
             };
 
             List<Rectangle> sortedRectangles = new List<Rectangle>();
@@ -87,15 +70,15 @@ namespace BiolyCompiler.Architechtures
             {
                 foreach (var useBuffer in bufferConfigurations)
                 {
-                    int bufferWidth = module.Shape.width + (useBuffer.left ? 1 : 0) + (useBuffer.right ? 1 : 0);
-                    int bufferHeight = module.Shape.height + (useBuffer.top ? 1 : 0) + (useBuffer.bottom ? 1 : 0);
+                    int bufferWidth  = module.Shape.width  + (useBuffer.left   ? 1 : 0);
+                    int bufferHeight = module.Shape.height + (useBuffer.bottom ? 1 : 0);
 
                     if (!rectangle.DoesRectangleFitInside(bufferWidth, bufferHeight))
                     {
                         continue;
                     }
 
-                    var bufferRectangles = CreateBufferedModuleRectangles(module, rectangle, useBuffer.left, useBuffer.right, useBuffer.top, useBuffer.bottom);
+                    var bufferRectangles = CreateBufferedModuleRectangles(module, rectangle, useBuffer.left, useBuffer.bottom);
                     if (IsBlockingRouteToModuleOrEmptyRectangle(rectangle, bufferRectangles.all, bufferRectangles.center))
                     {
                         continue;
@@ -135,10 +118,10 @@ namespace BiolyCompiler.Architechtures
             return false;
         }
 
-        private static (Rectangle[] all, Rectangle center) CreateBufferedModuleRectangles(Module module, Rectangle bigRectangle, bool leftBuffer, bool rightBuffer, bool topBuffer, bool bottomBuffer)
+        private static (Rectangle[] all, Rectangle center) CreateBufferedModuleRectangles(Module module, Rectangle bigRectangle, bool leftBuffer, bool bottomBuffer)
         {
-            int bufferWidth = module.Shape.width + (leftBuffer ? 1 : 0) + (rightBuffer ? 1 : 0);
-            int bufferHeight = module.Shape.height + (topBuffer ? 1 : 0) + (bottomBuffer ? 1 : 0);
+            int bufferWidth  = module.Shape.width  + (leftBuffer   ? 1 : 0);
+            int bufferHeight = module.Shape.height + (bottomBuffer ? 1 : 0);
 
             List<Rectangle> rectangles = new List<Rectangle>();
 
@@ -155,15 +138,7 @@ namespace BiolyCompiler.Architechtures
 
             if (leftBuffer)
             {
-                rectangles.Add(new Rectangle(1, bufferHeight - (topBuffer ? 1 : 0) - (bottomBuffer ? 1 : 0), splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0)));
-            }
-            if (rightBuffer)
-            {
-                rectangles.Add(new Rectangle(1, bufferHeight - (topBuffer ? 1 : 0) - (bottomBuffer ? 1 : 0), splittedRectangle.newSmaller.getRightmostXPosition() - 1 + (leftBuffer ? 1 : 0), splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0)));
-            }
-            if (topBuffer)
-            {
-                rectangles.Add(new Rectangle(bufferWidth, 1, splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.getTopmostYPosition() - 1 + (bottomBuffer ? 1 : 0)));
+                rectangles.Add(new Rectangle(1, bufferHeight - (bottomBuffer ? 1 : 0), splittedRectangle.newSmaller.x, splittedRectangle.newSmaller.y + (bottomBuffer ? 1 : 0)));
             }
             if (bottomBuffer)
             {
@@ -298,7 +273,7 @@ namespace BiolyCompiler.Architechtures
             {
                 for (int j = 0; j < emptyRectangle.height; j++)
                 {
-                    grid[i + emptyRectangle.x, j + emptyRectangle.y] = null;
+                    ModuleGrid[i + emptyRectangle.x, j + emptyRectangle.y] = null;
                 }
             }
         }
@@ -309,7 +284,7 @@ namespace BiolyCompiler.Architechtures
             {
                 for (int j = 0; j < module.Shape.height; j++)
                 {
-                    grid[i + rectangleToPlaceAt.x, j + rectangleToPlaceAt.y] = module;
+                    ModuleGrid[i + rectangleToPlaceAt.x, j + rectangleToPlaceAt.y] = module;
                 }
             }
         }
@@ -324,13 +299,13 @@ namespace BiolyCompiler.Architechtures
         {
             StringBuilder printedBoard = new StringBuilder();
             int paddingLenght = (int) Math.Log10(allPlacedModules.Count) + 1;
-            for (int j = heigth - 1; j >= 0; j--)
+            for (int j = Heigth - 1; j >= 0; j--)
             {
-                for (int i = 0; i < width; i++)
+                for (int i = 0; i < Width; i++)
                 {
-                    if (grid[i, j] == null) printedBoard.Append(String.Format("{0,3}", "O"));
+                    if (ModuleGrid[i, j] == null) printedBoard.Append(String.Format("{0,3}", "O"));
                     else {
-                        int index = allPlacedModules.IndexOf(grid[i,j]);
+                        int index = allPlacedModules.IndexOf(ModuleGrid[i,j]);
                         printedBoard.Append(String.Format("{0,3}", index));
                     }
                 }
