@@ -33,8 +33,8 @@ namespace BiolyViewer_Windows
     public partial class MainWindow : Window
     {
         public const string SETTINGS_FILE_PATH = "settings.stx";
-        private const string PROGRAMS_FOLDER_PATH = @"../../../../BiolyPrograms";
-        private const string WEBPAGE_FOLDER_PATH = @"../../../../webpage";
+        private const string PROGRAMS_FOLDER_PATH = "BiolyPrograms";
+        private const string WEBPAGE_FOLDER_PATH = "webpage";
         private WebUpdater Updater;
 
         public MainWindow()

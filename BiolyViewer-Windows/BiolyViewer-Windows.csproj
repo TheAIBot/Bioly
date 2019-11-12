@@ -169,4 +169,8 @@
   </Target>
   <Import Project="..\packages\CefSharp.Common.63.0.3\build\CefSharp.Common.targets" Condition="Exists('..\packages\CefSharp.Common.63.0.3\build\CefSharp.Common.targets')" />
   <Import Project="..\packages\CefSharp.WinForms.63.0.3\build\CefSharp.WinForms.targets" Condition="Exists('..\packages\CefSharp.WinForms.63.0.3\build\CefSharp.WinForms.targets')" />
+  <PropertyGroup>
+    <PreBuildEvent>XCOPY "$(SolutionDir)webpage" "$(TargetDir)\webpage\" /S /Y
+XCOPY "$(SolutionDir)BiolyPrograms" "$(TargetDir)\BiolyPrograms\" /S /Y</PreBuildEvent>
+  </PropertyGroup>
 </Project>
