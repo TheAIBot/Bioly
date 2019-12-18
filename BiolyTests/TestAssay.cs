@@ -10,6 +10,8 @@ using BiolyCompiler.BlocklyParts.Misc;
 using BiolyCompiler;
 using BiolyTests.TestObjects;
 using System.Collections.Generic;
+using BiolyCompiler.BlocklyParts.Declarations;
+using BiolyCompiler.BlocklyParts.FluidicInputs;
 
 namespace BiolyTests.AssayTests
 {
@@ -26,16 +28,16 @@ namespace BiolyTests.AssayTests
         [TestMethod]
         public void TestCreateNonEmptyAssay()
         {
-            TestBlock operation1 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
-            TestBlock operation2 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
-            TestBlock operation3 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
-            TestBlock operation4 = new TestBlock(new List<FluidBlock> { }, null, new TestModule());
+            Block op1 = new InputDeclaration("cake", 10, "");
+            Block op2 = new InputDeclaration("cookies", 7, "");
+            Block op3 = new Mixer(new List<FluidInput>() { new BasicInput("", "cake", 1, false), new BasicInput("", "cookie", 1, false) }, "mash", "");
+            Block op4 = new Mixer(new List<FluidInput>() { new BasicInput("", "mash", 1, false), new BasicInput("", "cookie", 1, false) }, "trash", "");
 
             DFG<Block> dfg = new DFG<Block>();
-            dfg.AddNode(operation1);
-            dfg.AddNode(operation2);
-            dfg.AddNode(operation3);
-            dfg.AddNode(operation4);
+            dfg.AddNode(op1);
+            dfg.AddNode(op2);
+            dfg.AddNode(op3);
+            dfg.AddNode(op4);
             dfg.FinishDFG();
 
             Assay assay = new Assay(dfg);
